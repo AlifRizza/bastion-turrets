@@ -17,6 +17,17 @@ so a 7-damage shot lands as ~6.9.
 - [ ] `/bastion vfx <preset>` plays every preset (tab-complete lists them, incl. `turret_destroyed`, `tier_up`, `damaged_spark`).
 - [ ] VFX quality LOW / MEDIUM / HIGH (client config) all look right.
 
+## Bullets (travel time)
+- [ ] Gun, Machine Gun, Shotgun and Sniper: the tracer visibly flies to the target (Sniper fastest, Shotgun slowest), the impact sparks appear when it arrives, not when the turret fires.
+- [ ] A zombie walking sideways at 20+ blocks still gets hit: the turret aims ahead of it (with a Targeting AI module even more precisely).
+- [ ] Stand a villager (or yourself, trusted) between a turret and a zombie: the bullets fly through the villager and hit the zombie. A wall still stops them.
+- [ ] Shotgun knockback still throws a close zombie back; Sniper bullet still goes through 2 mobs in a line.
+
+## Big bases (performance)
+- [ ] Bases look exactly as before (they are now part of the world mesh): tier armour (T2) and fins (T3) appear right after a Tier Upgrade Kit, the energy ring still turns, the glow still breathes and blinks red when damaged.
+- [ ] 50+ turrets in view: FPS stays playable; sounds don't cut out (only a few nearby shot sounds per tick play, near ones first); casings only fly from turrets within ~32 blocks.
+- [ ] Dev load test (dev runs only): `./gradlew runClient -Pshowcase=stress -PstressCount=200 -PshowcaseWorld=<scratch copy>` logs `[stress]` MSPT and FPS for empty / idle / combat.
+
 ## Sniper & Rocket Launcher
 - [ ] Sniper: locks on, a green laser sight grows thicker for ~1.5 s (with a charging whine), then one heavy crack; two mobs in a line both get hit.
 - [ ] Sniper re-charges from zero when its target moves out of the sights or dies mid-charge.

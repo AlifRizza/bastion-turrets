@@ -19,6 +19,8 @@
     "falloff_start": 6,
     "falloff_end": 12,
     "falloff_min": 0.4,
-    "knockback": 1.2
+    "knockback": 1.2,
+    "bullet_speed": 4,
+    "lead_accuracy": 0.9
   }
 }

@@ -43,6 +43,9 @@ First public beta.
 - Ammo automation (hoppers, Create belts/funnels/chutes, Mechanical Arms with Create).
 - 5 FE-powered workstations for survival crafting: Part Workstation, Part Assembler,
   Module Workstation, Ammo Workstation, Charging Station.
+- Gun, Machine Gun, Shotgun and Sniper fire bullets with travel time; turrets lead moving
+  targets; bullets fly through non-targets.
+- Built for big bases (load-tested with 400 turrets firing).
 - Custom VFX for every weapon. Sounds are placeholders.
 ```
 

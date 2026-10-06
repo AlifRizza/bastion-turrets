@@ -39,8 +39,7 @@ public class RocketLauncherWeapon extends WeaponType {
     /** Lead: Targeting AI modules (lead_accuracy) close the gap to a perfect intercept. */
     @Override
     public Vec3 aimPoint(TurretBaseBlockEntity turret, LivingEntity target, Vec3 point, StatSheet stats) {
-        double accuracy = Math.min(1, stats.data().param("lead_accuracy") + turret.inventory().modifierEffect().leadAccuracy());
-        return LeadSolver.intercept(turret.pivot(stats.data()), point, LeadSolver.velocity(target), stats.data().param("rocket_speed"), accuracy);
+        return LeadSolver.lead(turret, target, point, stats, stats.data().param("rocket_speed"));
     }
 
     @Override

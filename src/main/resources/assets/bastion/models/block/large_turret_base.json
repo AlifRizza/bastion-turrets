@@ -1,4 +1,7 @@
 {
+  "loader": "bastion:turret_base",
+  "geo": "bastion:geo/large_turret_base.geo.json",
+  "texture": "bastion:block/large_turret_base",
   "textures": {
     "particle": "bastion:block/large_turret_base"
   }

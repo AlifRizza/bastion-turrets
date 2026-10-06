@@ -39,6 +39,21 @@ public final class BastionRenderTypes extends RenderType {
                     .setOutputState(PARTICLES_TARGET)
                     .createCompositeState(false)));
 
+    /**
+     * GeckoLib emissive layer: vanilla entity_translucent_emissive without the per-frame quad sort. The glow lies on the
+     * model's own faces, so the order never shows, while sorting every turret's glow each frame was a top render cost.
+     */
+    private static final Function<ResourceLocation, RenderType> MODEL_GLOW = Util.memoize(texture -> create("bastion_model_glow",
+            DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false)));
+
     private BastionRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
                                boolean crumbling, boolean sort, Runnable setup, Runnable clear) {
         super(name, format, mode, bufferSize, crumbling, sort, setup, clear);
@@ -56,6 +71,6 @@ public final class BastionRenderTypes extends RenderType {
 
     /** Emissive panels and lights on models (GeckoLib emissive layer): translucent, fullbright. */
     public static RenderType translucentEmissive(ResourceLocation texture) {
-        return RenderType.entityTranslucentEmissive(texture);
+        return MODEL_GLOW.apply(texture);
     }
 }

@@ -40,6 +40,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -74,6 +76,9 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private static final float SERVO_ACCELERATION = 0.3f;
 
     private final AnimatableInstanceCache animations = GeckoLibUtil.createInstanceCache(this);
+    /** Tier for the chunk-meshed base model (BakedTurretBaseModel): armour and fins are part of the mesh. */
+    public static final ModelProperty<TurretTier> MODEL_TIER = new ModelProperty<>();
+
     private TurretTier tier = TurretTier.T1;
     private final TurretInventory inventory = new TurretInventory(() -> tier, this::large, this::onSlotChanged);
     private final AmmoOnlyItemHandler ammo = new AmmoOnlyItemHandler(inventory);
@@ -769,9 +774,19 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     @Override
+    public ModelData getModelData() {
+        return ModelData.builder().with(MODEL_TIER, tier).build();
+    }
+
+    @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        TurretTier previous = tier;
         tier = TurretTier.byName(tag.getString("Tier"));
+        if (level != null && level.isClientSide && tier != previous) { // re-mesh the base with the new tier parts
+            requestModelDataUpdate();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_IMMEDIATE);
+        }
         inventory.deserializeNBT(tag.getCompound("Inventory"));
         yaw = tag.getFloat("Yaw");
         pitch = tag.getFloat("Pitch");

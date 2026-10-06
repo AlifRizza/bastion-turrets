@@ -1,8 +1,10 @@
 package dev.bastion.client;
 
+import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
 import dev.bastion.client.vfx.VfxPresets;
+import dev.bastion.network.BulletImpact;
 import dev.bastion.network.BurnSync;
 import dev.bastion.network.RackSync;
 import dev.bastion.network.TurretImpactEvent;
@@ -69,6 +71,10 @@ public final class ClientPacketHandler {
                 && Minecraft.getInstance().level.getBlockEntity(message.pos()) instanceof TurretBaseBlockEntity turret) {
             turret.setClientTubes(message.tubes());
         }
+    }
+
+    public static void bulletImpact(BulletImpact impact) {
+        TracerRenderer.land(impact.bullet(), impact.end(), impact.normal(), impact.hit(), impact.blockState());
     }
 
     public static void turretImpact(TurretImpactEvent event) {

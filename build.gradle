@@ -28,6 +28,10 @@ configurations {
     devImplementation.extendsFrom implementation
     // Client-only dev mods: added to runClient alone, since they crash the server and GameTest runs.
     clientDevMods
+    // -PwithPerfMods: server performance mods from a typical 1.20.1 modpack, to compare the stress scene with and without.
+    perfMods
+    // -PwithRenderMods: Embeddium + Oculus (shaders), as in most 1.20.1 modpacks; runClient only.
+    renderMods
 }
 
 minecraft {
@@ -55,6 +59,9 @@ minecraft {
             if (project.hasProperty('showcase')) {
                 def scene = project.findProperty('showcase')
                 property 'bastion.showcase', scene ? scene : 'scene'
+                if (project.hasProperty('stressCount')) property 'bastion.stressCount', project.findProperty('stressCount')
+                // -Pjfr=<file>: Java Flight Recorder profile of the whole run (inspect with `jfr print`)
+                if (project.hasProperty('jfr')) jvmArg "-XX:StartFlightRecording=filename=${project.findProperty('jfr')},settings=profile"
                 // -PshowcaseWorld=<save folder> picks another world; run/saves/showcase holds the user's hand-built test rig
                 args '--quickPlaySingleplayer', project.findProperty('showcaseWorld') ?: 'showcase', '--width', '1280', '--height', '720'
             }
@@ -130,6 +137,15 @@ dependencies {
     runtimeOnly "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
     // Dev-only, runClient only: floating damage numbers + target health bar for testing turret damage.
     clientDevMods fg.deobf("maven.modrinth:torohealth-damage-indicators-updated:${torohealth_version}")
+    // Modrinth version ids (Forge 1.20.1): Radium (Lithium port) 0.12.4, AI Improvements 0.5.2, ModernFix 5.27.85,
+    // FerriteCore 6.0.1, Clumps 12.0.0.4.
+    perfMods fg.deobf("maven.modrinth:radium:n947JjJH")
+    perfMods fg.deobf("maven.modrinth:ai-improvements:eJihmpNQ")
+    perfMods fg.deobf("maven.modrinth:modernfix:hHwYTQwa")
+    perfMods fg.deobf("maven.modrinth:ferrite-core:DG5Fn9Sz")
+    perfMods fg.deobf("maven.modrinth:clumps:nAHGB5ls")
+    renderMods fg.deobf("maven.modrinth:embeddium:UTbfe5d1")  // 0.3.31+mc1.20.1
+    renderMods fg.deobf("maven.modrinth:oculus:iQ1SwGc3")     // 1.20.1-1.8.0; shader pack in run/shaderpacks
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -168,9 +184,20 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.matching { it.name == 'runClient' }.configureEach {
+// The stress scene measures FPS, so it runs without them (ToroHealth draws a bar over every husk).
+tasks.matching { it.name == 'runClient' && project.findProperty('showcase') != 'stress' }.configureEach {
     runtimeClasspathArtifacts.from(configurations.clientDevMods)
     classpath(configurations.clientDevMods)
+}
+
+tasks.matching { it.name in ['runClient', 'runGameTestServer'] && project.hasProperty('withPerfMods') }.configureEach {
+    runtimeClasspathArtifacts.from(configurations.perfMods)
+    classpath(configurations.perfMods)
+}
+
+tasks.matching { it.name == 'runClient' && project.hasProperty('withRenderMods') }.configureEach {
+    runtimeClasspathArtifacts.from(configurations.renderMods)
+    classpath(configurations.renderMods)
 }
 
 // Dev runs load src/dev (see sourceSets above), so compile it first.

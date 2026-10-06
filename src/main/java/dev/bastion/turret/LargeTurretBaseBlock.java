@@ -131,7 +131,7 @@ public class LargeTurretBaseBlock extends TurretBaseBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return state.getValue(CORE) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.INVISIBLE;
+        return state.getValue(CORE) ? RenderShape.MODEL : RenderShape.INVISIBLE;
     }
 
     /** Every block of an armed base is solid up to the weapon, so mobs cannot stand on the launcher. */

@@ -17,6 +17,8 @@
   "params": {
     "precision_lock_ticks": 20,
     "precision_lock_multiplier": 1.5,
-    "headshot_multiplier": 1.5
+    "headshot_multiplier": 1.5,
+    "bullet_speed": 6,
+    "lead_accuracy": 0.9
   }
 }

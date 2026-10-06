@@ -3,6 +3,7 @@ package dev.bastion.client;
 import dev.bastion.Bastion;
 import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.particle.VfxParticle.Behavior;
+import dev.bastion.client.render.BakedTurretBaseModel;
 import dev.bastion.client.render.RocketRenderer;
 import dev.bastion.client.render.TurretBaseRenderer;
 import dev.bastion.client.render.WorkstationRenderer;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -32,6 +34,11 @@ public final class BastionClient {
             MenuScreens.register(BastionMenus.TURRET.get(), TurretScreen::new);
             MenuScreens.register(BastionMenus.WORKSTATION.get(), WorkstationScreen::new);
         });
+    }
+
+    @SubscribeEvent
+    public static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register("turret_base", new BakedTurretBaseModel.Loader());
     }
 
     @SubscribeEvent

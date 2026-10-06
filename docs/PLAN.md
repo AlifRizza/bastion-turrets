@@ -419,6 +419,8 @@ MVP berisi tiga turret kinetik berteknologi futuristik. Semuanya **hitscan di se
 
 Nilai di bawah adalah titik awal, semuanya di JSON dan akan di-balance saat playtest.
 
+> **Perubahan 2026-10-06 (keputusan user):** Gun, Machine Gun, Shotgun dan Sniper menembakkan **peluru dengan waktu terbang** (`weapon/Bullets`, tanpa entity): server menggerakkan tiap peluru `bullet_speed` block per tick dan men-trace segmen itu seperti hitscan pendek, turret melakukan lead (`lead_accuracy` + Targeting AI), peluru hanya mengenai target valid dan menembus yang lain, berhenti di block. Client menerima tembakan sekali dan menerbangkan tracer sendiri; titik akhir peluru datang sebagai `BulletImpact`. Biaya server/network setara hitscan (diukur: 200 turret, MSPT dan FPS sama). Profil `HITSCAN_*` dihapus.
+
 ### Ringkasan
 
 | Turret | Peran | Range | Kecepatan tembak | Damage | Ammo | Kemampuan khusus | Warna energi |

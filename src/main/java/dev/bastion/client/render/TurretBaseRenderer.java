@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 import software.bernie.geckolib.util.RenderUtils;
 
@@ -44,5 +45,21 @@ public class TurretBaseRenderer extends GeoBlockRenderer<TurretBaseBlockEntity> 
                           float red, float green, float blue, float alpha) {
         TurretBaseModel.showTier(model, animatable.tier());
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+
+    /**
+     * Main pass: only the animated bones, the rest of the base is in the chunk mesh (BakedTurretBaseModel). Glow pass:
+     * only the faces with glow pixels (GlowCubes), from every bone, so the glow still breathes and blinks red.
+     */
+    @Override
+    public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer, int packedLight, int packedOverlay,
+                                  float red, float green, float blue, float alpha) {
+        if (GlowCubes.active == null && !animated(bone)) return;
+        GlowCubes.renderCubesOfBone(this, poseStack, bone, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
+
+    private static boolean animated(GeoBone bone) {
+        for (GeoBone b = bone; b != null; b = b.getParent()) if (BakedTurretBaseModel.ANIMATED.contains(b.getName())) return true;
+        return false;
     }
 }

@@ -3,9 +3,16 @@ package dev.bastion.gametest;
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
+import dev.bastion.weapon.Bullets;
+import dev.bastion.weapon.FireContext;
+import dev.bastion.weapon.Hitscan;
+import dev.bastion.weapon.StatSheet;
+import dev.bastion.weapon.WeaponState;
+import dev.bastion.weapon.WeaponType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -14,11 +21,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+
+import java.util.List;
 
 /**
  * Fase 2 acceptance checks (PLAN 8): targeting, line of sight, ammo, state machine. Run with runGameTestServer.
@@ -118,6 +128,42 @@ public class TurretCombatTests {
             helper.assertTrue(turret.state() == TurretState.NO_AMMO, "expected NO_AMMO, got " + turret.state());
             disarm(turret);
             helper.succeed();
+        });
+    }
+
+    // --- bullets (travel time, user decision 2026-10-06) ---------------------------------------
+
+    /** A bullet arrives after flying, not on the tick it is fired: 1 block per tick over about 6 blocks. */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "bulletsTakeTime")
+    public static void bulletsTakeTime(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 0); // no ammo: it never fires by itself
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        Vec3 muzzle = helper.absoluteVec(Vec3.atCenterOf(BASE).add(1, 0.5, 0));
+        Vec3 direction = husk.getBoundingBox().getCenter().subtract(muzzle).normalize();
+        StatSheet stats = StatSheet.of(turret.inventory().weaponData(), turret.tier(), turret.inventory().modifierEffect());
+        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false);
+        WeaponType gun = BastionWeaponTypes.GUN.get();
+        Bullets.fire(context, gun, 0, List.of(direction), 1, 0, Bullets.validTargets(context, gun),
+                (bullet, hit) -> Hitscan.damage(hit.getEntity(), helper.getLevel(), 5));
+        helper.assertTrue(husk.getHealth() == husk.getMaxHealth(), "the bullet hit on the tick it was fired");
+        helper.runAtTickTime(3, () -> helper.assertTrue(husk.getHealth() == husk.getMaxHealth(), "the bullet arrived too early"));
+        helper.runAtTickTime(12, () -> {
+            helper.assertTrue(husk.getHealth() < husk.getMaxHealth(), "the bullet never arrived");
+            disarm(turret);
+            helper.succeed();
+        });
+    }
+
+    /** Bullets fly through what the turret may not shoot: a villager in the line is spared, the husk behind is hit. */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "bulletsPassNonTargets")
+    public static void bulletsPassNonTargets(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 10);
+        LivingEntity villager = helper.spawnWithNoFreeWill(EntityType.VILLAGER, new BlockPos(6, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(husk.getHealth() < husk.getMaxHealth(), "husk not hit, turret state " + turret.state());
+            helper.assertTrue(villager.getHealth() == villager.getMaxHealth(), "the villager in the line was hit");
+            disarm(turret);
         });
     }
 }

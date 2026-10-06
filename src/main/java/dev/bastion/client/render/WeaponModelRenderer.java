@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoObjectRenderer;
 
 /** A mounted weapon in the world (PLAN 6.1), drawn by WeaponMountLayer at the base's weapon_mount bone. */
@@ -35,5 +36,12 @@ public class WeaponModelRenderer extends GeoObjectRenderer<WeaponAnimatable> {
                           VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay,
                           float red, float green, float blue, float alpha) {
         objectRenderTranslations = new Matrix4f(poseStack.last().pose());
+    }
+
+    /** Glow pass: only the faces with glow pixels (GlowCubes). */
+    @Override
+    public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer, int packedLight, int packedOverlay,
+                                  float red, float green, float blue, float alpha) {
+        GlowCubes.renderCubesOfBone(this, poseStack, bone, buffer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 }

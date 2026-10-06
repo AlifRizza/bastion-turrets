@@ -1,11 +1,7 @@
 package dev.bastion.weapon;
 
-/** How a weapon delivers damage, PLAN 7. Only the three hitscan profiles exist in the MVP. */
+/** How a weapon delivers damage, PLAN 7. Bullets and rockets are PROJECTILE (travel time); the Sniper is CHARGED. */
 public enum FireProfile {
-    HITSCAN_SINGLE,
-    HITSCAN_SPINUP,
-    HITSCAN_SPREAD,
-    // post-MVP, PLAN 7.6
     PROJECTILE,
     CHARGED,
     AREA_PULSE,

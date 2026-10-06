@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.bastion.Bastion;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -27,13 +28,18 @@ import java.util.Map;
 
 /**
  * Ejected casings and shells (PLAN 5.3): tiny modelled boxes that fly out with spin, fall, bounce once,
- * glow with the energy colour and fade. At most {@link #MAX_PER_TURRET} per turret; oldest dropped first.
+ * glow with the energy colour and fade. At most {@link #MAX_PER_TURRET} per turret, oldest dropped first, and
+ * {@link #MAX_TOTAL} in all; none from turrets beyond {@link #MAX_DISTANCE} blocks (a base with hundreds of turrets:
+ * casings were the second biggest render cost there).
  */
 public final class CasingRenderer {
     public static final int MAX_PER_TURRET = 12;
+    private static final int MAX_TOTAL = 192;
+    private static final double MAX_DISTANCE = 32;
     private static final int LIFETIME = 40;
     private static final ResourceLocation TEXTURE = Bastion.id("textures/vfx/casing.png");
     private static final Map<Long, Deque<Casing>> BY_TURRET = new HashMap<>();
+    private static int total;
 
     private CasingRenderer() {
     }
@@ -43,20 +49,29 @@ public final class CasingRenderer {
      * @param shell  true for the Shotgun's big shell, false for a small casing
      */
     public static void eject(BlockPos turret, Vec3 at, Vec3 velocity, int argb, boolean shell, long seed) {
+        if (total >= MAX_TOTAL || Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceToSqr(at) > MAX_DISTANCE * MAX_DISTANCE) {
+            return;
+        }
         Deque<Casing> list = BY_TURRET.computeIfAbsent(turret.asLong(), k -> new ArrayDeque<>());
         if (list.size() >= MAX_PER_TURRET) list.pollFirst();
+        else total++;
         RandomSource random = RandomSource.create(seed);
         Vector3f spinAxis = new Vector3f(random.nextFloat() - 0.5f, random.nextFloat() - 0.5f, random.nextFloat() - 0.5f).normalize();
         list.addLast(new Casing(at, velocity, argb, shell ? 0.05f : 0.028f, shell ? 0.11f : 0.07f, spinAxis, 0.6f + random.nextFloat() * 0.6f));
     }
 
     public static void tick(ClientLevel level) {
-        BY_TURRET.values().forEach(list -> list.removeIf(c -> c.tick(level)));
+        total = 0;
+        for (Deque<Casing> list : BY_TURRET.values()) {
+            list.removeIf(c -> c.tick(level));
+            total += list.size();
+        }
         BY_TURRET.values().removeIf(Deque::isEmpty);
     }
 
     public static void clear() {
         BY_TURRET.clear();
+        total = 0;
     }
 
     public static void render(PoseStack poseStack, MultiBufferSource buffers, Camera camera, float partialTick) {

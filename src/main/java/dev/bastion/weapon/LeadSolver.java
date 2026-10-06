@@ -1,11 +1,22 @@
 package dev.bastion.weapon;
 
+import dev.bastion.turret.TurretBaseBlockEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
-/** Where to aim a projectile so it meets a moving target (PLAN 4.5). Hitscan weapons never need it. */
+/** Where to aim a projectile so it meets a moving target (PLAN 4.5): rockets, missiles and bullets. */
 public final class LeadSolver {
     private LeadSolver() {
+    }
+
+    /**
+     * Aim point for a shot flying {@code speed} blocks per tick: the weapon's lead_accuracy plus Targeting AI modules
+     * close the gap to a perfect intercept.
+     */
+    public static Vec3 lead(TurretBaseBlockEntity turret, LivingEntity target, Vec3 point, StatSheet stats, double speed) {
+        double accuracy = Math.min(1, stats.data().param("lead_accuracy") + turret.inventory().modifierEffect().leadAccuracy());
+        return intercept(turret.pivot(stats.data()), point, velocity(target), speed, accuracy);
     }
 
     /** Blocks per tick the entity moved last tick; works for players too, whose server-side motion is unknown. */

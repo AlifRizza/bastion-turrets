@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * S->C one weapon discharge, PLAN 4.8: which muzzle fired, the seed for VFX randomness, and every shot's
- * end point (1 for Gun/MG, 8 for Shotgun) with what it hit. Clients animate tracers to these points and
- * play the impact when each tracer arrives.
+ * S->C one weapon discharge, PLAN 4.8: which muzzle fired, the seed for VFX randomness, and every shot's end point
+ * with what it hit. Bullets ({@code speed} > 0, blocks per tick): each shot is a bullet's whole path (id in
+ * {@code blockState}, hit MISS); the tracer flies it at that speed until a BulletImpact says where the bullet ended.
  */
 public record TurretFireEvent(BlockPos pos, ResourceLocation weaponType, int muzzle, long seed, boolean precisionLock,
-                              List<Shot> shots) {
+                              float speed, List<Shot> shots) {
     public static final int MISS = 0, BLOCK = 1, ENTITY = 2;
 
     /**
      * @param blockState for BLOCK hits: the block-state id, so debris takes the block's colour; for ENTITY hits of the Tesla
-     *                   Coil: the entity id, so its bolt follows the target
+     *                   Coil: the entity id, so its bolt follows the target; for bullets: the bullet id
      */
     public record Shot(Vec3 end, Vec3 normal, int hit, int blockState) {
     }
@@ -35,6 +35,7 @@ public record TurretFireEvent(BlockPos pos, ResourceLocation weaponType, int muz
         buf.writeByte(muzzle);
         buf.writeLong(seed);
         buf.writeBoolean(precisionLock);
+        buf.writeFloat(speed);
         buf.writeVarInt(shots.size());
         for (Shot shot : shots) {
             buf.writeDouble(shot.end.x);
@@ -54,6 +55,7 @@ public record TurretFireEvent(BlockPos pos, ResourceLocation weaponType, int muz
         int muzzle = buf.readByte();
         long seed = buf.readLong();
         boolean lock = buf.readBoolean();
+        float speed = buf.readFloat();
         int count = Math.min(buf.readVarInt(), 64);
         List<Shot> shots = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
@@ -61,7 +63,7 @@ public record TurretFireEvent(BlockPos pos, ResourceLocation weaponType, int muz
             Vec3 normal = new Vec3(buf.readByte() / 127.0, buf.readByte() / 127.0, buf.readByte() / 127.0);
             shots.add(new Shot(end, normal, buf.readByte(), buf.readVarInt()));
         }
-        return new TurretFireEvent(pos, type, muzzle, seed, lock, shots);
+        return new TurretFireEvent(pos, type, muzzle, seed, lock, speed, shots);
     }
 
     public void handle(Supplier<NetworkEvent.Context> context) {

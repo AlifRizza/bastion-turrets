@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-06, 18:05 WIB)
+# Bastion Turrets — Session Handoff (2026-10-06, 19:30 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 
@@ -9,6 +9,16 @@ Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec)
 Fase 9 Workstations + Charging Station committed as `f460e59` (not yet play-tested by the user).
 Committed on top (user checked in game): the "Workstations & Parts" creative tab split into "Bastion: Workstations"
 (5 stations + Creative Power Source, id `bastion_workshop`) and "Bastion: Parts" (the 33 parts, id `bastion_parts`).
+
+**Uncommitted (19:30): bullets + big-base performance** (user: "a modpack with tens, maybe hundreds of turrets per
+base"; travel time "like TaCZ"; picked option B = bullets as data, not entities). Build + 56 GameTests pass, user has
+not play-tested it. What changed, measured with the dev stress scene (200 turrets, same machine/world):
+- Gun/MG/Shotgun/Sniper fire **bullets with travel time** (`weapon/Bullets`), auto-lead, pass non-targets. Cost = hitscan.
+- Render: glow pass draws only lit faces (`GlowCubes`) with an unsorted glow type; the still base is **meshed into the
+  chunk** (`BakedTurretBaseModel`, from the GeckoLib geo itself); casings capped (192, within 32 blocks); shot sounds
+  budgeted (8/tick, near first). FPS 200 turrets: idle 28 → 75-80, combat 20 → 55. 400 turrets: idle 58, combat 39, MSPT 10.
+- Network: every `sendNear` message is queued and leaves as **one `TurretEvents` packet per player per tick**.
+- Also uncommitted: anti-slop rewrite of `docs/release/DESCRIPTION.md` (+ bullets paragraph), UPLOAD changelog lines.
 
 **Release prep (18:30, committed; repo pushed to `AlifRizza/bastion-turrets`, private):** version `0.1.0-beta.1` (beta channel; jar `bastion-1.20.1-0.1.0-beta.1.jar`,
 authors `AlifRizza`), `docs/release/` = DESCRIPTION.md (paste-ready page text), UPLOAD.md (fields, changelog, gallery
@@ -79,6 +89,8 @@ funnel on a raised turret works; funnels can be placed on turret sides (hitbox `
 | 17:01 | **Fase 9 Workstations** (sizes w x d x h): Part Workstation 2x1x2 + Part Assembler 2x2x2 (timed), Module Workstation 1x1x2 + Ammo Workstation 1x1x2 (instant for the player + timed for automation), all on **FE**; crafting-table recipes removed; **own part set per weapon**; GeckoLib models with working animations; full custom GUI; automation-friendly. |
 | 17:36 | **Charging Station 1x1x1** charges energy ammo (Laser Cell now, Plasma Cell later). |
 | 18:00 | Creative tab "Workstations & Parts" split into **Workstations** (stations + Creative Power Source) and **Parts**. |
+| 18:30 | **Bullets with travel time** for Gun/MG/Shotgun/Sniper (like TaCZ), **option B**: data stepped per tick, no entities. Target: bases with hundreds of turrets; optimise by measurement. |
+| defaults 18:30, **not confirmed** | No bullet drop. All four auto-lead (`lead_accuracy` 0.9, Targeting AI adds). Bullets **fly through non-targets** (old hitscan hit anything in the line: behaviour change, told the user). Speeds (blocks/tick): Gun 6, MG 5, Shotgun 4, Sniper 12. |
 | defaults, **not confirmed** | Mismatched ammo stays but never fires. Precision Lock x1.5 stacks with headshot. Default targets Hostile+Boss. T1 destroyed → damaged base. Repair kit 40%. Turrets never shoot turrets. Large base HP x2.5. Tesla: lone target takes both bolts; 60k/1k per tick/3k per shot; energy lost when the module is removed. Flamethrower ignores fire-immune mobs; water/rain put burn out; burn 1.5/s for 4 s. Workstations: 3 parts per weapon/base cut from the 3D model (Missile needs 2 pods); Creative Power Source block; damaged bases restored at the Part Assembler; recipe numbers in `tools/gen_recipes.py`; workstation FE 50k, 2k/t (config). |
 
 ## 4. What exists
@@ -101,10 +113,10 @@ Creative tabs: Turret Bases, Weapon Modules, Ammo, Modules, Workstations, Parts 
 
 | Weapon | Profile | Key numbers |
 |---|---|---|
-| Gun | hitscan, Precision Lock | 7 dmg, 32 range, 12 t, lock 20 t → x1.5 (+x1.5 headshot) |
-| Machine Gun | spin-up, heat/overheat, slowness | 2.5 dmg, 24 range, 12/s at full spin, 0.5 ammo/shot |
-| Shotgun | 8 pellets, falloff, knockback, pump | 2.5/pellet, 12 range, 24 t, spread 12° (Choke: 7.2°) |
-| Sniper | charged hitscan + laser sight | 24 dmg, 64 range, 30 t charge, pierces 2 |
+| Gun | bullet 6 b/t, Precision Lock | 7 dmg, 32 range, 12 t, lock 20 t → x1.5 (+x1.5 headshot) |
+| Machine Gun | bullet 5 b/t, spin-up, heat/overheat, slowness | 2.5 dmg, 24 range, 12/s at full spin, 0.5 ammo/shot |
+| Shotgun | 8 bullets 4 b/t, falloff, knockback, pump | 2.5/pellet, 12 range, 24 t, spread 12° (Choke: 7.2°) |
+| Sniper | charged bullet 12 b/t + laser sight | 24 dmg, 64 range, 30 t charge, pierces 2 |
 | Rocket Launcher | projectile, lead, splash | 8 + 12 splash r3.5, 40 range, min range 4 |
 | Missile Launcher (large) | homing, fixed 30°, 12 tubes | 7 + 6 splash r2.2, 48 range, reload 30 t/tube, salvo |
 | Tesla Coil (large) | ARC, never turns, FE | 10/bolt x2, 16 range, 12 t charge + 18 t, 3k FE/discharge |
@@ -126,8 +138,9 @@ recipe list, turning 3D preview (flat icons face-on), ingredients have/need, pro
 growing scorch decals, workstation sparks/welds/press puffs/charging arcs (`WorkstationEffects`), dynamic lights,
 camera shake, screen flash. Debug: `/bastion vfx <preset>`.
 
-**Network** (`BastionNetwork`, PROTOCOL **"6"**): TurretStateSync, WeaponDataSync (weapons + modifiers), TurretFireEvent,
-SpinSync, TurretConfigUpdate (C→S), TurretImpactEvent, RackSync, BurnSync, WorkstationAction (C→S select/craft).
+**Network** (`BastionNetwork`, PROTOCOL **"7"**): registered packets are only TurretEvents (S→C bundle), WeaponDataSync,
+TurretConfigUpdate (C→S), BurnSync, WorkstationAction (C→S). `sendNear` queues TurretStateSync, TurretFireEvent (with
+bullet `speed`), BulletImpact, SpinSync, RackSync, TurretImpactEvent; flushed at the level tick END, one packet per player.
 
 ## 5. Architecture notes that are easy to get wrong
 
@@ -157,6 +170,17 @@ SpinSync, TurretConfigUpdate (C→S), TurretImpactEvent, RackSync, BurnSync, Wor
 - **Render buffers**: with `MultiBufferSource.BufferSource`, `getBuffer` for another render type ends the previous
   batch: write a pass completely before asking for the next buffer (Arc/Beam/LaserCharge renderers do passes).
 - `TurretBaseBlock.core(level, pos)` resolves any base block; use it, not `getBlockEntity(pos)`.
+- **Bullets** (`weapon/Bullets`): fired in `onFire` via `Bullets.fire` (one step at once, so point blank hits this tick),
+  stepped at LevelTickEvent START, `Hit.endTick` at END (Shotgun knockback summed per shot). Fire event shots carry the
+  bullet id in `blockState` and the path end; the client tracer (`TracerRenderer.spawnBullet`) flies at the event's speed
+  until `BulletImpact` lands it. A bullet that runs out of range sends nothing.
+- **Baked base** (`client/render/BakedTurretBaseModel`, loader `bastion:turret_base` in `models/block/*turret_base.json`):
+  built lazily per facing x tier x quadrant from `GeckoLibCache` with GeckoLib's own `RenderUtils` transforms; winding
+  fixed per quad (chunk layers cull back faces). Tier comes as ModelData (`TurretBaseBlockEntity.MODEL_TIER`); a client
+  tier change re-meshes. Render shape MODEL. `TurretBaseRenderer` draws only `ANIMATED` bones (energy_ring) in its main
+  pass, plus all glow faces. Trade-off: muzzle-flash dynamic light no longer brightens the base itself.
+- **Glow pass** (`GlowCubes`): per model, the faces whose UV rect has alpha in the `_e` texture; EmissiveLayer sets
+  `GlowCubes.active` around its reRender. Renderers opt in by overriding `renderCubesOfBone` (base, weapon).
 
 ## 6. Asset pipeline
 
@@ -178,13 +202,25 @@ SpinSync, TurretConfigUpdate (C→S), TurretImpactEvent, RackSync, BurnSync, Wor
 
 ## 7. Testing
 
-- **GameTests: 54 pass**: `TurretBaseTests` 4, `TurretCombatTests` 5, `TurretSystemsTests` 22 (incl. Choke Module,
+- **GameTests: 56 pass**: `TurretBaseTests` 4, `TurretCombatTests` 7 (incl. bullets take time, bullets pass non-targets), `TurretSystemsTests` 22 (incl. Choke Module,
   creative tabs), `TurretLargeTests` 6, `TurretTeslaFlameTests` 6, `TurretLaserTests` 4 (pierce, walls, strafing target
   for Laser + Sniper), `TurretWorkstationTests` 6 (multiblock, power + automation filter, assembler, instant craft,
   charging, crafting table only makes stations), dev `CreatePlacementTests` 1.
 - **Screenshot scenes** (`./gradlew runClient -Pshowcase=<name> -PshowcaseWorld=showcase_fx`, scratch world as in §2):
   default, `weapons`, `missiles`, `automation`, `elemental` (Tesla + Flamethrower), `laser`, `workshop` (all stations,
   GUIs, part icons). Shots in `run/screenshots/showcase_*.png`; log lines `[showcase]` in the gradle output.
+- **Load test**: `./gradlew runClient -Pshowcase=stress -PstressCount=200 -PshowcaseWorld=showcase_fx [-Pjfr=<file.jfr>]`
+  builds N T3 turrets (Gun/MG/Shotgun/Sniper) over the world spawn + N/2 walking 100k-HP husks, logs `[stress]` MSPT/FPS
+  for empty / idle / combat, vsync off, no ToroHealth. FPS caps at 120 (display), so use 200+ turrets. JFR: `jfr print
+  --json --events jdk.ExecutionSample` (render thread is `main` on macOS).
+- **`-PwithPerfMods`** (runClient, runGameTestServer): adds Radium (Lithium port), AI Improvements, ModernFix, FerriteCore,
+  Clumps from Modrinth (ids in build.gradle). Measured 19:55, alternating runs: 200 turrets combat MSPT 6.7-7.9 → 4.7-4.9,
+  FPS 48 → 60; 400 turrets combat MSPT 10.5 (spike 91) → 6.6 (max 8), FPS 39 → 46. All 56 GameTests pass with them.
+- **`-PwithRenderMods`** (runClient): Embeddium 0.3.31 + Oculus 1.8.0; shader pack `run/shaderpacks/MakeUp-UltraFast-9.5g.zip`,
+  switched in `run/config/oculus.properties`. 20:05: Embeddium renders everything as vanilla (baked base, glow, holograms,
+  tracers). Oculus + MakeUp: no crash, turrets cast shadows, but the model glow shows **white** (the shader ignores the
+  vertex tint EmissiveLayer colours it with) and holograms **green**. Fix idea: paint the cyan into the `_e` textures
+  and tint only for damage/heat. Noted as a known limit in DESCRIPTION.md.
 - Dev commands: `/bastiondev zombie [hp] [count]`, `/bastiondev automation [report]`, `/bastion vfx <preset>`.
 - Manual checklists: `docs/TESTING.md` (sections per feature, incl. Workstations and Charging Station).
 
@@ -198,6 +234,9 @@ SpinSync, TurretConfigUpdate (C→S), TurretImpactEvent, RackSync, BurnSync, Wor
 - Old 1x1 turrets placed before the wall/ceiling update load as floor turrets.
 
 ## 9. Environment gotchas
+
+- Load tests away from the spawn chunks measure chunk generation, not turrets (first numbers today were off 3x).
+- zsh does not word-split `$VAR`: `git stash push -- $FILES` fails; list the paths literally.
 
 - `rtk` hook rewrites `grep`: use `rtk proxy grep`. zsh aborts a command chain on a glob with no match (use `find -delete`).
 - **Never** `open(p,"w").write(open(p).read()...)` in one expression (it once truncated a file). Patch read-then-write

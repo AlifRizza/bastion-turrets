@@ -30,7 +30,12 @@ public final class ShotReport {
 
     /** Broadcasts the discharge to players within 96 blocks. */
     public static void send(FireContext context, WeaponType type, int muzzle, List<TurretFireEvent.Shot> shots) {
+        send(context, type, muzzle, 0, shots);
+    }
+
+    /** As above for bullets flying {@code speed} blocks per tick (Bullets). */
+    public static void send(FireContext context, WeaponType type, int muzzle, float speed, List<TurretFireEvent.Shot> shots) {
         BastionNetwork.sendNear(context.level(), context.turret().getBlockPos(), new TurretFireEvent(context.turret().getBlockPos(),
-                BastionWeaponTypes.REGISTRY.get().getKey(type), muzzle, context.seed(), context.precisionLock(), shots));
+                BastionWeaponTypes.REGISTRY.get().getKey(type), muzzle, context.seed(), context.precisionLock(), speed, shots));
     }
 }

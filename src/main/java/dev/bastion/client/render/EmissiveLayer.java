@@ -36,12 +36,17 @@ public class EmissiveLayer<T extends GeoAnimatable> extends GeoRenderLayer<T> {
     @Override
     public void render(PoseStack poseStack, T animatable, BakedGeoModel bakedModel, RenderType renderType,
                        MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-        ResourceLocation texture = getRenderer().getTextureLocation(animatable);
-        RenderType glow = BastionRenderTypes.translucentEmissive(texture.withPath(path -> path.replace(".png", "_e.png")));
+        ResourceLocation texture = getRenderer().getTextureLocation(animatable).withPath(path -> path.replace(".png", "_e.png"));
+        RenderType glow = BastionRenderTypes.translucentEmissive(texture);
         int rgb = color.applyAsInt(animatable);
         float pulse = 0.8f + 0.2f * Mth.sin((float) RenderUtils.getCurrentTick() * 0.12f); // ~2.6 s breath
-        getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, glow, bufferSource.getBuffer(glow),
-                partialTick, LightTexture.FULL_BRIGHT, packedOverlay,
-                (rgb >> 16 & 255) / 255f, (rgb >> 8 & 255) / 255f, (rgb & 255) / 255f, pulse);
+        GlowCubes.active = GlowCubes.of(bakedModel, texture); // renderers that route through GlowCubes draw only the lit faces
+        try {
+            getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, glow, bufferSource.getBuffer(glow),
+                    partialTick, LightTexture.FULL_BRIGHT, packedOverlay,
+                    (rgb >> 16 & 255) / 255f, (rgb >> 8 & 255) / 255f, (rgb & 255) / 255f, pulse);
+        } finally {
+            GlowCubes.active = null;
+        }
     }
 }

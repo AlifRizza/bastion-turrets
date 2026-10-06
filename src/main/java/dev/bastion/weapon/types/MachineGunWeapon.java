@@ -3,10 +3,11 @@ package dev.bastion.weapon.types;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.SpinSync;
 import dev.bastion.turret.TurretBaseBlockEntity;
+import dev.bastion.weapon.Bullets;
 import dev.bastion.weapon.FireContext;
 import dev.bastion.weapon.FireProfile;
 import dev.bastion.weapon.Hitscan;
-import dev.bastion.weapon.ShotReport;
+import dev.bastion.weapon.LeadSolver;
 import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponState;
@@ -16,7 +17,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -24,12 +24,18 @@ import java.util.List;
 /**
  * Machine Gun Turret, PLAN 7.2: rotary barrels spin up over spin_up_ticks (fire rate rises linearly to
  * 1/fire_interval) and down over spin_down_ticks, so a target that reappears before the barrels stop is
- * engaged at once. Spread widens to hot_spread above hot_spread_threshold heat; hits apply Slowness.
+ * engaged at once. Bullets fly bullet_speed blocks per tick, led onto moving targets. Spread widens to hot_spread
+ * above hot_spread_threshold heat; hits apply Slowness.
  */
 public class MachineGunWeapon extends WeaponType {
     @Override
     public FireProfile fireProfile() {
-        return FireProfile.HITSCAN_SPINUP;
+        return FireProfile.PROJECTILE;
+    }
+
+    @Override
+    public Vec3 aimPoint(TurretBaseBlockEntity turret, LivingEntity target, Vec3 point, StatSheet stats) {
+        return LeadSolver.lead(turret, target, point, stats, stats.data().param("bullet_speed"));
     }
 
     @Override
@@ -62,17 +68,16 @@ public class MachineGunWeapon extends WeaponType {
         boolean hot = context.turret().heat() >= context.stats().maxHeat() * data.param("hot_spread_threshold");
         float spread = hot ? data.param("hot_spread") : context.stats().spread();
         Vec3 direction = Hitscan.spread(context.direction(), spread, RandomSource.create(context.seed()));
-        Hitscan.Trace trace = Hitscan.trace(context.level(), context.muzzle(), direction, context.stats().range(), Hitscan::canHit,
-                context.stats().pierce());
-        for (EntityHitResult entityHit : trace.entities()) {
-            Hitscan.damage(entityHit.getEntity(), context.level(), context.stats().damage());
-            if (entityHit.getEntity() instanceof LivingEntity living) {
-                living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, (int) data.param("slowness_ticks"),
-                        (int) data.param("slowness_amplifier"), false, false));
-            }
-        }
+        float damage = context.stats().damage();
         // The barrel at the top fires: muzzle_0..3 in turn as the cluster rotates.
         context.state().muzzle = (context.state().muzzle + 1) % 4;
-        ShotReport.send(context, this, context.state().muzzle, List.of(ShotReport.of(context.level(), trace.end(), direction)));
+        Bullets.fire(context, this, context.state().muzzle, List.of(direction), data.param("bullet_speed"), context.stats().pierce(),
+                Bullets.validTargets(context, this), (bullet, hit) -> {
+                    Hitscan.damage(hit.getEntity(), context.level(), damage);
+                    if (hit.getEntity() instanceof LivingEntity living) {
+                        living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, (int) data.param("slowness_ticks"),
+                                (int) data.param("slowness_amplifier"), false, false));
+                    }
+                });
     }
 }

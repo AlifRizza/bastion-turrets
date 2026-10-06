@@ -16,6 +16,8 @@
   "muzzle_length": 1.8,
   "params": {
     "charge_ticks": 30,
-    "base_pierce": 1
+    "base_pierce": 1,
+    "bullet_speed": 12,
+    "lead_accuracy": 0.9
   }
 }

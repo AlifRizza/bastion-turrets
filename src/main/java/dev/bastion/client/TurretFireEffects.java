@@ -27,6 +27,13 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class TurretFireEffects {
     private static final double FAR_SOUND_DISTANCE = 32;
+    /**
+     * Shot sounds started per tick, near ones first: with hundreds of turrets firing, every shot would take one of the
+     * sound engine's few hundred channels and clip the rest. Far shots stop at half the budget.
+     */
+    private static final int SHOT_SOUNDS_PER_TICK = 8;
+    private static long soundTick;
+    private static int soundsThisTick;
 
     private TurretFireEffects() {
     }
@@ -87,6 +94,12 @@ public final class TurretFireEffects {
         if (fx.pump()) pump(level, event, client, color, random);
 
         for (TurretFireEvent.Shot shot : event.shots()) {
+            if (event.speed() > 0) { // a bullet: flies its path until the server says where it ended (BulletImpact)
+                TracerRenderer.spawnBullet(shot.blockState(), muzzle, shot.end(), event.speed(), color, fx.tracerWidth(),
+                        (end, normal, hit, blockState) -> impact(level, fx, event.precisionLock(),
+                                new TurretFireEvent.Shot(end, normal, hit, blockState), color, event.seed()));
+                continue;
+            }
             double distance = shot.end().distanceTo(muzzle);
             int ticks = Mth.clamp((int) Math.ceil(distance / fx.tracerSpeed()), 2, 4);
             TracerRenderer.spawn(muzzle, shot.end(), color, fx.tracerWidth(), ticks, shot.hit() == TurretFireEvent.MISS ? null
@@ -132,6 +145,12 @@ public final class TurretFireEffects {
         var player = Minecraft.getInstance().player;
         if (player == null) return;
         boolean far = player.position().distanceTo(muzzle) > FAR_SOUND_DISTANCE;
+        if (level.getGameTime() != soundTick) {
+            soundTick = level.getGameTime();
+            soundsThisTick = 0;
+        }
+        if (soundsThisTick >= (far ? SHOT_SOUNDS_PER_TICK / 2 : SHOT_SOUNDS_PER_TICK)) return;
+        soundsThisTick++;
         SoundEvent sound = (far ? fx.fireTail() : fx.fire()).get();
         float pitch = 0.92f + random.nextFloat() * 0.16f; // +-8%
         Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(sound, SoundSource.HOSTILE,
