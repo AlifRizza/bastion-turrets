@@ -534,7 +534,7 @@ Kerjakan berurutan. Jangan lanjut sebelum acceptance criteria fase saat ini terp
 
 
 ### Fase 9 — Survival: Workstations & Parts (permintaan user 2026-10-06)
-Semua item turret dibuat lewat 5 station bertenaga **FE**; resep crafting table untuk turret, weapon, module, ammo dihapus (crafting table hanya membuat workstation). Item baru masuk tab creative sendiri "Bastion: Workstations & Parts".
+Semua item turret dibuat lewat 5 station bertenaga **FE**; resep crafting table untuk turret, weapon, module, ammo dihapus (crafting table hanya membuat workstation). Item baru masuk dua tab creative sendiri: "Bastion: Workstations" (5 station + Creative Power Source) dan "Bastion: Parts" (semua part).
 
 | Workstation | Ukuran (lebar x dalam x tinggi) | Mode | Membuat |
 |---|---|---|---|

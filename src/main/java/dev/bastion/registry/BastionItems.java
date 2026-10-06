@@ -147,19 +147,21 @@ public final class BastionItems {
     // right tab by themselves. Tools (repair and upgrade kits, configurator, damaged bases) sit with the bases.
     public static final RegistryObject<CreativeModeTab> TAB = tab("bastion", TURRET_BASE, null,
             item -> !(item instanceof WeaponModuleItem) && !(item instanceof ModifierItem) && !isAmmo(item) && !workshop(item)
-                    && item != EMPTY_LASER_CELL.get());
+                    && !(item instanceof PartItem) && item != EMPTY_LASER_CELL.get());
     public static final RegistryObject<CreativeModeTab> WEAPONS_TAB = tab("bastion_weapons", GUN_TURRET, "bastion",
             item -> item instanceof WeaponModuleItem);
     public static final RegistryObject<CreativeModeTab> AMMO_TAB = tab("bastion_ammo", KINETIC_ROUNDS, "bastion_weapons",
             item -> isAmmo(item) || item == EMPTY_LASER_CELL.get());
     public static final RegistryObject<CreativeModeTab> MODULES_TAB = tab("bastion_modules", RANGE_MODULE, "bastion_ammo",
             item -> item instanceof ModifierItem);
-    /** Workstations, their parts and the creative power source (PLAN Fase 9). */
+    /** The five stations and the creative power source (PLAN Fase 9). */
     public static final RegistryObject<CreativeModeTab> WORKSHOP_TAB = tab("bastion_workshop", PART_WORKSTATION, "bastion_modules",
             BastionItems::workshop);
+    public static final RegistryObject<CreativeModeTab> PARTS_TAB = tab("bastion_parts", PARTS.get(0), "bastion_workshop",
+            item -> item instanceof PartItem);
 
     private static boolean workshop(Item item) {
-        return item instanceof PartItem || item instanceof WorkstationItem || item == CREATIVE_POWER_SOURCE.get();
+        return item instanceof WorkstationItem || item == CREATIVE_POWER_SOURCE.get();
     }
 
     /** Anything in the bastion:ammo tag (incl. Creative Ammo); tags are bound by the time a tab's contents are built. */

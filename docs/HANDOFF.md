@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-06, 17:55 WIB)
+# Bastion Turrets — Session Handoff (2026-10-06, 18:05 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 
@@ -6,11 +6,12 @@ Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec)
 
 ## 0. Where we stopped
 
-**Just built, not committed, not yet play-tested by the user: Fase 9 Workstations + Charging Station** (~156 changed /
-new files on top of commit `f1819a3`). The user ran `runClient` at 17:50 (clean log) but has not reported back.
+Fase 9 Workstations + Charging Station committed as `f460e59` (not yet play-tested by the user).
+Committed on top (user checked in game): the "Workstations & Parts" creative tab split into "Bastion: Workstations"
+(5 stations + Creative Power Source, id `bastion_workshop`) and "Bastion: Parts" (the 33 parts, id `bastion_parts`).
 
 Next steps:
-1. Wait for the user's in-game feedback on the workstations; fix what they report.
+1. Wait for the user's in-game feedback (tabs, workstations); fix what they report.
 2. Commit only when they say "commit".
 3. Open items the user mentioned for later (do not build unasked):
    - **Plasma Cell** + the turret that uses it (charged at the Charging Station: one line in `CHARGE`, `tools/gen_recipes.py`).
@@ -28,7 +29,8 @@ funnel on a raised turret works; funnels can be placed on turret sides (hitbox `
 - Minecraft Forge **1.20.1**, Forge 47.4.26 (min `[47.2,)`), Parchment 2023.09.03, **GeckoLib 4.8.4**, Java 17, Gradle 8.8.
 - Mod id `bastion`, package `dev.bastion`, root `/Users/alifrizzaz/Documents/Minecraft Modding/Turret`.
 - **Git** since 2026-10-06: branch `main`, no remote, commits `df3660b` (initial), `f1819a3` (charge tracking + Choke
-  Module). Commit **only when the user asks**. Ignored: `run/`, `build/`, `.gradle/`, the third-party `/references/`.
+  Module), `f460e59` (Fase 9 workstations),
+  then the creative tab split. Commit **only when the user asks**. Ignored: `run/`, `build/`, `.gradle/`, the third-party `/references/`.
 - Build/run: `./gradlew build`, `./gradlew runClient`, `./gradlew runGameTestServer` (**54 tests**), `./gradlew runServer`.
 - Dev runs include `src/dev` (never in the jar): dev commands, dev-only GameTests, scripted screenshot scenes.
 - Dev runtime mods: Create 6.0.8 + Ponder + Flywheel + Registrate + MixinExtras (runtimeOnly), **ToroHealth** damage
@@ -69,6 +71,7 @@ funnel on a raised turret works; funnels can be placed on turret sides (hitbox `
 | 16:45 | Creative tabs split: Turret Bases (+tools), Weapon Modules, Ammo, Modules (+ Workstations & Parts later). |
 | 17:01 | **Fase 9 Workstations** (sizes w x d x h): Part Workstation 2x1x2 + Part Assembler 2x2x2 (timed), Module Workstation 1x1x2 + Ammo Workstation 1x1x2 (instant for the player + timed for automation), all on **FE**; crafting-table recipes removed; **own part set per weapon**; GeckoLib models with working animations; full custom GUI; automation-friendly. |
 | 17:36 | **Charging Station 1x1x1** charges energy ammo (Laser Cell now, Plasma Cell later). |
+| 18:00 | Creative tab "Workstations & Parts" split into **Workstations** (stations + Creative Power Source) and **Parts**. |
 | defaults, **not confirmed** | Mismatched ammo stays but never fires. Precision Lock x1.5 stacks with headshot. Default targets Hostile+Boss. T1 destroyed → damaged base. Repair kit 40%. Turrets never shoot turrets. Large base HP x2.5. Tesla: lone target takes both bolts; 60k/1k per tick/3k per shot; energy lost when the module is removed. Flamethrower ignores fire-immune mobs; water/rain put burn out; burn 1.5/s for 4 s. Workstations: 3 parts per weapon/base cut from the 3D model (Missile needs 2 pods); Creative Power Source block; damaged bases restored at the Part Assembler; recipe numbers in `tools/gen_recipes.py`; workstation FE 50k, 2k/t (config). |
 
 ## 4. What exists
@@ -84,7 +87,8 @@ with `facing` + `part`), `creative_power_source` (creative only, pushes unlimite
 large: missile_launcher, tesla), ammo (kinetic_rounds, scatter_shells, sniper_rounds, rockets, missiles, fuel_canister,
 laser_cell, empty_laser_cell, creative_ammo), 9 modules (8 general + choke_module), repair_kit, tier_upgrade_kit_t2/t3,
 turret_configurator, damaged (large) turret bases, **33 parts** (3 per base/weapon, `BastionItems.PARTS`).
-Creative tabs: Turret Bases, Weapon Modules, Ammo, Modules, Workstations & Parts (sorted by item type automatically).
+Creative tabs: Turret Bases, Weapon Modules, Ammo, Modules, Workstations, Parts (sorted by item type automatically in
+`BastionItems`; GameTest `creativeTabsSortItems` checks every item is in exactly one).
 
 **Weapons** (`data/bastion/turret_weapons/*.json`, types in `BastionWeaponTypes`):
 

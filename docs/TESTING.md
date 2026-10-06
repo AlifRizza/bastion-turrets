@@ -98,7 +98,8 @@ so a 7-damage shot lands as ~6.9.
 - [ ] GUI: tabs, list with scroll, turning preview (flat icons face you), ingredients with have/need in green/red, progress bar, status text, no overlapping text.
 
 ## Creative tabs
-- [ ] Four Bastion tabs (Forge puts mod tabs on the creative screen's next pages): Turret Bases (bases, damaged bases, repair and upgrade kits, configurator), Weapon Modules, Ammo (incl. Creative Ammo), Modules (incl. Choke Module).
+- [ ] Six Bastion tabs in this order (Forge puts mod tabs on the creative screen's next pages): Turret Bases (bases, damaged bases, repair and upgrade kits, configurator), Weapon Modules, Ammo (incl. Creative Ammo), Modules (incl. Choke Module), Workstations (the 5 stations + Creative Power Source), Parts (all 33, grouped per base/weapon).
+- [ ] No item shows up in two Bastion tabs; Bahasa Indonesia names: "Bastion: Workstation", "Bastion: Part".
 
 ## Persistence & servers
 - [ ] Leave and rejoin: tier, HP, filter, trusted list, ON/OFF, redstone mode, inventory all kept.

@@ -236,12 +236,12 @@ public class TurretSystemsTests {
         helper.succeed();
     }
 
-    /** Creative tabs: bases (+ tools), weapon modules, ammo, modules, workstations & parts apart; every Bastion item in exactly one of them. */
+    /** Creative tabs: bases (+ tools), weapon modules, ammo, modules, workstations, parts apart; every Bastion item in exactly one of them. */
     @GameTest(template = ARENA, batch = "creativeTabsSortItems")
     public static void creativeTabsSortItems(GameTestHelper helper) {
         var params = new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess());
         List<CreativeModeTab> tabs = List.of(BastionItems.TAB.get(), BastionItems.WEAPONS_TAB.get(), BastionItems.AMMO_TAB.get(), BastionItems.MODULES_TAB.get(),
-                BastionItems.WORKSHOP_TAB.get());
+                BastionItems.WORKSHOP_TAB.get(), BastionItems.PARTS_TAB.get());
         tabs.forEach(tab -> tab.buildContents(params));
         for (var entry : BastionItems.REGISTER.getEntries()) {
             long in = tabs.stream().filter(tab -> tab.contains(new ItemStack(entry.get()))).count();
@@ -252,6 +252,7 @@ public class TurretSystemsTests {
         helper.assertTrue(BastionItems.AMMO_TAB.get().contains(new ItemStack(BastionItems.CREATIVE_AMMO.get())), "Creative Ammo not with the ammo");
         helper.assertTrue(BastionItems.MODULES_TAB.get().contains(new ItemStack(BastionItems.CHOKE_MODULE.get())), "Choke not with the modules");
         helper.assertTrue(BastionItems.WORKSHOP_TAB.get().contains(new ItemStack(BastionItems.PART_ASSEMBLER.get())), "Part Assembler not in the workshop tab");
+        helper.assertTrue(BastionItems.PARTS_TAB.get().contains(new ItemStack(BastionItems.PARTS.get(0).get())), "parts not in the parts tab");
         helper.succeed();
     }
 
