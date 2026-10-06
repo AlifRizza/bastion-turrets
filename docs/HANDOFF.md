@@ -10,6 +10,13 @@ Fase 9 Workstations + Charging Station committed as `f460e59` (not yet play-test
 Committed on top (user checked in game): the "Workstations & Parts" creative tab split into "Bastion: Workstations"
 (5 stations + Creative Power Source, id `bastion_workshop`) and "Bastion: Parts" (the 33 parts, id `bastion_parts`).
 
+**Release prep (18:30, committed; repo pushed to `AlifRizza/bastion-turrets`, private):** version `0.1.0-beta.1` (beta channel; jar `bastion-1.20.1-0.1.0-beta.1.jar`,
+authors `AlifRizza`), `docs/release/` = DESCRIPTION.md (paste-ready page text), UPLOAD.md (fields, changelog, gallery
+captions, icon/banner prompts, pre-publish checks), 10 curated screenshots, `reference/` = turret crops to attach
+to the image prompts (Tesla crop: a test husk behind it was painted out). The user pushes to GitHub themselves
+(`gh` logged in as AlifRizza; planned repo `AlifRizza/bastion-turrets`). Open: Bastion has **no FE generator**, survival
+needs another FE mod (stated in the description; user not asked yet whether to add one).
+
 Next steps:
 1. Wait for the user's in-game feedback (tabs, workstations); fix what they report.
 2. Commit only when they say "commit".

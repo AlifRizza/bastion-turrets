@@ -2,10 +2,10 @@
 
 Futuristic modular turrets for Minecraft Forge 1.20.1 (mod id `bastion`). Design and roadmap: [docs/PLAN.md](docs/PLAN.md).
 
-Status: Fase 0–7 done (base, three weapons, VFX, tiers, HP, modifiers, full GUI), plus a Sniper (charged, piercing)
-and a dumb-fire Rocket Launcher (real projectile entity, filtered splash). Large Turret Base (2x2 multiblock) with a
-homing Missile Launcher (12 tubes, single or salvo mode). Fase 8: recipes and
-`en_us`/`id_id` done; optional compat (Jade, JEI, Ponder, Iris) and profiling not started.
+Status: public beta `0.1.0-beta.1` (version in `gradle.properties`). Nine weapons on two bases, tiers, HP, modules,
+targeting GUI, ammo automation and five FE workstations for survival crafting. Not done yet: final sounds,
+Jade/JEI/Ponder/Iris compat, profiling. Player-facing description: [docs/release/DESCRIPTION.md](docs/release/DESCRIPTION.md);
+upload fields, changelog and image prompts: [docs/release/UPLOAD.md](docs/release/UPLOAD.md).
 Manual test checklist: [docs/TESTING.md](docs/TESTING.md).
 
 ## Build & run
