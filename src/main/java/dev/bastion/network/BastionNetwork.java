@@ -10,7 +10,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** Single packet channel for every packet in PLAN 4.8. */
 public final class BastionNetwork {
-    private static final String PROTOCOL = "5";
+    private static final String PROTOCOL = "6";
     /** Every S->C turret packet only reaches players this close (PLAN 4.8). */
     public static final double BROADCAST_RADIUS = 96;
 
@@ -36,6 +36,8 @@ public final class BastionNetwork {
                 .encoder(RackSync::encode).decoder(RackSync::decode).consumerMainThread(RackSync::handle).add();
         CHANNEL.messageBuilder(BurnSync.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(BurnSync::encode).decoder(BurnSync::decode).consumerMainThread(BurnSync::handle).add();
+        CHANNEL.messageBuilder(WorkstationAction.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(WorkstationAction::encode).decoder(WorkstationAction::decode).consumerMainThread(WorkstationAction::handle).add();
     }
 
     public static void sendNear(ServerLevel level, BlockPos pos, Object message) {

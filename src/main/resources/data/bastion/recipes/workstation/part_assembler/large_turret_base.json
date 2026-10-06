@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:turret_base",
+  "ingredients": [
+    {
+      "item": "bastion:large_base_plating",
+      "count": 1
+    },
+    {
+      "item": "bastion:large_base_housing",
+      "count": 1
+    },
+    {
+      "item": "bastion:large_base_turntable",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:large_turret_base"
+  },
+  "time": 300,
+  "energy": 15000
+}

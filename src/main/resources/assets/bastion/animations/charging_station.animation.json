@@ -1,0 +1,98 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.charging_station.idle": {
+      "animation_length": 4,
+      "loop": true,
+      "bones": {
+        "glow_tips": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "2.0": [
+              1.12,
+              1.12,
+              1.12
+            ],
+            "4.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.charging_station.working": {
+      "animation_length": 1,
+      "loop": true,
+      "bones": {
+        "cradle": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              0,
+              -90,
+              0
+            ]
+          }
+        },
+        "glow_tips": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.25": [
+              1.25,
+              1.25,
+              1.25
+            ],
+            "0.5": [
+              1,
+              1,
+              1
+            ],
+            "0.75": [
+              1.25,
+              1.25,
+              1.25
+            ],
+            "1.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.charging_station.craft": {
+      "animation_length": 0.5,
+      "bones": {
+        "glow_plate": {
+          "scale": {
+            "0.0": [
+              1.15,
+              1,
+              1.15
+            ],
+            "0.5": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    }
+  }
+}

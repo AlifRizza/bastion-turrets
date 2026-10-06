@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:repair_kit",
+  "ingredients": [
+    {
+      "item": "minecraft:diamond",
+      "count": 4
+    },
+    {
+      "item": "minecraft:netherite_scrap",
+      "count": 4
+    },
+    {
+      "item": "bastion:tier_upgrade_kit_t2",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:tier_upgrade_kit_t3"
+  },
+  "time": 240,
+  "energy": 12000
+}

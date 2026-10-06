@@ -282,6 +282,28 @@ public final class VfxPresets {
     public static final VfxPreset PILOT_LIGHT = v -> v
             .burst(BastionParticles.EMBER.get(), 1, v.direction(), 10, 0.012f, 0.5f, 6, Curve.FLICKER, 0xFF7FB2FF);
 
+    // --- workstations (WorkstationEffects) ---------------------------------------------------------
+
+    /** Machining / printing: a few hot sparks flicking off the tool. */
+    public static final VfxPreset WORKSTATION_SPARKS = v -> v
+            .burst(BastionParticles.SPARK.get(), 3, UP, 70, 0.14f, 0.35f, 7, Curve.LINEAR, v.params().color());
+
+    /** Welding arc on the assembler: a white-blue flash and a spray of sparks. */
+    public static final VfxPreset WORKSTATION_WELD = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 0.9f, 2, Curve.PULSE, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 5, UP, 110, 0.18f, 0.35f, 9, Curve.LINEAR, 0xFFFFE0A0);
+
+    /** The ammo press bottoming out: a puff of smoke and a few sparks. */
+    public static final VfxPreset WORKSTATION_PUFF = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 3, UP, 50, 0.04f, 1.6f, 25, Curve.EASE_OUT, 0x90D8DDE2)
+            .burst(BastionParticles.SPARK.get(), 3, UP, 80, 0.12f, 0.35f, 6, Curve.LINEAR, v.params().color());
+
+    /** A craft finished: a ring of light rises off the work and a few embers. */
+    public static final VfxPreset WORKSTATION_DONE = v -> v
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), UP, 0.04f, 2.2f, 10, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.EMBER.get(), 6, UP, 60, 0.06f, 0.5f, 20, Curve.FLICKER, v.params().color())
+            .light(10, 6);
+
     // --- shared turret states -------------------------------------------------------------------
 
     /** Overheat vent: steam and heat haze (PLAN 4.4). */

@@ -305,6 +305,30 @@ def laser_fire_tail():
     L = 1.6
     return fade_out(norm(onepole_lp(sweep(L, 700, 120) * env(L, 0.005, 0.4) + noise(L, 850) * env(L, 0.005, 0.3) * 0.4, 800), 0.6), 0.2)
 
+# --- Workstations (PLAN Fase 9) --------------------------------------------------------------------
+def ws_loop():
+    L = 2.0  # loop: a low machine hum, a servo whir that swells and settles, a faint mechanical tick
+    tt = t(L + 0.05)
+    hum = (np.sin(2 * np.pi * 55 * tt) + 0.5 * np.sin(2 * np.pi * 110 * tt) + 0.2 * np.sin(2 * np.pi * 165 * tt)) * 0.3
+    whir = bp(noise(L + 0.05, 870), 600, 2400) * (0.5 + 0.5 * np.sin(2 * np.pi * 1.0 * tt)) * 0.35
+    return norm(loopable(hum + whir + crackles(L + 0.05, 871, 8, 3000, (0.02, 0.08))), 0.5)
+def ws_weld():
+    L = 0.5
+    return fade_out(norm(crackles(L, 880, 30, 2000, (0.2, 1), (0, 0.7)) + bp(noise(L, 881), 2500, 9000) * env(L, 0.01, 0.2) * 0.4, 0.6), 0.05)
+def ws_press():
+    L = 0.7
+    thump = sweep(L, 110, 45) * env(L, 0.003, 0.09)
+    clank = hp(noise(L, 890), 1800) * env(L, 0.0005, 0.03) * 0.7
+    hiss = bp(noise(L, 891), 1500, 6000) * env(L, 0.08, 0.25) * 0.35 * (t(L) > 0.05)
+    return fade_out(norm(thump + clank + hiss, 0.8), 0.08)
+def ws_done():
+    L = 0.9
+    out = np.zeros(n(L))
+    for at, f in ((0.0, 880), (0.12, 1320)):  # two-tone chime
+        tone = np.sin(2 * np.pi * f * t(L - at)) * env(L - at, 0.004, 0.25)
+        out[n(at):] += tone[:len(out) - n(at)]
+    return fade_out(norm(out, 0.6), 0.1)
+
 # --- Flamethrower --------------------------------------------------------------------------------
 def flame_ignite():
     L = 0.8
@@ -345,6 +369,7 @@ SOUNDS = {
     "tesla/zap_tail.ogg": tesla_zap_tail, **{f"tesla/crackle_{v}.ogg": (lambda v=v: tesla_crackle(v)) for v in range(2)},
     "laser/charge.ogg": laser_charge, **{f"laser/fire_{v}.ogg": (lambda v=v: laser_fire(v)) for v in range(2)},
     "laser/fire_tail.ogg": laser_fire_tail,
+    "workstation/loop.ogg": ws_loop, "workstation/weld.ogg": ws_weld, "workstation/press.ogg": ws_press, "workstation/done.ogg": ws_done,
     "flamethrower/ignite.ogg": flame_ignite, "flamethrower/loop.ogg": flame_loop, "flamethrower/burning.ogg": burning,
     "shotgun/pump.ogg": sg_pump, **{f"shotgun/shell_{v}.ogg": (lambda v=v: shell_drop(v)) for v in range(2)},
 }

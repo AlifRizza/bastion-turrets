@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -19.94,
+        -9.3
+      ],
+      "scale": [
+        0.816,
+        0.816,
+        0.816
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0.0,
+        -10.41,
+        -0.0
+      ],
+      "scale": [
+        0.386,
+        0.386,
+        0.386
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.0,
+        -19.68,
+        -0.0
+      ],
+      "scale": [
+        0.73,
+        0.73,
+        0.73
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -20.84,
+        -0.0
+      ],
+      "scale": [
+        0.773,
+        0.773,
+        0.773
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -3.59,
+        -13.41
+      ],
+      "scale": [
+        0.515,
+        0.515,
+        0.515
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -3.59,
+        -13.41
+      ],
+      "scale": [
+        0.515,
+        0.515,
+        0.515
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -16.2,
+        -0.0
+      ],
+      "scale": [
+        0.601,
+        0.601,
+        0.601
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -16.2,
+        0.0
+      ],
+      "scale": [
+        0.601,
+        0.601,
+        0.601
+      ]
+    }
+  }
+}

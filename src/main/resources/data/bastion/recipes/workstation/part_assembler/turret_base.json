@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:turret_base",
+  "ingredients": [
+    {
+      "item": "bastion:turret_base_plating",
+      "count": 1
+    },
+    {
+      "item": "bastion:turret_base_housing",
+      "count": 1
+    },
+    {
+      "item": "bastion:turret_base_turntable",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:turret_base"
+  },
+  "time": 160,
+  "energy": 5000
+}

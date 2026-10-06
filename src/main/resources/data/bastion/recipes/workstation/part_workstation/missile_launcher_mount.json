@@ -1,0 +1,20 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:missile_launcher_mount"
+  },
+  "time": 160,
+  "energy": 6000
+}

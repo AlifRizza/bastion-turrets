@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        0.76,
+        -5.3,
+        -3.31
+      ],
+      "scale": [
+        0.842,
+        0.842,
+        0.842
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -2.94,
+        0.51
+      ],
+      "scale": [
+        0.399,
+        0.399,
+        0.399
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0.96,
+        -5.54,
+        0.0
+      ],
+      "scale": [
+        0.753,
+        0.753,
+        0.753
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -5.87,
+        -1.02
+      ],
+      "scale": [
+        0.797,
+        0.797,
+        0.797
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -0.36,
+        -3.96
+      ],
+      "scale": [
+        0.532,
+        0.532,
+        0.532
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -0.36,
+        -3.96
+      ],
+      "scale": [
+        0.532,
+        0.532,
+        0.532
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        0.14,
+        -4.56,
+        -0.78
+      ],
+      "scale": [
+        0.62,
+        0.62,
+        0.62
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -0.14,
+        -4.56,
+        -0.78
+      ],
+      "scale": [
+        0.62,
+        0.62,
+        0.62
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:flamethrower_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 1
+    },
+    {
+      "item": "minecraft:dispenser",
+      "count": 1
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:flamethrower_housing"
+  },
+  "time": 100,
+  "energy": 3000
+}

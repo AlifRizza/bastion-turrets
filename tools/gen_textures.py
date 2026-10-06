@@ -131,6 +131,20 @@ MODEL_MATERIALS = {
     "laser_rifle_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "hex", "glow_strips": "emitter",
                            "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "barrel_0": "frame",
                            "focus_rings": "steel", "glow_focus": "emitter", "emitter": "steel", "glow_emitter": "emitter"},
+    # workstations (PLAN Fase 9)
+    "part_workstation": {"frame": "frame", "body": "armor", "top": "hex", "tools": "steel", "glow_drawers": "emitter",
+                         "screen": "frame", "glow_screen": "emitter", "carriage": "steel", "spindle": "frame",
+                         "glow_spindle": "emitter"},
+    "part_assembler": {"base": "hex", "frame": "frame", "glow_frame": "emitter", "turntable": "steel", "glow_turntable": "emitter",
+                       "scanner": "steel", "glow_scanner": "emitter", "mount_l": "armor", "mount_r": "armor", "arm_l": "steel",
+                       "arm_r": "steel", "fore_l": "frame", "fore_r": "frame", "glow_torch_l": "emitter", "glow_torch_r": "emitter",
+                       "console": "armor", "glow_console": "emitter"},
+    "module_workstation": {"body": "armor", "frame": "frame", "desk": "hex", "glow_body": "emitter", "glow_screen": "emitter",
+                           "gantry": "steel", "head": "frame", "glow_head": "emitter"},
+    "ammo_workstation": {"body": "armor", "frame": "frame", "table": "hex", "vents": "vent", "glow_body": "emitter",
+                         "ram": "steel", "glow_ram": "emitter"},
+    "charging_station": {"body": "armor", "plate": "hex", "glow_plate": "emitter", "cradle": "frame", "pylons": "steel",
+                         "coils": "frame", "glow_tips": "emitter"},
     "tesla_turret": {"yaw_pivot": "armor", "body": "hex", "body_frame": "frame", "glow_strips": "emitter", "column": "steel",
                      "coil": "frame", "glow_coil": "emitter", "crown": "armor", "glow_crown": "emitter", "terminal": "steel",
                      "glow_terminal": "emitter", "electrodes": "steel", "glow_electrodes": "emitter", "sensor": "steel",
@@ -590,6 +604,67 @@ def tab(img, x, y, active):
         img[y + 23 - i, x:x + 2 - i, 3] = 0
 
 
+WS_W, WS_H = 256, 236
+WS_INPUT, WS_OUTPUT, WS_PLAYER = (8, 130), (154, 130), (47, 155)  # top-left of the slot frames (WorkstationMenu - 1)
+
+
+def workstation_gui():
+    """Workstation screen background (PLAN Fase 9): the panel, title rule, the six input slots and the output (with a
+    bracket like the weapon bay), the player inventory. Lists, preview, gauges and buttons are drawn by the screen."""
+    img = np.zeros((256, 256, 4))
+    yy, _ = np.mgrid[0:WS_H, 0:WS_W]
+    img[:WS_H, :WS_W, :3] = UI_BG * (1.08 - 0.12 * yy / WS_H)[..., None] * noise((WS_H, WS_W), 0.012, seed=8)[..., None]
+    img[:WS_H, :WS_W, 3] = 1
+    img[0, :WS_W, :3] = img[WS_H - 1, :WS_W, :3] = UI_EDGE
+    img[:WS_H, 0, :3] = img[:WS_H, WS_W - 1, :3] = UI_EDGE
+    img[1, 1:WS_W - 1, :3] = img[1:WS_H - 1, 1, :3] = UI_LIGHT
+    for i in range(3):  # chamfered corners
+        for cx, cy, dx, dy in ((0, 0, 1, 1), (WS_W - 1, 0, -1, 1), (0, WS_H - 1, 1, -1), (WS_W - 1, WS_H - 1, -1, -1)):
+            for j in range(3 - i):
+                img[cy + dy * i, cx + dx * j, 3] = 0
+    rect(img, 8, 16, WS_W - 16, 1, UI_ACCENT * 0.55)  # under the title
+    rect(img, 8, 151, WS_W - 16, 1, UI_EDGE)  # station / player divider
+    ix, iy = WS_INPUT
+    for i in range(6):
+        slot(img, ix + i * 18, iy)
+    ox, oy = WS_OUTPUT
+    rect(img, ox - 3, oy - 3, 24, 24, UI_EDGE)
+    rect(img, ox - 2, oy - 2, 22, 22, UI_BG * 0.8)
+    for bx, by in ((ox - 3, oy - 3), (ox + 18, oy - 3), (ox - 3, oy + 18), (ox + 18, oy + 18)):
+        rect(img, bx, by, 3, 3, UI_ACCENT * 0.7)
+    slot(img, ox, oy)
+    px, py = WS_PLAYER
+    for row in range(3):
+        for col in range(9):
+            slot(img, px + col * 18, py + row * 18)
+    for col in range(9):
+        slot(img, px + col * 18, py + 58)
+    return img
+
+
+def creative_power_source():
+    """Creative FE block: a dark armoured cube with a glowing bolt on every face."""
+    img = np.zeros((16, 16, 4))
+    img[..., :3], img[..., 3] = GRAPHITE * 1.3 * noise((16, 16), 0.04, seed=91)[..., None], 1
+    img[0, :, :3] = img[:, 0, :3] = METAL * 0.9
+    img[15, :, :3] = img[:, 15, :3] = GRAPHITE * 0.7
+    bolt = ["....aa..", "...aa...", "..aaaa..", "....aa..", "...aa...", "..aa...."]
+    stamp(img, Sprite(bolt, {"a": rgb("4FD8FF")}), 4, 5)
+    return img
+
+
+EMPTY_CELL = Sprite(LASER_CELL.rows, {**LASER_CELL.palette, "R": GRAPHITE * 1.9, "r": GRAPHITE * 1.5, "q": GRAPHITE * 1.1,
+                                      "Y": GRAPHITE * 2.4})
+
+
+def empty_laser_cell():
+    """A Laser Cell with a dark, uncharged core."""
+    img = np.zeros((16, 16, 4))
+    for x, y in ((1, 3), (7, 1)):
+        stamp(img, EMPTY_CELL, x, y)
+    return outline(img, OUTLINE)
+
+
 def turret_gui(plain=False):
     """Turret screen background plus slot and tab sprites (PLAN 4.7). plain = Targeting/Info tabs, no slots."""
     img = np.zeros((256, 256, 4))
@@ -974,6 +1049,11 @@ TEXTURES = {
     "item/tesla_turret_e.png": lambda: paint_model("tesla_turret")[1],
     "item/fuel_canister.png": fuel_canister,
     "item/laser_cell.png": laser_cell,
+    "item/empty_laser_cell.png": empty_laser_cell,
+    "block/creative_power_source.png": creative_power_source,
+    "gui/workstation.png": workstation_gui,
+    **{f"block/{n}.png": (lambda n=n: paint_model(n)[0]) for n in ("part_workstation", "part_assembler", "module_workstation", "ammo_workstation", "charging_station")},
+    **{f"block/{n}_e.png": (lambda n=n: paint_model(n)[1]) for n in ("part_workstation", "part_assembler", "module_workstation", "ammo_workstation", "charging_station")},
     "item/laser_rifle_turret.png": lambda: paint_model("laser_rifle_turret")[0],
     "item/laser_rifle_turret_e.png": lambda: paint_model("laser_rifle_turret")[1],
     "item/damaged_large_turret_base.png": damaged_large_base,

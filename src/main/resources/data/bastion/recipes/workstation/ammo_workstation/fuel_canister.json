@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:laser_cell",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 3
+    },
+    {
+      "item": "minecraft:iron_nugget",
+      "count": 1
+    },
+    {
+      "tag": "minecraft:coals",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:fuel_canister",
+    "count": 3
+  },
+  "time": 40,
+  "energy": 300
+}

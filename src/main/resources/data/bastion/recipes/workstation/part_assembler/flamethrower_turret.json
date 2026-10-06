@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:gun_turret",
+  "ingredients": [
+    {
+      "item": "bastion:flamethrower_nozzle",
+      "count": 1
+    },
+    {
+      "item": "bastion:flamethrower_fuel_tanks",
+      "count": 1
+    },
+    {
+      "item": "bastion:flamethrower_housing",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:flamethrower_turret"
+  },
+  "time": 200,
+  "energy": 8000
+}

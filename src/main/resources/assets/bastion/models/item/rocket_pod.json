@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        11.84,
+        -5.89,
+        -15.8
+      ],
+      "scale": [
+        1.678,
+        1.678,
+        1.678
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -5.69,
+        7.93
+      ],
+      "scale": [
+        0.795,
+        0.795,
+        0.795
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        14.97,
+        -10.75,
+        0.0
+      ],
+      "scale": [
+        1.501,
+        1.501,
+        1.501
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -11.38,
+        -15.86
+      ],
+      "scale": [
+        1.59,
+        1.59,
+        1.59
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        8.25,
+        -10.07
+      ],
+      "scale": [
+        1.06,
+        1.06,
+        1.06
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        8.25,
+        -10.07
+      ],
+      "scale": [
+        1.06,
+        1.06,
+        1.06
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        2.14,
+        -8.85,
+        -12.14
+      ],
+      "scale": [
+        1.236,
+        1.236,
+        1.236
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -2.14,
+        -8.85,
+        -12.14
+      ],
+      "scale": [
+        1.236,
+        1.236,
+        1.236
+      ]
+    }
+  }
+}

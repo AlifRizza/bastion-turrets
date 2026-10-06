@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:repair_kit",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 6
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 1
+    },
+    {
+      "item": "minecraft:glass_pane",
+      "count": 1
+    },
+    {
+      "item": "minecraft:comparator",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:turret_configurator"
+  },
+  "time": 80,
+  "energy": 1500
+}

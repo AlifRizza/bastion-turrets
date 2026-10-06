@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:rocket_launcher_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:dispenser",
+      "count": 2
+    },
+    {
+      "item": "minecraft:firework_rocket",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:rocket_pod"
+  },
+  "time": 140,
+  "energy": 5000
+}

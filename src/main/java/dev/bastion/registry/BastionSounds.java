@@ -60,6 +60,11 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> FLAMETHROWER_LOOP = register("flamethrower.loop");
     public static final RegistryObject<SoundEvent> BURNING = register("flamethrower.burning");
 
+    public static final RegistryObject<SoundEvent> WORKSTATION_LOOP = register("workstation.loop");
+    public static final RegistryObject<SoundEvent> WORKSTATION_WELD = register("workstation.weld");
+    public static final RegistryObject<SoundEvent> WORKSTATION_PRESS = register("workstation.press");
+    public static final RegistryObject<SoundEvent> WORKSTATION_DONE = register("workstation.done");
+
     public static final RegistryObject<SoundEvent> SHOTGUN_FIRE = register("shotgun.fire");
     public static final RegistryObject<SoundEvent> SHOTGUN_FIRE_TAIL = register("shotgun.fire_tail");
     public static final RegistryObject<SoundEvent> SHOTGUN_PUMP = register("shotgun.pump");

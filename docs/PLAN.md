@@ -532,6 +532,27 @@ Kerjakan berurutan. Jangan lanjut sebelum acceptance criteria fase saat ini terp
 - Profiling performa, final balancing, README + kredit.
 - **Selesai jika**: checklist performa di bagian 9 lolos, tidak ada crash di server dedicated (`runServer`), tidak ada error di log saat load.
 
+
+### Fase 9 — Survival: Workstations & Parts (permintaan user 2026-10-06)
+Semua item turret dibuat lewat 5 station bertenaga **FE**; resep crafting table untuk turret, weapon, module, ammo dihapus (crafting table hanya membuat workstation). Item baru masuk tab creative sendiri "Bastion: Workstations & Parts".
+
+| Workstation | Ukuran (lebar x dalam x tinggi) | Mode | Membuat |
+|---|---|---|---|
+| Part Workstation | 2x1x2 | berwaktu | semua part |
+| Part Assembler | 2x2x2 | berwaktu | turret base & weapon module dari part; memulihkan damaged base |
+| Module Workstation | 1x1x2 | instan (pemain) + berwaktu (otomasi) | semua module, repair kit, upgrade kit, configurator |
+| Ammo Workstation | 1x1x2 | instan + berwaktu | semua ammo, Fuel Canister, Empty Laser Cell |
+| Charging Station | 1x1x1 | berwaktu | mengisi ammo berenergi dengan FE: Laser Cell (nanti Plasma Cell) |
+
+- **Model**: bukan block polos; model GeckoLib (meja kerja dengan gantry, assembler dengan lengan robot, printer modul, mesin press ammo), animasi `idle`, `working` (loop saat memproses) dan `craft` (sekali saat item jadi), plus VFX percikan/cahaya dan suara.
+- **GUI** full custom: tab kategori, daftar resep, preview 3D berputar, daftar bahan (punya/butuh), 6 slot input + 1 output, bar energi, progress, tombol Craft (station instan).
+- **Proses berwaktu**: resep terpilih tetap aktif; selama bahan di slot input lengkap, output muat dan ada FE, station memproses (FE per tick) lalu mengeluarkan hasil. Bahan masuk lewat hopper/belt/arm (hanya bahan resep terpilih), hasil diambil dari output, dari blok mana pun.
+- **Instan**: tombol Craft memakai bahan dari slot input lalu inventory pemain, FE dari station, hasil langsung ke pemain.
+- **Part**: set sendiri per weapon/base (3 part masing-masing, Missile Launcher butuh 2 Missile Pod). Part adalah potongan model 3D weapon/base itu sendiri (bone tertentu), jadi itemnya tampil 3D.
+- **Energi**: kapasitas & input maks station di config; waktu & FE tiap resep di JSON resep (`bastion:workstation`).
+- **Creative Power Source** (creative saja): blok yang mengalirkan FE tak terbatas ke blok di sebelahnya, untuk tes tanpa mod generator.
+
+
 ---
 ## 9. Aturan Kerja untuk Claude Code
 

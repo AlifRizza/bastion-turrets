@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:large_turret_base",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:large_base_turntable"
+  },
+  "time": 160,
+  "energy": 6000
+}

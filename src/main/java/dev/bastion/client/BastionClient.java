@@ -5,7 +5,9 @@ import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.particle.VfxParticle.Behavior;
 import dev.bastion.client.render.RocketRenderer;
 import dev.bastion.client.render.TurretBaseRenderer;
+import dev.bastion.client.render.WorkstationRenderer;
 import dev.bastion.client.screen.TurretScreen;
+import dev.bastion.client.screen.WorkstationScreen;
 import dev.bastion.registry.BastionBlockEntities;
 import dev.bastion.registry.BastionEntities;
 import dev.bastion.registry.BastionParticles;
@@ -26,12 +28,16 @@ import net.minecraftforge.registries.RegistryObject;
 public final class BastionClient {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> MenuScreens.register(BastionMenus.TURRET.get(), TurretScreen::new));
+        event.enqueueWork(() -> {
+            MenuScreens.register(BastionMenus.TURRET.get(), TurretScreen::new);
+            MenuScreens.register(BastionMenus.WORKSTATION.get(), WorkstationScreen::new);
+        });
     }
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BastionBlockEntities.TURRET_BASE.get(), context -> new TurretBaseRenderer());
+        event.registerBlockEntityRenderer(BastionBlockEntities.WORKSTATION.get(), context -> new WorkstationRenderer());
         event.registerEntityRenderer(BastionEntities.TURRET_HITBOX.get(), NoopRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_ROCKET.get(), RocketRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer(context, "turret_missile"));

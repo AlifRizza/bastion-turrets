@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:kinetic_rounds",
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 1
+    },
+    {
+      "item": "minecraft:gunpowder",
+      "count": 1
+    },
+    {
+      "item": "minecraft:iron_nugget",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:kinetic_rounds",
+    "count": 16
+  },
+  "time": 40,
+  "energy": 400
+}

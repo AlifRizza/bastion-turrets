@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SWS",
+    "RDR",
+    "BIB"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:sticky_piston"
+    },
+    "W": {
+      "item": "bastion:part_workstation"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "bastion:part_assembler",
+    "count": 1
+  }
+}

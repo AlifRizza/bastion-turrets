@@ -1,0 +1,343 @@
+{
+ "turret_base_plating": {
+  "model": "turret_base",
+  "texture": "block/turret_base",
+  "bones": [
+   "plinth",
+   "buttress"
+  ]
+ },
+ "turret_base_housing": {
+  "model": "turret_base",
+  "texture": "block/turret_base",
+  "bones": [
+   "body",
+   "glow_windows",
+   "status_light"
+  ]
+ },
+ "turret_base_turntable": {
+  "model": "turret_base",
+  "texture": "block/turret_base",
+  "bones": [
+   "deck",
+   "energy_ring",
+   "weapon_mount"
+  ]
+ },
+ "large_base_plating": {
+  "model": "large_turret_base",
+  "texture": "block/large_turret_base",
+  "bones": [
+   "plinth"
+  ]
+ },
+ "large_base_housing": {
+  "model": "large_turret_base",
+  "texture": "block/large_turret_base",
+  "bones": [
+   "body",
+   "glow_windows",
+   "status_light"
+  ]
+ },
+ "large_base_turntable": {
+  "model": "large_turret_base",
+  "texture": "block/large_turret_base",
+  "bones": [
+   "deck",
+   "energy_ring",
+   "weapon_mount"
+  ]
+ },
+ "gun_barrel": {
+  "model": "gun_turret",
+  "texture": "item/gun_turret",
+  "bones": [
+   "barrel_0",
+   "glow_barrel",
+   "muzzle_brake",
+   "bore"
+  ]
+ },
+ "gun_receiver": {
+  "model": "gun_turret",
+  "texture": "item/gun_turret",
+  "bones": [
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r"
+  ]
+ },
+ "gun_mount": {
+  "model": "gun_turret",
+  "texture": "item/gun_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "machine_gun_barrels": {
+  "model": "machine_gun_turret",
+  "texture": "item/machine_gun_turret",
+  "bones": [
+   "barrel_cluster",
+   "glow_barrels"
+  ]
+ },
+ "machine_gun_receiver": {
+  "model": "machine_gun_turret",
+  "texture": "item/machine_gun_turret",
+  "bones": [
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r",
+   "fan"
+  ]
+ },
+ "machine_gun_mount": {
+  "model": "machine_gun_turret",
+  "texture": "item/machine_gun_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "shotgun_barrels": {
+  "model": "shotgun_turret",
+  "texture": "item/shotgun_turret",
+  "bones": [
+   "barrel_0",
+   "muzzle_shroud",
+   "bores",
+   "glow_barrel",
+   "pump"
+  ]
+ },
+ "shotgun_receiver": {
+  "model": "shotgun_turret",
+  "texture": "item/shotgun_turret",
+  "bones": [
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r"
+  ]
+ },
+ "shotgun_mount": {
+  "model": "shotgun_turret",
+  "texture": "item/shotgun_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "sniper_barrel": {
+  "model": "sniper_turret",
+  "texture": "item/sniper_turret",
+  "bones": [
+   "barrel_0",
+   "glow_barrel",
+   "muzzle_brake",
+   "bore"
+  ]
+ },
+ "sniper_receiver": {
+  "model": "sniper_turret",
+  "texture": "item/sniper_turret",
+  "bones": [
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r"
+  ]
+ },
+ "sniper_scope_mount": {
+  "model": "sniper_turret",
+  "texture": "item/sniper_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "rocket_pod": {
+  "model": "rocket_launcher_turret",
+  "texture": "item/rocket_launcher_turret",
+  "bones": [
+   "tubes",
+   "bores",
+   "rocket_0",
+   "rocket_1",
+   "rocket_2",
+   "rocket_3"
+  ]
+ },
+ "rocket_pod_housing": {
+  "model": "rocket_launcher_turret",
+  "texture": "item/rocket_launcher_turret",
+  "bones": [
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r"
+  ]
+ },
+ "rocket_launcher_mount": {
+  "model": "rocket_launcher_turret",
+  "texture": "item/rocket_launcher_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "missile_pod": {
+  "model": "missile_launcher_turret",
+  "texture": "item/missile_launcher_turret",
+  "bones": [
+   "pod_l",
+   "pod_l_bores",
+   "glow_pod_l",
+   "missile_0",
+   "missile_1",
+   "missile_2",
+   "missile_3",
+   "missile_4",
+   "missile_5"
+  ]
+ },
+ "missile_guidance_core": {
+  "model": "missile_launcher_turret",
+  "texture": "item/missile_launcher_turret",
+  "bones": [
+   "body",
+   "sensor",
+   "glow_lens",
+   "glow_strips"
+  ]
+ },
+ "missile_launcher_mount": {
+  "model": "missile_launcher_turret",
+  "texture": "item/missile_launcher_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle"
+  ]
+ },
+ "tesla_coil": {
+  "model": "tesla_turret",
+  "texture": "item/tesla_turret",
+  "bones": [
+   "column",
+   "coil",
+   "glow_coil"
+  ]
+ },
+ "tesla_crown": {
+  "model": "tesla_turret",
+  "texture": "item/tesla_turret",
+  "bones": [
+   "crown",
+   "glow_crown",
+   "terminal",
+   "glow_terminal"
+  ]
+ },
+ "tesla_capacitor_bank": {
+  "model": "tesla_turret",
+  "texture": "item/tesla_turret",
+  "bones": [
+   "yaw_pivot",
+   "body",
+   "body_frame",
+   "glow_strips",
+   "electrodes",
+   "glow_electrodes",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "flamethrower_nozzle": {
+  "model": "flamethrower_turret",
+  "texture": "item/flamethrower_turret",
+  "bones": [
+   "barrel_0",
+   "glow_barrel",
+   "nozzle",
+   "bore",
+   "igniter",
+   "glow_igniter"
+  ]
+ },
+ "flamethrower_fuel_tanks": {
+  "model": "flamethrower_turret",
+  "texture": "item/flamethrower_turret",
+  "bones": [
+   "tanks",
+   "feed"
+  ]
+ },
+ "flamethrower_housing": {
+  "model": "flamethrower_turret",
+  "texture": "item/flamethrower_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r",
+   "sensor",
+   "glow_lens"
+  ]
+ },
+ "laser_focus_barrel": {
+  "model": "laser_rifle_turret",
+  "texture": "item/laser_rifle_turret",
+  "bones": [
+   "barrel_0",
+   "focus_rings",
+   "glow_focus"
+  ]
+ },
+ "laser_emitter_crystal": {
+  "model": "laser_rifle_turret",
+  "texture": "item/laser_rifle_turret",
+  "bones": [
+   "emitter",
+   "glow_emitter"
+  ]
+ },
+ "laser_housing": {
+  "model": "laser_rifle_turret",
+  "texture": "item/laser_rifle_turret",
+  "bones": [
+   "yaw_pivot",
+   "axle",
+   "body",
+   "body_frame",
+   "glow_strips",
+   "vent_l",
+   "vent_r",
+   "sensor",
+   "glow_lens"
+  ]
+ }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:gun_turret",
+  "ingredients": [
+    {
+      "item": "bastion:sniper_barrel",
+      "count": 1
+    },
+    {
+      "item": "bastion:sniper_receiver",
+      "count": 1
+    },
+    {
+      "item": "bastion:sniper_scope_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:sniper_turret"
+  },
+  "time": 200,
+  "energy": 8000
+}

@@ -1,0 +1,108 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.module_workstation.idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "gantry": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.module_workstation.working": {
+   "animation_length": 2,
+   "loop": true,
+   "bones": {
+    "gantry": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       -3
+      ],
+      "1.0": [
+       0,
+       0,
+       0
+      ],
+      "1.5": [
+       0,
+       0,
+       2.5
+      ],
+      "2.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "head": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.5": [
+       -4,
+       0,
+       0
+      ],
+      "1.0": [
+       4,
+       0,
+       0
+      ],
+      "1.5": [
+       -4,
+       0,
+       0
+      ],
+      "2.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.module_workstation.craft": {
+   "animation_length": 0.5,
+   "bones": {
+    "head": {
+     "position": {
+      "0.0": [
+       0,
+       1.2,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

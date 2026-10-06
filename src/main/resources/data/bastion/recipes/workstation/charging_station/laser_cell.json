@@ -1,0 +1,16 @@
+{
+  "type": "bastion:workstation",
+  "station": "charging_station",
+  "category": "bastion:laser_cell",
+  "ingredients": [
+    {
+      "item": "bastion:empty_laser_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:laser_cell"
+  },
+  "time": 60,
+  "energy": 3000
+}

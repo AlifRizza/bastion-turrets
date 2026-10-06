@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:rockets",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 3
+    },
+    {
+      "item": "minecraft:tnt",
+      "count": 1
+    },
+    {
+      "item": "minecraft:firework_rocket",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:rockets",
+    "count": 4
+  },
+  "time": 60,
+  "energy": 800
+}

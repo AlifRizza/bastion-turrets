@@ -359,5 +359,41 @@
         "attenuation_distance": 96
       }
     ]
+  },
+  "workstation.loop": {
+    "subtitle": "subtitles.bastion.workstation.loop",
+    "sounds": [
+      {
+        "name": "bastion:workstation/loop",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "workstation.weld": {
+    "subtitle": "subtitles.bastion.workstation.weld",
+    "sounds": [
+      {
+        "name": "bastion:workstation/weld",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "workstation.press": {
+    "subtitle": "subtitles.bastion.workstation.press",
+    "sounds": [
+      {
+        "name": "bastion:workstation/press",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "workstation.done": {
+    "subtitle": "subtitles.bastion.workstation.done",
+    "sounds": [
+      {
+        "name": "bastion:workstation/done",
+        "attenuation_distance": 16
+      }
+    ]
   }
 }

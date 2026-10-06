@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        -0.71,
+        -12.06,
+        -4.84
+      ],
+      "scale": [
+        1.009,
+        1.009,
+        1.009
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -6.15,
+        -0.48
+      ],
+      "scale": [
+        0.478,
+        0.478,
+        0.478
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -0.9,
+        -11.61,
+        -0.0
+      ],
+      "scale": [
+        0.903,
+        0.903,
+        0.903
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -12.29,
+        0.96
+      ],
+      "scale": [
+        0.956,
+        0.956,
+        0.956
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -2.74,
+        -7.75
+      ],
+      "scale": [
+        0.637,
+        0.637,
+        0.637
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -2.74,
+        -7.75
+      ],
+      "scale": [
+        0.637,
+        0.637,
+        0.637
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        -0.13,
+        -9.57,
+        0.73
+      ],
+      "scale": [
+        0.744,
+        0.744,
+        0.744
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        0.13,
+        -9.57,
+        0.73
+      ],
+      "scale": [
+        0.744,
+        0.744,
+        0.744
+      ]
+    }
+  }
+}

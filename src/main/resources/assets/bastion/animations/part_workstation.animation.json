@@ -1,0 +1,112 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.part_workstation.idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "screen": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "2.0": [
+       0,
+       0.15,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.part_workstation.working": {
+   "animation_length": 2,
+   "loop": true,
+   "bones": {
+    "carriage": {
+     "position": {
+      "0.0": [
+       0,
+       -1,
+       0
+      ],
+      "0.5": [
+       -5,
+       -1.2,
+       0
+      ],
+      "1.0": [
+       0,
+       -1,
+       0
+      ],
+      "1.5": [
+       5,
+       -1.2,
+       0
+      ],
+      "2.0": [
+       0,
+       -1,
+       0
+      ]
+     }
+    },
+    "spindle": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "2.0": [
+       0,
+       -1440,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.part_workstation.craft": {
+   "animation_length": 0.6,
+   "bones": {
+    "carriage": {
+     "position": {
+      "0.0": [
+       0,
+       1.5,
+       0
+      ],
+      "0.6": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "screen": {
+     "scale": {
+      "0.0": [
+       1.06,
+       1.06,
+       1.06
+      ],
+      "0.6": [
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  }
+ }
+}

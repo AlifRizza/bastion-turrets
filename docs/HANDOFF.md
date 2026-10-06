@@ -1,256 +1,201 @@
-# Bastion Turrets — Session Handoff (2026-10-06, 14:00 WIB)
+# Bastion Turrets — Session Handoff (2026-10-06, 17:55 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 
 ---
 
-## 0. Where we stopped (do this next)
+## 0. Where we stopped
 
-**Done 16:45:** charged weapons keep their charge on moving targets (hold at full until aligned; only losing the
-target resets it); the charging laser pointer follows the barrel (Hitscan.trace, the server's ray). **Weapon-specific
-modules**: ModifierEffect gained `spread` and `weapons` (ids it fits; empty = all); TurretInventory refuses a module
-next to another weapon and ignores it after a swap (red slot in the GUI). First one: **Choke Module** (Shotgun, spread
--40%). User plan, not decided: weapon module tiers Mk1/Mk2/Mk3 (everything now = Mk1); ask what each tier gives before
-building. 47 GameTests.
+**Just built, not committed, not yet play-tested by the user: Fase 9 Workstations + Charging Station** (~156 changed /
+new files on top of commit `f1819a3`). The user ran `runClient` at 17:50 (clean log) but has not reported back.
 
-**Done 16:00: Laser Rifle** (1x1): Laser Cell ammo (no recipe yet: user plans empty cells + an FE charging
-station later), charge 50 t with light gathering at the emitter (LaserChargeRenderer orb + converging sparks, focus_rings
-spin via WeaponAnimatable.focusAngle), one beam (BeamRenderer) through every valid target, stops at blocks, aims at the
-body (TargetSelector.firstVisible) so the beam stays at body height through a line. 44 GameTests. Scene: `-Pshowcase=laser`.
-Scorch marks from the flamethrower now grow instead of stacking (DecalRenderer.addOrGrow), user approved.
+Next steps:
+1. Wait for the user's in-game feedback on the workstations; fix what they report.
+2. Commit only when they say "commit".
+3. Open items the user mentioned for later (do not build unasked):
+   - **Plasma Cell** + the turret that uses it (charged at the Charging Station: one line in `CHARGE`, `tools/gen_recipes.py`).
+   - **Weapon module tiers Mk1/Mk2/Mk3** (all current = Mk1). The user has **not decided** what each tier gives:
+     ask first. Options offered: pure stats / stronger ability per tier / extra module slots.
+   - **3x3x1 large base** (will reuse the multiblock code).
 
-**Done 15:15: Tesla Coil + Flamethrower** (user picks: Tesla runs on **Forge Energy**; Flamethrower uses a new
-**Fuel Canister**, hits **every valid target in a cone**, applies a **custom burn**). Not play-tested by the user yet;
-checklist in `docs/TESTING.md` ("Tesla Coil & Flamethrower"). Visual check: `-Pshowcase=elemental -PshowcaseWorld=<scratch
-copy of New World>` (ElementalShowcase). Defaults picked without asking (tell the user): a lone target takes both bolts
-(like the missile salvo rule); Flamethrower ignores fire-immune mobs; water/rain put the burn out; burn 1.5/s for 4 s;
-FE numbers 60k capacity / 1k FE/t / 3k per discharge; energy is lost when the Tesla module is removed.
-
-Earlier (still relevant):
-
-**In progress: Create automation test — mechanical arm loading turrets directly (no funnel/chute).**
-
-> **Update 14:07:** the user confirmed in game that the **powered mechanical arm loads turrets directly** (no
-> funnel) — works. Belt → sideways funnel → turret does not: Create 6 funnels only take items from a belt end when
-> they face UP (`FunnelBlockEntity.supportsDirectBeltInput`). The sideways option is a **belt funnel**: funnel in
-> the block above a belt segment, on the turret's side, so the turret sits 1 block higher than the belt.
-> Belt funnel confirmed working by the user. **Fixed 14:22:** funnels could not be placed on a turret's side
-> because the hitbox entity (LivingEntity → `blocksBuilding = true`) overlapped the funnel's shape; now
-> `blocksBuilding = false`. Regression test `src/dev/.../CreatePlacementTests` (36 GameTests pass).
-
-1. The user is fixing the test contraption by hand in the dev world **`run/saves/showcase`** (shown as "New World" in the
-   world list — it is a copy; pick the most recently played one). The rig sits at **x 0..12, y 150, z 0..35** (sky platform).
-2. **Wait for the user to say the contraption is fixed.** Then test in that same world. **Do NOT run any showcase
-   that re-copies the world** (`rm -rf run/saves/showcase && cp -R "run/saves/New World" ...` — every showcase command
-   used so far does this; it would wipe the user's work). Write a new scene that opens `showcase` as-is, or ask the
-   user to run `/bastiondev automation report` in game.
-3. Goal to verify: **a mechanical arm puts ammo straight into each turret** (small base and the 2x2 large base, any
-   of its 4 blocks), with no funnel/chute on the turret.
-
-What exists for this:
-- `src/main/java/dev/bastion/compat/create/CreateCompat.java` registers arm interaction point type
-  **`bastion:turret`** (any `TurretBaseBlock`; uses Create's default `ArmInteractionPoint`, which talks to the block's
-  `ITEM_HANDLER` capability = `AmmoOnlyItemHandler`; large-base parts forward via `TurretPartBlockEntity`).
-  Loaded only if `ModList.isLoaded("create")` (in `Bastion` constructor). Verified in log:
-  `arm type bastion:turret registered: true`.
-- Create is now **compileOnly** for main (optional dep in `mods.toml`, `mandatory=false`, `ordering="AFTER"`) and
-  still **runtimeOnly** for dev runs. Dev source set also compileOnly Create + Ponder + Flywheel.
-- Test rig builder `src/dev/java/dev/bastion/dev/AutomationRig.java`, commands in `DevCommands`:
-  `/bastiondev automation` (builds 7 lanes 3 blocks east of you) and `/bastiondev automation report`
-  (per lane: ammo in turret, loaded missile tubes, ammo left in chest, belt direction/speed).
-  Lane = chest (y+2) → andesite funnel EXTRACTING facing DOWN (y+1) drops items on belt start → 5-block belt east →
-  mechanical arm at (x+5, z+1) TAKE from belt end, DEPOSIT into turret at x+6 (arm points set by loading
-  `InteractionPoints` NBT). Lane 7 = belt → andesite funnel (facing WEST, attached to turret) → turret, no arm.
-  Lanes: Gun, MG, Shotgun, Sniper, Rocket, Missile (2x2), Gun-with-funnel. A belt-direction self-check flips a
-  lane's creative motor if its belt runs west.
-- Scene `-Pshowcase=automation` (`AutomationShowcase.java`) — **re-copies the world, see warning above.**
-
-Findings from the first automated run (13:50):
-- Belts run east, funnels extract from the chests (chest counts drop), items ride the belts.
-- **0 ammo arrived in every turret.** User diagnosis: **the arms had no rotational power** (my creative motor placed
-  *under* the arm, facing UP, does not drive it). Funnel lane also delivered 0: items queued at the belt end and the
-  funnel did not take them (cause not yet known — the user says an arm can feed a turret through a funnel; what the
-  user wants is the arm feeding the turret directly).
-- `AmmoOnlyItemHandler` itself looks correct (insert → `TurretInventory.insertItem(AMMO_START+i)`, validity = mounted
-  weapon's ammo tag or Creative Ammo). If insertion still fails once the arm is powered, check: arm range/target
-  validity (`ArmInteractionPoint.isValid`), the `Direction.UP` capability query, and that the target pos is the core
-  or a part of the turret.
-
-Later (user said "for later"): **turret assembler and ammo assembler stations** (each turret and ammo type will be
-built in its own crafting station instead of the crafting table). Also a **3x3x1 large base** is planned.
+Settled earlier today (no action needed): the Create mechanical arm loads turrets directly (user confirmed); a belt
+funnel on a raised turret works; funnels can be placed on turret sides (hitbox `blocksBuilding = false`).
 
 ---
 
 ## 1. Project basics
 
-- Minecraft Forge **1.20.1**, Forge 47.4.26 (min range `[47.2,)`), Parchment 2023.09.03, **GeckoLib 4.8.4**, Java 17, Gradle 8.8.
-- Mod id `bastion`, package `dev.bastion`, project root `/Users/alifrizzaz/Documents/Minecraft Modding/Turret`. Git repo since 2026-10-06 (branch `main`, no remote); commit only when the user asks. `run/`, `build/` and the third-party `/references/` are ignored.
-- Build/run: `./gradlew build`, `./gradlew runClient`, `./gradlew runGameTestServer` (35 tests), `./gradlew runServer`.
-- Dev runs include `src/dev` (never in the jar): dev commands + scripted screenshot scenes.
+- Minecraft Forge **1.20.1**, Forge 47.4.26 (min `[47.2,)`), Parchment 2023.09.03, **GeckoLib 4.8.4**, Java 17, Gradle 8.8.
+- Mod id `bastion`, package `dev.bastion`, root `/Users/alifrizzaz/Documents/Minecraft Modding/Turret`.
+- **Git** since 2026-10-06: branch `main`, no remote, commits `df3660b` (initial), `f1819a3` (charge tracking + Choke
+  Module). Commit **only when the user asks**. Ignored: `run/`, `build/`, `.gradle/`, the third-party `/references/`.
+- Build/run: `./gradlew build`, `./gradlew runClient`, `./gradlew runGameTestServer` (**54 tests**), `./gradlew runServer`.
+- Dev runs include `src/dev` (never in the jar): dev commands, dev-only GameTests, scripted screenshot scenes.
 - Dev runtime mods: Create 6.0.8 + Ponder + Flywheel + Registrate + MixinExtras (runtimeOnly), **ToroHealth** damage
-  indicators (configuration `clientDevMods`, added to **runClient only** — client-only mods crash server/GameTest runs).
-- Language: user writes Indonesian or English; answer in the language of their message. Code, comments, docs in English.
-- The user has ADHD-mode/ponytail output preferences active (short, action-first answers; minimal code).
+  numbers (configuration `clientDevMods`, **runClient only**: client-only mods crash server/GameTest runs).
+- Language: answer in the language of the user's message (Indonesian or English). Code, comments, docs in English.
+- The user has ADHD-mode + ponytail output styles on: action first, short, minimal code.
 
 ## 2. Hard rules (CLAUDE.md + PLAN §1, §9)
 
-- Read `docs/PLAN.md` before work; do only what is asked.
-- **NO-VANILLA visuals**: no vanilla particles, sounds, textures, explosion visuals, GUI textures. Everything comes
-  from our generators (`tools/`) and the VFX framework.
-- No copying GPL code (reference repos in `references/` are for study only).
+- Read `docs/PLAN.md` before work; do only what is asked. Ask before guessing gameplay (PLAN 9.7).
+- **NO-VANILLA visuals**: no vanilla particles, sounds, textures, explosion visuals, GUI textures, vanilla fire.
+  Everything comes from our generators (`tools/`) and the VFX framework.
+- No copying GPL code (`references/` is study only).
 - Strict client/server split (client code only in `client` packages, reached via `DistExecutor`/client events).
-- Balance numbers in JSON (`data/bastion/turret_weapons`, `turret_modifiers`) or config, not hardcoded.
-- After each phase: `./gradlew build` passes + write an in-game test checklist (`docs/TESTING.md`).
-- Never write `eula=true` for the user. Never bypass macOS TCC.
+- Balance numbers in JSON / config / `tools/gen_recipes.py`, never hardcoded.
+- After each feature: `./gradlew build` passes + a checklist in `docs/TESTING.md`.
+- Never write `eula=true`. Never bypass macOS TCC or the screen lock.
+- **Never overwrite `run/saves/showcase`**: it holds the user's hand-built Create rig. Screenshot scenes run in a
+  scratch copy: `cp -R "run/saves/New World" run/saves/showcase_fx` then `-PshowcaseWorld=showcase_fx`, delete after.
 
 ## 3. Decisions (user-confirmed unless marked)
 
-| When | Decision |
+| When (2026-10-06) | Decision |
 |---|---|
-| Fase 0/1 | Create only as dev runtime (now also optional compileOnly compat). Mined base keeps tier + inventory (shulker-style). GUI 216x200, no text overlap. |
-| 06 morning | Creative Ammo item (creative-only, fits every weapon, never used up). `/bastiondev zombie [hp] [count]` (default 500 HP, sun-proof). ToroHealth for damage numbers. |
-| 06 09:05 | Hitbox must not block clicks on the base; zombies must attack turrets (`TurretAggro`, config `mobsAttackTurrets`). GUI state = **lamp** not text; all GUI text auto-fits. Players can no longer melee turrets (only mobs/arrows/explosions) — tell user if PvP needs melee. |
-| 06 11:00 | **Redesign**: models uniform **gunmetal + one cyan glow** (`EmissiveLayer.MODEL_GLOW`), per-weapon colours only in VFX. Base = **1 full block**, weapons ~1 block. Bases mount on **floor, wall, ceiling** (blockstate `FACING`). Barrels longer, muzzle ends slim. |
-| 06 11:45 | **Sniper**: charge shot (30 ticks, laser sight, pierces 1 extra = 2 targets). **Rocket Launcher**: dumb-fire projectile, splash only hits valid targets, min range 4. New ammo items Sniper Rounds + Rockets. |
-| 06 12:10 | Custom rocket explosion (fireball/blast smoke/flame/dust ring/scorch). Rocket tubes empty individually and reload. |
-| 06 13:10 | **Large Turret Base 2x2x1**, **floor only**. **Module sizes separate** (big modules only on large base, small only on standard). **Missile Launcher**: 6+6 tubes, yaw only, fixed 30° elevation, homing missiles, GUI **Mode: Single / Salvo**; salvo waits for all 12, then **spreads evenly over all targets in range; one target gets all 12**. Reload one tube at a time. |
-| 06 14:35 | **Tesla Coil** (2x2 base, FE, zaps 2 random valid targets, custom lightning) and **Flamethrower** (1x1, Fuel Canister, cone hits all valid targets, custom burn, custom fire particles, no vanilla fire). |
-| 06 15:45 | **Laser Rifle** (1x1): Laser Cell ammo (empty cell + FE charging station later), single heavy shot, pierces only valid targets, stops at blocks, charge with light gathering at the barrel tip. |
-| defaults, not confirmed | Mismatched ammo stays but never fires. Precision Lock x1.5 stacks with headshot x1.5. Default targets Hostile+Boss, players all-except-trusted. T1 destroyed → Damaged (Large) Turret Base (craft back with repair kit(s)). Repair kit 40% HP. Turrets never shoot turrets. Spectators can't open GUI. Large base HP x2.5 (config). GeckoLib 4.8.4, Forge min 47.2, ARR license, vfxQuality HIGH. |
+| Fase 0/1 | Create only as dev runtime (+ optional compileOnly compat). Mined base keeps tier + inventory. GUI 216x200, no text overlap. |
+| morning | Creative Ammo (creative-only, fits every weapon, never used up). `/bastiondev zombie [hp] [count]`. ToroHealth. |
+| 09:05 | Hitbox must not block clicks; zombies attack turrets (`TurretAggro`). GUI state = lamp; all GUI text auto-fits. Players cannot melee turrets. |
+| 11:00 | Redesign: uniform **gunmetal + one cyan glow**, per-weapon colours only in VFX. Base = 1 block, weapons ~1 block. Floor/wall/ceiling mounting. |
+| 11:45 | Sniper: charge shot, pierces 2. Rocket Launcher: dumb-fire, splash only valid targets, min range 4. Sniper Rounds + Rockets. |
+| 12:10 | Custom rocket explosion; rocket tubes empty one by one and reload. |
+| 13:10 | **Large Turret Base 2x2x1**, floor only; module sizes separate. **Missile Launcher**: 6+6 tubes, yaw only, fixed 30°, homing, Mode Single/Salvo, salvo spreads evenly (one target gets all). |
+| 14:10 | Create arm loads turrets directly (no funnel). |
+| 14:35 | **Tesla Coil** (2x2, **FE**, zaps 2 random valid targets, custom lightning). **Flamethrower** (1x1, **Fuel Canister**, cone hits all valid targets, **custom burn**). |
+| 15:30 | Flamethrower scorch marks grow instead of stacking. |
+| 15:45 | **Laser Rifle** (1x1): Laser Cell ammo, single heavy shot, pierces only valid targets, stops at blocks, light gathers at the tip while charging. |
+| 16:11 | Aiming laser and beam must line up, straight out of the barrel. Charged weapons must not restart the charge on moving targets. |
+| 16:40 | Weapon-specific modules; first: **Choke Module** (Shotgun, spread -40%). Mk1-3 weapon tiers planned, bonuses **undecided**. |
+| 16:45 | Creative tabs split: Turret Bases (+tools), Weapon Modules, Ammo, Modules (+ Workstations & Parts later). |
+| 17:01 | **Fase 9 Workstations** (sizes w x d x h): Part Workstation 2x1x2 + Part Assembler 2x2x2 (timed), Module Workstation 1x1x2 + Ammo Workstation 1x1x2 (instant for the player + timed for automation), all on **FE**; crafting-table recipes removed; **own part set per weapon**; GeckoLib models with working animations; full custom GUI; automation-friendly. |
+| 17:36 | **Charging Station 1x1x1** charges energy ammo (Laser Cell now, Plasma Cell later). |
+| defaults, **not confirmed** | Mismatched ammo stays but never fires. Precision Lock x1.5 stacks with headshot. Default targets Hostile+Boss. T1 destroyed → damaged base. Repair kit 40%. Turrets never shoot turrets. Large base HP x2.5. Tesla: lone target takes both bolts; 60k/1k per tick/3k per shot; energy lost when the module is removed. Flamethrower ignores fire-immune mobs; water/rain put burn out; burn 1.5/s for 4 s. Workstations: 3 parts per weapon/base cut from the 3D model (Missile needs 2 pods); Creative Power Source block; damaged bases restored at the Part Assembler; recipe numbers in `tools/gen_recipes.py`; workstation FE 50k, 2k/t (config). |
 
-## 4. What exists (recap)
+## 4. What exists
 
-**Fase 0–7 complete, Fase 8 partial** (recipes + en_us/id_id done; Jade/JEI/Ponder/Iris compat and profiling not started).
+Fase 0–7 complete; Fase 8 partial (lang en_us/id_id done; Jade/JEI/Ponder/Iris compat and profiling not started);
+Fase 9 (workstations) built. PLAN.md has a Fase 9 section.
 
-Blocks: `turret_base` (1x1, FACING any face), `large_turret_base` (2x2 multiblock: properties `quadrant` 0-3, `core`;
-core holds the BE, parts hold `TurretPartBlockEntity` forwarding capabilities; breaking any block breaks all, one drop).
+**Blocks**: `turret_base` (1x1, any face), `large_turret_base` (2x2, `quadrant`/`core`), five stations
+(`part_workstation`, `part_assembler`, `module_workstation`, `ammo_workstation`, `charging_station`; `WorkstationBlock`
+with `facing` + `part`), `creative_power_source` (creative only, pushes unlimited FE to neighbours).
 
-Items: turret_base, large_turret_base, weapon modules (gun, machine_gun, shotgun, sniper, rocket_launcher — small;
-missile_launcher — large), ammo (kinetic_rounds, scatter_shells, sniper_rounds, rockets, missiles, creative_ammo),
-8 modifiers (range_module, rapid_cycler, damage_amplifier, penetrator, ammo_recycler, coolant_loop, overclock,
-targeting_ai), repair_kit, tier_upgrade_kit_t2/_t3, turret_configurator, damaged_turret_base, damaged_large_turret_base.
-All have recipes except creative_ammo.
+**Items**: 9 weapon modules (small: gun, machine_gun, shotgun, sniper, rocket_launcher, flamethrower, laser_rifle;
+large: missile_launcher, tesla), ammo (kinetic_rounds, scatter_shells, sniper_rounds, rockets, missiles, fuel_canister,
+laser_cell, empty_laser_cell, creative_ammo), 9 modules (8 general + choke_module), repair_kit, tier_upgrade_kit_t2/t3,
+turret_configurator, damaged (large) turret bases, **33 parts** (3 per base/weapon, `BastionItems.PARTS`).
+Creative tabs: Turret Bases, Weapon Modules, Ammo, Modules, Workstations & Parts (sorted by item type automatically).
 
-Weapons (`data/bastion/turret_weapons/*.json`, types in `BastionWeaponTypes`):
+**Weapons** (`data/bastion/turret_weapons/*.json`, types in `BastionWeaponTypes`):
 
-| Weapon | Type / profile | Key numbers |
+| Weapon | Profile | Key numbers |
 |---|---|---|
-| Gun | hitscan, Precision Lock | 7 dmg, 32 range, 12 t interval, lock 20 t → x1.5 (+x1.5 headshot) |
-| Machine Gun | hitscan spin-up, heat/overheat, slowness | 2.5 dmg, 24 range, 12/s at full spin, 0.5 ammo/shot |
-| Shotgun | 8 pellets, falloff, knockback, pump | 2.5/pellet, 12 range, 24 t |
-| Sniper | charged hitscan + laser sight | 24 dmg, 64 range, 30 t charge, base_pierce 1 |
-| Rocket Launcher | projectile (`TurretRocketEntity`), lead, splash | 8 + 12 splash r3.5, 40 range, speed 1.4, min range 4, 4 tubes |
-| Missile Launcher (large) | homing projectile, fixed pitch 30°, 12 tubes | 7 + 6 splash r2.2, 48 range, reload 30 t/tube, single 8 t, salvo 2 t/pair, turn 11°/t, min range 6 |
-| Tesla Coil (large) | ARC: charge 12 t, 2 bolts at random targets, never turns (turn_speed 0, pitch fixed 0, tolerance 180) | 10/bolt, 16 range, 18 t + charge, FE: 60k cap, 1k/t in, 3k per discharge |
-| Laser Rifle | CHARGED: 50 t charge, beam pierces every valid target (255 cap), stops at blocks | 28, 40 range, 50 t cooldown, 1 Laser Cell/shot, aim tolerance 0.8 |
-| Flamethrower | CONE: pulse every 2 t, all valid targets within cone_angle 16° + LOS | 1.2/pulse + burn 1.5/s for 80 t, 8 range, 0.025 fuel/pulse (1 canister ≈ 4 s) |
+| Gun | hitscan, Precision Lock | 7 dmg, 32 range, 12 t, lock 20 t → x1.5 (+x1.5 headshot) |
+| Machine Gun | spin-up, heat/overheat, slowness | 2.5 dmg, 24 range, 12/s at full spin, 0.5 ammo/shot |
+| Shotgun | 8 pellets, falloff, knockback, pump | 2.5/pellet, 12 range, 24 t, spread 12° (Choke: 7.2°) |
+| Sniper | charged hitscan + laser sight | 24 dmg, 64 range, 30 t charge, pierces 2 |
+| Rocket Launcher | projectile, lead, splash | 8 + 12 splash r3.5, 40 range, min range 4 |
+| Missile Launcher (large) | homing, fixed 30°, 12 tubes | 7 + 6 splash r2.2, 48 range, reload 30 t/tube, salvo |
+| Tesla Coil (large) | ARC, never turns, FE | 10/bolt x2, 16 range, 12 t charge + 18 t, 3k FE/discharge |
+| Flamethrower | CONE, custom burn | 1.2/pulse every 2 t + burn 1.5/s 4 s, 8 range, 1 canister ≈ 4 s |
+| Laser Rifle | CHARGED beam, pierces all valid targets | 28, 40 range, 50 t charge + 50 t, 1 Laser Cell/shot |
 
-Turret systems: tiers T1–T3 (HP 100/250/500, x2.5 large; slots unlock; T2 armor plates, T3 fins visuals), HP via
-invisible `TurretHitboxEntity` (LivingEntity, non-pickable, mobs target it), regen, repair, destruction (custom blast,
-drops), owner/trusted protection, redstone (any block of large base), on/off, target filter (categories, player mode,
-trusted list, per-entity rules, priority nearest/lowest HP/highest threat), configurator copy/paste, modifiers,
-servo rotation, idle scan sweep, aim lock, lead (`LeadSolver`), state machine (DISABLED, IDLE, ACQUIRING, AIMING,
-CHARGING, FIRING, COOLDOWN, OVERHEAT, NO_AMMO), comparator output, hopper/Create automation via ammo-only capability.
+**Turret systems**: tiers T1–T3, HP via invisible `TurretHitboxEntity`, regen, repair, destruction, owner/trusted
+protection, redstone, filters (categories, players, trusted, per-entity rules, priorities), configurator, modifiers
+(incl. weapon-specific), servo + scan sweep, lead, state machine (DISABLED … NO_AMMO), comparator, hopper/Create
+automation (ammo-only capability), FE capability for energy weapons.
 
-GUI (`TurretScreen`, 3 side tabs): Status (slots, HP bar, heat bar, state lamp, ON/OFF, **fire Mode button** for
-weapons with `salvo_interval`), Targeting, Info (final stats; "Reload" row for weapons with `reload_ticks`).
+**Workstations** (package `dev.bastion.workstation`): 6 input slots + 1 output, FE buffer, selected recipe kept in
+NBT; timed processing (FE per tick); instant Craft for Module/Ammo (inputs first, then player inventory, shift = x8);
+automation from any block: insert only the selected recipe's ingredients, extract only the output. GUI: category tabs,
+recipe list, turning 3D preview (flat icons face-on), ingredients have/need, progress, energy, status / Craft button.
 
-VFX: `VfxManager.play(preset, origin, dir, params)`; `VfxPresets` (gun/MG/SG/sniper/rocket/missile muzzle & impact,
-rocket/missile trail + explosion, dust, scorch, turret destroyed, tier up, damaged sparks, overheat steam);
-particles (spark, ember, smoke_puff, heat_haze, shockwave_ring, muzzle_flash, debris, muzzle_ring, impact_splash,
-smoke_wisp, **fireball, blast_smoke, flame, dust_ring**); render types ADDITIVE (glow) and SOFT (fire/smoke, no depth
-write); `Curve.BILLOW` for fire/smoke; fire colour ramp (`Behavior.burning()`); tracers, decals (+ scorch texture),
-casings, holograms (lock reticle, sniper laser sight), dynamic lights (mixin), camera shake, screen flash.
-Debug: `/bastion vfx <preset>`.
+**VFX** (`VfxManager`/`VfxPresets`): muzzles/impacts per weapon, rocket/missile trails + custom explosions, Tesla
+`ArcRenderer`, `BeamRenderer` + `LaserChargeRenderer` (laser), `FlameJetRenderer` + flame particles + `BurnEffects`,
+growing scorch decals, workstation sparks/welds/press puffs/charging arcs (`WorkstationEffects`), dynamic lights,
+camera shake, screen flash. Debug: `/bastion vfx <preset>`.
 
-Network (`BastionNetwork`, PROTOCOL "4"): TurretStateSync, WeaponDataSync, TurretFireEvent, SpinSync,
-TurretConfigUpdate (C→S, now includes `salvo`), TurretImpactEvent (DESTROYED, TIER_UP, ROCKET_BLAST, MISSILE_BLAST,
-carries hit normal), RackSync (missile tube mask).
+**Network** (`BastionNetwork`, PROTOCOL **"6"**): TurretStateSync, WeaponDataSync (weapons + modifiers), TurretFireEvent,
+SpinSync, TurretConfigUpdate (C→S), TurretImpactEvent, RackSync, BurnSync, WorkstationAction (C→S select/craft).
 
 ## 5. Architecture notes that are easy to get wrong
 
-- **Energy weapons**: `TurretBaseBlockEntity` holds `energy` (NBT `Energy`), exposes `ForgeCapabilities.ENERGY` (receive-only,
-  max `max_input` per call, capacity = weapon param `energy_capacity`, 0 for ammo weapons). `hasEnergy`/`useEnergy` (Creative Ammo
-  pays). Menu data slots carry energy in hundreds of FE. The GUI's second gauge becomes the capacitor when `maxEnergy > 0`.
-- **Tesla bolts**: `TurretFireEvent.Shot.blockState` carries the **entity id** for Tesla ENTITY hits so the bolt follows it.
-  `ArcRenderer` (midpoint displacement, re-struck every few ticks, three passes: translucent halo / additive glow / white core).
-- **Burn**: `TurretBurn` (server, WeakHashMap, ServerTickEvent) + `BurnSync` packet → `BurnEffects` (client particles). Damage
-  types `turret_flame`/`turret_burn` are in `minecraft:is_fire`; `turret_shock` for bolts.
-- **Flame look**: `FlameJetRenderer` (continuous textured jet from muzzle_0 along muzzle_1→muzzle_0) + `FLAME_STREAM` particles
-  (`flame_jet` particle collides with blocks, `Curve.FLARE`). Laser sight only for weapons that turn (Tesla also has charge_ticks).
-- Network PROTOCOL is now "5" (BurnSync).
-
-- **Mount frame**: turret logic works in turret space (+Y = mount axis). `TurretBaseBlockEntity.toWorld/toLocal`
-  use `facing().getRotation()`; `modelToWorld` is relative to `mountCenter()` (block centre, or 2x2 centre).
-  `TurretBaseRenderer.rotateBlock` applies the same rotation (+ offset to 2x2 centre for large bases).
+- **Mount frame**: turret logic in turret space (+Y = mount axis); `toWorld/toLocal` use `facing().getRotation()`;
+  `TurretBaseRenderer.rotateBlock` applies the same (+ offset to the 2x2 centre).
 - **Weapon hooks** (`WeaponType`): `tick`, `fireInterval`, `ready`, `chargeTicks`, `canTarget`, `aimPoint` (lead),
-  `sight` (engage point or null; default = head/body within pitch limits + LOS), `outOfAmmo` (NO_AMMO for weapons
-  that load ahead). `Aim.fixedPitch()` = `min_pitch == max_pitch` → BE pins pitch (also while disabled), client
-  idle pose keeps it.
-- **Missile Launcher**: tubes are a bitmask in `WeaponState.tubes` (saved as `Tubes` in BE NBT, synced by RackSync,
-  client copy `clientTubes` → `WeaponAnimatable.missiles` → `WeaponModel` hides `missile_i` bones). Server spawn
-  point `MissileLauncherWeapon.mouth()` matches the model's `muzzle_i` bones exactly (verified to 1e-7).
-  **GeckoLib mirrors geo X: model +X is the weapon's LEFT** (right-hand offset = -x).
-- `TurretRocketEntity` serves rockets (`TURRET_ROCKET`) and missiles (`TURRET_MISSILE`, `homing(...)`, velocity
-  updates every tick). `affects()` = turret filter → splash and hits only valid targets.
-- `ClientTurret.muzzles` has 12 entries; MG uses 0..3, launcher 0..11.
-- `TurretBaseBlock.core(level, pos)` resolves any base block (incl. large parts) to the BE — use it, not
-  `level.getBlockEntity(pos)`, in block/item code.
-- Menu `stillValid` uses the block it was opened on (large base safe).
+  `sight` (engage point or null), `outOfAmmo`. `Aim.fixedPitch()` pins pitch; `turn_speed 0` = never turns (no sweep).
+- **Charge holding** (`TurretBaseBlockEntity.tickServer`): once a charge starts it survives aim drift; when full it waits
+  for `aim_tolerance`; only losing the target resets it. Non-charged weapons behave as before.
+- **Aiming laser** (`TurretHolograms.laserSight`): along the barrel via `Hitscan.trace` (the server's ray). Do not use
+  `ProjectileUtil.getEntityHitResult` for points: its hit location is the entity's feet.
+- **GeckoLib mirrors geo X** (model +X is the weapon's left). Missile tube mouths verified against bones.
+- **Energy weapons**: turret `energy` (NBT `Energy`), receive-only FE capability (`max_input`, `energy_capacity` params).
+  Menu data slots carry FE in hundreds. Creative Ammo pays for shots.
+- **Tesla bolts**: `TurretFireEvent.Shot.blockState` holds the target's entity id for Tesla hits.
+- **Burn**: `TurretBurn` (server, ServerTickEvent) + `BurnSync` → `BurnEffects`. `turret_flame`/`turret_burn` are in
+  `minecraft:is_fire`.
+- **Weapon-specific modules**: `ModifierEffect.weapons` (ids it fits) + `spread`; `TurretInventory` refuses a module next
+  to another weapon and skips it in `modifierEffect()` after a swap (red slot).
+- **Workstation multiblock**: part index = x + width·(z + depth·y), x to the right of the front, z away from it; the core
+  (part 0) is where the player clicked. `WorkstationBlock.core(level, pos)` resolves any block. Parts forward
+  capabilities via `WorkstationPartBlockEntity`. The renderer centres the model on the footprint (`rotateBlock`).
+  Crafted → block event `CRAFTED` → client `craft` clip + `WorkstationEffects.crafted`.
+- **Parts render as model pieces**: `assets/bastion/parts.json` (part → model, texture, bones). `PartModel` resets the
+  shared baked bones to rest and hides cubes per bone (`setHidden` then `setChildrenHidden(false)`); `PartItemRenderer`
+  unhides all in `postRender`. GeckoLib: `setHidden` hides own cubes + children; `setChildrenHidden` only children.
+- **Render buffers**: with `MultiBufferSource.BufferSource`, `getBuffer` for another render type ends the previous
+  batch: write a pass completely before asking for the next buffer (Arc/Beam/LaserCharge renderers do passes).
+- `TurretBaseBlock.core(level, pos)` resolves any base block; use it, not `getBlockEntity(pos)`.
 
 ## 6. Asset pipeline
 
-- **Geometry is generated**, not hand-modelled: `tools/blockout/` (`kit.py` + `design_base.py`,
-  `design_large_base.py`, `design_weapons.py` — weapons incl. missile_launcher, rocket and missile projectiles).
-  Run → writes `assets/bastion/geo/*.geo.json`.
-- `python3 tools/gen_textures.py` paints model textures from geo UVs by per-bone material
-  (`MODEL_MATERIALS`; materials armor/hex/frame/steel/vent/bore/emitter; v1 names aliased), `_e` emissive textures,
-  item sprites, particles, GUI. `python3 tools/gen_sounds.py` synthesises placeholder OGGs (replace before release).
-  `python3 tools/gen_structures.py` writes GameTest templates (`arena` 13x7x7, `range` 26x12x13).
-  `python3 tools/fit_item_display.py` fits GeckoLib item display transforms from geo bounds.
-- Blockbench sources `blockbench/*.bbmodel` (+ `blockbench/entity/`). They are regenerated from the geo files via the
-  Blockbench MCP (`from_geo_json` into a fresh Bedrock project, then a `risky_eval` that applies the texture, loads the
-  animation file and writes `Codecs.project.compile()`; round-trip check compares exported geo with the asset — all 0 diffs).
-  The helper functions (`bastionSave`, `bastionReset`) lived in the Blockbench window session; re-create if needed.
-- Animations: hand-written JSON in `assets/bastion/animations/` (clip names `animation.<model>.<clip>`; the large
-  base reuses `animation.turret_base.idle`).
+- Geometry is generated: `tools/blockout/` (`kit.py`, `design_base.py`, `design_large_base.py`,
+  `design_weapons.py`, `design_workstations.py`) → `assets/bastion/geo/*.geo.json`.
+  **Gotcha**: `design_weapons.py` rewrites `missile_launcher_turret.geo.json` with a different bone order than the
+  committed (Blockbench round-trip) file; after running it, `git checkout src/main/resources/assets/bastion/geo/missile_launcher_turret.geo.json`.
+- `tools/gen_textures.py`: model paint by bone material (`MODEL_MATERIALS`), `_e` emissive, items, particles, GUIs
+  (`turret_gui`, `workstation_gui`). Deterministic (re-running changes nothing else).
+- `tools/gen_sounds.py`: placeholder OGGs (render only new ones via the module's `SOUNDS` dict; full run is slow).
+- `tools/fit_item_display.py`: item display transforms from geo bounds; parts use rotation-aware bounds of their bones.
+- `tools/gen_recipes.py`: **all survival recipes** (workstation recipes under `data/bastion/recipes/workstation/<station>/`,
+  the 5 station crafting recipes; deletes old crafting recipes). Edit the tables there, then run it.
+- `tools/gen_structures.py`: GameTest templates (`arena`, `range`).
+- Blockbench `.bbmodel` sources exist for the original turrets only; new models (Tesla, Flamethrower, Laser, workstations)
+  live only as generated geo.
+- Animations: JSON in `assets/bastion/animations/` (written by small Python snippets; clips `idle`, `working`/`aim`,
+  `fire`/`craft`, `deploy`, `no_ammo`, `held_idle`).
 
 ## 7. Testing
 
-- **GameTests: 42 pass** (+ `TurretTeslaFlameTests` 6: energy cap/limits, 2 targets out of 3, lone target both bolts, cone spares the cow, ignores blazes, burn ticks + water; + dev `CreatePlacementTests` 1: belt funnel on a turret). Before: (`TurretBaseTests` 4, `TurretCombatTests` 5, `TurretSystemsTests` 20 incl. wall/ceiling
-  mounts, sniper pierce, rocket splash filter/min range, creative ammo, aggro; `TurretLargeTests` 6: multiblock
-  break/drop, module sizes, missile reload, kills, salvo spread, out of ammo). Large tests use template `range`.
-- **Screenshot scenes** (`./gradlew runClient -Pshowcase[=name]`): default (`Showcase.java`: models, wall/ceiling,
-  night, GUI, hotbar), `weapons` (sniper/rocket), `missiles` (large base + launcher, mirror check log),
-  `automation` (Create rig). Screenshots go to `run/screenshots/showcase_*.png`; logs to the gradle output.
-  All of them currently re-copy `run/saves/New World` → `run/saves/showcase` (see §0 warning).
+- **GameTests: 54 pass**: `TurretBaseTests` 4, `TurretCombatTests` 5, `TurretSystemsTests` 22 (incl. Choke Module,
+  creative tabs), `TurretLargeTests` 6, `TurretTeslaFlameTests` 6, `TurretLaserTests` 4 (pierce, walls, strafing target
+  for Laser + Sniper), `TurretWorkstationTests` 6 (multiblock, power + automation filter, assembler, instant craft,
+  charging, crafting table only makes stations), dev `CreatePlacementTests` 1.
+- **Screenshot scenes** (`./gradlew runClient -Pshowcase=<name> -PshowcaseWorld=showcase_fx`, scratch world as in §2):
+  default, `weapons`, `missiles`, `automation`, `elemental` (Tesla + Flamethrower), `laser`, `workshop` (all stations,
+  GUIs, part icons). Shots in `run/screenshots/showcase_*.png`; log lines `[showcase]` in the gradle output.
 - Dev commands: `/bastiondev zombie [hp] [count]`, `/bastiondev automation [report]`, `/bastion vfx <preset>`.
-- Manual checklist: `docs/TESTING.md`.
+- Manual checklists: `docs/TESTING.md` (sections per feature, incl. Workstations and Charging Station).
 
 ## 8. Backlog / known gaps
 
-- Create automation verification (§0). Possibly a dedicated arm-insertion GameTest in `src/dev` once it works.
-- Tesla/Flamethrower: .bbmodel sources not regenerated yet (geo comes from tools/blockout); sounds placeholders; an FE mod in the dev run would allow a real cable test (Creative Ammo powers the Tesla meanwhile).
-- Turret assembler + ammo assembler stations (user: later). 3x3x1 base (later, will reuse the multiblock code).
-- Fase 8: Jade/JEI/Ponder/Iris/LambDynamicLights compat, performance profiling against PLAN budgets, dedicated
-  server run (`runServer` + separate client) with owner protection tested by a second player.
-- Base `damaged`/`destroyed`/`tier_up` animation clips (VFX cover them for now). All sounds are placeholders.
-- Weapon fire/recoil animations were authored for v1 sizes; only rocket/missile/sniper were made for the new models.
-- Old 1x1 turrets placed before the wall/ceiling update load as floor turrets (no FACING then).
+- User-planned: Plasma Cell turret, Mk1-3 weapon tiers (ask about bonuses), 3x3x1 base.
+- Fase 8: Jade/JEI/Ponder/Iris/LambDynamicLights compat (JEI would show workstation recipes), profiling against PLAN
+  budgets (the flamethrower spawns ~130 particles/s, over the 120 budget), dedicated server test with a second player.
+- All sounds are placeholders. Base damaged/destroyed/tier_up clips missing (VFX cover them).
+- `.bbmodel` sources for the new models; an FE mod in the dev run for real cable tests (Creative Power Source meanwhile).
+- Old 1x1 turrets placed before the wall/ceiling update load as floor turrets.
 
 ## 9. Environment gotchas
 
-- The `rtk` hook rewrites `grep`: use `rtk proxy grep`. zsh dislikes `echo ===`. No `timeout` command on macOS.
-- **Never** `open(p,"w").write(open(p).read()...)` in one expression — it truncated `TurretBaseBlockEntity.java` once
-  (restored from the compiled class + transcript). Use read-then-write patching
-  (`scratchpad/patchlib.py`: `patch`, `add_import`, `sort_imports`) and snapshot `src` before big edits
-  (`scratchpad/snapshots/`). Scratchpad = `/private/tmp/claude-501/-Users-alifrizzaz-Documents-Minecraft-Modding-Turret/<session>/scratchpad` (session-specific; a new session gets a new one).
-- `runClient`/showcase fails with "Can't find a primary monitor" when the Mac screen is **locked** (check
-  `ioreg -n Root -d1 | grep CGSSessionScreenIsLocked`) or the display sleeps; run `caffeinate -dimsu` during visual
-  tests; never bypass the lock.
-- Blockbench MCP renders stale images while its window is hidden; confirm with read-only `risky_eval` queries, and
-  always select the intended `ModelProject` before editing (closing a project switches the active tab).
-- Showcase contact sheets downscale ~3x — thin lines (lasers) vanish; check full-resolution crops.
-- `GameTestHelper.destroyBlock` never drops loot — use `level.destroyBlock(pos, true)`. GameTest arenas stay in the
-  world and batches overlap: closed boxes, per-test batches, disarm turrets at the end.
-- Memory file: `~/.claude/projects/-Users-alifrizzaz-Documents-Minecraft-Modding-Turret/memory/bastion-phase0-defaults.md`.
+- `rtk` hook rewrites `grep`: use `rtk proxy grep`. zsh aborts a command chain on a glob with no match (use `find -delete`).
+- **Never** `open(p,"w").write(open(p).read()...)` in one expression (it once truncated a file). Patch read-then-write
+  (`<scratchpad>/patchlib.py`: `patch`, `add_import`, `sort_imports`). With git now, `git diff` / `git checkout` recover.
+- `runClient` fails with "Can't find a primary monitor" while the Mac screen is locked
+  (`ioreg -n Root -d1 | grep CGSSessionScreenIsLocked`); keep `caffeinate -dimsu` on for visual runs.
+- Blockbench MCP renders stale images while its window is hidden.
+- Contact sheets downscale thin lines away: check full-resolution crops.
+- `GameTestHelper.destroyBlock` never drops loot (use `level.destroyBlock(pos, true)`). GameTest arenas persist and
+  batches overlap: closed boxes, one batch per test, disarm turrets. A placed water source spreads across the arena:
+  wall it in. `FakePlayerFactory.getMinecraft(level)` works for player-driven tests (`useItemOn`, inventories).
+- Memory: `~/.claude/projects/-Users-alifrizzaz-Documents-Minecraft-Modding-Turret/memory/bastion-phase0-defaults.md`.

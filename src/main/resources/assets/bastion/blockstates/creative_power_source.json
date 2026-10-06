@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "bastion:block/creative_power_source"
+    }
+  }
+}

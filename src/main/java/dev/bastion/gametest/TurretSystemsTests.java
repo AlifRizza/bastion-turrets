@@ -21,6 +21,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -232,6 +233,25 @@ public class TurretSystemsTests {
         helper.assertTrue(inventory.modifierEffect().spread() == 0 && inventory.inactiveModifier(TurretInventory.MODIFIER_START),
                 "the Choke Module still works on a Gun");
         disarm(turret);
+        helper.succeed();
+    }
+
+    /** Creative tabs: bases (+ tools), weapon modules, ammo, modules, workstations & parts apart; every Bastion item in exactly one of them. */
+    @GameTest(template = ARENA, batch = "creativeTabsSortItems")
+    public static void creativeTabsSortItems(GameTestHelper helper) {
+        var params = new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess());
+        List<CreativeModeTab> tabs = List.of(BastionItems.TAB.get(), BastionItems.WEAPONS_TAB.get(), BastionItems.AMMO_TAB.get(), BastionItems.MODULES_TAB.get(),
+                BastionItems.WORKSHOP_TAB.get());
+        tabs.forEach(tab -> tab.buildContents(params));
+        for (var entry : BastionItems.REGISTER.getEntries()) {
+            long in = tabs.stream().filter(tab -> tab.contains(new ItemStack(entry.get()))).count();
+            helper.assertTrue(in == 1, entry.getId() + " is in " + in + " tabs");
+        }
+        helper.assertTrue(BastionItems.TAB.get().contains(new ItemStack(BastionItems.REPAIR_KIT.get())), "repair kit not with the bases");
+        helper.assertTrue(BastionItems.WEAPONS_TAB.get().contains(new ItemStack(BastionItems.TESLA_TURRET.get())), "Tesla not with the weapons");
+        helper.assertTrue(BastionItems.AMMO_TAB.get().contains(new ItemStack(BastionItems.CREATIVE_AMMO.get())), "Creative Ammo not with the ammo");
+        helper.assertTrue(BastionItems.MODULES_TAB.get().contains(new ItemStack(BastionItems.CHOKE_MODULE.get())), "Choke not with the modules");
+        helper.assertTrue(BastionItems.WORKSHOP_TAB.get().contains(new ItemStack(BastionItems.PART_ASSEMBLER.get())), "Part Assembler not in the workshop tab");
         helper.succeed();
     }
 

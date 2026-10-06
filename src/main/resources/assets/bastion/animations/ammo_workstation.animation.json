@@ -1,0 +1,98 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.ammo_workstation.idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "ram": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.ammo_workstation.working": {
+   "animation_length": 1,
+   "loop": true,
+   "bones": {
+    "ram": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.4": [
+       0,
+       -0.8,
+       0
+      ],
+      "0.5": [
+       0,
+       -2.4,
+       0
+      ],
+      "0.6": [
+       0,
+       -2.4,
+       0
+      ],
+      "1.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.ammo_workstation.craft": {
+   "animation_length": 0.5,
+   "bones": {
+    "ram": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.15": [
+       0,
+       -2.4,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "body": {
+     "scale": {
+      "0.15": [
+       1.02,
+       1.02,
+       1.02
+      ],
+      "0.35": [
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  }
+ }
+}

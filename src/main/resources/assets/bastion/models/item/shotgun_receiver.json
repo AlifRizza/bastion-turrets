@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        -1.05,
+        -7.8,
+        -2.47
+      ],
+      "scale": [
+        0.994,
+        0.994,
+        0.994
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -3.84,
+        -0.71
+      ],
+      "scale": [
+        0.471,
+        0.471,
+        0.471
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -1.33,
+        -7.25,
+        -0.0
+      ],
+      "scale": [
+        0.889,
+        0.889,
+        0.889
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -7.69,
+        1.41
+      ],
+      "scale": [
+        0.942,
+        0.942,
+        0.942
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -2.24,
+        -4.71
+      ],
+      "scale": [
+        0.628,
+        0.628,
+        0.628
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -2.24,
+        -4.71
+      ],
+      "scale": [
+        0.628,
+        0.628,
+        0.628
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        -0.19,
+        -5.97,
+        1.08
+      ],
+      "scale": [
+        0.732,
+        0.732,
+        0.732
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        0.19,
+        -5.97,
+        1.08
+      ],
+      "scale": [
+        0.732,
+        0.732,
+        0.732
+      ]
+    }
+  }
+}

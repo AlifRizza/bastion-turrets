@@ -12,6 +12,8 @@ public final class BastionConfig {
     public static final ForgeConfigSpec.BooleanValue TRUSTED_CAN_DAMAGE;
     public static final ForgeConfigSpec.BooleanValue MOBS_ATTACK_TURRETS;
     public static final ForgeConfigSpec.DoubleValue LARGE_HEALTH_MULTIPLIER;
+    public static final ForgeConfigSpec.IntValue WORKSTATION_ENERGY_CAPACITY;
+    public static final ForgeConfigSpec.IntValue WORKSTATION_MAX_INPUT;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_HEALTH;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_REGEN;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_TURN_SPEED;
@@ -30,6 +32,12 @@ public final class BastionConfig {
         LARGE_HEALTH_MULTIPLIER = b
                 .comment("Max HP of a Large Turret Base (2x2) relative to a standard base of the same tier.")
                 .defineInRange("largeBaseHealthMultiplier", 2.5, 0.1, 100);
+        WORKSTATION_ENERGY_CAPACITY = b
+                .comment("FE a workstation stores (PLAN Fase 9).")
+                .defineInRange("workstationEnergyCapacity", 50000, 1000, Integer.MAX_VALUE);
+        WORKSTATION_MAX_INPUT = b
+                .comment("Most FE a workstation accepts per tick.")
+                .defineInRange("workstationMaxInput", 2000, 1, Integer.MAX_VALUE);
         b.push("tiers");
         TIER_HEALTH = b.comment("Max HP per tier T1, T2, T3.")
                 .defineList("health", List.of(100.0, 250.0, 500.0), o -> o instanceof Double d && d > 0);

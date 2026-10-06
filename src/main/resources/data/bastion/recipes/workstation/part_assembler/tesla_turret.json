@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:tesla_coil",
+      "count": 1
+    },
+    {
+      "item": "bastion:tesla_crown",
+      "count": 1
+    },
+    {
+      "item": "bastion:tesla_capacitor_bank",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:tesla_turret"
+  },
+  "time": 300,
+  "energy": 15000
+}

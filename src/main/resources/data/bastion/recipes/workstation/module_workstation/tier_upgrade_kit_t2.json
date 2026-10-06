@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:repair_kit",
+  "ingredients": [
+    {
+      "item": "minecraft:gold_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:tier_upgrade_kit_t2"
+  },
+  "time": 160,
+  "energy": 6000
+}

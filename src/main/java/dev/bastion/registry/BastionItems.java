@@ -4,10 +4,15 @@ import dev.bastion.Bastion;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretConfiguratorItem;
+import dev.bastion.turret.TurretInventory;
 import dev.bastion.weapon.WeaponModuleItem;
+import dev.bastion.workstation.PartItem;
+import dev.bastion.workstation.WorkstationBlock;
+import dev.bastion.workstation.WorkstationItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +25,9 @@ import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class BastionItems {
     public static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, Bastion.MOD_ID);
@@ -58,8 +66,10 @@ public final class BastionItems {
     public static final RegistryObject<Item> SNIPER_ROUNDS = REGISTER.register("sniper_rounds", () -> new Item(new Item.Properties().stacksTo(32)));
     public static final RegistryObject<Item> ROCKETS = REGISTER.register("rockets", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> MISSILES = REGISTER.register("missiles", () -> new Item(new Item.Properties().stacksTo(32)));
-    /** One Laser Rifle shot. No recipe yet: Laser Cells will be charged from empty ones with FE at a station (user: later). */
+    /** One Laser Rifle shot: an Empty Laser Cell charged with FE at the Charging Station. */
     public static final RegistryObject<Item> LASER_CELL = REGISTER.register("laser_cell", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** Charged into a Laser Cell with FE at the Charging Station. */
+    public static final RegistryObject<Item> EMPTY_LASER_CELL = REGISTER.register("empty_laser_cell", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> FUEL_CANISTER = REGISTER.register("fuel_canister", () -> new Item(new Item.Properties().stacksTo(16)));
     /** Creative-only (no recipe): fits every weapon and is never used up. */
     public static final RegistryObject<Item> CREATIVE_AMMO = REGISTER.register("creative_ammo",
@@ -88,6 +98,37 @@ public final class BastionItems {
     public static final RegistryObject<Item> DAMAGED_LARGE_TURRET_BASE = REGISTER.register("damaged_large_turret_base",
             () -> hinted(new Item.Properties().stacksTo(16), "damaged_large_turret_base"));
 
+    // Workstations (PLAN Fase 9): the only way to make turret items in survival.
+    public static final RegistryObject<WorkstationItem> PART_WORKSTATION = workstation(BastionBlocks.PART_WORKSTATION);
+    public static final RegistryObject<WorkstationItem> PART_ASSEMBLER = workstation(BastionBlocks.PART_ASSEMBLER);
+    public static final RegistryObject<WorkstationItem> MODULE_WORKSTATION = workstation(BastionBlocks.MODULE_WORKSTATION);
+    public static final RegistryObject<WorkstationItem> AMMO_WORKSTATION = workstation(BastionBlocks.AMMO_WORKSTATION);
+    public static final RegistryObject<WorkstationItem> CHARGING_STATION = workstation(BastionBlocks.CHARGING_STATION);
+    public static final RegistryObject<BlockItem> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
+            () -> new BlockItem(BastionBlocks.CREATIVE_POWER_SOURCE.get(), new Item.Properties().rarity(Rarity.EPIC)));
+
+    /**
+     * Parts, a set of three per base and weapon (the Missile Launcher takes two pods), made at the Part Workstation and
+     * assembled at the Part Assembler. Which bones of which model each one shows: assets/bastion/parts.json.
+     */
+    public static final List<RegistryObject<PartItem>> PARTS = Stream.of(
+            "turret_base_plating", "turret_base_housing", "turret_base_turntable",
+            "large_base_plating", "large_base_housing", "large_base_turntable",
+            "gun_barrel", "gun_receiver", "gun_mount",
+            "machine_gun_barrels", "machine_gun_receiver", "machine_gun_mount",
+            "shotgun_barrels", "shotgun_receiver", "shotgun_mount",
+            "sniper_barrel", "sniper_receiver", "sniper_scope_mount",
+            "rocket_pod", "rocket_pod_housing", "rocket_launcher_mount",
+            "missile_pod", "missile_guidance_core", "missile_launcher_mount",
+            "tesla_coil", "tesla_crown", "tesla_capacitor_bank",
+            "flamethrower_nozzle", "flamethrower_fuel_tanks", "flamethrower_housing",
+            "laser_focus_barrel", "laser_emitter_crystal", "laser_housing"
+    ).map(id -> REGISTER.register(id, () -> new PartItem(new Item.Properties().stacksTo(16)))).toList();
+
+    private static RegistryObject<WorkstationItem> workstation(RegistryObject<WorkstationBlock> block) {
+        return REGISTER.register(block.getId().getPath(), () -> new WorkstationItem(block.get(), new Item.Properties()));
+    }
+
     /** Plain item with a one-line usage hint, tooltip.bastion.<key>. */
     private static Item hinted(Item.Properties properties, String key, Object... args) {
         return new Item(properties) {
@@ -102,10 +143,38 @@ public final class BastionItems {
         return REGISTER.register(name, () -> new ModifierItem(new Item.Properties().stacksTo(1)));
     }
 
-    // Lists every bastion item automatically, so later phases only register items.
-    public static final RegistryObject<CreativeModeTab> TAB = TABS.register("bastion", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.bastion"))
-            .icon(() -> TURRET_BASE.get().getDefaultInstance())
-            .displayItems((params, output) -> REGISTER.getEntries().forEach(item -> output.accept(item.get())))
-            .build());
+    // Creative tabs (user: bases, weapon modules, ammo and modules apart), sorted by item type so new items land in the
+    // right tab by themselves. Tools (repair and upgrade kits, configurator, damaged bases) sit with the bases.
+    public static final RegistryObject<CreativeModeTab> TAB = tab("bastion", TURRET_BASE, null,
+            item -> !(item instanceof WeaponModuleItem) && !(item instanceof ModifierItem) && !isAmmo(item) && !workshop(item)
+                    && item != EMPTY_LASER_CELL.get());
+    public static final RegistryObject<CreativeModeTab> WEAPONS_TAB = tab("bastion_weapons", GUN_TURRET, "bastion",
+            item -> item instanceof WeaponModuleItem);
+    public static final RegistryObject<CreativeModeTab> AMMO_TAB = tab("bastion_ammo", KINETIC_ROUNDS, "bastion_weapons",
+            item -> isAmmo(item) || item == EMPTY_LASER_CELL.get());
+    public static final RegistryObject<CreativeModeTab> MODULES_TAB = tab("bastion_modules", RANGE_MODULE, "bastion_ammo",
+            item -> item instanceof ModifierItem);
+    /** Workstations, their parts and the creative power source (PLAN Fase 9). */
+    public static final RegistryObject<CreativeModeTab> WORKSHOP_TAB = tab("bastion_workshop", PART_WORKSTATION, "bastion_modules",
+            BastionItems::workshop);
+
+    private static boolean workshop(Item item) {
+        return item instanceof PartItem || item instanceof WorkstationItem || item == CREATIVE_POWER_SOURCE.get();
+    }
+
+    /** Anything in the bastion:ammo tag (incl. Creative Ammo); tags are bound by the time a tab's contents are built. */
+    private static boolean isAmmo(Item item) {
+        return new ItemStack(item).is(TurretInventory.AMMO);
+    }
+
+    private static RegistryObject<CreativeModeTab> tab(String name, Supplier<? extends Item> icon, @Nullable String after, Predicate<Item> holds) {
+        return TABS.register(name, () -> {
+            CreativeModeTab.Builder builder = CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup." + name))
+                    .icon(() -> icon.get().getDefaultInstance())
+                    .displayItems((params, output) -> REGISTER.getEntries().stream().map(RegistryObject::get).filter(holds).forEach(output::accept));
+            if (after != null) builder.withTabsBefore(Bastion.id(after));
+            return builder.build();
+        });
+    }
 }

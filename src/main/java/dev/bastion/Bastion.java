@@ -13,6 +13,7 @@ import dev.bastion.registry.BastionEntities;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionMenus;
 import dev.bastion.registry.BastionParticles;
+import dev.bastion.registry.BastionRecipes;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.TurretAggro;
@@ -51,6 +52,8 @@ public final class Bastion {
         BastionParticles.REGISTER.register(modBus);
         BastionSounds.REGISTER.register(modBus);
         BastionWeaponTypes.REGISTER.register(modBus);
+        BastionRecipes.TYPES.register(modBus);
+        BastionRecipes.SERIALIZERS.register(modBus);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BastionConfig.SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BastionClientConfig.SPEC);

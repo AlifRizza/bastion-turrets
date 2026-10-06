@@ -1,6 +1,6 @@
 # Manual test checklist (Fase 2–7)
 
-Automated: `./gradlew runGameTestServer` (47 tests: base, combat, weapons, modifiers, filter, redstone, HP,
+Automated: `./gradlew runGameTestServer` (54 tests: base, combat, weapons, modifiers, filter, redstone, HP,
 destruction). Visual: `./gradlew devClasses runClient -Pshowcase`. The list below is what still needs eyes and hands.
 
 Setup: creative world, a turret base with a weapon module and Creative Ammo (never runs out). Targets:
@@ -86,6 +86,19 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Redstone block next to the base disables it; after switching "Turns it on", only a powered turret fires.
 - [ ] Turret Configurator: sneak + right-click copies targeting, right-click another turret pastes it.
 - [ ] Another player (second client) cannot open the GUI or remove the weapon of your turret; trusted players can.
+
+## Workstations (survival crafting, Fase 9)
+- [ ] The crafting table only makes the 5 stations (Part Workstation needs a smithing table, the Part Assembler a Part Workstation and a diamond). No turret, module or ammo recipe left there.
+- [ ] Placing: the station grows to your right, away from you and up from the block you click, its front facing you; it refuses if any of its blocks is taken. Breaking any block breaks it all and drops it once (with its contents).
+- [ ] Power: a Creative Power Source (creative tab) next to any of its blocks, or any FE cable; the bar top right fills (hover for FE). Without FE nothing is made ("Needs FE").
+- [ ] Part Workstation: pick a tab (each turret/base) and a part, put the materials in (or let a hopper/belt/arm do it: only that recipe's materials go in), it machines it over a few seconds (carriage runs, spindle spins, sparks, hum), part in the output (hoppers can pull it).
+- [ ] Parts show in 3D as pieces of their turret. Part Assembler: the three parts in, the finished module/base turns on the deck while the arms weld and the scanner sweeps, then appears in the output. Also restores damaged bases (with repair kits).
+- [ ] Module and Ammo Workstations: Craft button makes it instantly from the input slots and your inventory (shift: x8); with materials piped in they also make it by themselves over time.
+- [ ] Charging Station (1x1x1): Empty Laser Cells (from the Ammo Workstation) in, charged Laser Cells out, 3s and 3k FE each; arcs jump from the coil tips into the cell while it charges.
+- [ ] GUI: tabs, list with scroll, turning preview (flat icons face you), ingredients with have/need in green/red, progress bar, status text, no overlapping text.
+
+## Creative tabs
+- [ ] Four Bastion tabs (Forge puts mod tabs on the creative screen's next pages): Turret Bases (bases, damaged bases, repair and upgrade kits, configurator), Weapon Modules, Ammo (incl. Creative Ammo), Modules (incl. Choke Module).
 
 ## Persistence & servers
 - [ ] Leave and rejoin: tier, HP, filter, trusted list, ON/OFF, redstone mode, inventory all kept.

@@ -1,0 +1,20 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:turret_base",
+  "ingredients": [
+    {
+      "item": "bastion:damaged_large_turret_base",
+      "count": 1
+    },
+    {
+      "item": "bastion:repair_kit",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:large_turret_base"
+  },
+  "time": 240,
+  "energy": 8000
+}
