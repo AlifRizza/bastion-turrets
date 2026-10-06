@@ -1,0 +1,30 @@
+{
+  "type": "bastion:machine_gun",
+  "ammo": "bastion:ammo/kinetic",
+  "energy_color": "#FFB347",
+  "range": 24,
+  "fire_interval": 1.6667,
+  "damage": 2.5,
+  "spread": 1.5,
+  "ammo_per_shot": 0.5,
+  "turn_speed": 11,
+  "aim_tolerance": 3,
+  "aim_lock_ticks": 1,
+  "min_pitch": -30,
+  "max_pitch": 90,
+  "heat_per_shot": 1.2,
+  "heat_dissipation_per_second": 8,
+  "max_heat": 100,
+  "overheat_ticks": 60,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.5125,
+  "params": {
+    "spin_up_ticks": 20,
+    "spin_down_ticks": 30,
+    "min_spin_to_fire": 0.1,
+    "hot_spread": 4,
+    "hot_spread_threshold": 0.7,
+    "slowness_ticks": 20,
+    "slowness_amplifier": 0
+  }
+}

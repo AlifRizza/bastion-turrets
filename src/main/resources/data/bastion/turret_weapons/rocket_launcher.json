@@ -1,0 +1,25 @@
+{
+  "type": "bastion:rocket_launcher",
+  "ammo": "bastion:ammo/rocket",
+  "energy_color": "#FF7A2E",
+  "range": 40,
+  "fire_interval": 36,
+  "damage": 8,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 7,
+  "aim_tolerance": 2.5,
+  "aim_lock_ticks": 3,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 0.675,
+  "params": {
+    "rocket_speed": 1.4,
+    "splash_damage": 12,
+    "splash_radius": 3.5,
+    "knockback": 1.0,
+    "min_range": 4,
+    "lead_accuracy": 0.8
+  }
+}

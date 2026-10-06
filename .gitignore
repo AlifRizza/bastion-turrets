@@ -1,0 +1,37 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+# Files from Forge MDK
+forge*changelog.txt
+
+# python
+__pycache__
+
+# third-party reference sources (study only, never copied)
+/references/
+
+# macOS
+.DS_Store
+
+# personal Claude Code settings
+.claude/settings.local.json

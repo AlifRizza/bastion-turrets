@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#bastion:ammo/kinetic",
+    "#bastion:ammo/scatter",
+    "bastion:creative_ammo",
+    "#bastion:ammo/sniper",
+    "#bastion:ammo/rocket",
+    "#bastion:ammo/missile",
+    "#bastion:ammo/fuel",
+    "#bastion:ammo/laser"
+  ]
+}

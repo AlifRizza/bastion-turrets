@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DSD",
+    "SUS",
+    "DSD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "minecraft:netherite_scrap"
+    },
+    "U": {
+      "item": "bastion:tier_upgrade_kit_t2"
+    }
+  },
+  "result": {
+    "item": "bastion:tier_upgrade_kit_t3",
+    "count": 1
+  }
+}

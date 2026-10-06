@@ -1,0 +1,17 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.turret_base.idle": {
+			"loop": true,
+			"animation_length": 8,
+			"bones": {
+				"energy_ring": {
+					"rotation": {
+						"0.0": [0, 0, 0],
+						"8.0": [0, -360, 0]
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,363 @@
+{
+  "debug.ping": {
+    "subtitle": "subtitles.bastion.debug.ping",
+    "sounds": [
+      "bastion:debug/ping"
+    ]
+  },
+  "turret.deploy": {
+    "subtitle": "subtitles.bastion.turret.deploy",
+    "sounds": [
+      "bastion:turret/deploy"
+    ]
+  },
+  "turret.idle_hum": {
+    "subtitle": "subtitles.bastion.turret.idle_hum",
+    "sounds": [
+      "bastion:turret/idle_hum"
+    ]
+  },
+  "turret.servo": {
+    "subtitle": "subtitles.bastion.turret.servo",
+    "sounds": [
+      "bastion:turret/servo_loop"
+    ]
+  },
+  "impact.kinetic": {
+    "subtitle": "subtitles.bastion.impact.kinetic",
+    "sounds": [
+      "bastion:impact/kinetic_0",
+      "bastion:impact/kinetic_1",
+      "bastion:impact/kinetic_2"
+    ]
+  },
+  "gun.fire": {
+    "subtitle": "subtitles.bastion.gun.fire",
+    "sounds": [
+      "bastion:gun/fire_0",
+      "bastion:gun/fire_1",
+      "bastion:gun/fire_2"
+    ]
+  },
+  "gun.fire_tail": {
+    "subtitle": "subtitles.bastion.gun.fire_tail",
+    "sounds": [
+      "bastion:gun/fire_tail_0",
+      "bastion:gun/fire_tail_1"
+    ]
+  },
+  "gun.lock": {
+    "subtitle": "subtitles.bastion.gun.lock",
+    "sounds": [
+      "bastion:gun/lock"
+    ]
+  },
+  "machine_gun.fire": {
+    "subtitle": "subtitles.bastion.machine_gun.fire",
+    "sounds": [
+      "bastion:machine_gun/fire_0",
+      "bastion:machine_gun/fire_1",
+      "bastion:machine_gun/fire_2"
+    ]
+  },
+  "machine_gun.fire_tail": {
+    "subtitle": "subtitles.bastion.machine_gun.fire",
+    "sounds": [
+      {
+        "name": "bastion:gun/fire_tail_0",
+        "pitch": 1.35,
+        "volume": 0.7
+      },
+      {
+        "name": "bastion:gun/fire_tail_1",
+        "pitch": 1.35,
+        "volume": 0.7
+      }
+    ]
+  },
+  "machine_gun.spin_up": {
+    "subtitle": "subtitles.bastion.machine_gun.spin",
+    "sounds": [
+      "bastion:machine_gun/spin_up"
+    ]
+  },
+  "machine_gun.spin_down": {
+    "subtitle": "subtitles.bastion.machine_gun.spin",
+    "sounds": [
+      "bastion:machine_gun/spin_down"
+    ]
+  },
+  "machine_gun.spin_loop": {
+    "subtitle": "subtitles.bastion.machine_gun.spin",
+    "sounds": [
+      "bastion:machine_gun/spin_loop"
+    ]
+  },
+  "machine_gun.overheat": {
+    "subtitle": "subtitles.bastion.machine_gun.overheat",
+    "sounds": [
+      "bastion:machine_gun/overheat"
+    ]
+  },
+  "shotgun.fire": {
+    "subtitle": "subtitles.bastion.shotgun.fire",
+    "sounds": [
+      "bastion:shotgun/fire_0",
+      "bastion:shotgun/fire_1",
+      "bastion:shotgun/fire_2"
+    ]
+  },
+  "shotgun.fire_tail": {
+    "subtitle": "subtitles.bastion.shotgun.fire",
+    "sounds": [
+      {
+        "name": "bastion:gun/fire_tail_0",
+        "pitch": 0.72
+      },
+      {
+        "name": "bastion:gun/fire_tail_1",
+        "pitch": 0.72
+      }
+    ]
+  },
+  "shotgun.pump": {
+    "subtitle": "subtitles.bastion.shotgun.pump",
+    "sounds": [
+      "bastion:shotgun/pump"
+    ]
+  },
+  "shotgun.shell": {
+    "subtitle": "subtitles.bastion.shotgun.shell",
+    "sounds": [
+      "bastion:shotgun/shell_0",
+      "bastion:shotgun/shell_1"
+    ]
+  },
+  "turret.destroyed": {
+    "subtitle": "subtitles.bastion.turret.destroyed",
+    "sounds": [
+      "bastion:turret/destroyed"
+    ]
+  },
+  "turret.tier_up": {
+    "subtitle": "subtitles.bastion.turret.tier_up",
+    "sounds": [
+      "bastion:turret/tier_up"
+    ]
+  },
+  "turret.repair": {
+    "subtitle": "subtitles.bastion.turret.repair",
+    "sounds": [
+      "bastion:turret/repair"
+    ]
+  },
+  "sniper.charge": {
+    "subtitle": "subtitles.bastion.sniper.charge",
+    "sounds": [
+      {
+        "name": "bastion:sniper/charge",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "sniper.fire": {
+    "subtitle": "subtitles.bastion.sniper.fire",
+    "sounds": [
+      {
+        "name": "bastion:sniper/fire_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:sniper/fire_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "sniper.fire_tail": {
+    "subtitle": "subtitles.bastion.sniper.fire_tail",
+    "sounds": [
+      {
+        "name": "bastion:sniper/fire_tail",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "rocket.launch": {
+    "subtitle": "subtitles.bastion.rocket.launch",
+    "sounds": [
+      {
+        "name": "bastion:rocket/launch_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:rocket/launch_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "rocket.launch_tail": {
+    "subtitle": "subtitles.bastion.rocket.launch_tail",
+    "sounds": [
+      {
+        "name": "bastion:rocket/launch_tail",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "rocket.fly": {
+    "subtitle": "subtitles.bastion.rocket.fly",
+    "sounds": [
+      {
+        "name": "bastion:rocket/fly",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "rocket.explode": {
+    "subtitle": "subtitles.bastion.rocket.explode",
+    "sounds": [
+      {
+        "name": "bastion:rocket/explode_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:rocket/explode_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "missile.launch": {
+    "subtitle": "subtitles.bastion.missile.launch",
+    "sounds": [
+      {
+        "name": "bastion:missile/launch_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:missile/launch_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "missile.reload": {
+    "subtitle": "subtitles.bastion.missile.reload",
+    "sounds": [
+      "bastion:missile/reload"
+    ]
+  },
+  "missile.explode": {
+    "subtitle": "subtitles.bastion.missile.explode",
+    "sounds": [
+      {
+        "name": "bastion:missile/explode_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:missile/explode_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "tesla.charge": {
+    "subtitle": "subtitles.bastion.tesla.charge",
+    "sounds": [
+      {
+        "name": "bastion:tesla/charge",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "tesla.zap": {
+    "subtitle": "subtitles.bastion.tesla.zap",
+    "sounds": [
+      {
+        "name": "bastion:tesla/zap_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:tesla/zap_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "tesla.zap_tail": {
+    "subtitle": "subtitles.bastion.tesla.zap_tail",
+    "sounds": [
+      {
+        "name": "bastion:tesla/zap_tail",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "tesla.crackle": {
+    "subtitle": "subtitles.bastion.tesla.crackle",
+    "sounds": [
+      {
+        "name": "bastion:tesla/crackle_0",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "bastion:tesla/crackle_1",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "flamethrower.ignite": {
+    "subtitle": "subtitles.bastion.flamethrower.ignite",
+    "sounds": [
+      {
+        "name": "bastion:flamethrower/ignite",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "flamethrower.loop": {
+    "subtitle": "subtitles.bastion.flamethrower.loop",
+    "sounds": [
+      {
+        "name": "bastion:flamethrower/loop",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "flamethrower.burning": {
+    "subtitle": "subtitles.bastion.flamethrower.burning",
+    "sounds": [
+      {
+        "name": "bastion:flamethrower/burning",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "laser.charge": {
+    "subtitle": "subtitles.bastion.laser.charge",
+    "sounds": [
+      {
+        "name": "bastion:laser/charge",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "laser.fire": {
+    "subtitle": "subtitles.bastion.laser.fire",
+    "sounds": [
+      {
+        "name": "bastion:laser/fire_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:laser/fire_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "laser.fire_tail": {
+    "subtitle": "subtitles.bastion.laser.fire_tail",
+    "sounds": [
+      {
+        "name": "bastion:laser/fire_tail",
+        "attenuation_distance": 96
+      }
+    ]
+  }
+}

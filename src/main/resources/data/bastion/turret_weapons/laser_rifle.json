@@ -1,0 +1,20 @@
+{
+  "type": "bastion:laser_rifle",
+  "ammo": "bastion:ammo/laser",
+  "energy_color": "#FF3046",
+  "range": 40,
+  "fire_interval": 50,
+  "damage": 28,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 6,
+  "aim_tolerance": 0.8,
+  "aim_lock_ticks": 4,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.725,
+  "params": {
+    "charge_ticks": 50
+  }
+}

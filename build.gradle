@@ -1,0 +1,179 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+// Dev-only tools (src/dev), loaded in every dev run but never part of the jar: /bastiondev commands, and the
+// screenshot showcase (`./gradlew runClient -Pshowcase` builds a scene, saves run/screenshots/showcase_*.png, quits;
+// `-Pshowcase=weapons` runs the Sniper / Rocket Launcher scene instead).
+sourceSets {
+    dev {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    devImplementation.extendsFrom implementation
+    // Client-only dev mods: added to runClient alone, since they crash the server and GameTest runs.
+    clientDevMods
+}
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            // GeckoLib ships mixins; their refmap must be remapped to dev names.
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                    source sourceSets.dev
+                }
+            }
+        }
+
+        client {
+            if (project.hasProperty('showcase')) {
+                def scene = project.findProperty('showcase')
+                property 'bastion.showcase', scene ? scene : 'scene'
+                // -PshowcaseWorld=<save folder> picks another world; run/saves/showcase holds the user's hand-built test rig
+                args '--quickPlaySingleplayer', project.findProperty('showcaseWorld') ?: 'showcase', '--width', '1280', '--height', '720'
+            }
+        }
+
+        server {
+            args '--nogui'
+        }
+
+        // Runs every @GameTest in dev.bastion.gametest, then exits with the result.
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+    }
+}
+
+// Dynamic lights hook LevelRenderer through a mixin (PLAN 5.5).
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+}
+
+repositories {
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex('software\\.bernie.*')
+            includeGroup('com.eliotlash.mclib')
+        }
+    }
+    maven {
+        name = 'Create'
+        url = 'https://maven.createmod.net'
+        content {
+            includeGroup('com.simibubi.create')
+            includeGroup('net.createmod.ponder')
+            includeGroup('dev.engine-room.flywheel')
+        }
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup('maven.modrinth')
+        }
+    }
+    maven {
+        name = 'Registrate'
+        url = 'https://maven.tterrag.com'
+        content {
+            includeGroup('com.tterrag.registrate')
+        }
+    }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    // Optional Create compat (dev.bastion.compat.create): compiled against, loaded only when Create is installed.
+    compileOnly fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    devCompileOnly fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    devCompileOnly fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}") { transitive = false }
+    devCompileOnly fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}") { transitive = false }
+
+    // Dev-only: Create in runClient to test belt/funnel/chute ammo automation (PLAN 9). Never a required dependency.
+    runtimeOnly fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    runtimeOnly fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
+    runtimeOnly fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
+    runtimeOnly fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
+    runtimeOnly "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
+    // Dev-only, runClient only: floating damage numbers + target health bar for testing turret damage.
+    clientDevMods fg.deobf("maven.modrinth:torohealth-damage-indicators-updated:${torohealth_version}")
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            geckolib_version_range: geckolib_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'MixinConfigs'            : "${mod_id}.mixins.json"
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.matching { it.name == 'runClient' }.configureEach {
+    runtimeClasspathArtifacts.from(configurations.clientDevMods)
+    classpath(configurations.clientDevMods)
+}
+
+// Dev runs load src/dev (see sourceSets above), so compile it first.
+tasks.matching { it.name in ['runClient', 'runServer', 'runGameTestServer'] }.configureEach {
+    dependsOn 'devClasses'
+}

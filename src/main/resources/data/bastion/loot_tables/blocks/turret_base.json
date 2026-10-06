@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "bastion:turret_base",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                { "source": "Inventory", "target": "BlockEntityTag.Inventory", "op": "replace" },
+                { "source": "Tier", "target": "BlockEntityTag.Tier", "op": "replace" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

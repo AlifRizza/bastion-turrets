@@ -1,0 +1,22 @@
+{
+  "type": "bastion:gun",
+  "ammo": "bastion:ammo/kinetic",
+  "energy_color": "#4FD8FF",
+  "range": 32,
+  "fire_interval": 12,
+  "damage": 7,
+  "spread": 0.3,
+  "ammo_per_shot": 1,
+  "turn_speed": 9,
+  "aim_tolerance": 1.5,
+  "aim_lock_ticks": 3,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.5875,
+  "params": {
+    "precision_lock_ticks": 20,
+    "precision_lock_multiplier": 1.5,
+    "headshot_multiplier": 1.5
+  }
+}

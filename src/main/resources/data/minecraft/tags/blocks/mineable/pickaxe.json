@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "bastion:turret_base",
+    "bastion:large_turret_base"
+  ]
+}

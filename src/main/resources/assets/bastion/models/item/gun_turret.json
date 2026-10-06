@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        2.89,
+        -1.74,
+        -4.0
+      ],
+      "scale": [
+        0.463,
+        0.463,
+        0.463
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -1.55,
+        1.93
+      ],
+      "scale": [
+        0.219,
+        0.219,
+        0.219
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        3.65,
+        -2.92,
+        0.0
+      ],
+      "scale": [
+        0.414,
+        0.414,
+        0.414
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -3.09,
+        -3.87
+      ],
+      "scale": [
+        0.438,
+        0.438,
+        0.438
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        1.96,
+        -2.66
+      ],
+      "scale": [
+        0.292,
+        0.292,
+        0.292
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        1.96,
+        -2.66
+      ],
+      "scale": [
+        0.292,
+        0.292,
+        0.292
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        0.52,
+        -2.41,
+        -2.96
+      ],
+      "scale": [
+        0.341,
+        0.341,
+        0.341
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -0.52,
+        -2.41,
+        -2.96
+      ],
+      "scale": [
+        0.341,
+        0.341,
+        0.341
+      ]
+    }
+  }
+}

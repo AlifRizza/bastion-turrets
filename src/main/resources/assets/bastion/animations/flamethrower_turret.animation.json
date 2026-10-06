@@ -1,0 +1,257 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.flamethrower_turret.deploy": {
+   "animation_length": 0.9,
+   "bones": {
+    "barrel_0": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       5
+      ],
+      "0.3": [
+       0,
+       0,
+       5
+      ],
+      "0.7": [
+       0,
+       0,
+       -0.3
+      ],
+      "0.85": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "tanks": {
+     "position": {
+      "0.0": [
+       0,
+       -2.5,
+       0
+      ],
+      "0.4": [
+       0,
+       -2.5,
+       0
+      ],
+      "0.75": [
+       0,
+       0.2,
+       0
+      ],
+      "0.9": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "body": {
+     "scale": {
+      "0.0": [
+       0.9,
+       0.9,
+       0.9
+      ],
+      "0.25": [
+       1.03,
+       1.03,
+       1.03
+      ],
+      "0.4": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       -30,
+       0,
+       0
+      ],
+      "0.6": [
+       -30,
+       0,
+       0
+      ],
+      "0.85": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.flamethrower_turret.idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.0": [
+       0,
+       10,
+       0
+      ],
+      "3.0": [
+       0,
+       -10,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.flamethrower_turret.held_idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.0": [
+       0,
+       10,
+       0
+      ],
+      "3.0": [
+       0,
+       -10,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.flamethrower_turret.aim": {
+   "animation_length": 0.3,
+   "bones": {
+    "barrel_0": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.3": [
+       0,
+       0,
+       -0.4
+      ]
+     }
+    }
+   }
+  },
+  "animation.flamethrower_turret.fire": {
+   "animation_length": 0.12,
+   "bones": {
+    "barrel_0": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0.35
+      ],
+      "0.06": [
+       0.08,
+       0.05,
+       0.1
+      ],
+      "0.12": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "nozzle": {
+     "scale": {
+      "0.0": [
+       1.06,
+       1.06,
+       1
+      ],
+      "0.12": [
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  },
+  "animation.flamethrower_turret.no_ammo": {
+   "animation_length": 1.2,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       12,
+       0,
+       0
+      ],
+      "0.6": [
+       16,
+       0,
+       0
+      ],
+      "1.2": [
+       12,
+       0,
+       0
+      ]
+     }
+    },
+    "tanks": {
+     "position": {
+      "0.0": [
+       0,
+       -0.2,
+       0
+      ],
+      "0.6": [
+       0,
+       -0.35,
+       0
+      ],
+      "1.2": [
+       0,
+       -0.2,
+       0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

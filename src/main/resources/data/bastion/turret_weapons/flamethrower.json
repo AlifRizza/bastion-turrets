@@ -1,0 +1,21 @@
+{
+  "type": "bastion:flamethrower",
+  "ammo": "bastion:ammo/fuel",
+  "energy_color": "#FF7A1E",
+  "range": 8,
+  "fire_interval": 2,
+  "damage": 1.2,
+  "ammo_per_shot": 0.025,
+  "turn_speed": 9,
+  "aim_tolerance": 10,
+  "aim_lock_ticks": 1,
+  "min_pitch": -40,
+  "max_pitch": 60,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.25,
+  "params": {
+    "cone_angle": 16,
+    "burn_ticks": 80,
+    "burn_damage": 1.5
+  }
+}

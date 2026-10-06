@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "bastion:item/tier_upgrade_kit_t3"
+  }
+}

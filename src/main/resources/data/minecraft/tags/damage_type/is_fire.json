@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "bastion:turret_flame",
+    "bastion:turret_burn"
+  ]
+}

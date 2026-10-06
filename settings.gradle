@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            name = 'MinecraftForge'
+            url = 'https://maven.minecraftforge.net/'
+        }
+        maven {
+            name = 'ParchmentMC'
+            url = 'https://maven.parchmentmc.org'
+        }
+        maven {
+            name = 'Sponge'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
+}
+
+rootProject.name = 'bastion'
+
+// ForgeGradle pings the Forge maven on every build; on a flaky network that hangs the build (seen 2026-10-06).
+// Settings run before any project applies its plugins, so this reaches ForgeGradle's environment check.
+System.setProperty('net.minecraftforge.gradle.check.certs', 'false')

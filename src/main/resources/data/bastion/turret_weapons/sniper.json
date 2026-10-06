@@ -1,0 +1,21 @@
+{
+  "type": "bastion:sniper",
+  "ammo": "bastion:ammo/sniper",
+  "energy_color": "#9DFF6A",
+  "range": 64,
+  "fire_interval": 30,
+  "damage": 24,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 6,
+  "aim_tolerance": 0.6,
+  "aim_lock_ticks": 4,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.8,
+  "params": {
+    "charge_ticks": 30,
+    "base_pierce": 1
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "type": "bastion:missile_launcher",
+  "ammo": "bastion:ammo/missile",
+  "energy_color": "#FF8A3C",
+  "range": 48,
+  "fire_interval": 8,
+  "damage": 7,
+  "spread": 0,
+  "ammo_per_shot": 0,
+  "turn_speed": 6,
+  "aim_tolerance": 12,
+  "aim_lock_ticks": 2,
+  "min_pitch": 30,
+  "max_pitch": 30,
+  "pivot_height": 0.75,
+  "muzzle_length": 0.775,
+  "params": {
+    "reload_ticks": 30,
+    "salvo_interval": 2,
+    "launch_speed": 0.55,
+    "cruise_speed": 1.1,
+    "acceleration": 0.07,
+    "turn_rate": 11,
+    "homing_delay": 4,
+    "fuel_ticks": 120,
+    "splash_damage": 6,
+    "splash_radius": 2.2,
+    "knockback": 0.5,
+    "min_range": 6
+  }
+}

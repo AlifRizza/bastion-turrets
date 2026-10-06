@@ -1,0 +1,24 @@
+{
+  "type": "bastion:shotgun",
+  "ammo": "bastion:ammo/scatter",
+  "energy_color": "#FF4FD8",
+  "range": 12,
+  "fire_interval": 24,
+  "damage": 2.5,
+  "spread": 12,
+  "ammo_per_shot": 1,
+  "turn_speed": 10,
+  "aim_tolerance": 3,
+  "aim_lock_ticks": 2,
+  "min_pitch": -30,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.35,
+  "params": {
+    "pellets": 8,
+    "falloff_start": 6,
+    "falloff_end": 12,
+    "falloff_min": 0.4,
+    "knockback": 1.2
+  }
+}

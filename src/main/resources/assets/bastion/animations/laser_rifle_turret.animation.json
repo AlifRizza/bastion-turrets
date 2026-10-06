@@ -1,0 +1,280 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.laser_rifle_turret.deploy": {
+   "animation_length": 0.9,
+   "bones": {
+    "barrel_0": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       6
+      ],
+      "0.3": [
+       0,
+       0,
+       6
+      ],
+      "0.7": [
+       0,
+       0,
+       -0.3
+      ],
+      "0.85": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "emitter": {
+     "scale": {
+      "0.0": [
+       0.4,
+       0.4,
+       0.4
+      ],
+      "0.55": [
+       0.4,
+       0.4,
+       0.4
+      ],
+      "0.8": [
+       1.08,
+       1.08,
+       1.08
+      ],
+      "0.9": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "body": {
+     "scale": {
+      "0.0": [
+       0.9,
+       0.9,
+       0.9
+      ],
+      "0.25": [
+       1.03,
+       1.03,
+       1.03
+      ],
+      "0.4": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       -30,
+       0,
+       0
+      ],
+      "0.6": [
+       -30,
+       0,
+       0
+      ],
+      "0.85": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.laser_rifle_turret.idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.0": [
+       0,
+       10,
+       0
+      ],
+      "3.0": [
+       0,
+       -10,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.laser_rifle_turret.held_idle": {
+   "animation_length": 4,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "1.0": [
+       0,
+       10,
+       0
+      ],
+      "3.0": [
+       0,
+       -10,
+       0
+      ],
+      "4.0": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.laser_rifle_turret.aim": {
+   "animation_length": 0.3,
+   "bones": {
+    "emitter": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0
+      ],
+      "0.3": [
+       0,
+       0,
+       -0.5
+      ]
+     }
+    }
+   }
+  },
+  "animation.laser_rifle_turret.fire": {
+   "animation_length": 0.6,
+   "bones": {
+    "barrel_0": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       2.6
+      ],
+      "0.08": [
+       0,
+       0,
+       2.2
+      ],
+      "0.6": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "body": {
+     "position": {
+      "0.0": [
+       0,
+       0,
+       0.7
+      ],
+      "0.3": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "emitter": {
+     "scale": {
+      "0.0": [
+       1.15,
+       1.15,
+       1.15
+      ],
+      "0.2": [
+       1,
+       1,
+       1
+      ]
+     }
+    },
+    "vent_l": {
+     "position": {
+      "0.0": [
+       -0.4,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ]
+     }
+    },
+    "vent_r": {
+     "position": {
+      "0.0": [
+       0.4,
+       0,
+       0
+      ],
+      "0.5": [
+       0,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "animation.laser_rifle_turret.no_ammo": {
+   "animation_length": 1.2,
+   "loop": true,
+   "bones": {
+    "sensor": {
+     "rotation": {
+      "0.0": [
+       12,
+       0,
+       0
+      ],
+      "0.6": [
+       16,
+       0,
+       0
+      ],
+      "1.2": [
+       12,
+       0,
+       0
+      ]
+     }
+    }
+   }
+  }
+ }
+}
