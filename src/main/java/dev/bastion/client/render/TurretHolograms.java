@@ -7,6 +7,7 @@ import dev.bastion.client.ClientTurret;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretState;
+import dev.bastion.weapon.Hitscan;
 import dev.bastion.weapon.WeaponData;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -77,17 +78,18 @@ public final class TurretHolograms {
     }
 
     /**
-     * Charged weapons (Sniper): while charging, a laser from the muzzle to the target that thickens and brightens
-     * as the charge fills, with a glowing dot where it lands.
+     * Charged weapons that aim (Sniper, Laser Rifle): while charging, a laser straight out of the barrel that thickens and
+     * brightens as the charge fills, with a glowing dot where it lands.
      */
     private static void laserSight(PoseStack poseStack, MultiBufferSource buffers, Camera camera, float partialTick, ClientLevel level,
                                    ClientTurret client, TurretBaseBlockEntity turret, int chargeTicks, float time) {
         if (turret.clientState() != TurretState.CHARGING || client.muzzles[0] == null) return;
-        Entity target = level.getEntity(turret.clientTargetId());
-        if (target == null) return;
         float progress = client.chargeProgress(level.getGameTime(), partialTick, chargeTicks);
         int color = turret.inventory().weaponData().energyColor();
-        Vec3 end = target.getBoundingBox().getCenter().lerp(target.getEyePosition(partialTick), 0.5);
+        // Straight out of the barrel, where the shot will go: the server's own ray (Hitscan) along the barrel, ending on
+        // the first body or block in the way.
+        Vec3 direction = turret.toWorld(Vec3.directionFromRotation(turret.renderPitch(partialTick), turret.renderYaw(partialTick)));
+        Vec3 end = Hitscan.trace(level, client.muzzles[0], direction, turret.inventory().weaponData().range(), Hitscan::canHit).getLocation();
         VertexConsumer laser = buffers.getBuffer(BastionRenderTypes.additiveGlow(LASER));
         float flicker = 0.85f + 0.15f * Mth.sin(time * 2.1f);
         TrailRenderer.segment(laser, poseStack.last().pose(), camera.getPosition(), client.muzzles[0], end,

@@ -74,6 +74,8 @@ public final class BastionItems {
     public static final RegistryObject<ModifierItem> COOLANT_LOOP = modifier("coolant_loop");
     public static final RegistryObject<ModifierItem> OVERCLOCK = modifier("overclock");
     public static final RegistryObject<ModifierItem> TARGETING_AI = modifier("targeting_ai");
+    // Weapon-specific modules (fit only their weapon, see ModifierEffect#weapons).
+    public static final RegistryObject<ModifierItem> CHOKE_MODULE = modifier("choke_module");
 
     // Tools, PLAN 4.1 / 4.7.
     public static final RegistryObject<Item> REPAIR_KIT = REGISTER.register("repair_kit", () -> hinted(new Item.Properties().stacksTo(16), "repair_kit"));

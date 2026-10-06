@@ -442,6 +442,8 @@ MODIFIER_GLYPHS = {
     "coolant_loop": ("A8E6FF", ["...a...", ".a.a.a.", "..aaa..", "aaadaaa", "..aaa..", ".a.a.a.", "...a..."]),
     "overclock": ("FFE14F", ["....aa.", "...aa..", "..aa...", ".aaaaa.", "...aa..", "..aa...", ".aa...."]),
     "targeting_ai": ("FF4FD8", [".aaaaa.", "a.....a", "a.ddd.a", "a.dad.a", "a.ddd.a", "a.....a", ".aaaaa."]),
+    # weapon-specific: a funnel squeezing the pellets into a tight stream (Shotgun)
+    "choke_module": ("FF8AE6", ["a.....a", "a.....a", ".a...a.", "..a.a..", "..ada..", "..ada..", "...d..."]),
 }
 
 

@@ -6,6 +6,13 @@ Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec)
 
 ## 0. Where we stopped (do this next)
 
+**Done 16:45:** charged weapons keep their charge on moving targets (hold at full until aligned; only losing the
+target resets it); the charging laser pointer follows the barrel (Hitscan.trace, the server's ray). **Weapon-specific
+modules**: ModifierEffect gained `spread` and `weapons` (ids it fits; empty = all); TurretInventory refuses a module
+next to another weapon and ignores it after a swap (red slot in the GUI). First one: **Choke Module** (Shotgun, spread
+-40%). User plan, not decided: weapon module tiers Mk1/Mk2/Mk3 (everything now = Mk1); ask what each tier gives before
+building. 47 GameTests.
+
 **Done 16:00: Laser Rifle** (1x1): Laser Cell ammo (no recipe yet: user plans empty cells + an FE charging
 station later), charge 50 t with light gathering at the emitter (LaserChargeRenderer orb + converging sparks, focus_rings
 spin via WeaponAnimatable.focusAngle), one beam (BeamRenderer) through every valid target, stops at blocks, aims at the

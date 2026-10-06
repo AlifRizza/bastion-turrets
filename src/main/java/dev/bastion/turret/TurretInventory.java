@@ -6,6 +6,7 @@ import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponModuleItem;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -85,7 +86,14 @@ public class TurretInventory extends ItemStackHandler {
         if (!isActive(slot)) return false;
         if (slot == WEAPON) return stack.getItem() instanceof WeaponModuleItem module && module.large() == large.getAsBoolean();
         if (slot < MODIFIER_START) return isAmmo(stack);
-        return stack.getItem() instanceof ModifierItem && !hasModifierElsewhere(stack.getItem(), slot);
+        return stack.getItem() instanceof ModifierItem modifier && !hasModifierElsewhere(stack.getItem(), slot)
+                && modifier.effect().fits(weaponId());
+    }
+
+    /** Id of the mounted weapon's data, or null without a weapon. */
+    @Nullable
+    public ResourceLocation weaponId() {
+        return getStackInSlot(WEAPON).getItem() instanceof WeaponModuleItem weapon ? weapon.weaponId() : null;
     }
 
     /** Each modifier counts once per base (PLAN 4.6). */
@@ -96,13 +104,21 @@ public class TurretInventory extends ItemStackHandler {
         return false;
     }
 
-    /** Sum of the modifiers in unlocked slots. */
+    /** Sum of the modifiers in unlocked slots; a weapon-specific one only counts with its weapon mounted. */
     public ModifierEffect modifierEffect() {
         ModifierEffect total = ModifierEffect.NONE;
+        ResourceLocation weapon = weaponId();
         for (int i = 0; i < tier.get().modifierSlots; i++) {
-            if (getStackInSlot(MODIFIER_START + i).getItem() instanceof ModifierItem modifier) total = total.plus(modifier.effect());
+            if (getStackInSlot(MODIFIER_START + i).getItem() instanceof ModifierItem modifier && modifier.effect().fits(weapon)) {
+                total = total.plus(modifier.effect());
+            }
         }
         return total;
+    }
+
+    /** A module in this slot that does nothing with the weapon now mounted (left in after a weapon swap). */
+    public boolean inactiveModifier(int slot) {
+        return getStackInSlot(slot).getItem() instanceof ModifierItem modifier && !modifier.effect().fits(weaponId());
     }
 
     @Override

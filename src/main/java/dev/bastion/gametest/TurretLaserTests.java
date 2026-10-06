@@ -12,6 +12,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -48,6 +49,38 @@ public class TurretLaserTests {
             helper.assertTrue(husks.stream().allMatch(TurretLaserTests::hit), "not every husk on the line was hit, state " + turret.state());
             helper.assertTrue(!hit(villager), "the villager on the line got hit");
             helper.assertTrue(turret.inventory().getStackInSlot(TurretInventory.AMMO_START).getCount() == 2, "expected one cell spent");
+            turret.inventory().setStackInSlot(TurretInventory.WEAPON, ItemStack.EMPTY);
+        });
+    }
+
+    /**
+     * Charged weapons keep their charge on a target that moves: a husk zig-zagging side to side (~3 deg/tick as seen
+     * from the turret, turning sharply) still gets shot. Before the fix every drift past aim_tolerance restarted the charge.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "laserHitsAStrafingTarget")
+    public static void laserHitsAStrafingTarget(GameTestHelper helper) {
+        strafingTarget(helper, laser(helper, 3));
+    }
+
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "sniperHitsAStrafingTarget")
+    public static void sniperHitsAStrafingTarget(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = laser(helper, 0);
+        turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.SNIPER_TURRET.get()));
+        turret.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.SNIPER_ROUNDS.get(), 3));
+        strafingTarget(helper, turret);
+    }
+
+    private static void strafingTarget(GameTestHelper helper, TurretBaseBlockEntity turret) {
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(7, 2, 3));
+        Vec3 lane = helper.absoluteVec(new Vec3(7.5, 2, 3.5));
+        int[] tick = {0};
+        helper.onEachTick(() -> { // zig-zag at a steady 0.3 blocks/tick, turning sharply every 10 ticks, like a running mob
+            int t = tick[0]++ % 20;
+            double z = lane.z - 1.5 + 0.3 * (t < 10 ? t : 20 - t);
+            husk.teleportTo(lane.x, lane.y, z);
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hit(husk), "never fired at the strafing husk, state " + turret.state());
             turret.inventory().setStackInSlot(TurretInventory.WEAPON, ItemStack.EMPTY);
         });
     }

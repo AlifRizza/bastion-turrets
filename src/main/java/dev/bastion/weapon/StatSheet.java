@@ -32,7 +32,7 @@ public record StatSheet(
                 data.range() * (1 + m.range()),
                 data.fireInterval() / Math.max(0.1f, 1 + m.fireRate()),
                 data.damage() * (1 + m.damage()),
-                data.spread(),
+                data.spread() * Math.max(0, 1 + m.spread()),
                 data.ammoPerShot(),
                 data.aim().turnSpeed() * BastionConfig.turnSpeedMultiplier(tier) * (1 + m.turnSpeed()),
                 data.heat().perShot() * (1 + m.heatPerShot()),

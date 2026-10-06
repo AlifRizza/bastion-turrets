@@ -195,5 +195,9 @@
   "death.attack.bastion.turret_laser.player": "%1$s diuapkan oleh turret milik %2$s",
   "subtitles.bastion.laser.charge": "Laser mengisi daya",
   "subtitles.bastion.laser.fire": "Laser menembak",
-  "subtitles.bastion.laser.fire_tail": "Laser di kejauhan"
+  "subtitles.bastion.laser.fire_tail": "Laser di kejauhan",
+  "item.bastion.choke_module": "Modul Choke",
+  "tooltip.bastion.modifier.spread": "Sebaran %s",
+  "tooltip.bastion.modifier.only": "Khusus: %s",
+  "gui.bastion.info.spread": "Sebaran"
 }

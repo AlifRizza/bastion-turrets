@@ -195,5 +195,9 @@
   "death.attack.bastion.turret_laser.player": "%1$s was vaporized by %2$s's turret",
   "subtitles.bastion.laser.charge": "Laser charges",
   "subtitles.bastion.laser.fire": "Laser fires",
-  "subtitles.bastion.laser.fire_tail": "Distant laser"
+  "subtitles.bastion.laser.fire_tail": "Distant laser",
+  "item.bastion.choke_module": "Choke Module",
+  "tooltip.bastion.modifier.spread": "%s spread",
+  "tooltip.bastion.modifier.only": "Only for: %s",
+  "gui.bastion.info.spread": "Spread"
 }

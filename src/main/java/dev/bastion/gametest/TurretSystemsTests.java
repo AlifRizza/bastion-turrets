@@ -213,6 +213,28 @@ public class TurretSystemsTests {
         helper.succeed();
     }
 
+    /** Choke Module: Shotgun only, 40% tighter spread; refused next to another weapon, idle after a weapon swap. */
+    @GameTest(template = ARENA, batch = "chokeFitsShotgunOnly")
+    public static void chokeFitsShotgunOnly(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gun(helper);
+        TurretInventory inventory = turret.inventory();
+        ItemStack choke = new ItemStack(BastionItems.CHOKE_MODULE.get());
+        helper.assertTrue(!inventory.isItemValid(TurretInventory.MODIFIER_START, choke), "Choke Module accepted next to a Gun");
+
+        inventory.setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.SHOTGUN_TURRET.get()));
+        helper.assertTrue(inventory.isItemValid(TurretInventory.MODIFIER_START, choke), "Choke Module refused next to a Shotgun");
+        float base = StatSheet.of(inventory.weaponData(), TurretTier.T1).spread();
+        inventory.setStackInSlot(TurretInventory.MODIFIER_START, choke);
+        float choked = StatSheet.of(inventory.weaponData(), TurretTier.T1, inventory.modifierEffect()).spread();
+        helper.assertTrue(Math.abs(choked - base * 0.6f) < 1e-3, "spread " + choked + ", expected " + base * 0.6f);
+
+        inventory.setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.GUN_TURRET.get()));
+        helper.assertTrue(inventory.modifierEffect().spread() == 0 && inventory.inactiveModifier(TurretInventory.MODIFIER_START),
+                "the Choke Module still works on a Gun");
+        disarm(turret);
+        helper.succeed();
+    }
+
     // --- target filter ------------------------------------------------------------------------
 
     @GameTest(template = ARENA, timeoutTicks = 200, batch = "alwaysRuleTargetsPassive")

@@ -210,6 +210,10 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
             for (int i = TurretInventory.AMMO_START; i < TurretInventory.SIZE; i++) {
                 Slot slot = menu.slots.get(i);
                 graphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1, slot.isActive() ? SLOT_U : LOCKED_SLOT_U, 0, 18, 18);
+                // A weapon-specific module left in after a weapon swap does nothing: tint its slot red.
+                if (slot.isActive() && menu.turret().inactiveModifier(i)) {
+                    graphics.fill(leftPos + slot.x, topPos + slot.y, leftPos + slot.x + 16, topPos + slot.y + 16, 0x60FF3030);
+                }
             }
             float hp = menu.maxHealth() > 0 ? menu.health() / menu.maxHealth() : 1;
             gauge(graphics, HP_BAR_X, hp, hp < 0.3f ? 0xFFFF5A4F : 0xFF7CFF8A);
@@ -461,6 +465,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                 {"turn_speed", fmt(stats.turnSpeed() * 20) + "°/s"},
                 // The Laser Rifle passes through every valid target on its line.
                 {"pierce", data.type().equals(BastionWeaponTypes.LASER_RIFLE.getId()) ? "∞" : String.valueOf(stats.pierce())},
+                {"spread", fmt(stats.spread()) + "°"},
                 {"ammo_save", Math.round(stats.ammoSaveChance() * 100) + "%"},
         };
         String[][] right = data.params().containsKey("energy_per_shot") ? new String[][]{ // energy weapons: capacitor, no heat
@@ -497,7 +502,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
 
     private void statColumn(GuiGraphics graphics, String[][] rows, int x) {
         for (int i = 0; i < rows.length; i++) {
-            int y = 50 + i * 11;
+            int y = 46 + i * 10; // up to 7 rows above the ability divider at y 120
             int valueWidth = font.width(rows[i][1]);
             fit(graphics, Component.translatable("gui.bastion.info." + rows[i][0]), x, y, COLUMN_W - valueWidth - 4, MUTED);
             graphics.drawString(font, rows[i][1], x + COLUMN_W - valueWidth, y, TEXT, false);

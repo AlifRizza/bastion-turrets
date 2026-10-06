@@ -487,24 +487,33 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             return;
         }
         float error = Math.max(Math.abs(Mth.wrapDegrees(TargetSelector.yaw(toTarget) - yaw)), Math.abs(desiredPitch - pitch));
-        if (error > data.aim().tolerance()) {
-            aimLockTicks = chargeTimer = 0; // a charge (Sniper) starts over once the aim drifts
+        boolean aligned = error <= data.aim().tolerance();
+        if (!aligned && chargeTimer == 0) {
+            aimLockTicks = 0;
             state = TurretState.ACQUIRING;
             return;
         }
-        aimLockTicks++;
-        if (fireCooldown > 0) {
-            state = TurretState.COOLDOWN;
-            return;
-        }
-        if (aimLockTicks < data.aim().lockTicks() || !type.ready(stats, weaponState)) {
-            fireCooldown = Math.max(fireCooldown, 0);
-            state = TurretState.AIMING;
-            return;
+        // A charge under way (Sniper, Laser Rifle) survives the target moving: the turret keeps tracking while it
+        // charges, and once full the shot waits until the aim lines up again. Only losing the target resets it.
+        if (chargeTimer == 0) {
+            aimLockTicks++;
+            if (fireCooldown > 0) {
+                state = TurretState.COOLDOWN;
+                return;
+            }
+            if (aimLockTicks < data.aim().lockTicks() || !type.ready(stats, weaponState)) {
+                fireCooldown = Math.max(fireCooldown, 0);
+                state = TurretState.AIMING;
+                return;
+            }
         }
         int charge = type.chargeTicks(stats);
         if (charge > 0 && chargeTimer < charge) {
             chargeTimer++;
+            state = TurretState.CHARGING;
+            return;
+        }
+        if (!aligned) { // fully charged, holding for the aim
             state = TurretState.CHARGING;
             return;
         }

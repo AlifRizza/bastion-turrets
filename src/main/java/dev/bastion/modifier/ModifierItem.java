@@ -1,5 +1,6 @@
 package dev.bastion.modifier;
 
+import dev.bastion.weapon.WeaponModuleItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A modifier module (PLAN 4.6). Its effect is data: data/<ns>/turret_modifiers/<item path>.json. A base
@@ -37,11 +39,17 @@ public class ModifierItem extends Item {
         percent(tooltip, "ammo_save_chance", e.ammoSaveChance());
         if (e.pierce() != 0) tooltip.add(line("pierce", String.format("%+d", e.pierce()), e.pierce() > 0));
         if (e.leadAccuracy() != 0) tooltip.add(Component.translatable("tooltip.bastion.modifier.lead_accuracy").withStyle(ChatFormatting.BLUE));
+        percent(tooltip, "spread", e.spread());
+        if (!e.weapons().isEmpty()) { // weapon-specific module: name the modules it fits
+            String fits = BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && e.weapons().contains(w.weaponId()))
+                    .map(i -> i.getDescription().getString()).collect(Collectors.joining(", "));
+            tooltip.add(Component.translatable("tooltip.bastion.modifier.only", fits).withStyle(ChatFormatting.GOLD));
+        }
     }
 
     private static void percent(List<Component> tooltip, String key, float value) {
         if (value == 0) return;
-        boolean good = key.equals("heat_per_shot") ? value < 0 : value > 0;
+        boolean good = key.equals("heat_per_shot") || key.equals("spread") ? value < 0 : value > 0;
         tooltip.add(line(key, String.format("%+d%%", Math.round(value * 100)), good));
     }
 

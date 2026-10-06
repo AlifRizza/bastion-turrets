@@ -1,6 +1,6 @@
 # Manual test checklist (Fase 2–7)
 
-Automated: `./gradlew runGameTestServer` (44 tests: base, combat, weapons, modifiers, filter, redstone, HP,
+Automated: `./gradlew runGameTestServer` (47 tests: base, combat, weapons, modifiers, filter, redstone, HP,
 destruction). Visual: `./gradlew devClasses runClient -Pshowcase`. The list below is what still needs eyes and hands.
 
 Setup: creative world, a turret base with a weapon module and Creative Ammo (never runs out). Targets:
@@ -53,7 +53,13 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Locks on, then charges ~2.5 s: light gathers at the emitter from a spark into a big red orb, sparks stream into it, the focus rings on the barrel spin faster, a rising whine; a lens flare flashes just before the shot.
 - [ ] The shot: a thick red beam with energy flowing along it, a flash and kick at the emitter, sparks on every target it passes through, a glowing burn where it hits a wall. 1 cell per shot.
 - [ ] Line up several mobs: one beam hits them all. A villager/pet/you standing in the line is not hurt. The beam stops at walls.
-- [ ] Moving targets: the charge restarts if the target leaves the sights; Info tab shows Pierce `∞`.
+- [ ] Moving targets (also Sniper): the charge keeps going while the turret tracks a running mob; when full it fires as soon as the aim lines up. It only starts over when the target dies or leaves sight.
+- [ ] The aiming laser during the charge comes straight out of the barrel and lands exactly where the beam then goes. Info tab shows Pierce `∞`.
+
+## Weapon-specific modules
+- [ ] Choke Module (craft: nuggets, redstone, copper, hopper): goes in a modules slot only while a Shotgun is mounted (refused next to other weapons). Tooltip: "-40% spread", "Only for: Shotgun Turret".
+- [ ] With it, the Shotgun's pellets land in a visibly tighter cone; Info tab Spread drops from 12° to 7.2°.
+- [ ] Swap the Shotgun for another weapon with the Choke still inside: its slot turns red and it does nothing until a Shotgun is back.
 
 ## Mounting: floor, wall, ceiling
 - [ ] Place a base on a floor, on a wall and under a ceiling: it attaches to the clicked face and the weapon sits on its far end.
