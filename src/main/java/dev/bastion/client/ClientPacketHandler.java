@@ -84,7 +84,7 @@ public final class ClientPacketHandler {
         Vec3 at = event.pos();
         if (event.kind() == TurretImpactEvent.ROCKET_BLAST || event.kind() == TurretImpactEvent.MISSILE_BLAST) {
             boolean missile = event.kind() == TurretImpactEvent.MISSILE_BLAST;
-            SmokeTrailRenderer.end(at, level.getGameTime());
+            SmokeTrailRenderer.end(event.source(), at, level.getGameTime());
             rocketBlast(level, event, missile);
             level.playLocalSound(at.x, at.y, at.z, (missile ? BastionSounds.MISSILE_EXPLODE : BastionSounds.ROCKET_EXPLODE).get(),
                     SoundSource.HOSTILE, missile ? 1.4f : 2.2f, 0.94f + level.random.nextFloat() * 0.12f, false);

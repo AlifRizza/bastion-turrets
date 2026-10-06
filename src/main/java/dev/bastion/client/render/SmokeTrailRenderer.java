@@ -63,6 +63,7 @@ public final class SmokeTrailRenderer {
     /** The rocket {@code id} passed {@code tail} this tick; missiles leave a thinner, shorter trail. */
     public static void add(int id, Vec3 tail, boolean missile, long gameTime) {
         Trail trail = TRAILS.get(id);
+        if (trail != null && trail.ended) return; // exploded: the entity may linger a tick on the client
         if (trail == null) {
             if (TRAILS.size() >= MAX_TRAILS) return;
             trail = missile ? new Trail(28, 0.32f, 0.2f, 0xE2E5E9) : new Trail(50, 0.62f, 0.32f, 0xA4A8AE);
@@ -75,25 +76,15 @@ public final class SmokeTrailRenderer {
     }
 
     /**
-     * A rocket or missile exploded at {@code at}. The server removes it a tick before it would reach that point, so the
-     * trail stops short of the blast; the trail that was flying nearest runs on into it.
+     * Rocket {@code id} exploded at {@code at}. The server removes it a tick before it would reach that point, so its
+     * trail runs on into the blast here (by id: in a salvo the nearest trail is often another missile's).
      */
-    public static void end(Vec3 at, long gameTime) {
-        Trail nearest = null;
-        double best = 6 * 6;
-        for (Trail trail : TRAILS.values()) {
-            if (trail.ended || trail.points.isEmpty() || gameTime - trail.fed > 3) continue;
-            Point last = trail.points.peekFirst();
-            double d = last.pos.distanceToSqr(at);
-            if (d < best) {
-                best = d;
-                nearest = trail;
-            }
-        }
-        if (nearest == null) return;
-        Point last = nearest.points.peekFirst();
-        nearest.points.addFirst(new Point(at, gameTime, last.distance + last.pos.distanceTo(at)));
-        nearest.ended = true;
+    public static void end(int id, Vec3 at, long gameTime) {
+        Trail trail = TRAILS.get(id);
+        if (trail == null || trail.ended || trail.points.isEmpty()) return;
+        Point last = trail.points.peekFirst();
+        trail.points.addFirst(new Point(at, gameTime, last.distance + last.pos.distanceTo(at)));
+        trail.ended = true;
     }
 
     public static void tick(long gameTime) {

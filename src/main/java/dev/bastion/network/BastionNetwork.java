@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class BastionNetwork {
-    private static final String PROTOCOL = "7";
+    private static final String PROTOCOL = "8";
     /** Every S->C turret packet only reaches players this close (PLAN 4.8). */
     public static final double BROADCAST_RADIUS = 96;
 

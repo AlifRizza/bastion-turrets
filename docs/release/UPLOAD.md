@@ -1,5 +1,6 @@
-# Upload sheet: 0.1.0-beta.2
+# Upload sheet: 0.1.0-beta.3
 
+Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
 [DESCRIPTION.curseforge.html](DESCRIPTION.curseforge.html) (CurseForge editor: Source code view, links to CurseForge pages;
 swap each `[IMAGE: ...]` line for that picture). Gallery images: [screenshots/](screenshots/); in-description images
@@ -22,9 +23,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field | Value |
 |---|---|
-| File | `build/libs/bastion-1.20.1-0.1.0-beta.2.jar` (`./gradlew build`) |
-| Version number | 0.1.0-beta.2 |
-| Version name | Bastion Turrets 0.1.0-beta.2 |
+| File | `build/libs/bastion-1.20.1-0.1.0-beta.3.jar` (`./gradlew build`) |
+| Version number | 0.1.0-beta.3 |
+| Version name | Bastion Turrets 0.1.0-beta.3 |
 | Release channel / type | Beta |
 | Loader | Forge |
 | Game version | 1.20.1 |
@@ -33,6 +34,13 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 Next betas: `0.1.0-beta.2`, `-beta.3`, ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta.
 First non-beta: `0.1.0` with channel Release.
+
+## Changelog: 0.1.0-beta.3
+
+```
+- Missile salvo trails no longer zigzag: each trail ends at its own missile's blast.
+- Homing missiles fly smooth arcs instead of weaving around targets thrown by blasts.
+```
 
 ## Changelog: 0.1.0-beta.2
 

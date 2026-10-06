@@ -49,6 +49,8 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private int homingDelay, age;
     @Nullable
     private LivingEntity homingTarget;
+    /** The homing target's velocity, smoothed over a few ticks. */
+    private Vec3 targetVelocity = Vec3.ZERO;
     private int blastKind = TurretImpactEvent.ROCKET_BLAST;
 
     public TurretRocketEntity(EntityType<? extends TurretRocketEntity> type, Level level) {
@@ -140,11 +142,16 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         double speed = Math.min(cruiseSpeed, velocity.length() + acceleration);
         Vec3 dir = velocity.lengthSqr() < 1e-8 ? new Vec3(0, 1, 0) : velocity.normalize();
         if (age > homingDelay) {
-            if (homingTarget == null || !homingTarget.isAlive()) homingTarget = retarget();
+            if (homingTarget == null || !homingTarget.isAlive()) {
+                homingTarget = retarget();
+                targetVelocity = Vec3.ZERO;
+            }
             if (homingTarget != null) {
                 Vec3 aim = homingTarget.getBoundingBox().getCenter();
                 double flight = aim.distanceTo(position()) / Math.max(speed, 0.1);
-                aim = aim.add(LeadSolver.velocity(homingTarget).scale(flight));
+                // Lead on a smoothed velocity: a target thrown about by blasts would make the missile weave.
+                targetVelocity = targetVelocity.scale(0.8).add(LeadSolver.velocity(homingTarget).scale(0.2));
+                aim = aim.add(targetVelocity.scale(flight));
                 dir = turnToward(dir, aim.subtract(position()).normalize(), turnRate);
             }
         }
@@ -196,7 +203,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
             direct.hurt(BastionDamageTypes.turretShot(server), damage);
         }
         BastionExplosion.detonate(server, at, splashRadius, splashDamage, knockback, this::affects, this);
-        BastionNetwork.sendNear(server, BlockPos.containing(at), new TurretImpactEvent(at, blastKind, splashRadius / 3.5f, normal));
+        BastionNetwork.sendNear(server, BlockPos.containing(at), new TurretImpactEvent(at, blastKind, splashRadius / 3.5f, normal, getId()));
         discard();
     }
 

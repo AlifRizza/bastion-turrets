@@ -184,8 +184,9 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-// The stress scene measures FPS, so it runs without them (ToroHealth draws a bar over every husk).
-tasks.matching { it.name == 'runClient' && project.findProperty('showcase') != 'stress' }.configureEach {
+// The stress scene measures FPS, so it runs without them (ToroHealth draws a bar over every husk); -PnoDevMods drops
+// them too (clean screenshots for the store page).
+tasks.matching { it.name == 'runClient' && project.findProperty('showcase') != 'stress' && !project.hasProperty('noDevMods') }.configureEach {
     runtimeClasspathArtifacts.from(configurations.clientDevMods)
     classpath(configurations.clientDevMods)
 }

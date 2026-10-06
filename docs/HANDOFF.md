@@ -32,6 +32,12 @@ the last shot). GameTest `flamethrowerSweepsToNextTarget` (negative control chec
 down to them). **Autoloader** module (user, 23:10): `reload_speed` 0.4 (ModifierEffect field, StatSheet.reloadRate), fits
 Rocket + Missile Launcher; missile `reload_ticks / reloadRate`, rocket fire interval too (`WeaponType.firesAsItReloads`).
 Recipe in gen_recipes.py (piston), glyph ↻ in gen_textures.py. Defaults not confirmed: +40%, recipe. 58 GameTests.
+23:45: salvo trails zigzagged: (1) `SmokeTrailRenderer.end` matched the nearest trail, often another missile's ->
+TurretImpactEvent now carries the rocket's entity id (`source`, PROTOCOL "8"); (2) homing lead on raw target velocity
+made missiles weave around blast-knocked targets -> `TurretRocketEntity.targetVelocity` smoothed (0.8/0.2). Store icon
+from our own render: `-Pshowcase=icon` (IconShowcase, lime chroma) + `tools/make_icon.py` -> `docs/release/icon.png`
+(Modrinth refuses generated art). `-PnoDevMods` drops ToroHealth for clean screenshots; 05_missile_salvo replaced.
+**CurseForge has beta.2 (`e43a732`); these fixes are 0.1.0-beta.3.** Modrinth gets beta.3 as its first version.
 Modrinth not uploaded yet.
 
 **Release prep (18:30, committed; repo pushed to `AlifRizza/bastion-turrets`, private):** version `0.1.0-beta.1` (beta channel; jar `bastion-1.20.1-0.1.0-beta.1.jar`,
