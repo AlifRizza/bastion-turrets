@@ -1,0 +1,172 @@
+<h1>Bastion Turrets</h1>
+<p>Futuristic, modular turrets for Forge 1.20.1. Place a base, mount a weapon, feed it ammo and tune it with modules.
+The muzzle flashes, beams, lightning arcs and explosions were all made for this mod. You won't find a single vanilla particle in there.</p>
+<blockquote>
+<p>This is a beta. Numbers will move between versions and the sounds are still placeholders, so back up your world before you update.</p>
+</blockquote>
+<p>[IMAGE: screenshots-840/01_laser_rifle_beam.jpg]</p>
+
+<h2>Weapons</h2>
+<table border="1" cellpadding="6">
+<thead>
+<tr>
+<th>Weapon</th>
+<th>Base</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gun Turret</td>
+<td>Standard</td>
+<td>Precise rifle. Hold a target for a second and the next shot deals x1.5 (another x1.5 on a headshot).</td>
+</tr>
+<tr>
+<td>Machine Gun Turret</td>
+<td>Standard</td>
+<td>Spins up into a stream of bullets. Builds heat, slows what it hits and overheats if you push it.</td>
+</tr>
+<tr>
+<td>Shotgun Turret</td>
+<td>Standard</td>
+<td>8 pellets with damage falloff and heavy knockback.</td>
+</tr>
+<tr>
+<td>Sniper Turret</td>
+<td>Standard</td>
+<td>Charges behind a laser sight, then sends one heavy round through 2 targets. 64 block range.</td>
+</tr>
+<tr>
+<td>Rocket Launcher Turret</td>
+<td>Standard</td>
+<td>Leads moving targets. The blast only hurts what the turret is allowed to shoot.</td>
+</tr>
+<tr>
+<td>Flamethrower Turret</td>
+<td>Standard</td>
+<td>Sets valid targets in a short cone on fire. Burns through Fuel Canisters.</td>
+</tr>
+<tr>
+<td>Laser Rifle Turret</td>
+<td>Standard</td>
+<td>Charges up and fires one beam through all valid targets in a line. Walls stop it.</td>
+</tr>
+<tr>
+<td>Missile Launcher Turret</td>
+<td>Large</td>
+<td>12 homing missiles. Fire them as they load, or wait for a full salvo spread over everything in range.</td>
+</tr>
+<tr>
+<td>Tesla Coil Turret</td>
+<td>Large</td>
+<td>Runs on FE instead of ammo. Its lightning hits two targets at once.</td>
+</tr>
+</tbody>
+</table>
+<p>The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.</p>
+<p>[IMAGE: screenshots-840/03_tesla_coil.jpg]</p>
+<p>[IMAGE: screenshots-840/05_missile_salvo.jpg]</p>
+
+<h2>Turret bases</h2>
+<p>The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher and Tesla Coil) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.</p>
+<p>Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, and a Repair Kit puts back 40% HP. A destroyed turret drops its weapon, ammo and modules while the base falls one tier (a T1 base turns into a Damaged Turret Base that you can restore). Mining a base works like breaking a shulker box, so tier and contents stay with the item.</p>
+<p>[IMAGE: screenshots-840/07_floor_wall_ceiling.jpg]</p>
+
+<h2>Targeting and control</h2>
+<ul>
+<li>Choose the categories a turret shoots (Hostile, Neutral, Passive, Players, Bosses), then add rules for specific mobs or players.</li>
+<li>Priority can be nearest, lowest HP or highest threat.</li>
+<li>Only you and players you trust can open or change your turrets.</li>
+<li>Redstone turns a turret on or off, and a comparator reads its ammo (or energy) level.</li>
+<li>The Turret Configurator copies one turret's targeting so you can paste it onto others.</li>
+</ul>
+<h2>Modules</h2>
+<table border="1" cellpadding="6">
+<thead>
+<tr>
+<th>Module</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Range Module</td>
+<td>+25% range</td>
+</tr>
+<tr>
+<td>Rapid Cycler</td>
+<td>+20% fire rate, +15% heat per shot</td>
+</tr>
+<tr>
+<td>Damage Amplifier</td>
+<td>+20% damage</td>
+</tr>
+<tr>
+<td>Penetrator</td>
+<td>pierces 1 more target</td>
+</tr>
+<tr>
+<td>Ammo Recycler</td>
+<td>20% chance to save ammo</td>
+</tr>
+<tr>
+<td>Coolant Loop</td>
+<td>+40% cooling</td>
+</tr>
+<tr>
+<td>Overclock</td>
+<td>+40% fire rate and +10% damage, paid for with +60% heat per shot and -15% max HP</td>
+</tr>
+<tr>
+<td>Targeting AI</td>
+<td>+25% turn speed, aims ahead of moving targets perfectly</td>
+</tr>
+<tr>
+<td>Choke Module</td>
+<td>-40% spread (Shotgun only)</td>
+</tr>
+<tr>
+<td>Autoloader</td>
+<td>+40% reload speed (Rocket and Missile Launcher only)</td>
+</tr>
+</tbody>
+</table>
+<p>Each kind of module fits once per base. Different modules add up, and a T3 base has four module slots.</p>
+<h2>Ammo and automation</h2>
+<p>Ammo comes in seven kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters and Laser Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well.</p>
+<p>[IMAGE: screenshots-840/08_create_automation.jpg]</p>
+
+<h2>Workstations</h2>
+<p>Survival players make all turret gear in five machines that run on FE. Each one has an animated model and its own GUI.</p>
+<ul>
+<li>Part Workstation (2x1x2) machines the parts for each base and weapon.</li>
+<li>Part Assembler (2x2x2) builds bases and weapons out of those parts and restores damaged bases.</li>
+<li>Module Workstation and Ammo Workstation (1x1x2) craft instantly from your inventory, or run by themselves when automation feeds them.</li>
+<li>Charging Station (1x1x1) fills Empty Laser Cells with FE.</li>
+</ul>
+<p>The crafting table only makes the stations. A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.</p>
+<blockquote>
+<p><strong>You need an FE source.</strong> Bastion doesn't add a generator. Pair it with any mod that makes Forge Energy, for example Create Crafts &amp; Additions, Mekanism, Thermal Series, Powah or Immersive Engineering.</p>
+</blockquote>
+<p>[IMAGE: screenshots-840/09_workstations.jpg]</p>
+<p>[IMAGE: screenshots-840/10_part_assembler_gui.jpg]</p>
+
+<h2>Effects</h2>
+<p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, flame jets and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
+<h2>For modpack makers</h2>
+<p>Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.</p>
+<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets and how much energy the workstations hold and take in.</p>
+<h2>Requirements</h2>
+<ul>
+<li>Minecraft 1.20.1 with Forge 47.2 or newer</li>
+<li><a href="https://www.curseforge.com/minecraft/mc-mods/geckolib">GeckoLib</a> 4.8 or newer (required)</li>
+<li>Any mod that produces FE, for the workstations and the Tesla Coil</li>
+<li><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a> 6.0 or newer if you want Mechanical Arm support (optional)</li>
+</ul>
+<p>Install it on both client and server.</p>
+<h2>Languages</h2>
+<p>English and Bahasa Indonesia.</p>
+<h2>Known limits of this beta</h2>
+<p>Sounds are placeholders, and there's no JEI or Jade support yet (each station's GUI lists its own recipes).</p>
+<p>Works with Embeddium and Oculus. With a shader pack on, the cyan glow on the models turns white and holograms turn green. Everything else looks as intended.</p>
+<p>Found a bug? Report it at https://github.com/AlifRizza/bastion-turrets/issues</p>

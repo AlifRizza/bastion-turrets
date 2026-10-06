@@ -458,6 +458,8 @@ MODIFIER_GLYPHS = {
     "targeting_ai": ("FF4FD8", [".aaaaa.", "a.....a", "a.ddd.a", "a.dad.a", "a.ddd.a", "a.....a", ".aaaaa."]),
     # weapon-specific: a funnel squeezing the pellets into a tight stream (Shotgun)
     "choke_module": ("FF8AE6", ["a.....a", "a.....a", ".a...a.", "..a.a..", "..ada..", "..ada..", "...d..."]),
+    # weapon-specific: the reload arrow going round (Rocket and Missile Launcher)
+    "autoloader": ("FF8A3C", ["..aaa.d", ".a...dd", "a...ddd", "a......", "a.....a", ".a...a.", "..aaa.."]),
 }
 
 
@@ -953,6 +955,18 @@ def flare():
     x, y = grid(64, 16)
     return white(np.clip(np.exp(-(y / 0.18) ** 2) * soft(np.abs(x), 1.4) * 1.3, 0, 1))
 
+def smoke_strip():
+    """Rocket and missile smoke trail (SmokeTrailRenderer), tileable along u: billowy puffs, dense in the middle and
+    ragged at the edges across v, with soft light and shade the vertex colour tints."""
+    w, h = 64, 32
+    n = 0.5 * wrapped_noise(w, h, 4, 4, 830) + 0.3 * wrapped_noise(w, h, 8, 8, 831) + 0.2 * wrapped_noise(w, h, 16, 12, 832)
+    x, y = grid(w, h)
+    edge = 0.7 + 0.45 * (n - 0.5)  # puffy outline across the trail
+    a = soft(np.abs(y) / np.maximum(edge, 0.2), 0.7) * (0.75 + 0.6 * (n - 0.5))
+    img = white(np.clip(a * 1.5, 0, 1))
+    img[..., :3] = np.clip(0.78 + 0.3 * (n - 0.5) - 0.12 * y, 0, 1)[..., None]  # lit from above
+    return img
+
 def flame_strip():
     """Flamethrower jet strip (FlameJetRenderer), tileable along u, which the renderer scrolls: streaky turbulent fire,
     dense along the middle and ragged at the edges across v."""
@@ -1013,7 +1027,7 @@ VFX_SPRITES = {
     **{f"particle/flame_{i}.png": (lambda i=i: flame(i)) for i in range(3)},
     "particle/dust_ring.png": dust_ring,
     **{f"particle/flame_jet_{i}.png": (lambda i=i: flame_jet(i)) for i in range(6)},
-    "vfx/arc.png": arc, "vfx/flame_jet.png": flame_strip, "vfx/beam.png": beam_strip, "vfx/orb.png": orb, "vfx/flare.png": flare,
+    "vfx/arc.png": arc, "vfx/smoke_trail.png": smoke_strip, "vfx/flame_jet.png": flame_strip, "vfx/beam.png": beam_strip, "vfx/orb.png": orb, "vfx/flare.png": flare,
 }
 
 

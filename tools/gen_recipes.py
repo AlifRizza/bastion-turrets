@@ -137,6 +137,8 @@ def main():
                                                                   {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, core: 1}, 80, 2000))
     write(out / "module_workstation" / "choke_module.json", recipe("module_workstation", B + "choke_module", B + "choke_module",
                                                                  {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, "hopper": 1}, 80, 2000))
+    write(out / "module_workstation" / "autoloader.json", recipe("module_workstation", B + "choke_module", B + "autoloader",
+                                                               {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, "piston": 1}, 80, 2000))
     for tool, (ingredients, time, energy, count) in TOOLS.items():
         write(out / "module_workstation" / f"{tool}.json", recipe("module_workstation", B + "repair_kit", B + tool, ingredients, time, energy, count))
     for ammo, (ingredients, time, energy, count, tab) in AMMO.items():

@@ -2,7 +2,7 @@
 
 Futuristic modular turrets for Minecraft Forge 1.20.1 (mod id `bastion`). Design and roadmap: [docs/PLAN.md](docs/PLAN.md).
 
-Status: public beta `0.1.0-beta.1` (version in `gradle.properties`). Nine weapons on two bases, tiers, HP, modules,
+Status: public beta `0.1.0-beta.2` (version in `gradle.properties`). Nine weapons on two bases, tiers, HP, modules,
 targeting GUI, ammo automation and five FE workstations for survival crafting. Not done yet: final sounds,
 Jade/JEI/Ponder/Iris compat, profiling. Player-facing description: [docs/release/DESCRIPTION.md](docs/release/DESCRIPTION.md);
 upload fields, changelog and image prompts: [docs/release/UPLOAD.md](docs/release/UPLOAD.md).

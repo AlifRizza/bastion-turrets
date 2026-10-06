@@ -482,7 +482,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                 {"max_hp", fmt(menu.maxHealth())},
                 {"regen", fmt(BastionConfig.regenPerSecond(menu.tier())) + "/s"},
                 // Weapons that load ahead (Missile Launcher) show their per-missile reload instead of ammo per shot.
-                data.params().containsKey("reload_ticks") ? new String[]{"reload", fmt(data.param("reload_ticks") / 20f) + "s"}
+                data.params().containsKey("reload_ticks") ? new String[]{"reload", fmt(data.param("reload_ticks") / stats.reloadRate() / 20f) + "s"}
                         : new String[]{"ammo", String.valueOf(data.ammoPerShot())},
         };
         statColumn(graphics, left, LEFT_X);

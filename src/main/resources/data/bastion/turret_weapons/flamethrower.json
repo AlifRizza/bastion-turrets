@@ -9,6 +9,7 @@
   "turn_speed": 9,
   "aim_tolerance": 10,
   "aim_lock_ticks": 1,
+  "sweep_tolerance": 180,
   "min_pitch": -40,
   "max_pitch": 60,
   "pivot_height": 0.4375,

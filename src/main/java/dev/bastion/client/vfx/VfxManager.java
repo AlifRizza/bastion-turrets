@@ -11,6 +11,7 @@ import dev.bastion.client.render.BeamRenderer;
 import dev.bastion.client.render.CasingRenderer;
 import dev.bastion.client.render.FlameJetRenderer;
 import dev.bastion.client.render.LaserChargeRenderer;
+import dev.bastion.client.render.SmokeTrailRenderer;
 import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.render.TurretHolograms;
 import dev.bastion.config.BastionClientConfig;
@@ -88,6 +89,7 @@ public final class VfxManager {
         ClientTurret.tickAll(mc.level);
         TurretHolograms.tick(mc.level);
         TracerRenderer.tick();
+        SmokeTrailRenderer.tick(mc.level.getGameTime());
         ArcRenderer.tick();
         BeamRenderer.tick();
         TeslaEffects.tick(mc.level);
@@ -108,6 +110,7 @@ public final class VfxManager {
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         DecalRenderer.render(poseStack, buffers, camera, partialTick);
         CasingRenderer.render(poseStack, buffers, camera, partialTick);
+        if (Minecraft.getInstance().level != null) SmokeTrailRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         TracerRenderer.render(poseStack, buffers, camera, partialTick);
         ArcRenderer.render(poseStack, buffers, camera, partialTick);
         BeamRenderer.render(poseStack, buffers, camera, partialTick);
@@ -123,6 +126,7 @@ public final class VfxManager {
         if (!event.getLevel().isClientSide()) return;
         ClientTurret.clear();
         TracerRenderer.clear();
+        SmokeTrailRenderer.clear();
         ArcRenderer.clear();
         BeamRenderer.clear();
         TeslaEffects.clear();

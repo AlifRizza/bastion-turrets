@@ -1,6 +1,7 @@
 package dev.bastion.client;
 
 import dev.bastion.Bastion;
+import dev.bastion.client.render.SmokeTrailRenderer;
 import dev.bastion.client.vfx.DynamicLightManager;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
@@ -47,6 +48,7 @@ public final class RocketEffects {
             Vec3 tail = rocket.getBoundingBox().getCenter().add(back.scale(missile ? 0.2 : 0.3));
             VfxParams params = VfxParams.of().color(EXHAUST).seed(level.getGameTime() * 31 + rocket.getId());
             VfxManager.play(missile ? VfxPresets.MISSILE_TRAIL : VfxPresets.ROCKET_TRAIL, tail, back, params);
+            SmokeTrailRenderer.add(rocket.getId(), tail, missile, level.getGameTime());
             DynamicLightManager.add(rocket, tail, missile ? 9 : 12, 2);
             // Twelve roars at once would drown everything: missiles are heard at launch and impact only.
             if (!missile && ROARING.add(rocket.getId())) Minecraft.getInstance().getSoundManager().play(new Roar(rocket));

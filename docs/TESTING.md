@@ -31,7 +31,9 @@ so a 7-damage shot lands as ~6.9.
 ## Sniper & Rocket Launcher
 - [ ] Sniper: locks on, a green laser sight grows thicker for ~1.5 s (with a charging whine), then one heavy crack; two mobs in a line both get hit.
 - [ ] Sniper re-charges from zero when its target moves out of the sights or dies mid-charge.
-- [ ] Rocket Launcher: rockets fly visibly (smoke trail, glow, motor roar), lead running mobs, and explode on impact without breaking blocks.
+- [ ] Rocket Launcher: rockets fly visibly (glow, motor roar), lead running mobs, and explode on impact without breaking blocks.
+- [ ] Smoke trails: rockets leave a thick grey trail, missiles a thinner white one that follows their curve; it starts right at the glowing nozzle (no gap), runs straight into the explosion, which happens where the rocket meets the mob's body (not at its feet), widens, drifts up and fades over ~2 s; smooth bends, no flat shards; dark at night.
+- [ ] Several mobs in range: when a target dies, the turret takes the next one at once. The Flamethrower's flame stays on while it swings to the next mob and only stops when nothing is left in range; the Machine Gun keeps firing through short swings (up to ~30°).
 - [ ] Explosion: white flash + shockwave, rolling fireballs (white-hot to orange to red), flame tongues, black smoke that lingers ~5 s, dust ring on the ground, a scorch mark on the floor/wall that was hit.
 - [ ] Tubes: four rockets sit in the tubes; each shot empties only its own tube, a new rocket slides in ~1 s later; with no ammo the tubes run empty.
 - [ ] The blast never hurts you, trusted players, pets/passive mobs (unless targeted) or other turrets; it does not fire at mobs within 4 blocks.
@@ -71,6 +73,8 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Choke Module (craft: nuggets, redstone, copper, hopper): goes in a modules slot only while a Shotgun is mounted (refused next to other weapons). Tooltip: "-40% spread", "Only for: Shotgun Turret".
 - [ ] With it, the Shotgun's pellets land in a visibly tighter cone; Info tab Spread drops from 12° to 7.2°.
 - [ ] Swap the Shotgun for another weapon with the Choke still inside: its slot turns red and it does nothing until a Shotgun is back.
+- [ ] Autoloader (Module Workstation: nuggets, redstone, copper, piston): only fits next to a Rocket or Missile Launcher. Tooltip "+40% reload speed". Missile Launcher: tubes refill visibly faster, Info tab Reload 1.5s → 1.1s. Rocket Launcher: rockets come faster, Info tab Fire rate goes up.
+- [ ] A second Autoloader (or any module already in the base) is refused by the other slots.
 
 ## Mounting: floor, wall, ceiling
 - [ ] Place a base on a floor, on a wall and under a ceiling: it attaches to the clicked face and the weapon sits on its far end.

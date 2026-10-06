@@ -20,6 +20,20 @@ not play-tested it. What changed, measured with the dev stress scene (200 turret
 - Network: every `sendNear` message is queued and leaves as **one `TurretEvents` packet per player per tick**.
 - Also uncommitted: anti-slop rewrite of `docs/release/DESCRIPTION.md` (+ bullets paragraph), UPLOAD changelog lines.
 
+**20:50: CurseForge has 0.1.0-beta.1 in review** (repo public, tag `v0.1.0-beta.1` = `2c08cd7`). Since then, uncommitted:
+**smoke trails** for rockets and missiles (`SmokeTrailRenderer`: ribbon through the tick positions, widening/rising/fading,
+world-lit, texture `vfx/smoke_trail.png` from `tools/gen_textures.py smoke_strip`, exhaust glow billboard; fed by
+`RocketEffects`; denser trail particles; ribbon edges shared per point; the trail runs on into the blast via
+`SmokeTrailRenderer.end` because the server removes a rocket one tick before its hit point) and **version 0.1.0-beta.2**.
+Also (user, 22:40): turrets retarget the same tick their target is lost (`searchTimer = 0`), and **`sweep_tolerance`**
+(Aim JSON, Flamethrower 180, Machine Gun 30) keeps a burst firing while swinging to the next target (within 10 ticks of
+the last shot). GameTest `flamethrowerSweepsToNextTarget` (negative control checked); 57 pass. Rockets/missiles now explode at
+`impactPoint` (flight segment vs the target's box) instead of `EntityHitResult#getLocation` (the feet: the trail dipped
+down to them). **Autoloader** module (user, 23:10): `reload_speed` 0.4 (ModifierEffect field, StatSheet.reloadRate), fits
+Rocket + Missile Launcher; missile `reload_ticks / reloadRate`, rocket fire interval too (`WeaponType.firesAsItReloads`).
+Recipe in gen_recipes.py (piston), glyph ↻ in gen_textures.py. Defaults not confirmed: +40%, recipe. 58 GameTests.
+Modrinth not uploaded yet.
+
 **Release prep (18:30, committed; repo pushed to `AlifRizza/bastion-turrets`, private):** version `0.1.0-beta.1` (beta channel; jar `bastion-1.20.1-0.1.0-beta.1.jar`,
 authors `AlifRizza`), `docs/release/` = DESCRIPTION.md (paste-ready page text), UPLOAD.md (fields, changelog, gallery
 captions, icon/banner prompts, pre-publish checks), 10 curated screenshots, `reference/` = turret crops to attach

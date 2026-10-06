@@ -102,7 +102,11 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
             HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
             if (hit.getType() != HitResult.Type.MISS) {
                 Vec3 normal = hit instanceof BlockHitResult block ? Vec3.atLowerCornerOf(block.getDirection().getNormal()) : Vec3.ZERO;
-                explode(hit.getLocation(), hit instanceof EntityHitResult entityHit ? entityHit.getEntity() : null, normal);
+                if (hit instanceof EntityHitResult entityHit) {
+                    explode(impactPoint(entityHit.getEntity(), motion), entityHit.getEntity(), normal);
+                } else {
+                    explode(hit.getLocation(), null, normal);
+                }
                 return;
             }
             if (--fuel <= 0) {
@@ -111,6 +115,22 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
             }
         }
         setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
+    }
+
+    /**
+     * Where this tick's flight meets {@code target}: an EntityHitResult only carries the target's feet, which made the
+     * blast (and the smoke trail running into it) dip to the ground. Falls back to the point of the flight path
+     * nearest the target's middle when the rocket only grazed the box.
+     */
+    private Vec3 impactPoint(Entity target, Vec3 motion) {
+        Vec3 from = position(), to = from.add(motion);
+        return target.getBoundingBox().inflate(0.3).clip(from, to).orElseGet(() -> {
+            double length = motion.length();
+            if (length < 1e-6) return from;
+            Vec3 dir = motion.scale(1 / length);
+            double t = Mth.clamp(target.getBoundingBox().getCenter().subtract(from).dot(dir), 0, length);
+            return from.add(dir.scale(t));
+        });
     }
 
     /** Proportional homing: lead the target, turn the velocity toward it by at most turnRate, accelerate to cruise. */

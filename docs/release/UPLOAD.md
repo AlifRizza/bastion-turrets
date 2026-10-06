@@ -1,6 +1,9 @@
-# Upload sheet: 0.1.0-beta.1
+# Upload sheet: 0.1.0-beta.2
 
-Project page text: [DESCRIPTION.md](DESCRIPTION.md). Gallery images: [screenshots/](screenshots/).
+Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
+[DESCRIPTION.curseforge.html](DESCRIPTION.curseforge.html) (CurseForge editor: Source code view, links to CurseForge pages;
+swap each `[IMAGE: ...]` line for that picture). Gallery images: [screenshots/](screenshots/); in-description images
+under 850 px wide: [screenshots-840/](screenshots-840/).
 
 ## Project fields
 
@@ -19,9 +22,9 @@ Project page text: [DESCRIPTION.md](DESCRIPTION.md). Gallery images: [screenshot
 
 | Field | Value |
 |---|---|
-| File | `build/libs/bastion-1.20.1-0.1.0-beta.1.jar` (`./gradlew build`) |
-| Version number | 0.1.0-beta.1 |
-| Version name | Bastion Turrets 0.1.0-beta.1 |
+| File | `build/libs/bastion-1.20.1-0.1.0-beta.2.jar` (`./gradlew build`) |
+| Version number | 0.1.0-beta.2 |
+| Version name | Bastion Turrets 0.1.0-beta.2 |
 | Release channel / type | Beta |
 | Loader | Forge |
 | Game version | 1.20.1 |
@@ -30,6 +33,17 @@ Project page text: [DESCRIPTION.md](DESCRIPTION.md). Gallery images: [screenshot
 
 Next betas: `0.1.0-beta.2`, `-beta.3`, ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta.
 First non-beta: `0.1.0` with channel Release.
+
+## Changelog: 0.1.0-beta.2
+
+```
+- Rockets and missiles leave smoke trails: thick grey smoke behind rockets, white contrails behind missiles, a hot
+  exhaust glow at the nozzle. The smoke widens, drifts and fades over about two seconds.
+- New Autoloader module: +40% reload speed for the Rocket and Missile Launcher.
+- Rockets and missiles explode where they hit a mob's body, not at its feet.
+- Turrets pick their next target the moment the current one dies. The Flamethrower keeps its flame on while it
+  swings to the next mob, the Machine Gun keeps firing through short swings.
+```
 
 ## Changelog: 0.1.0-beta.1
 

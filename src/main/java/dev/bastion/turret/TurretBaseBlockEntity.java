@@ -69,6 +69,8 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     public static final double BASE_HEIGHT = 1.0;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.turret_base.idle");
     private static final int SEARCH_INTERVAL = 10;
+    /** Ticks after a shot during which the burst counts as still going (Aim.sweep_tolerance applies). */
+    private static final int SWEEP_GRACE = 10;
     private static final int SYNC_INTERVAL = 2;
     /** Below this fraction the base shows its damaged state (PLAN 4.1). */
     public static final float DAMAGED_FRACTION = 0.3f;
@@ -93,6 +95,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private float yaw, pitch, yawVelocity, pitchVelocity;
     private float heat, ammoCredit, fireCooldown;
     private int searchTimer, aimLockTicks, overheatTimer, chargeTimer;
+    private int sinceShot = SWEEP_GRACE + 1;
     @Nullable
     private LivingEntity target;
     private WeaponState weaponState = new WeaponState();
@@ -461,6 +464,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         }
         StatSheet stats = StatSheet.of(data, tier, inventory.modifierEffect());
         heat = Math.max(0, heat - stats.heatDissipationPerTick());
+        if (sinceShot <= SWEEP_GRACE) sinceShot++;
         // Carries up to one tick of remainder, so fractional intervals (Machine Gun 12/s) average out exactly.
         fireCooldown = Math.max(fireCooldown - 1, -1);
 
@@ -492,7 +496,8 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             return;
         }
         float error = Math.max(Math.abs(Mth.wrapDegrees(TargetSelector.yaw(toTarget) - yaw)), Math.abs(desiredPitch - pitch));
-        boolean aligned = error <= data.aim().tolerance();
+        // Mid-burst, Flamethrower and Machine Gun keep firing as they swing onto the next target (sweep_tolerance).
+        boolean aligned = error <= (sinceShot <= SWEEP_GRACE ? data.aim().sweep() : data.aim().tolerance());
         if (!aligned && chargeTimer == 0) {
             aimLockTicks = 0;
             state = TurretState.ACQUIRING;
@@ -541,6 +546,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private void updateTarget(StatSheet stats, WeaponType type) {
         if (target != null && (!TargetSelector.isCandidate(this, target, stats, type) || type.sight(this, target, stats) == null)) {
             target = null;
+            searchTimer = 0; // lost it mid-fight: pick the next one this tick instead of waiting for the next search
         }
         if (target == null && --searchTimer <= 0) {
             searchTimer = SEARCH_INTERVAL;
@@ -608,6 +614,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         Vec3 direction = toWorld(Vec3.directionFromRotation(pitch, yaw));
         Vec3 muzzle = pivot(data).add(direction.scale(data.aim().muzzleLength()));
         type.onFire(new FireContext(level, this, muzzle, direction, target, stats, weaponState, level.random.nextLong(), lock));
+        sinceShot = 0;
         fireCooldown += type.fireInterval(stats, weaponState);
         heat += stats.heatPerShot();
         state = TurretState.FIRING;

@@ -1,0 +1,7 @@
+{
+  "reload_speed": 0.4,
+  "weapons": [
+    "bastion:rocket_launcher",
+    "bastion:missile_launcher"
+  ]
+}

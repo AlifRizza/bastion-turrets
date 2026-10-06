@@ -89,7 +89,7 @@ public class MissileLauncherWeapon extends WeaponType {
     public void tick(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats, boolean engaged) {
         if (!(turret.getLevel() instanceof ServerLevel level)) return;
         state.salvoMode = turret.salvo();
-        int reloadTicks = Math.round(stats.data().param("reload_ticks"));
+        int reloadTicks = Math.round(stats.data().param("reload_ticks") / stats.reloadRate());
         if (state.tubes == FULL) {
             state.reloadTimer = reloadTicks; // primed: the first reload comes a full interval after a shot
         } else if (state.reloadTimer > 0) {

@@ -94,6 +94,25 @@ public class TurretLargeTests {
         });
     }
 
+    /** Autoloader (+40% reload speed, Rocket and Missile Launcher only): the same launcher fills its tubes faster. */
+    @GameTest(template = RANGE, timeoutTicks = 200, batch = "autoloaderReloadsFaster")
+    public static void autoloaderReloadsFaster(GameTestHelper helper) {
+        TurretBaseBlockEntity plain = launcher(helper, BastionItems.MISSILES.get(), 12);
+        BlockPos other = MIN.east(6);
+        LargeTurretBaseBlock.placeAt(helper.getLevel(), helper.absolutePos(other), BastionBlocks.LARGE_TURRET_BASE.get());
+        TurretBaseBlockEntity fast = (TurretBaseBlockEntity) helper.getBlockEntity(other);
+        fast.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.MISSILE_LAUNCHER_TURRET.get()));
+        fast.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.MISSILES.get(), 12));
+        fast.inventory().setStackInSlot(TurretInventory.MODIFIER_START, new ItemStack(BastionItems.AUTOLOADER.get()));
+        helper.runAtTickTime(120, () -> {
+            int without = Integer.bitCount(plain.weaponState().tubes), with = Integer.bitCount(fast.weaponState().tubes);
+            helper.assertTrue(with > without, "Autoloader loaded " + with + " tubes, without it " + without);
+            disarm(plain);
+            disarm(fast);
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = RANGE, timeoutTicks = 400, batch = "missileKills")
     public static void missileKills(GameTestHelper helper) {
         TurretBaseBlockEntity turret = launcher(helper, BastionItems.CREATIVE_AMMO.get(), 1);

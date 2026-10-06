@@ -28,6 +28,14 @@ public abstract class WeaponType {
     public void tick(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats, boolean engaged) {
     }
 
+    /**
+     * True when the time between shots is the reload itself (Rocket Launcher: the next rocket is loaded after the last
+     * left), so reload_speed modules shorten the fire interval too.
+     */
+    public boolean firesAsItReloads() {
+        return false;
+    }
+
     /** Ticks until the next shot; Machine Gun shortens it with spin. */
     public float fireInterval(StatSheet stats, WeaponState state) {
         return stats.fireInterval();

@@ -40,6 +40,7 @@ public class ModifierItem extends Item {
         if (e.pierce() != 0) tooltip.add(line("pierce", String.format("%+d", e.pierce()), e.pierce() > 0));
         if (e.leadAccuracy() != 0) tooltip.add(Component.translatable("tooltip.bastion.modifier.lead_accuracy").withStyle(ChatFormatting.BLUE));
         percent(tooltip, "spread", e.spread());
+        percent(tooltip, "reload_speed", e.reloadSpeed());
         if (!e.weapons().isEmpty()) { // weapon-specific module: name the modules it fits
             String fits = BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && e.weapons().contains(w.weaponId()))
                     .map(i -> i.getDescription().getString()).collect(Collectors.joining(", "));

@@ -29,6 +29,11 @@ public class RocketLauncherWeapon extends WeaponType {
     }
 
     @Override
+    public boolean firesAsItReloads() {
+        return true;
+    }
+
+    @Override
     public boolean canTarget(Entity entity, TurretBaseBlockEntity turret) {
         WeaponData data = turret.inventory().weaponData();
         if (data == null) return false;

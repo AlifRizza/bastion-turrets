@@ -10,6 +10,7 @@
   "turn_speed": 11,
   "aim_tolerance": 3,
   "aim_lock_ticks": 1,
+  "sweep_tolerance": 30,
   "min_pitch": -30,
   "max_pitch": 90,
   "heat_per_shot": 1.2,

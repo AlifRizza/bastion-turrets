@@ -124,6 +124,33 @@ public class TurretTeslaFlameTests {
         });
     }
 
+    /**
+     * With more enemies in range the flame never goes out: when its target dies the turret takes the next one at once
+     * and keeps firing while it swings over (sweep_tolerance), instead of idling until the next target search.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "flamethrowerSweepsToNextTarget")
+    public static void flamethrowerSweepsToNextTarget(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = flamethrower(helper, 8);
+        helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(5, 2, 2));
+        helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(5, 2, 5));
+        long[] killedAt = {-1};
+        helper.onEachTick(() -> {
+            if (killedAt[0] < 0) {
+                if (turret.state() == TurretState.FIRING && turret.target() != null) {
+                    turret.target().kill();
+                    killedAt[0] = helper.getTick();
+                }
+            } else if (helper.getTick() == killedAt[0] + 2) {
+                LivingEntity next = turret.target();
+                helper.assertTrue(next != null && next.isAlive(), "no new target right after the kill, state " + turret.state());
+                helper.assertTrue(turret.state() == TurretState.FIRING || turret.state() == TurretState.COOLDOWN,
+                        "the flame went out between targets: " + turret.state());
+                disarm(turret);
+                helper.succeed();
+            }
+        });
+    }
+
     /** Fire-immune mobs are never engaged: no fuel wasted on a blaze. */
     @GameTest(template = ARENA, timeoutTicks = 100, batch = "flamethrowerIgnoresFireImmune")
     public static void flamethrowerIgnoresFireImmune(GameTestHelper helper) {

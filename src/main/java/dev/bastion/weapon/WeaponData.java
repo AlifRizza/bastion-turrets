@@ -31,11 +31,17 @@ public record WeaponData(
     /**
      * Rotation and muzzle geometry. pivotHeight is above the base top; muzzleLength is pivot to muzzle.
      * min_pitch == max_pitch makes a fixed-elevation weapon that only turns left and right (Missile Launcher).
+     * sweep_tolerance: how far off aim the weapon keeps firing while a burst is going and it swings to the next target
+     * (Flamethrower, Machine Gun); unset = aim_tolerance.
      */
     public record Aim(float turnSpeed, float tolerance, int lockTicks, float minPitch, float maxPitch,
-                      float pivotHeight, float muzzleLength) {
+                      float pivotHeight, float muzzleLength, float sweepTolerance) {
         public boolean fixedPitch() {
             return minPitch == maxPitch;
+        }
+
+        public float sweep() {
+            return Math.max(tolerance, sweepTolerance);
         }
 
         static final MapCodec<Aim> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -45,7 +51,8 @@ public record WeaponData(
                 Codec.FLOAT.optionalFieldOf("min_pitch", -30f).forGetter(Aim::minPitch),
                 Codec.FLOAT.optionalFieldOf("max_pitch", 60f).forGetter(Aim::maxPitch),
                 Codec.FLOAT.fieldOf("pivot_height").forGetter(Aim::pivotHeight),
-                Codec.FLOAT.fieldOf("muzzle_length").forGetter(Aim::muzzleLength)
+                Codec.FLOAT.fieldOf("muzzle_length").forGetter(Aim::muzzleLength),
+                Codec.FLOAT.optionalFieldOf("sweep_tolerance", 0f).forGetter(Aim::sweepTolerance)
         ).apply(i, Aim::new));
     }
 

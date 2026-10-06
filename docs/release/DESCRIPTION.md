@@ -55,6 +55,9 @@ Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn
 | Overclock | +40% fire rate and +10% damage, paid for with +60% heat per shot and -15% max HP |
 | Targeting AI | +25% turn speed, aims ahead of moving targets perfectly |
 | Choke Module | -40% spread (Shotgun only) |
+| Autoloader | +40% reload speed (Rocket and Missile Launcher only) |
+
+Each kind of module fits once per base. Different modules add up, and a T3 base has four module slots.
 
 ## Ammo and automation
 

@@ -120,10 +120,10 @@ public final class VfxPresets {
             .light(13, 4)
             .shake(0.3f, 10);
 
-    /** Every tick behind a flying rocket: a flame tongue, a puff of grey smoke, the odd ember. */
+    /** Every tick behind a flying rocket: a flame tongue, puffs of smoke around the SmokeTrailRenderer ribbon, the odd ember. */
     public static final VfxPreset ROCKET_TRAIL = v -> v
-            .burst(BastionParticles.FLAME.get(), 2, v.direction(), 10, 0.12f, 1.4f, 5, Curve.LINEAR, v.params().color())
-            .burst(BastionParticles.BLAST_SMOKE.get(), 2, v.direction(), 25, 0.015f, 1.7f, 45, Curve.EASE_OUT, 0xB0686C72)
+            .burst(BastionParticles.FLAME.get(), 3, v.direction(), 10, 0.12f, 1.7f, 5, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.BLAST_SMOKE.get(), 2, v.direction(), 25, 0.015f, 2.1f, 50, Curve.EASE_OUT, 0xB0A6AAB0)
             .burst(BastionParticles.EMBER.get(), 1, v.direction(), 30, 0.05f, 0.5f, 14, Curve.FLICKER, v.params().color());
 
     /**
@@ -156,9 +156,9 @@ public final class VfxPresets {
             .burst(BastionParticles.BLAST_SMOKE.get(), 2, v.direction().reverse(), 40, 0.08f, 1.4f, 30, Curve.BILLOW, 0xB0909498)
             .light(10, 2);
 
-    /** Every tick behind a flying missile: a small flame and a thin smoke line (lighter than a rocket's, salvos are twelve). */
+    /** Every tick behind a flying missile: a small flame and a wisp around the ribbon (lighter than a rocket's, salvos are twelve). */
     public static final VfxPreset MISSILE_TRAIL = v -> v
-            .burst(BastionParticles.FLAME.get(), 1, v.direction(), 8, 0.1f, 0.9f, 4, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.FLAME.get(), 2, v.direction(), 8, 0.1f, 1.2f, 4, Curve.LINEAR, v.params().color())
             .burst(BastionParticles.SMOKE_WISP.get(), 1, v.direction(), 15, 0.01f, 1.1f, 22, Curve.EASE_OUT, 0xA0B4B8BE);
 
     /** Missile impact: the rocket blast in miniature, fewer particles so a full salvo stays inside the budget. */
