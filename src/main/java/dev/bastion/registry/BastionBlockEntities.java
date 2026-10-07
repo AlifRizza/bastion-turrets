@@ -1,6 +1,7 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.turret.FeedHubBlockEntity;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretPartBlockEntity;
 import dev.bastion.workstation.CreativePowerSourceBlock;
@@ -33,6 +34,8 @@ public final class BastionBlockEntities {
     public static final RegistryObject<BlockEntityType<WorkstationPartBlockEntity>> WORKSTATION_PART = REGISTER.register("workstation_part",
             () -> BlockEntityType.Builder.of(WorkstationPartBlockEntity::new, workstations()).build(null));
     @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<FeedHubBlockEntity>> FEED_HUB = REGISTER.register("feed_hub",
+            () -> BlockEntityType.Builder.of(FeedHubBlockEntity::new, BastionBlocks.FEED_HUB.get()).build(null));
     public static final RegistryObject<BlockEntityType<CreativePowerSourceBlock.Source>> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> BlockEntityType.Builder.of(CreativePowerSourceBlock.Source::new, BastionBlocks.CREATIVE_POWER_SOURCE.get()).build(null));
 

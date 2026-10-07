@@ -137,4 +137,9 @@ public class TurretInventory extends ItemStackHandler {
     protected void onContentsChanged(int slot) {
         onChanged.accept(slot);
     }
+
+    /** A menu grew or shrank the stack in {@code slot} in place (shift-click): tell the owner so it gets saved. */
+    public void changedInPlace(int slot) {
+        onChanged.accept(slot);
+    }
 }

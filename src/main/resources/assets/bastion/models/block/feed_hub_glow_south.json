@@ -1,0 +1,49 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "bastion:block/feed_hub_panel",
+    "t": "bastion:block/feed_hub_edge_glow"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "forge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      },
+      "shade": false,
+      "faces": {
+        "down": {
+          "texture": "#t",
+          "cullface": "down",
+          "rotation": 0
+        },
+        "up": {
+          "texture": "#t",
+          "cullface": "up",
+          "rotation": 180
+        },
+        "west": {
+          "texture": "#t",
+          "cullface": "west",
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#t",
+          "cullface": "east",
+          "rotation": 270
+        }
+      }
+    }
+  ]
+}

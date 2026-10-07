@@ -1,6 +1,7 @@
 package dev.bastion.gametest;
 
 import dev.bastion.Bastion;
+import dev.bastion.menu.TurretMenu;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.turret.TurretBaseBlockEntity;
@@ -13,13 +14,17 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
@@ -102,6 +107,39 @@ public class TurretBaseTests {
         breakWithDrops(helper);
         List<ItemEntity> drops = helper.getEntities(EntityType.ITEM, BASE, 2);
         helper.assertTrue(drops.size() == 1 && !drops.get(0).getItem().hasTag(), "empty base should drop a stackable item without NBT");
+        helper.succeed();
+    }
+
+    /**
+     * Shift-clicks that only grow or shrink an ammo stack in place still mark the turret to be saved: rounds merged in
+     * would vanish on reload, rounds partly taken out would come back (a dupe).
+     */
+    @GameTest(template = EMPTY)
+    public static void menuShiftClickMarksTurretChanged(GameTestHelper helper) {
+        TurretBaseBlockEntity base = placeBase(helper);
+        base.inventory().setStackInSlot(TurretInventory.AMMO_START, rounds(54));
+        FakePlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+        Inventory inventory = player.getInventory();
+        inventory.setItem(0, rounds(10));
+        TurretMenu menu = new TurretMenu(0, inventory, base);
+        LevelChunk chunk = helper.getLevel().getChunkAt(helper.absolutePos(BASE));
+        int hotbar = TurretInventory.SIZE + 27;
+
+        chunk.setUnsaved(false);
+        menu.quickMoveStack(player, hotbar); // merges into the 54
+        int merged = base.inventory().getStackInSlot(TurretInventory.AMMO_START).getCount();
+        boolean savedIn = chunk.isUnsaved();
+
+        for (int i = 0; i < 36; i++) inventory.setItem(i, new ItemStack(Items.STONE, 64));
+        inventory.setItem(0, rounds(54)); // room for 10
+        chunk.setUnsaved(false);
+        menu.quickMoveStack(player, TurretInventory.AMMO_START);
+        int left = base.inventory().getStackInSlot(TurretInventory.AMMO_START).getCount();
+        boolean savedOut = chunk.isUnsaved();
+        inventory.clearContent();
+
+        helper.assertTrue(merged == 64 && savedIn, "merging in: " + merged + " rounds, marked to save " + savedIn);
+        helper.assertTrue(left == 54 && savedOut, "taking part out: " + left + " left, marked to save " + savedOut);
         helper.succeed();
     }
 }

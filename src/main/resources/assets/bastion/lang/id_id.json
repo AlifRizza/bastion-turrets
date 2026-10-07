@@ -282,5 +282,16 @@
   "subtitles.bastion.mortar.whistle": "Peluru bersiul",
   "item.bastion.mortar_barrel": "Laras Mortir",
   "item.bastion.mortar_housing": "Rumah Berlapis Baja",
-  "item.bastion.mortar_ring": "Cincin Putar"
+  "item.bastion.mortar_ring": "Cincin Putar",
+  "block.bastion.feed_hub": "Hub Pengumpan",
+  "tooltip.bastion.feed_hub": "Pasang turret base di sisi-sisinya, base besar di atas hub 2x2 atau lebih. Peluru dan FE yang masuk diteruskan ke turret yang memakainya, yang paling kosong dulu. Hub yang ditaruh bersebelahan menyatu sampai 3x3x3 dan berbagi slot serta FE",
+  "gui.bastion.feed_hub.turrets": "Turret: %s",
+  "gui.bastion.feed_hub.none": "Tidak ada turret bersenjata terpasang",
+  "gui.bastion.feed_hub.tab.summary": "Ringkasan",
+  "gui.bastion.feed_hub.tab.storage": "Storage",
+  "gui.bastion.feed_hub.size": "Ukuran: %s (%s blok)",
+  "gui.bastion.feed_hub.energy": "Energi",
+  "gui.bastion.feed_hub.fe": "%s / %s FE",
+  "gui.bastion.feed_hub.ammo": "Peluru",
+  "gui.bastion.feed_hub.empty": "Kosong"
 }

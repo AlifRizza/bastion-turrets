@@ -7,6 +7,7 @@ import dev.bastion.client.render.BakedTurretBaseModel;
 import dev.bastion.client.render.RocketRenderer;
 import dev.bastion.client.render.TurretBaseRenderer;
 import dev.bastion.client.render.WorkstationRenderer;
+import dev.bastion.client.screen.FeedHubScreen;
 import dev.bastion.client.screen.TurretScreen;
 import dev.bastion.client.screen.WorkstationScreen;
 import dev.bastion.registry.BastionBlockEntities;
@@ -33,6 +34,7 @@ public final class BastionClient {
         event.enqueueWork(() -> {
             MenuScreens.register(BastionMenus.TURRET.get(), TurretScreen::new);
             MenuScreens.register(BastionMenus.WORKSTATION.get(), WorkstationScreen::new);
+            MenuScreens.register(BastionMenus.FEED_HUB.get(), FeedHubScreen::new);
         });
     }
 

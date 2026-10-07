@@ -1,0 +1,332 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "x": "alone",
+        "y": "alone",
+        "z": "alone"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "x": "!alone"
+          },
+          {
+            "y": "!alone"
+          },
+          {
+            "z": "!alone"
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_panel"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "y": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_down"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "y": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_up"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "z": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_north"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "z": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_south"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "x": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_west"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "x": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_east"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "y": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_down"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "y": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_up"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "z": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_north"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "z": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_south"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "x": "alone|low"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_west"
+      }
+    },
+    {
+      "when": {
+        "AND": [
+          {
+            "x": "alone|high"
+          },
+          {
+            "OR": [
+              {
+                "x": "!alone"
+              },
+              {
+                "y": "!alone"
+              },
+              {
+                "z": "!alone"
+              }
+            ]
+          }
+        ]
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_east"
+      }
+    }
+  ]
+}

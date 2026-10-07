@@ -1,6 +1,6 @@
 # Manual test checklist (Fase 2–7)
 
-Automated: `./gradlew runGameTestServer` (65 tests: base, combat, weapons, modifiers, filter, redstone, HP,
+Automated: `./gradlew runGameTestServer` (67 tests: base, combat, weapons, modifiers, filter, redstone, HP,
 destruction). Visual: `./gradlew devClasses runClient -Pshowcase`. The list below is what still needs eyes and hands.
 
 Setup: creative world, a turret base with a weapon module and Creative Ammo (never runs out). Targets:
@@ -77,6 +77,27 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Shot: the barrel slams down, a flash and a smoke ring blown up, a shell with a glowing fuse and a smoke trail climbing ~20 blocks; it whistles on the way down. No lead, no homing: it lands where the target stood when it fired, so a mob that keeps walking can get away (it is meant for crowds).
 - [ ] Impact: a small blast (6 damage close by, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
 - [ ] Burnable blocks in the patch (wood, leaves, wool, grass) catch real fire, which then spreads like vanilla fire. Server config `mortarBlockFire = false`: no block fire, mobs still burn.
+
+## Feed Hub
+- [ ] Mount turret bases on the Feed Hub's faces (sides, top, bottom): click a face with a Turret Base, the hub does not open its GUI while you hold a block.
+- [ ] A hopper, Create belt/funnel/chute, pipe or Mechanical Arm into the hub: ammo goes to the turrets whose weapon takes it, the emptiest first (two guns end up with the same amount). Ammo no armed turret uses stays in the pipe/belt.
+- [ ] Turrets full: the ammo waits in the hub and goes in as soon as they fire.
+- [ ] A base merely standing next to the hub (its back not on it) and an unarmed base get nothing.
+- [ ] Break the hub: its contents drop. Recipe at the Module Workstation; Bahasa Indonesia name "Hub Pengumpan".
+
+### Feed Hub multiblock + energy
+- [ ] Place hubs next to each other: a tick later they merge into one block with one frame and a cyan glow line around its outer edges, no seams between the hubs (2x2x1, 2x2x2, 3x3x1, 3x3x2, 3x3x3). A lone hub keeps its port-and-ring look. Extra hubs that don't complete a shape stay single (e.g. 5 in a row: a 2x2 can't form, they stay single).
+- [ ] Break one block of a structure: only that block's 9 slots drop (its FE is lost), the rest re-forms (break a corner of a 3x3x1: a 2x2x1 plus four single hubs).
+- [ ] Turret bases on any outer face of the structure get ammo; a Large Turret Base standing with all four blocks on top of a 2x2 or wider structure gets its ammo too. One standing half off the edge gets nothing.
+- [ ] A hopper or pipe into any block of the structure fills the whole structure (a 3x3x3 holds 243 stacks).
+- [ ] FE: cable or Creative Power Source into any block, up to 4,000 FE/t per block, 50,000 FE per block. A Tesla Coil or Railgun on top charges from it (least charged first). The hub never sends FE back into cables.
+- [ ] Open the GUI from any block: **Summary** tab shows the size (e.g. "3x3x2 (18 blocks)"), turret count with weapon icons (hover = name), energy bar with numbers, ammo totals per type. **Storage** tab: 4 rows of slots with a scrollbar (mouse wheel or drag); a single hub shows 1 open row and 3 hatched rows. Shift-click from your inventory fills the whole structure, not just the rows on screen.
+- [ ] While a hopper feeds a 3x3x3, scroll the Storage tab up and down: every row shows its own items, nothing flickers into the wrong row.
+- [ ] Save and reload the world: shapes, slots and FE are kept.
+- [ ] Server config: `feedHubEnergyCapacity`, `feedHubMaxInput`, `feedHubItemsPerTick` (all per block).
+- [ ] Scroll the Storage tab to the bottom of a big structure, then break blocks until it is small: the tab jumps back to its first row (no hatched-only view).
+- [ ] Creative Power Source + an energy pipe from another mod (dev: Pipez, set the pipe end at the source to extract): the pipe attaches and carries FE into a Feed Hub or workstation.
+- [ ] Turret GUI fix: shift-click rounds onto an ammo stack already in a turret, and shift-click part of a stack out with a nearly full inventory; save, quit, reload: the counts stay as they were (no lost or doubled rounds).
 
 ## Laser Rifle
 - [ ] Fits the standard base; Laser Cells as ammo (creative tab or `/give`, no recipe yet: they will come from a charging station later). Creative Ammo also works.

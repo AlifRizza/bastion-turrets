@@ -557,6 +557,102 @@ Semua item turret dibuat lewat 5 station bertenaga **FE**; resep crafting table 
 - **Creative Power Source** (creative saja): blok yang mengalirkan FE tak terbatas ke blok di sebelahnya, untuk tes tanpa mod generator.
 
 
+### Fase 10 — Base Extender: banyak turret di satu base (keputusan user 2026-10-07) — **tidak direncanakan dulu**
+
+> **Status: tidak direncanakan dulu** (user, 2026-10-07 14:31). Implementasinya lama (refactor inti base ke banyak mount) dan bisa jadi tidak perlu; user punya ide lain yang lebih singkat, salah satunya bisa jadi workaround extender yang jauh lebih sederhana. Spec di bawah disimpan untuk nanti; jangan dibangun sebelum user mengangkatnya lagi. Rencana implementasi belum dibuat.
+
+Blok **Base Extender** dipasang di atas Turret Base standar dan memberi menara itu **5 mount senjata**: atas, kiri, kanan, depan, belakang. GUI berubah supaya semua turret di menara bisa dikelola sekaligus. Keputusan user: peluru per turret (1a), extender menambah +2 slot module (2a), hanya base standar 1x1 (3a; untuk base 2x2 akan ada item utility lain, terpisah, belum didesain), base minimal **T2**.
+
+**Pemasangan dan bentuk**
+- Extender adalah blok 1x1 yang ditaruh di sisi mount Turret Base (sisi tempat senjata berada). Ditolak dengan pesan jika base T1, base besar 2x2, atau sudah ada extender. Senjata yang sudah terpasang di base pindah ke mount atas.
+- 5 mount: **atas** (searah facing base) dan **4 sisi** tegak lurus facing base. Base di lantai: atas = ke atas, sisi = utara/timur/selatan/barat. Base di dinding/plafon: semuanya ikut arah base.
+- Hanya weapon module kecil (bukan Missile Launcher, Tesla Coil, Railgun, Mortar). Senjata di sisi berputar dan membidik seperti turret dinding yang menghadap keluar dari sisi itu (frame mount yang sama dengan pemasangan dinding/plafon).
+- Model extender: hub GeckoLib (gunmetal + glow cyan) dengan 5 turntable/weapon_mount, bisa dibuat lewat `tools/blockout`.
+
+**Per mount**
+- 1 slot senjata dan slot peluru sendiri. Mount atas memakai slot base yang sudah ada (peluru sesuai tier: T2 6 slot, T3 9 slot); tiap mount samping punya **3 slot peluru**. Tiap senjata hanya memakai peluru di mount-nya sendiri.
+- Filter target sendiri (kategori, allow/block per mob dan pemain, mode pemain, trusted, prioritas) dan tombol **ON/OFF** sendiri.
+- State machine, rotasi, target, heat, charge, lock dan state senjata (spin, tabung roket) masing-masing.
+
+**Bersama untuk seluruh menara**
+- **Module**: slot module base (T2: 2, T3: 4) + **2 slot extender**, berlaku ke semua senjata di menara; module khusus senjata (Choke, Autoloader) hanya ke senjata yang cocok. Aturan satu module per jenis berlaku untuk seluruh menara.
+- **HP**: satu pool HP base (tier base). Hitbox jadi setinggi base + extender. Hancur: semua senjata, peluru, module dan extender jatuh, base turun satu tier seperti biasa.
+- **Redstone**: menyalakan/mematikan seluruh menara. **Comparator**: isi peluru total semua mount. **Turret Configurator**: menyalin filter mount atas, menempel ke semua mount menara tujuan.
+- **Otomasi**: hopper/belt/funnel/arm boleh menyisipkan dari blok mana pun (base atau extender). Peluru masuk ke mount pertama yang senjatanya cocok dan masih muat; peluru yang tidak cocok ke mount mana pun ditolak. Pengambilan (extract) dari slot peluru tetap boleh.
+- **Bongkar**: menghancurkan extender menjatuhkan extender, isi 4 mount samping, dan 2 module extender; senjata dan peluru mount atas tetap di base (itu slot base sendiri) dan senjatanya kembali tampil di atas base. Menghancurkan base ikut menjatuhkan extender beserta isinya; base tetap shulker-style untuk isinya sendiri (tier, senjata + peluru mount atas, module base).
+
+**GUI**
+- Tanpa extender: GUI sama seperti sekarang.
+- Dengan extender: kolom **pilihan mount** (5 tombol: ikon senjata + lampu state) dan tombol **Menara**.
+- Halaman **Menara**: 5 baris berisi senjata, lampu state, bar peluru (jumlah + jenis) dan ON/OFF per mount. Ini tempat mengatur pemakaian peluru.
+- Memilih satu mount: tab Status (slot senjata + slot peluru mount itu, slot module bersama selalu tampil), Targeting (filter mount itu, tombol **"Salin targeting ke semua mount"**), Info (stat senjata mount itu setelah module).
+- Semua teks lewat `fit()`, tidak ada teks bertumpuk; ukuran GUI boleh melebar jika perlu.
+
+**Survival**
+- Resep mahal: 3 part baru di Part Workstation (**Extender Frame, Servo Hub, Ammo Feeder**) dengan bahan seperti diamond dan netherite scrap, dirakit di Part Assembler. Angka di `tools/gen_recipes.py`.
+- Lang en_us + id_id, creative tab Turret Bases.
+
+**Teknis**
+- Refactor: semua state per senjata pindah dari `TurretBaseBlockEntity` ke kelas baru **`TurretMount`**; base menyimpan daftar mount (1 tanpa extender, 5 dengan extender) dan state tingkat menara (tier, HP, owner, module, redstone, hitbox, energi untuk senjata besar). Base tanpa extender harus berperilaku **persis sama** dengan sekarang.
+- Inventory dan NBT per mount; save lama dibaca sebagai mount 0 (world lama aman).
+- Packet `TurretStateSync`, `TurretFireEvent`, `SpinSync`, `RackSync`, `TurretConfigUpdate` membawa nomor mount; `PROTOCOL` naik.
+- Client: `ClientTurret` per (posisi, mount); renderer menggambar senjata tiap mount di titik mount extender dengan frame arahnya sendiri.
+- Blok extender meneruskan klik, kapabilitas item (otomasi) dan damage ke base di bawahnya (pola yang sama dengan part blok Large Turret Base).
+
+**Selesai jika**
+- 65 GameTest lama tetap lolos tanpa diubah (perilaku base tanpa extender tidak berubah).
+- GameTest baru: extender ditolak di base T1; senjata samping menembak target di sisinya; peluru dipakai per mount (senjata utara tidak memakai peluru senjata selatan); filter per mount (mount yang memblokir husk tidak menembak husk, mount lain menembak); module dari slot extender berlaku ke semua senjata; hopper mengisi mount yang senjatanya cocok; membongkar extender menjatuhkan isinya; simpan + muat ulang mempertahankan semua mount.
+- `./gradlew build` lolos, checklist di `docs/TESTING.md`, cek visual lewat scene showcase.
+
+**Di luar cakupan Fase 10**: extender/utility untuk base 2x2 (ide user, belum didesain), senjata besar di extender, menumpuk extender di atas extender.
+
+
+### Feed Hub (permintaan user 2026-10-07, pengganti sederhana Base Extender)
+
+Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung base menempel di hub: atas, 4 samping, bawah). Peluru yang masuk dari pipa, belt, funnel, hopper atau Mechanical Arm diteruskan ke turret yang senjatanya cocok. Keputusan user: nama Feed Hub (1b), pembagian **rata** (turret dengan stok paling sedikit diisi dulu, 2a), hub punya **buffer 9 slot** (3b).
+- Hanya menerima peluru yang dipakai minimal satu turret bersenjata yang terpasang; sisanya ditolak (tidak menyumbat buffer).
+- Tiap tick memindahkan sampai 8 item per blok dari buffer ke turret yang cocok dan paling sedikit stoknya; kalau semua penuh, peluru menunggu di buffer.
+- Turret tanpa senjata dan base yang hanya bersebelahan (punggungnya tidak di hub) tidak diisi.
+- Otomasi boleh menarik isi buffer; hub dihancurkan → isi jatuh.
+- Resep Module Workstation (iron block, 2 hopper, 4 copper ingot, 2 redstone). Model hub tunggal: kubus gunmetal dengan port di tiap sisi dan cincin cyan yang menyala (overlay fullbright).
+
+#### Multiblock + energi (keputusan user 2026-10-07 15:35, disetujui 15:47: 1a, 2b, 3a, 4a)
+
+**Bentuk (1a)**
+- Feed Hub yang bersebelahan menyatu otomatis menjadi struktur beralas persegi, lebar W 1..3 dan tinggi H ≤ W: 1x1x1, 2x2x1, 2x2x2, 3x3x1, 3x3x2, 3x3x3.
+- Setiap kali hub dipasang atau dihancurkan, semua hub yang tersambung (6 arah) dibagi ulang 1 tick kemudian: mulai dari blok terendah (urut y, lalu x, lalu z) dicoba bentuk terbesar dulu (27, 18, 9, 8, 4, 1 blok) yang semua bloknya masih bebas. Sisa menjadi hub tunggal.
+- Tiap blok menyimpan isinya sendiri, jadi pembagian ulang tidak memindahkan item. Satu blok dihancurkan → hanya 9 slot blok itu yang jatuh, FE blok itu hilang; sisanya menyusun ulang.
+- Posisi blok di struktur disimpan di 3 properti blockstate (`x`, `y`, `z`: `alone`/`low`/`middle`/`high`). Server dan client membaca bentuk struktur dari situ, tanpa data tambahan di block entity.
+
+**Isi dan energi (3a)**
+- Tiap blok: 9 slot + **50.000 FE**. Struktur N blok: 9N slot, N × 50.000 FE.
+- Otomasi dari blok mana pun melihat seluruh struktur: peluru masuk ke slot pertama yang muat, tarik (extract) boleh. Aturan peluru tetap: hanya yang dipakai minimal satu turret bersenjata yang terpasang di struktur.
+- FE masuk dari kabel di sisi mana pun, **4.000 FE per tick per blok** (struktur N blok: N × 4.000 per tick). Hub tidak mengeluarkan FE ke kabel.
+- Tiap tick FE dibagi ke turret energi yang terpasang (kapasitornya bisa diisi: Tesla Coil, Railgun): yang persentase isinya paling rendah dulu, tiap turret dibatasi `max_input` senjatanya.
+- Peluru dipindahkan **8 item per tick per blok**, turret dengan stok paling sedikit dulu (seperti hub tunggal).
+- Angka di config server: `feedHubEnergyCapacity` 50000, `feedHubMaxInput` 4000, `feedHubItemsPerTick` 8 (semua per blok).
+
+**Turret yang terpasang**
+- Base standar 1x1 di sisi luar mana pun (atas, samping, bawah), punggungnya menempel ke blok struktur.
+- Large Turret Base 2x2 di atas struktur, jika keempat bloknya berdiri di atas blok struktur yang sama (jadi struktur minimal 2x2). Base 3x3 nanti memakai aturan yang sama.
+
+**GUI (2b)**, dibuka dari blok mana pun, tab samping seperti GUI turret:
+- **Ringkasan**: ukuran (mis. `3x3x2`, 18 blok), jumlah turret + ikon senjatanya (maks. 12), total per jenis peluru (maks. 8 jenis), bar energi + angka FE.
+- **Storage**: grid 9 kolom × 4 baris yang bisa di-scroll (roda mouse atau scrollbar) + inventory pemain. Shift-klik dari inventory mengisi seluruh struktur, bukan hanya baris yang terlihat. Hub tunggal: 1 baris aktif, sisanya tampil terkunci.
+- Semua teks lewat `fit()`, tidak ada teks bertumpuk.
+
+**Tampilan (4a)**
+- Hub tunggal tetap seperti sekarang (port + cincin).
+- Struktur: panel gunmetal polos tanpa sambungan antar blok, rangka + garis glow cyan (fullbright) hanya di tepi luar tiap sisi struktur, seperti Create Item Vault. Dibuat dengan model multipart dari properti blockstate (tanpa kode render), digenerate script di `tools/`.
+
+**Selesai jika**
+- GameTest baru: terbentuk 2x2x1, 2x2x2 dan 3x3x3 (slot dan FE ikut naik); pecah lalu menyusun ulang; base 2x2 di atas mendapat peluru; Tesla di atas mendapat FE; menghancurkan satu blok hanya menjatuhkan isinya sendiri.
+- 67 GameTest lama tetap lolos, termasuk 2 test Feed Hub tanpa diubah.
+- `./gradlew build` lolos, checklist di `docs/TESTING.md`, cek visual lewat scene `-Pshowcase=feedhub`.
+
+**Di luar cakupan**: comparator, FE keluar ke kabel, struktur lebih besar dari 3x3x3, rotasi/mirror template struktur (pembentukan ulang setelah dipasang memperbaikinya).
+
+
 ---
 ## 9. Aturan Kerja untuk Claude Code
 

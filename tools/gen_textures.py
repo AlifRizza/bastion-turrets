@@ -722,24 +722,26 @@ def empty_laser_cell():
     return outline(img, OUTLINE)
 
 
+def panel(img, w, h):
+    """Screen background w x h in the top-left of img: shaded body, edge line, inner highlight, chamfered corners."""
+    yy, _ = np.mgrid[0:h, 0:w]
+    body = UI_BG * (1.08 - 0.12 * yy / h)[..., None] * noise((h, w), 0.012, seed=7)[..., None]
+    img[:h, :w, :3], img[:h, :w, 3] = body, 1
+    img[0, :w, :3] = img[h - 1, :w, :3] = UI_EDGE
+    img[:h, 0, :3] = img[:h, w - 1, :3] = UI_EDGE
+    img[1, 1:w - 1, :3] = img[1:h - 1, 1, :3] = UI_LIGHT
+    for i in range(3):
+        for cx, cy, dx, dy in ((0, 0, 1, 1), (w - 1, 0, -1, 1), (0, h - 1, 1, -1), (w - 1, h - 1, -1, -1)):
+            for j in range(3 - i):
+                img[cy + dy * i, cx + dx * j, 3] = 0
+        img[i, 3 - i, :3] = img[i, w - 4 + i, :3] = UI_EDGE
+        img[h - 1 - i, 3 - i, :3] = img[h - 1 - i, w - 4 + i, :3] = UI_EDGE
+
+
 def turret_gui(plain=False):
     """Turret screen background plus slot and tab sprites (PLAN 4.7). plain = Targeting/Info tabs, no slots."""
     img = np.zeros((256, 256, 4))
-    yy, _ = np.mgrid[0:GUI_H, 0:GUI_W]
-    body = UI_BG * (1.08 - 0.12 * yy / GUI_H)[..., None] * noise((GUI_H, GUI_W), 0.012, seed=7)[..., None]
-    img[:GUI_H, :GUI_W, :3], img[:GUI_H, :GUI_W, 3] = body, 1
-
-    # frame: edge line, inner highlight, chamfered corners
-    img[0, :GUI_W, :3] = img[GUI_H - 1, :GUI_W, :3] = UI_EDGE
-    img[:GUI_H, 0, :3] = img[:GUI_H, GUI_W - 1, :3] = UI_EDGE
-    img[1, 1:GUI_W - 1, :3] = img[1:GUI_H - 1, 1, :3] = UI_LIGHT
-    for i in range(3):
-        for cx, cy, dx, dy in ((0, 0, 1, 1), (GUI_W - 1, 0, -1, 1), (0, GUI_H - 1, 1, -1), (GUI_W - 1, GUI_H - 1, -1, -1)):
-            for j in range(3 - i):
-                img[cy + dy * i, cx + dx * j, 3] = 0
-        img[i, 3 - i, :3] = img[i, GUI_W - 4 + i, :3] = UI_EDGE
-        img[GUI_H - 1 - i, 3 - i, :3] = img[GUI_H - 1 - i, GUI_W - 4 + i, :3] = UI_EDGE
-
+    panel(img, GUI_W, GUI_H)
     rect(img, 10, 19, GUI_W - 20, 1, UI_ACCENT * 0.55)  # under the title
     if plain:
         return img
@@ -766,6 +768,83 @@ def turret_gui(plain=False):
     tab(img, *TAB_ACTIVE, active=True)
     return img
 
+
+FEED_HUB_W, FEED_HUB_H = 192, 194  # FeedHubScreen imageWidth / imageHeight
+
+
+def feed_hub_gui(plain=False):
+    """Feed Hub screen (PLAN "Feed Hub", 2b), 192 x 194. Storage tab: 9 x 4 slot grid (FeedHubScreen draws the scrollbar
+    right of it), divider, inventory; sprites right of the panel: locked slot (192, 0), side tab (192, 18) and active tab
+    (192, 42). plain = Summary tab, which FeedHubScreen draws on. Slot frames sit 1 px outside the item (FeedHubMenu)."""
+    img = np.zeros((256, 256, 4))
+    w, h = FEED_HUB_W, FEED_HUB_H
+    panel(img, w, h)
+    rect(img, 8, 16, w - 16, 1, UI_ACCENT * 0.55)  # under the title
+    if plain:
+        return img
+    for i in range(36):
+        slot(img, 7 + i % 9 * 18, 17 + i // 9 * 18)
+    rect(img, 8, 96, w - 16, 1, UI_EDGE)  # storage | player
+    for row in range(3):
+        for col in range(9):
+            slot(img, 7 + col * 18, 111 + row * 18)
+    for col in range(9):
+        slot(img, 7 + col * 18, 169)
+    slot(img, 192, 0, locked=True)
+    tab(img, 192, 18, active=False)
+    tab(img, 192, 42, active=True)
+    return img
+
+
+def feed_hub():
+    """Feed Hub block: an armoured gunmetal cube with a feed port in every face, chevrons pointing in, corner bolts."""
+    img = np.zeros((16, 16, 4))
+    img[..., :3], img[..., 3] = GUNMETAL * 1.1 * noise((16, 16), 0.04, seed=93)[..., None], 1
+    img[1, 1:15, :3] = img[1:15, 1, :3] = GUNMETAL * 1.35
+    img[14, 1:15, :3] = img[1:15, 14, :3] = GUNMETAL * 0.7
+    img[0, :, :3] = img[15, :, :3] = img[:, 0, :3] = img[:, 15, :3] = DARKSTEEL
+    rect(img, 5, 5, 6, 6, STEEL)
+    rect(img, 6, 6, 4, 4, BORE)
+    for x, y, w, h in ((7, 2, 2, 2), (7, 12, 2, 2), (2, 7, 2, 2), (12, 7, 2, 2)):
+        rect(img, x, y, w, h, DARKSTEEL)
+    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13)):
+        img[y, x, :3] = METAL * 1.2
+    return img
+
+
+def feed_hub_glow():
+    """Fullbright overlay of the Feed Hub (forge_data block_light): a cyan ring around each port."""
+    img = np.zeros((16, 16, 4))
+    rect(img, 4, 4, 8, 1, rgb("4FD8FF"))
+    rect(img, 4, 11, 8, 1, rgb("4FD8FF"))
+    rect(img, 4, 5, 1, 6, rgb("4FD8FF"))
+    rect(img, 11, 5, 1, 6, rgb("4FD8FF"))
+    return img
+
+
+
+def feed_hub_panel():
+    """Face of a merged Feed Hub (4a): plain gunmetal plating that tiles without seams; the frame is the edge overlay."""
+    img = np.zeros((16, 16, 4))
+    img[..., :3], img[..., 3] = GUNMETAL * 1.1 * noise((16, 16), 0.04, seed=93)[..., None], 1
+    return img
+
+
+def feed_hub_edge():
+    """Frame strip of a merged Feed Hub along the texture's top; the models turn it onto each outer edge. Row 0 sits
+    under the glow line (feed_hub_edge_glow), drawn after every frame so the lines of two edges meet in the corner."""
+    img = np.zeros((16, 16, 4))
+    rect(img, 0, 0, 16, 2, DARKSTEEL)
+    rect(img, 0, 2, 16, 1, GUNMETAL * 1.35)  # bevel
+    rect(img, 0, 3, 16, 1, GUNMETAL * 0.7)   # shadow onto the panel
+    return img
+
+
+def feed_hub_edge_glow():
+    """Fullbright cyan line on a merged Feed Hub's outer edge (forge_data block_light 15)."""
+    img = np.zeros((16, 16, 4))
+    rect(img, 0, 0, 16, 1, rgb("4FD8FF"))
+    return img
 
 # --- VFX sprites (PLAN 5.2-5.4) -----------------------------------------------------------------
 # White/greyscale with alpha: particles and renderers tint them with the weapon energy colour at runtime.
@@ -1160,6 +1239,9 @@ TEXTURES = {
     "item/damaged_turret_base.png": damaged_base,
     "gui/turret.png": turret_gui,
     "gui/turret_plain.png": lambda: turret_gui(plain=True),
+    "gui/feed_hub.png": feed_hub_gui, "gui/feed_hub_plain.png": lambda: feed_hub_gui(plain=True), "block/feed_hub.png": feed_hub, "block/feed_hub_glow.png": feed_hub_glow,
+    "block/feed_hub_panel.png": feed_hub_panel, "block/feed_hub_edge.png": feed_hub_edge,
+    "block/feed_hub_edge_glow.png": feed_hub_edge_glow,
     **VFX_SPRITES,
 }
 

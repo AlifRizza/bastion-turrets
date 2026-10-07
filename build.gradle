@@ -140,6 +140,8 @@ dependencies {
     runtimeOnly fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
     runtimeOnly fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
     runtimeOnly "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
+    // Dev-only: Pipez (Modrinth version id, forge-1.20.1-1.2.26) to test item + FE piping into turrets and Feed Hubs.
+    runtimeOnly fg.deobf("maven.modrinth:pipez:Mtjt7u5h")
     // Dev-only, runClient only: floating damage numbers + target health bar for testing turret damage.
     clientDevMods fg.deobf("maven.modrinth:torohealth-damage-indicators-updated:${torohealth_version}")
     // Modrinth version ids (Forge 1.20.1): Radium (Lithium port) 0.12.4, AI Improvements 0.5.2, ModernFix 5.27.85,

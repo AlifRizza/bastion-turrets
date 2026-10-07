@@ -86,7 +86,8 @@ MODULE = {"range_module": "spyglass", "rapid_cycler": "clock", "damage_amplifier
 TOOLS = {"repair_kit": ({"iron_ingot": 2, "copper_ingot": 1, "redstone": 1}, 60, 1000, 1),
          "tier_upgrade_kit_t2": ({"gold_ingot": 4, "iron_ingot": 4, "diamond": 1}, 160, 6000, 1),
          "tier_upgrade_kit_t3": ({"diamond": 4, "netherite_scrap": 4, B + "tier_upgrade_kit_t2": 1}, 240, 12000, 1),
-         "turret_configurator": ({"iron_ingot": 6, "redstone": 1, "glass_pane": 1, "comparator": 1}, 80, 1500, 1)}
+         "turret_configurator": ({"iron_ingot": 6, "redstone": 1, "glass_pane": 1, "comparator": 1}, 80, 1500, 1),
+         "feed_hub": ({"iron_block": 1, "hopper": 2, "copper_ingot": 4, "redstone": 2}, 100, 3000, 1)}
 AMMO = {  # result: (ingredients, time, energy, count, tab)
     "kinetic_rounds": ({"copper_ingot": 1, "gunpowder": 1, "iron_nugget": 1}, 40, 400, 16, "kinetic_rounds"),
     "scatter_shells": ({"paper": 1, "gunpowder": 1, "copper_ingot": 1}, 40, 400, 8, "kinetic_rounds"),

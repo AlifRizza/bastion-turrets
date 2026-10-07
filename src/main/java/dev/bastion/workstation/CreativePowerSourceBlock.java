@@ -10,12 +10,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Creative only (no recipe): pushes unlimited FE into every block next to it each tick, so workstations and the Tesla
- * Coil can be used and tested without an energy mod.
+ * Coil can be used and tested without an energy mod. Cables and pipes that pull (Pipez, Mekanism, ...) can also draw
+ * endless FE from any side.
  */
 public class CreativePowerSourceBlock extends BaseEntityBlock {
     public CreativePowerSourceBlock(Properties properties) {
@@ -49,8 +53,60 @@ public class CreativePowerSourceBlock extends BaseEntityBlock {
     }
 
     public static class Source extends BlockEntity {
+        /** Extract-only and never runs dry. */
+        private static final IEnergyStorage ENDLESS = new IEnergyStorage() {
+            @Override
+            public int receiveEnergy(int maxReceive, boolean simulate) {
+                return 0;
+            }
+
+            @Override
+            public int extractEnergy(int maxExtract, boolean simulate) {
+                return maxExtract;
+            }
+
+            @Override
+            public int getEnergyStored() {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public int getMaxEnergyStored() {
+                return Integer.MAX_VALUE;
+            }
+
+            @Override
+            public boolean canExtract() {
+                return true;
+            }
+
+            @Override
+            public boolean canReceive() {
+                return false;
+            }
+        };
+
+        private LazyOptional<IEnergyStorage> energy = LazyOptional.of(() -> ENDLESS);
+
         public Source(BlockPos pos, BlockState state) {
             super(BastionBlockEntities.CREATIVE_POWER_SOURCE.get(), pos, state);
+        }
+
+        @Override
+        public <C> LazyOptional<C> getCapability(Capability<C> cap, @Nullable Direction side) {
+            return cap == ForgeCapabilities.ENERGY ? energy.cast() : super.getCapability(cap, side);
+        }
+
+        @Override
+        public void invalidateCaps() {
+            super.invalidateCaps();
+            energy.invalidate();
+        }
+
+        @Override
+        public void reviveCaps() {
+            super.reviveCaps();
+            energy = LazyOptional.of(() -> ENDLESS);
         }
     }
 }

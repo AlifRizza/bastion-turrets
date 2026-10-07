@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:repair_kit",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:hopper",
+      "count": 2
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:feed_hub"
+  },
+  "time": 100,
+  "energy": 3000
+}

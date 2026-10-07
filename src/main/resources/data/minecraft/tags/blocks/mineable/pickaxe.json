@@ -7,6 +7,7 @@
     "bastion:part_assembler",
     "bastion:module_workstation",
     "bastion:ammo_workstation",
-    "bastion:charging_station"
+    "bastion:charging_station",
+    "bastion:feed_hub"
   ]
 }

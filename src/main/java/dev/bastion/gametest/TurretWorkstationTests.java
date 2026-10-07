@@ -17,6 +17,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
@@ -147,6 +148,20 @@ public class TurretWorkstationTests {
                 .map(s -> s.getItem().toString()).sorted().toList();
         helper.assertTrue(made.equals(List.of("ammo_workstation", "charging_station", "module_workstation", "part_assembler", "part_workstation")),
                 "the crafting table still makes " + made);
+        helper.succeed();
+    }
+
+    /** Cable and pipe mods pull: the Creative Power Source offers endless FE to extract on every side, and takes none. */
+    @GameTest(template = ARENA, batch = "creativePowerSourceCanBePulled")
+    public static void creativePowerSourceCanBePulled(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(4, 2, 2);
+        helper.setBlock(pos, BastionBlocks.CREATIVE_POWER_SOURCE.get());
+        for (Direction side : Direction.values()) {
+            IEnergyStorage source = helper.getBlockEntity(pos).getCapability(ForgeCapabilities.ENERGY, side).orElse(null);
+            helper.assertTrue(source != null && source.canExtract() && !source.canReceive(), "no pullable FE on the " + side + " side");
+            helper.assertTrue(source.extractEnergy(1_000_000, false) == 1_000_000, "did not hand out what was pulled");
+            helper.assertTrue(source.receiveEnergy(1000, false) == 0, "took FE in");
+        }
         helper.succeed();
     }
 }

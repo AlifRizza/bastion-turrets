@@ -1,6 +1,7 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.turret.FeedHubBlock;
 import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.workstation.CreativePowerSourceBlock;
@@ -33,6 +34,9 @@ public final class BastionBlocks {
     public static final RegistryObject<WorkstationBlock> AMMO_WORKSTATION = workstation(WorkstationType.AMMO_WORKSTATION);
     public static final RegistryObject<WorkstationBlock> CHARGING_STATION = workstation(WorkstationType.CHARGING_STATION);
     /** Creative only: unlimited FE for whatever touches it. */
+    /** Turret bases mount on its faces; it hands piped-in ammo out to them (FeedHubBlockEntity). */
+    public static final RegistryObject<FeedHubBlock> FEED_HUB = REGISTER.register("feed_hub", () -> new FeedHubBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6f).sound(SoundType.METAL)));
     public static final RegistryObject<CreativePowerSourceBlock> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> new CreativePowerSourceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1f, 3600000f).sound(SoundType.METAL)));
 

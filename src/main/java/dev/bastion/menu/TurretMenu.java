@@ -224,5 +224,15 @@ public class TurretMenu extends AbstractContainerMenu {
         public boolean isActive() {
             return slotsVisible && turret.isActive(getSlotIndex());
         }
+
+        /**
+         * Shift-click merges into or shrinks a stack in place and only calls this; the base must hear it or the change is
+         * not saved. The weapon slot holds one item and never changes in place (and a call there would reset the weapon).
+         */
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            if (getSlotIndex() != TurretInventory.WEAPON) turret.changedInPlace(getSlotIndex());
+        }
     }
 }

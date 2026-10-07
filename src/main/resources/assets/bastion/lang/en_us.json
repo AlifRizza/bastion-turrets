@@ -282,5 +282,16 @@
   "subtitles.bastion.mortar.whistle": "Shell whistles",
   "item.bastion.mortar_barrel": "Mortar Barrel",
   "item.bastion.mortar_housing": "Armored Housing",
-  "item.bastion.mortar_ring": "Turning Ring"
+  "item.bastion.mortar_ring": "Turning Ring",
+  "block.bastion.feed_hub": "Feed Hub",
+  "tooltip.bastion.feed_hub": "Mount turret bases on its faces, large bases on top of a 2x2 or wider. Ammo and FE piped in go to the turrets that use them, the emptiest first. Hubs placed together merge, up to 3x3x3, and share slots and FE",
+  "gui.bastion.feed_hub.turrets": "Turrets: %s",
+  "gui.bastion.feed_hub.none": "No armed turret mounted",
+  "gui.bastion.feed_hub.tab.summary": "Summary",
+  "gui.bastion.feed_hub.tab.storage": "Storage",
+  "gui.bastion.feed_hub.size": "Size: %s (%s blocks)",
+  "gui.bastion.feed_hub.energy": "Energy",
+  "gui.bastion.feed_hub.fe": "%s / %s FE",
+  "gui.bastion.feed_hub.ammo": "Ammo",
+  "gui.bastion.feed_hub.empty": "Empty"
 }

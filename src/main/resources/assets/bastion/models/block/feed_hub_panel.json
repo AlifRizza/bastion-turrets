@@ -1,0 +1,48 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "bastion:block/feed_hub_panel",
+    "t": "bastion:block/feed_hub_panel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#t",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#t",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#t",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#t",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#t",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#t",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

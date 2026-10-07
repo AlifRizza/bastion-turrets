@@ -115,6 +115,13 @@ public final class BastionItems {
     public static final RegistryObject<WorkstationItem> MODULE_WORKSTATION = workstation(BastionBlocks.MODULE_WORKSTATION);
     public static final RegistryObject<WorkstationItem> AMMO_WORKSTATION = workstation(BastionBlocks.AMMO_WORKSTATION);
     public static final RegistryObject<WorkstationItem> CHARGING_STATION = workstation(BastionBlocks.CHARGING_STATION);
+    public static final RegistryObject<BlockItem> FEED_HUB = REGISTER.register("feed_hub", () -> new BlockItem(BastionBlocks.FEED_HUB.get(),
+            new Item.Properties()) {
+        @Override
+        public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+            tooltip.add(Component.translatable("tooltip.bastion.feed_hub").withStyle(ChatFormatting.GRAY));
+        }
+    });
     public static final RegistryObject<BlockItem> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> new BlockItem(BastionBlocks.CREATIVE_POWER_SOURCE.get(), new Item.Properties().rarity(Rarity.EPIC)));
 

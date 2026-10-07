@@ -35,6 +35,22 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 Next betas: `0.1.0-beta.2`, `-beta.3`, ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta.
 First non-beta: `0.1.0` with channel Release.
 
+## Changelog: 0.1.0-beta.5 (not released yet)
+
+```
+- New block: Feed Hub. Mount turret bases on its faces and feed only the hub (pipes, belts, funnels, hoppers,
+  Mechanical Arms): it hands the ammo out to the turrets whose weapon takes it, the emptiest first, and keeps
+  what doesn't fit yet in a 9-slot buffer. Made at the Module Workstation.
+- Feed Hubs placed together merge into one block, up to 3x3x3 (square base, never taller than wide), with
+  one frame and glow line around it. The structure shares its slots (9 per block) and stores FE (50,000 per
+  block, up to 4,000 FE/t in per block) for the energy turrets on it. Large Turret Bases standing on top of a
+  2x2 or wider structure are fed too. Breaking one block drops only its own slots; the rest re-forms.
+- Feed Hub GUI: Summary tab (size, turrets, energy, ammo totals) and a scrolling Storage tab.
+- Fix: shift-clicking ammo into a turret's GUI onto a stack already there, or taking only part of a stack out
+  (inventory nearly full), was not saved: after a reload the rounds put in were gone, or the ones taken came back.
+- Creative Power Source: cables and pipes that pull energy (Pipez, Mekanism, ...) now connect to it and draw endless FE.
+```
+
 ## Changelog: 0.1.0-beta.4
 
 ```

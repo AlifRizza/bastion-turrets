@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-07, 13:30 WIB)
+# Bastion Turrets — Session Handoff (2026-10-07, 16:55 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -6,6 +6,60 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 ---
 
 ## 0. Where we stopped
+
+**NOW (read first):**
+1. **Committed 2026-10-07 ~18:20 on top of `1a5ff9e` (beta.4), not pushed (the user pushes):** the **Feed Hub**, 1x1 and the
+   **multiblock + energy** (83/83 GameTests, scene checked, independent review + fixes, **user tested in game 18:18: items
+   + FE through Pipez into a big Feed Hub work**), the turret GUI shift-click fix, the Creative Power Source pull fix, Pipez
+   as a dev runtime mod, docs (PLAN spec, TESTING, HANDOFF, store descriptions, UPLOAD.md beta.5 changelog block; version
+   still `0.1.0-beta.4`, beta.5 not released) and the plan `docs/superpowers/plans/2026-10-07-feed-hub-multiblock.md`.
+   Never commit `modlist.html`.
+2. **Feed Hub multiblock + energy: built** (design 15:35, approved 15:47 incl. the full 4a look; defaults taken without
+   an answer: 8 items/tick **per block**, FE of a broken block is **lost**). See "Feed Hub multiblock" below.
+3. **Next: a new turret** (user 18:18, the other idea): get its design (role, base size, ammo/FE, signature effect),
+   post a summary for approval, then build. Models come from `tools/blockout/design_weapons.py`; Blockbench not needed.
+
+**Feed Hub multiblock (built 2026-10-07 16:55, PLAN "Feed Hub" → "Multiblock + energi"):**
+- Shapes 1x1x1..3x3x3 (square, H <= W). A hub's place lives in blockstate `x`/`y`/`z` = alone/low/middle/high
+  (`FeedHubBlock.Part`), so no BE structure data, client gets it with the block. Placing/breaking schedules a 1-tick
+  block tick (`FeedHubBlock.tick` → `FeedHubStructure.reform`): flood fill of connected hubs (cap 512, loaded only),
+  re-partition from scratch, lowest block first (y, x, z), largest shape first; `setBlock(UPDATE_CLIENTS)` only.
+  `FeedHubStructure.Box.of` reads a structure back from the states (never loads chunks).
+- `FeedHubBlockEntity.Group`: one structure for one tick, built by the lowest block (controller) and shared:
+  members (slot order), `CombinedInvWrapper` of their 9-slot buffers, feeds (standard bases on outer faces with their
+  back on it + Large Turret Bases with all 4 blocks on top, dedup by core), FE (per-block `energy` int, fill/drain in
+  order, per-tick input `received`). A member whose controller is not loaded runs alone. Capabilities on every block are
+  views over `group()` (`StorageView`, `EnergyView` receive-only), so a pipe's cached handler stays right across merges.
+  Controller tick: `feedAmmo(8 x blocks)` (least stock first), `feedEnergy()` (least charged first, turret max_input).
+- Config (server, per block): `feedHubEnergyCapacity` 50000, `feedHubMaxInput` 4000, `feedHubItemsPerTick` 8.
+- GUI `FeedHubMenu`/`FeedHubScreen` 192x194, side tabs **Summary** (size, turrets + up to 12 weapon icons, FE bar, up to
+  8 ammo totals; ContainerData ints as 16-bit halves) and **Storage** (9x4 window, scroll by wheel/bar →
+  `clickMenuButton(row)`; server slots = `Window` into the structure, client slots = plain mirror; shift-click fills the
+  whole structure). Textures `gui/feed_hub.png` + `feed_hub_plain.png` (`feed_hub_gui(plain)`).
+- Look: `tools/gen_feed_hub_models.py` writes the multipart blockstate + `feed_hub_panel` + 6 `feed_hub_frame_*` + 6
+  `feed_hub_glow_*` models (full-face overlays, strip at the texture top turned by face `rotation`; all glow after all
+  frames so lines meet in the corner); lone hub keeps `block/feed_hub`. Textures `feed_hub_panel/edge/edge_glow`.
+- GameTests `TurretFeedHubTests` now 13: forms, splits, sharesStorage (cached handler sees the merge), feedsLargeBase
+  (Mortar: an idle Missile Launcher loads its tubes from its slots), dropsOwnShare, newControllerFeeds, powersTesla,
+  menuScrolls (server side of the GUI), partialShiftClickSaves, staleStateStaysApart, skipsRemovedTurret (review fixes),
+  scrollFollowsShrink, idleIsCheap + the 2 old ones unchanged. Scene `-Pshowcase=feedhub`: lone hub, 2x2x1 + Tesla,
+  3x3x2 with five turrets, Creative Power Sources, day/night, GUI Summary/Storage/scrolled.
+- Create's Item Vault source (MIT) was read for reference (deferred forming, combined handler); code is our own.
+- Review (fresh reviewer 16:55): fixed (1) partial shift-click out of Storage did not mark the hub changed (dupe on
+  reload), (2) `Box.intact`: a block whose structure is not whole + loaded runs alone (a just-broken block's stale
+  states read a wrong box spanning two structures; a chunk-border box could force-load via `TurretBaseBlock.core`),
+  (3) a turret removed earlier in the tick makes the Group stale. Then fixed on the user's go (17:16): **turret GUI**
+  shift-click merge/partial take-out was never saved (item loss / dupe on reload; `TurretSlot.setChanged` →
+  `TurretInventory.changedInPlace`, GameTest `menuShiftClickMarksTurretChanged`, in the beta.5 changelog), Storage scroll
+  follows a shrinking structure (`FeedHubMenu.scroll()` clamps; `feedHubScrollFollowsShrink`), idle cost of a full
+  structure (ammo kinds with no room remembered per tick: 200 ticks of a full 3x3x3 + 27 full guns 238 → 11 ms;
+  `feedHubIdleIsCheap`, fails over 40 ms). Still deferred (user decides): real insert result ignored in feedAmmo,
+  `stillValid` ignores `isRemoved`, two misplaced registry comments (BastionBlocks:36, BastionBlockEntities:36).
+- 17:55 (user test with Pipez): Creative Power Source exposed no ENERGY capability, so pull-based pipes never attached;
+  it now offers endless extract-only FE on every side (GameTest `creativePowerSourceCanBePulled`; dev GameTest
+  `PipezEnergyTests` runs real Pipez: source -> 2 energy pipes -> Feed Hub, negative control checked). **83/83 GameTests.**
+  Pipez keeps a pipe's connections in its blockstate and only recomputes them on `neighborChanged`: pipes placed before
+  the fix must be broken and re-placed.
 
 **Released (public beta):**
 - GitHub `AlifRizza/bastion-turrets` is **public**. **0.1.0-beta.4** committed, tagged `v0.1.0-beta.4` and pushed
@@ -15,8 +69,8 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 - **CurseForge**: beta.1 and beta.2 uploaded by the user (beta.2 = `e43a732`, must stay as uploaded).
 - **Modrinth**: user is creating the project; **beta.3** (`build/libs/bastion-1.20.1-0.1.0-beta.3.jar`) is its first
   version. Icon `docs/release/icon.png` (Modrinth refused AI art; this one is rendered from our model).
-- Working tree clean except the user's own `modlist.html` (never commit it). beta.4 = the balance changes, Railgun and
-  Mortar below (user tested in game, "commit" 13:30).
+- beta.4 = the balance changes, Railgun and Mortar below (user tested in game, "commit" 13:30). For the working tree
+  now see NOW above.
 
 **In beta.4 (2026-10-07 ~01:10): balance** (`mod_version=0.1.0-beta.4`). Waiting for the user's
 in-game test and "commit". Never commit `modlist.html`.
@@ -71,6 +125,24 @@ fields, Tesla gallery caption). Screenshot `03_tesla_coil` still shows 2 bolts (
 - GameTests `TurretMortarTests` (2) in the new tall template `pit` (26x32x13): over a wall onto a husk, husk + cow burn,
   planks catch fire; never at a phantom or a husk inside 8 blocks. **65/65 pass.** Scene `-Pshowcase=mortar` checked.
 
+**Built, uncommitted (2026-10-07 ~15:05): Feed Hub** (user idea, the simple stand-in for the extender; PLAN "Feed Hub").
+`turret/FeedHubBlock` + `FeedHubBlockEntity` (9-slot buffer = the item capability on every side; `isItemValid` = some
+armed mounted turret takes it; `distribute()` moves up to 8 items/tick one by one to the mounted turret with the least
+of that ammo, through the base's own ammo capability; `feeds()` = standard bases on the 6 faces whose FACING points
+away from the hub). `menu/FeedHubMenu` (client uses the client BE's buffer so slot validity matches),
+`client/screen/FeedHubScreen` (176x170, `gui/feed_hub.png` from `feed_hub_gui()`; `panel()` helper now shared with the
+turret GUI, its PNGs unchanged). Block model: cube + fullbright glow overlay element (`forge_data` block/sky light 15).
+A block item in hand passes the click, so bases can be placed on the hub. Recipe Module Workstation (TOOLS table).
+GameTests `TurretFeedHubTests` (2): even split 8/8, shells to the shotgun, rockets refused, unarmed / merely adjacent
+bases skipped; buffer holds when the gun is full and drains when it has room. **67/67 pass.** Scene `-Pshowcase=feedhub`.
+Changelog block for 0.1.0-beta.5 in UPLOAD.md (version not bumped yet).
+
+**Base Extender (PLAN Fase 10): "tidak direncanakan dulu"** (user 2026-10-07 14:31). Spec approved and kept in PLAN.md, no
+implementation plan; postponed as long and maybe unnecessary. The user has two shorter ideas, one a much simpler
+workaround for it. Do not build unless the user brings it back. Exploration notes for later: base API surface is large
+(base used as weapon host by every WeaponType; plan was a `TurretMount` refactor with the base delegating to mount 0),
+the extender block could reuse the `bastion:turret_base` baked-model loader (only needs FACING + a geo).
+
 **Open items the user mentioned (do not build unasked):** Plasma Cell + its turret (Charging Station `CHARGE` table in
 `tools/gen_recipes.py`); weapon module tiers Mk1/Mk2/Mk3 (bonuses **undecided**, ask); 3x3x1 large base; whether to add
 an FE generator (Bastion has none; survival needs an FE mod, stated in the description); stacking the same module twice
@@ -87,9 +159,10 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 - **Git**: branch `main`, remote `origin` = GitHub (public). Commits: `df3660b` initial, `f1819a3`, `f460e59` Fase 9,
   `05d4bb9` tabs, `ae44021` release prep (beta.1), `2c08cd7` bullets + performance, `e43a732` beta.2, `f2c8179` beta.3.
   Commit **only when the user says "commit"**; the user pushes. Ignored: `run/`, `build/`, `.gradle/`, `/references/`.
-- Build/run: `./gradlew build`, `./gradlew runClient --offline` (see §9), `./gradlew runGameTestServer` (**65 tests**).
+- Build/run: `./gradlew build`, `./gradlew runClient --offline` (see §9), `./gradlew runGameTestServer` (**83 tests**).
 - Dev runs include `src/dev` (never in the jar): dev commands, dev-only GameTests, scripted scenes.
-- Dev runtime mods: Create 6.0.8 + Ponder + Flywheel + Registrate + MixinExtras (runtimeOnly); **ToroHealth** damage
+- Dev runtime mods: Create 6.0.8 + Ponder + Flywheel + Registrate + MixinExtras (runtimeOnly); **Pipez** forge-1.20.1-1.2.26
+  (runtimeOnly, Modrinth id `Mtjt7u5h`, user 17:14: Universal Pipe = items + FE for testing hubs/turrets); **ToroHealth** damage
   numbers (`clientDevMods`, runClient only; dropped with `-PnoDevMods` and in the stress scene).
 - Language: answer in the language of the user's message (mostly Indonesian). Code, comments, docs in English.
 - The user has ADHD-mode + ponytail output styles on: action first, short, minimal code, numbered steps, one next action.
@@ -220,10 +293,10 @@ player per level tick.
 
 ## 7. Testing
 
-- **GameTests: 65 pass**: TurretMortarTests 2, TurretRailgunTests 5, TurretBaseTests 4, TurretCombatTests 7 (bullets take time, pass non-targets),
+- **GameTests: 83 pass**: TurretFeedHubTests 15, TurretMortarTests 2, TurretRailgunTests 5, TurretBaseTests 5, TurretCombatTests 7 (bullets take time, pass non-targets),
   TurretSystemsTests 22 (Choke, creative tabs, zombie attacks turret), TurretLargeTests 7 (Autoloader reloads faster),
-  TurretTeslaFlameTests 7 (flamethrower sweeps to next target), TurretLaserTests 4, TurretWorkstationTests 6, dev
-  CreatePlacementTests 1. Negative controls were checked for the bullet pass-through and sweep tests.
+  TurretTeslaFlameTests 7 (flamethrower sweeps to next target), TurretLaserTests 4, TurretWorkstationTests 7, dev
+  CreatePlacementTests 1, dev PipezEnergyTests 1. Negative controls were checked for the bullet pass-through and sweep tests.
 - **Scenes** (`-Pshowcase=<name> -PshowcaseWorld=showcase_fx`): default, `weapons`, `missiles`, `automation`,
   `elemental`, `laser`, `workshop`, `stress`, `icon`. Shots in `run/screenshots/showcase_*.png`.
 - **Load test**: `-Pshowcase=stress -PstressCount=200 [-Pjfr=<file>]` over the spawn chunks; `[stress]` MSPT/FPS lines.
@@ -235,7 +308,8 @@ player per level tick.
 
 ## 8. Backlog / known gaps
 
-- Next: the user uploads beta.4 (§0). Then user-planned: Plasma Cell turret, Mk1-3 tiers, 3x3x1 base.
+- Base Extender (PLAN Fase 10): spec kept, **tidak direncanakan dulu**.
+- Next: the user's other idea (not told yet). Then user-planned: Plasma Cell turret, Mk1-3 tiers, 3x3x1 base.
 - Shader packs: paint the cyan into `_e` textures and tint only for damage/heat (glow shows white under Oculus).
 - Fase 8: Jade/JEI/Ponder compat (JEI would list workstation recipes), particle budget (flamethrower ~130/s vs 120),
   dedicated server test with a second player. All sounds are placeholders.
