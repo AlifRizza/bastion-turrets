@@ -50,13 +50,8 @@ public class FlamethrowerWeapon extends WeaponType {
         List<LivingEntity> inRange = context.level().getEntitiesOfClass(LivingEntity.class, new AABB(from, from).inflate(range),
                 e -> TargetSelector.isCandidate(context.turret(), e, stats, this));
         for (LivingEntity target : inRange) {
-            Vec3 center = target.getBoundingBox().getCenter(), to = center.subtract(from);
-            double distance = to.length();
-            if (distance > range + target.getBbWidth() / 2) continue;
-            // A wide target is hit when any part of it is in the cone, not just its centre.
-            double allowance = Math.atan2(target.getBbWidth() / 2, Math.max(distance, 0.5));
-            double angle = distance < 1e-3 ? 0 : Math.acos(Math.min(1, to.dot(direction) / distance));
-            if (angle > cone + allowance || !LineOfSight.clear(context.level(), from, center)) continue;
+            Vec3 center = target.getBoundingBox().getCenter();
+            if (!inCone(from, direction, range, cone, target) || !LineOfSight.clear(context.level(), from, center)) continue;
             Hitscan.damage(target, flame, stats.damage());
             TurretBurn.ignite(target, burnTicks, burnDamage);
         }
@@ -64,5 +59,15 @@ public class FlamethrowerWeapon extends WeaponType {
         var end = context.level().clip(new ClipContext(from, from.add(direction.scale(range)), ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.ANY, null));
         ShotReport.send(context, this, 0, List.of(ShotReport.of(context.level(), end, direction)));
+    }
+
+    /** Any part of {@code target} within {@code cone} radians of {@code direction} from {@code from}, at most {@code range} away (Repulsor too). */
+    public static boolean inCone(Vec3 from, Vec3 direction, double range, double cone, LivingEntity target) {
+        Vec3 to = target.getBoundingBox().getCenter().subtract(from);
+        double distance = to.length();
+        if (distance > range + target.getBbWidth() / 2) return false;
+        double allowance = Math.atan2(target.getBbWidth() / 2, Math.max(distance, 0.5)); // a wide target counts when any part is in
+        double angle = distance < 1e-3 ? 0 : Math.acos(Math.min(1, to.dot(direction) / distance));
+        return angle <= cone + allowance;
     }
 }

@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-07, 16:55 WIB)
+# Bastion Turrets — Session Handoff (2026-10-07, 20:05 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -8,16 +8,46 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 ## 0. Where we stopped
 
 **NOW (read first):**
-1. **Committed 2026-10-07 ~18:20 on top of `1a5ff9e` (beta.4), not pushed (the user pushes):** the **Feed Hub**, 1x1 and the
-   **multiblock + energy** (83/83 GameTests, scene checked, independent review + fixes, **user tested in game 18:18: items
-   + FE through Pipez into a big Feed Hub work**), the turret GUI shift-click fix, the Creative Power Source pull fix, Pipez
-   as a dev runtime mod, docs (PLAN spec, TESTING, HANDOFF, store descriptions, UPLOAD.md beta.5 changelog block; version
-   still `0.1.0-beta.4`, beta.5 not released) and the plan `docs/superpowers/plans/2026-10-07-feed-hub-multiblock.md`.
-   Never commit `modlist.html`.
+1. **0.1.1 released to GitHub (2026-10-07 ~20:05, user: "commit, push"):** commits `fad802f` (Feed Hub multiblock + energy,
+   turret GUI shift-click fix, Creative Power Source pull fix, Pipez dev mod) and the 0.1.1 commit (Repulsor + Repulsor
+   Dome, version bump), tag `v0.1.1`, pushed. **The user uploads `build/libs/bastion-1.20.1-0.1.1.jar` to CurseForge and
+   Modrinth** (fields + changelog in `docs/release/UPLOAD.md`). Versioning (user 20:04): stays on the **Beta** channel
+   with plain numbers `0.1.1`, `0.1.2`, ...; the first Release will be **1.0.0**. Never commit `modlist.html`.
 2. **Feed Hub multiblock + energy: built** (design 15:35, approved 15:47 incl. the full 4a look; defaults taken without
    an answer: 8 items/tick **per block**, FE of a broken block is **lost**). See "Feed Hub multiblock" below.
-3. **Next: a new turret** (user 18:18, the other idea): get its design (role, base size, ammo/FE, signature effect),
-   post a summary for approval, then build. Models come from `tools/blockout/design_weapons.py`; Blockbench not needed.
+3. **Released in 0.1.1: Repulsor (1x1) + Repulsor Dome (2x2)** (user idea 18:29: turrets can't hit
+   mobs hugging/behind their barrel; these push valid targets away, no damage, FE). Decisions 18:32: 1a names, 2a FE,
+   3a no damage, 4a 1.5 s / 4 s with a 0.5 s charge; approach A (weapon modules); spec PLAN "Repulsor & Repulsor Dome";
+   plan `docs/superpowers/plans/2026-10-07-repulsor.md`. **92/92 GameTests**, scene `-Pshowcase=repulsor` checked,
+   independent review done (wall-mount push fixed, dome shake radius 10).
+   **User test 19:45: buffed** (Repulsor range 5 / push 4, Dome range 7 / push 6) + **heavy mobs** (config
+   `repulsorHeavyMobs` = iron golem, ravager, warden; Repulsor never targets them, Dome pushes them x`repulsorHeavyMobPush`
+   0.4, their vanilla KB resistance ignored; the hop is now the same for every mob so distance scales evenly). **97/97 GameTests.**
+   Tested in game by the user (19:45 buff, 20:00 orb colour fix). See "Repulsor" below.
+
+**Repulsor (built 2026-10-07 19:15):**
+- `weapon/Repulsion.push(target, from, fallback, blocks, lift)`: horizontal launch `blocks x SPEED_PER_BLOCK (0.2)` +
+  lift 0.35, scaled by (1 - knockback resistance); calibrated by GameTest `repulsionTravelsAsSet` (lands 2.99 / 4.98
+  blocks for 3 / 5). NoAI mobs ignore physics (scene uses `removeFreeWill`).
+- `RepulsorWeapon` (`repulsor.json`): AREA_PULSE, FE like Tesla (`cost()` from energy_per_shot 500, cap 10k, in 500/t),
+  turns 12°/t, pitch -90..90, charge 10 t, every 30 t; cone 35° **from the pivot** (from the horn's mouth a husk beside
+  the target fell outside and took a second pulse; test asserts one pulse), line of sight from the pivot, shares
+  `FlamethrowerWeapon.inCone`. `RepulsorDomeWeapon` (`repulsor_dome.json`): never turns, `sight` = no line of sight,
+  all valid targets within 6 of the pivot (orb, pivot_height 1.0) pushed 5, 2,000 FE (cap 40k, in 2,000/t), every 80 t.
+- Client `RepulsorEffects`: wave = REPULSOR_MUZZLE + 4 SHOCKWAVE_RING rings + haze + a translucent air cone (`Wave`,
+  6 ticks) along the barrel (not toward the first mob); dome = sphere mesh (12x24, rim-bright, `vfx/dome.png` streaks)
+  growing to range in 8 t then fading 8 t, a sand dust ring drawn on the floor at the sphere's edge (shaded by light:
+  the render type is fullbright), DOME_BURST (flash, speed-line sparks, shake, flash). Dust at each pushed mob
+  (REPULSOR_HIT). Charge: Repulsor horn rings `glow_coil_0..2` light via `coilFill`, Dome ring `dome_ring` spins via
+  `focusAngle` (WeaponModel `setRotY`), glow brightens (`chargeGlow`). Sounds `repulsor.*` placeholders.
+- Models `design_weapons.py repulsor()/repulsor_dome()`, clips hand-written, parts `repulsor_emitter/coil/mount`,
+  `dome_core/pylons/mount` (parts.json, gen_recipes), test arena `yard` (28x28). GameTests `TurretRepulsorTests` (9).
+- Review (19:25): pushes start from where the base is attached (`alongMount(0)`), so a wall Repulsor pushes mobs off
+  the wall (fallback: the facing); dome shake radius 10. Not reproduced, kept as guard tests: aim/push mismatch behind
+  a fence (line of sight uses 1-block outlines), aim on the mount axis. Deferred minors: riders / KB-resistance-1 mobs
+  still cost FE, visuals use data.range() not stats.range() (Range Module), wave drawn from the muzzle, focusAngle
+  unbounded.
+  `gen_structures.py` rewrites every template with a new gzip timestamp: restore the untouched ones from git.
 
 **Feed Hub multiblock (built 2026-10-07 16:55, PLAN "Feed Hub" → "Multiblock + energi"):**
 - Shapes 1x1x1..3x3x3 (square, H <= W). A hub's place lives in blockstate `x`/`y`/`z` = alone/low/middle/high
@@ -62,6 +92,7 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
   the fix must be broken and re-placed.
 
 **Released (public beta):**
+- **0.1.1** committed, tagged `v0.1.1` and pushed 2026-10-07 ~20:05 (user asked). Upload pending by the user.
 - GitHub `AlifRizza/bastion-turrets` is **public**. **0.1.0-beta.4** committed, tagged `v0.1.0-beta.4` and pushed
   2026-10-07 13:30 (the user asked for the push this time; otherwise the user pushes). Tags beta.1-4 all on GitHub.
 - **beta.4 upload**: the user uploads `build/libs/bastion-1.20.1-0.1.0-beta.4.jar` to CurseForge and Modrinth
@@ -154,12 +185,12 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 
 - Minecraft Forge **1.20.1**, Forge 47.4.26 (min `[47.2,)`), Parchment 2023.09.03, **GeckoLib 4.8.4**, Java 17, Gradle 8.8.
 - Mod id `bastion`, package `dev.bastion`, root `/Users/alifrizzaz/Documents/Minecraft Modding/Turret`.
-- Version in `gradle.properties` (`mod_version=0.1.0-beta.4`), jar `bastion-1.20.1-<version>.jar`, authors `AlifRizza`,
+- Version in `gradle.properties` (`mod_version=0.1.1`), jar `bastion-1.20.1-<version>.jar`, authors `AlifRizza`,
   license All Rights Reserved.
 - **Git**: branch `main`, remote `origin` = GitHub (public). Commits: `df3660b` initial, `f1819a3`, `f460e59` Fase 9,
   `05d4bb9` tabs, `ae44021` release prep (beta.1), `2c08cd7` bullets + performance, `e43a732` beta.2, `f2c8179` beta.3.
   Commit **only when the user says "commit"**; the user pushes. Ignored: `run/`, `build/`, `.gradle/`, `/references/`.
-- Build/run: `./gradlew build`, `./gradlew runClient --offline` (see §9), `./gradlew runGameTestServer` (**83 tests**).
+- Build/run: `./gradlew build`, `./gradlew runClient --offline` (see §9), `./gradlew runGameTestServer` (**97 tests**).
 - Dev runs include `src/dev` (never in the jar): dev commands, dev-only GameTests, scripted scenes.
 - Dev runtime mods: Create 6.0.8 + Ponder + Flywheel + Registrate + MixinExtras (runtimeOnly); **Pipez** forge-1.20.1-1.2.26
   (runtimeOnly, Modrinth id `Mtjt7u5h`, user 17:14: Universal Pipe = items + FE for testing hubs/turrets); **ToroHealth** damage
@@ -205,6 +236,9 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 | 10-07 10:45 | **Railgun** (2x2, anti-boss, slug + FE, user's reference image: long two-rail barrel, drum; charge = barrel lights up then arcs over it). |
 | 10-07 11:18 | **Mortar** (2x2, arcing, ground only, 3x3 fire patch burns everyone, vanilla fire on burnable blocks). Approved 12:09. |
 | 10-07 12:09 | Railgun approved in game. **beta.4 ships after the Mortar** (balance + Railgun + Mortar). |
+| 10-07 20:04 | Versioning: Beta channel with plain numbers (0.1.1, 0.1.2, ...), first Release = 1.0.0. Repulsor Dome orb all blue (UV fix). |
+| 10-07 19:45 | Repulsor buff: range 5 / push 4; Dome range 7 / push 6. Heavy mobs (config list, default iron golem, ravager, warden): Repulsor cannot push them (ignores them), Dome x0.4. |
+| 10-07 18:32 | **Repulsor + Repulsor Dome** (push mobs off the turrets, FE, no damage, 1.5 s / 4 s, charge 0.5 s). Cone measured from the pivot (19:08, so one push hits mobs crowding the turret's sides). |
 | 10-07 13:15 | Mortar: **no lead** (hits where the target stood; misses walkers, for crowds); fire patch must visibly cover 3x3. |
 | defaults, **not confirmed** | No bullet drop; auto-lead `lead_accuracy` 0.9; bullets fly through non-targets (old hitscan hit anything); speeds Gun 6, MG 5, Shotgun 4, Sniper 12 b/t. `sweep_tolerance` Flamethrower 180, MG 30. Autoloader +40%, recipe nuggets/redstone/copper/piston. Mismatched ammo never fires. Precision Lock x1.5 stacks with headshot. Default targets Hostile+Boss. Repair kit 40%. Large base HP x2.5. Tesla 60k/1k per tick. Flamethrower ignores fire-immune mobs. Workstation FE 50k, 2k/t. License All Rights Reserved. |
 
@@ -234,6 +268,8 @@ tier_upgrade_kit_t2/t3, turret_configurator, damaged (large) turret bases, 33 pa
 | Laser Rifle | CHARGED beam, pierces all valid targets | 28, 40 range, 50 t charge + 50 t, 1 Laser Cell/shot |
 | Railgun (large) | charged slug 40 b/t, ignores armor, boss x2, biggest first, push shockwave r4 | 60, 80 range, 60 t + 40 t, 1 slug + 8k FE |
 | Mortar (large) | ballistic shell (45-86°), no lead, ground targets, over walls, 3x3 fire patch 5 s burns everyone | 6 blast r1.5, 8-40 range, 60 t, 1 shell |
+| Repulsor | no damage, cone 35° push, line of sight, FE, ignores heavy mobs | push 4 blocks, range 5, charge 10 t, every 30 t, 500 FE |
+| Repulsor Dome (large) | no damage, push everything around, through walls, FE, heavy mobs x0.4 | push 6 blocks, range 7, charge 10 t, every 80 t, 2,000 FE |
 
 **Turret systems**: tiers T1–T3 (module slots 1/2/4), HP via `TurretHitboxEntity`, regen, repair, destruction,
 owner/trusted, redstone, filters, configurator, modifiers (one of each kind per base, weapon-specific ones), servo + scan
@@ -293,7 +329,7 @@ player per level tick.
 
 ## 7. Testing
 
-- **GameTests: 83 pass**: TurretFeedHubTests 15, TurretMortarTests 2, TurretRailgunTests 5, TurretBaseTests 5, TurretCombatTests 7 (bullets take time, pass non-targets),
+- **GameTests: 97 pass**: TurretRepulsorTests 14, TurretFeedHubTests 15, TurretMortarTests 2, TurretRailgunTests 5, TurretBaseTests 5, TurretCombatTests 7 (bullets take time, pass non-targets),
   TurretSystemsTests 22 (Choke, creative tabs, zombie attacks turret), TurretLargeTests 7 (Autoloader reloads faster),
   TurretTeslaFlameTests 7 (flamethrower sweeps to next target), TurretLaserTests 4, TurretWorkstationTests 7, dev
   CreatePlacementTests 1, dev PipezEnergyTests 1. Negative controls were checked for the bullet pass-through and sweep tests.

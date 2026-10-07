@@ -1,0 +1,266 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.repulsor_dome_turret.deploy": {
+      "animation_length": 1.0,
+      "bones": {
+        "pylons": {
+          "position": {
+            "0.0": [
+              0,
+              -6,
+              0
+            ],
+            "0.6": [
+              0,
+              0.3,
+              0
+            ],
+            "0.9": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "glow_orb": {
+          "scale": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ],
+            "0.8": [
+              1.1,
+              1.1,
+              1.1
+            ],
+            "1.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "body": {
+          "scale": {
+            "0.0": [
+              0.92,
+              0.92,
+              0.92
+            ],
+            "0.25": [
+              1.02,
+              1.02,
+              1.02
+            ],
+            "0.4": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_dome_turret.idle": {
+      "animation_length": 4,
+      "loop": true,
+      "bones": {
+        "glow_orb": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "2.0": [
+              0,
+              0.3,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              0,
+              10,
+              0
+            ],
+            "3.0": [
+              0,
+              -10,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_dome_turret.held_idle": {
+      "animation_length": 4,
+      "loop": true,
+      "bones": {
+        "glow_orb": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "2.0": [
+              0,
+              0.3,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_dome_turret.aim": {
+      "animation_length": 0.3,
+      "bones": {
+        "pylons": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              0,
+              0.4,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_dome_turret.fire": {
+      "animation_length": 0.5,
+      "bones": {
+        "pylons": {
+          "scale": {
+            "0.0": [
+              1.12,
+              1,
+              1.12
+            ],
+            "0.18": [
+              0.98,
+              1,
+              0.98
+            ],
+            "0.5": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "glow_orb": {
+          "scale": {
+            "0.0": [
+              1.4,
+              1.4,
+              1.4
+            ],
+            "0.15": [
+              0.9,
+              0.9,
+              0.9
+            ],
+            "0.5": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "body": {
+          "position": {
+            "0.0": [
+              0,
+              -0.5,
+              0
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_dome_turret.no_ammo": {
+      "animation_length": 1.2,
+      "loop": true,
+      "bones": {
+        "glow_orb": {
+          "scale": {
+            "0.0": [
+              0.85,
+              0.85,
+              0.85
+            ],
+            "0.6": [
+              0.8,
+              0.8,
+              0.8
+            ],
+            "1.2": [
+              0.85,
+              0.85,
+              0.85
+            ]
+          }
+        },
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              10,
+              0,
+              0
+            ],
+            "0.6": [
+              14,
+              0,
+              0
+            ],
+            "1.2": [
+              10,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

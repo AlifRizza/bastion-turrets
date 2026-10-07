@@ -53,6 +53,9 @@ public final class BastionItems {
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("flamethrower")));
     public static final RegistryObject<WeaponModuleItem> LASER_RIFLE_TURRET = REGISTER.register("laser_rifle_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("laser_rifle")));
+    /** Pushes mobs away from the turrets, no damage; runs on FE. */
+    public static final RegistryObject<WeaponModuleItem> REPULSOR_TURRET = REGISTER.register("repulsor_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("repulsor")));
     // Big modules: Large Turret Base only.
     public static final RegistryObject<WeaponModuleItem> MISSILE_LAUNCHER_TURRET = REGISTER.register("missile_launcher_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("missile_launcher"), true));
@@ -65,6 +68,9 @@ public final class BastionItems {
     /** Lobs shells that leave fire patches; ground targets only. */
     public static final RegistryObject<WeaponModuleItem> MORTAR_TURRET = REGISTER.register("mortar_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("mortar"), true));
+    /** Throws every mob around it away from the turrets, no damage; runs on FE. */
+    public static final RegistryObject<WeaponModuleItem> REPULSOR_DOME_TURRET = REGISTER.register("repulsor_dome_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("repulsor_dome"), true));
 
     // Ammo, PLAN 7.4; tagged bastion:ammo/kinetic and bastion:ammo/scatter.
     public static final RegistryObject<Item> KINETIC_ROUNDS = REGISTER.register("kinetic_rounds", () -> new Item(new Item.Properties()));
@@ -142,7 +148,9 @@ public final class BastionItems {
             "flamethrower_nozzle", "flamethrower_fuel_tanks", "flamethrower_housing",
             "laser_focus_barrel", "laser_emitter_crystal", "laser_housing",
             "railgun_rails", "railgun_receiver", "railgun_mount",
-            "mortar_barrel", "mortar_housing", "mortar_ring"
+            "mortar_barrel", "mortar_housing", "mortar_ring",
+            "repulsor_emitter", "repulsor_coil", "repulsor_mount",
+            "dome_core", "dome_pylons", "dome_mount"
     ).map(id -> REGISTER.register(id, () -> new PartItem(new Item.Properties().stacksTo(16)))).toList();
 
     private static RegistryObject<WorkstationItem> workstation(RegistryObject<WorkstationBlock> block) {

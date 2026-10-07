@@ -293,5 +293,21 @@
   "gui.bastion.feed_hub.energy": "Energi",
   "gui.bastion.feed_hub.fe": "%s / %s FE",
   "gui.bastion.feed_hub.ammo": "Peluru",
-  "gui.bastion.feed_hub.empty": "Kosong"
+  "gui.bastion.feed_hub.empty": "Kosong",
+  "item.bastion.repulsor_turret": "Repulsor",
+  "tooltip.bastion.weapon.repulsor_turret.ability": "Mengisi daya, lalu gelombang mendorong semua target di depannya dalam 5 blok sekitar 4 blok. Tidak kuat untuk mob berat (iron golem, ravager, warden). Tanpa damage. Memakai FE (500 per dorongan)",
+  "item.bastion.repulsor_dome_turret": "Kubah Repulsor",
+  "tooltip.bastion.weapon.repulsor_dome_turret.ability": "Mengisi daya, lalu kubah meledak keluar dan melempar semua target dalam 7 blok sekitar 6 blok, menembus dinding; mob berat 60 % lebih pendek. Tanpa damage. Memakai FE (2.000 per dorongan)",
+  "item.bastion.repulsor_emitter": "Emitor Repulsor",
+  "item.bastion.repulsor_coil": "Kumparan Medan",
+  "item.bastion.repulsor_mount": "Dudukan Repulsor",
+  "item.bastion.dome_core": "Inti Kubah",
+  "item.bastion.dome_pylons": "Pilar Kubah",
+  "item.bastion.dome_mount": "Dudukan Kubah",
+  "subtitles.bastion.repulsor.charge": "Repulsor mengisi daya",
+  "subtitles.bastion.repulsor.push": "Repulsor mendorong",
+  "subtitles.bastion.repulsor.push_tail": "Dorongan di kejauhan",
+  "subtitles.bastion.repulsor.dome_charge": "Kubah mengisi daya",
+  "subtitles.bastion.repulsor.dome_burst": "Kubah meledak",
+  "subtitles.bastion.repulsor.dome_burst_tail": "Kubah di kejauhan"
 }

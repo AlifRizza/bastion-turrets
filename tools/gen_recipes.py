@@ -76,8 +76,14 @@ PARTS = {
     "mortar_turret": {"mortar_barrel": ({"iron_block": 2, "blast_furnace": 1}, LARGE_PART),
                       "mortar_housing": ({"iron_block": 2, "smooth_stone": 4, "redstone": 2}, LARGE_PART),
                       "mortar_ring": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
+    "repulsor_turret": {"repulsor_emitter": ({"iron_ingot": 2, "copper_ingot": 1, "piston": 1}, SMALL_PART),
+                        "repulsor_coil": ({"copper_ingot": 2, "redstone": 2}, SMALL_PART),
+                        "repulsor_mount": ({"iron_ingot": 1, "observer": 1}, SMALL_PART)},
+    "repulsor_dome_turret": {"dome_core": ({"diamond": 1, "redstone_block": 1, "piston": 2}, LARGE_PART),
+                             "dome_pylons": ({"iron_block": 1, "copper_block": 1}, LARGE_PART),
+                             "dome_mount": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
 }
-LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret"}
+LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret", "repulsor_dome_turret"}
 PART_COUNT = {"missile_pod": 2}  # the launcher has two pods
 
 # Module Workstation: the old crafting recipes as ingredient counts; ammo likewise at the Ammo Workstation.

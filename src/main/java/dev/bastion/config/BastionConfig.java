@@ -1,6 +1,7 @@
 package dev.bastion.config;
 
 import dev.bastion.turret.TurretTier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public final class BastionConfig {
     public static final ForgeConfigSpec.IntValue FEED_HUB_ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue FEED_HUB_MAX_INPUT;
     public static final ForgeConfigSpec.IntValue FEED_HUB_ITEMS_PER_TICK;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> REPULSOR_HEAVY_MOBS;
+    public static final ForgeConfigSpec.DoubleValue REPULSOR_HEAVY_PUSH;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_HEALTH;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_REGEN;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_TURN_SPEED;
@@ -54,6 +57,15 @@ public final class BastionConfig {
         FEED_HUB_ITEMS_PER_TICK = b
                 .comment("Ammo items each Feed Hub block moves into its turrets per tick.")
                 .defineInRange("feedHubItemsPerTick", 8, 1, 64);
+        REPULSOR_HEAVY_MOBS = b
+                .comment("Mobs too big or heavy for the Repulsor: it never fires at them, and the Repulsor Dome throws them only",
+                        "repulsorHeavyMobPush of its push (their vanilla knockback resistance is ignored). Entity ids; add big mobs from",
+                        "other mods here, e.g. \"somemod:stone_giant\".")
+                .defineListAllowEmpty(List.of("repulsorHeavyMobs"), () -> List.of("minecraft:iron_golem", "minecraft:ravager", "minecraft:warden"),
+                        o -> o instanceof String s && ResourceLocation.isValidResourceLocation(s));
+        REPULSOR_HEAVY_PUSH = b
+                .comment("Share of the Repulsor Dome's push that heavy mobs (repulsorHeavyMobs) still get: 0.4 = 60 % less.")
+                .defineInRange("repulsorHeavyMobPush", 0.4, 0, 1);
         b.push("tiers");
         TIER_HEALTH = b.comment("Max HP per tier T1, T2, T3.")
                 .defineList("health", List.of(100.0, 250.0, 500.0), o -> o instanceof Double d && d > 0);

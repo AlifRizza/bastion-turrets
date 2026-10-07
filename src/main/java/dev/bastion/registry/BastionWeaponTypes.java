@@ -9,6 +9,8 @@ import dev.bastion.weapon.types.LaserRifleWeapon;
 import dev.bastion.weapon.types.MissileLauncherWeapon;
 import dev.bastion.weapon.types.MortarWeapon;
 import dev.bastion.weapon.types.RailgunWeapon;
+import dev.bastion.weapon.types.RepulsorDomeWeapon;
+import dev.bastion.weapon.types.RepulsorWeapon;
 import dev.bastion.weapon.types.RocketLauncherWeapon;
 import dev.bastion.weapon.types.ShotgunWeapon;
 import dev.bastion.weapon.types.SniperWeapon;
@@ -36,4 +38,6 @@ public final class BastionWeaponTypes {
     public static final RegistryObject<WeaponType> LASER_RIFLE = REGISTER.register("laser_rifle", LaserRifleWeapon::new);
     public static final RegistryObject<WeaponType> RAILGUN = REGISTER.register("railgun", RailgunWeapon::new);
     public static final RegistryObject<WeaponType> MORTAR = REGISTER.register("mortar", MortarWeapon::new);
+    public static final RegistryObject<WeaponType> REPULSOR = REGISTER.register("repulsor", RepulsorWeapon::new);
+    public static final RegistryObject<WeaponType> REPULSOR_DOME = REGISTER.register("repulsor_dome", RepulsorDomeWeapon::new);
 }

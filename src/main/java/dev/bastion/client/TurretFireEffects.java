@@ -82,6 +82,15 @@ public final class TurretFireEffects {
             FlameEffects.pulse(level, event, client, muzzle, direction, data == null ? 8 : data.range(), color);
             return;
         }
+        if (fx == WeaponFx.REPULSOR) { // the wave follows the barrel, not the first pushed mob
+            Vec3 aim = turret.toWorld(Vec3.directionFromRotation(turret.renderPitch(1), turret.renderYaw(1)));
+            RepulsorEffects.wave(level, event, client, muzzle, aim, data == null ? 3 : data.range(), color);
+            return;
+        }
+        if (fx == WeaponFx.REPULSOR_DOME) {
+            RepulsorEffects.dome(level, event, muzzle, data == null ? 6 : (float) data.range(), color);
+            return;
+        }
         VfxManager.play(fx.muzzle(), muzzle, direction, VfxParams.of().color(color).seed(event.seed()));
         if (client.streak >= 3) {
             VfxManager.play(VfxPresets.HEAT_HAZE, muzzle, direction, VfxParams.of().seed(event.seed() + 1));

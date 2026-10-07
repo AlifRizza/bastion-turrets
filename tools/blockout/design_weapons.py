@@ -500,6 +500,75 @@ def mortar_shell(path):
     k.write("turret_mortar_shell", path, bounds=(1, 1), offset=(0, 0, 0))
 
 
+
+def square_frame(k, tag, cy, z0, z1, half, t):
+    """A square ring around the Z axis: four bars `t` thick, outer half-width `half`."""
+    h, v = tag + "h", tag + "v"  # the top/bottom bars and the side bars differ in size: their own UV regions
+    return [k.box(h, -half, cy + half - t, z0, half, cy + half, z1), k.box(h, -half, cy - half, z0, half, cy - half + t, z1),
+            k.box(v, -half, cy - half + t, z0, -half + t, cy + half - t, z1), k.box(v, half - t, cy - half + t, z0, half, cy + half - t, z1)]
+
+
+def repulsor(path):
+    """Repulsor: a short, wide square horn on the yoke (four frames widening to the mouth) with three glowing rings set
+    in it, back to front (glow_coil_0..2: the client lights them one by one while it charges), finned flanks.
+    muzzle_0 = the mouth (repulsor.json muzzle_length 0.75 = 12 px)."""
+    k = Kit(128)
+    yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("rcv", -4.2, 3.4, -4.0, 4.2, 10.6, 5.6), k.box("rcvtop", -3.4, 10.6, -3.0, 3.4, 11.4, 4.6),
+        k.box("rcvrear", -3.0, 4.6, 5.6, 3.0, 9.4, 7.0)])
+    horn = []
+    # One tag per size: faces with the same tag share one UV region, and a bigger face would read past it.
+    for i, (z0, z1, half) in enumerate(((-6.0, -4.0, 3.6), (-8.0, -6.0, 4.4), (-10.0, -8.0, 5.2), (-12.0, -10.0, 6.0))):
+        horn += square_frame(k, f"horn{i}", P, z0, z1, half, 0.9)
+    horn.append(k.box("throat", -2.6, P - 2.6, -4.6, 2.6, P + 2.6, -4.0))
+    k.bone("barrel_0", "body", pivot=(0, P, -4.0), cubes=horn)
+    for i, (z, half) in enumerate(((-5.4, 2.9), (-7.9, 3.7), (-10.4, 4.5))):
+        k.bone(f"glow_coil_{i}", "barrel_0", pivot=(0, P, z), cubes=square_frame(k, f"ring{i}", P, z - 0.25, z + 0.25, half, 0.35))
+    fins = []
+    for side in (-1, 1):
+        x0, x1 = sorted((side * 4.2, side * 4.9))
+        fins += [k.box("fin", x0, y, -3.0, x1, y + 0.6, 4.4) for y in (4.4, 5.8, 7.2, 8.6)]
+    k.bone("body_frame", "body", pivot=(0, P, 0), cubes=fins)
+    k.bone("glow_strips", "body", pivot=(0, P, 0), cubes=[k.box("gstrip", -3.5, 11.4, -2.4, 3.5, 11.5, 4.0)])
+    k.bone("vent_l", "body", pivot=(-4.9, 6.0, 0.7), cubes=[k.box("vent", -4.95, 5.0, -2.0, -4.8, 7.0, 3.4)])
+    k.bone("vent_r", "body", pivot=(4.9, 6.0, 0.7), cubes=[k.box("vent", 4.8, 5.0, -2.0, 4.95, 7.0, 3.4)])
+    k.bone("sensor", "body", pivot=(2.6, 11.4, -1.0), cubes=[k.box("scope", 1.6, 11.4, -2.6, 3.6, 12.6, 0.6)])
+    k.bone("glow_lens", "sensor", pivot=(2.6, 12.0, -2.65), cubes=[k.box("lens", 2.0, 11.6, -2.65, 3.2, 12.4, -2.6)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, -12.0))
+    k.write("repulsor_turret", path, bounds=(3, 2.5), offset=(0, 0.5, 0))
+
+
+DOME_ORB = 16.0  # orb centre above the mount; repulsor_dome.json pivot_height = DOME_ORB / 16
+
+
+def repulsor_dome(path):
+    """Repulsor Dome for the Large Turret Base: a squat round generator, an orb (glow_orb) in a cage of four bent
+    pylons, a ring around the orb (dome_ring: the client spins it up while it charges, WeaponModel turns it about Y).
+    It never turns or tilts. muzzle_0 = the orb centre."""
+    k = Kit(128)
+    k.bone("root")
+    k.bone("yaw_pivot", "root", cubes=k.octagon("turn", 11, 0, 1.6))
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(0, DOME_ORB, 0))
+    k.bone("body", "yaw_pivot", pivot=(0, 1.6, 0), cubes=k.chamfer("housing", 9, 3, 1.6, 7.0) + k.chamfer("lid", 7, 2.4, 7.0, 8.4)
+           + k.octagon("socket", 3.4, 8.4, 11.0))
+    k.bone("glow_strips", "body", pivot=(0, 5.0, 0), cubes=k.faces4("gstrip", 9.1, 4.6, 5.4, 6.0, 0.1))
+    pylons = []
+    for x, z in ((-6.5, -6.5), (6.5, -6.5), (-6.5, 6.5), (6.5, 6.5)):
+        ix, iz = (-1 if x > 0 else 1), (-1 if z > 0 else 1)  # towards the middle
+        pylons += [k.box("pylon", x - 1.0, 8.4, z - 1.0, x + 1.0, 18.0, z + 1.0),
+                   k.box("pylonbend", min(x, x + ix * 2.6) - 0.9, 18.0, min(z, z + iz * 2.6) - 0.9,
+                         max(x, x + ix * 2.6) + 0.9, 19.4, max(z, z + iz * 2.6) + 0.9),
+                   k.box("pyloncap", x - 1.3, 7.8, z - 1.3, x + 1.3, 8.6, z + 1.3)]
+    k.bone("pylons", "body", pivot=(0, 8.4, 0), cubes=pylons)
+    k.bone("dome_ring", "body", pivot=(0, DOME_ORB, 0), cubes=k.ring8("ring", 6.2, DOME_ORB - 0.5, DOME_ORB + 0.5, 1.0))
+    k.bone("glow_orb", "body", pivot=(0, DOME_ORB, 0), cubes=k.octagon("orbcap", 2.0, DOME_ORB - 3.4, DOME_ORB - 2.4)
+           + k.octagon("orb", 3.4, DOME_ORB - 2.4, DOME_ORB + 2.4) + k.octagon("orbtop", 2.0, DOME_ORB + 2.4, DOME_ORB + 3.4))
+    k.bone("sensor", "body", pivot=(0, 9.6, -7.4), cubes=[k.box("scope", -1.4, 8.6, -8.4, 1.4, 10.4, -6.4)])
+    k.bone("glow_lens", "sensor", pivot=(0, 9.5, -8.45), cubes=[k.box("lens", -0.9, 9.0, -8.45, 0.9, 10.0, -8.4)])
+    k.bone("muzzle_0", "body", pivot=(0, DOME_ORB, 0))
+    k.write("repulsor_dome_turret", path, bounds=(3, 3), offset=(0, 1, 0))
+
 out = sys.argv[1] if len(sys.argv) > 1 else GEO
 gun(f"{out}/gun_turret.geo.json")
 machine_gun(f"{out}/machine_gun_turret.geo.json")
@@ -515,3 +584,5 @@ laser_rifle(f"{out}/laser_rifle_turret.geo.json")
 railgun(f"{out}/railgun_turret.geo.json")
 mortar(f"{out}/mortar_turret.geo.json")
 mortar_shell(f"{out}/entity/turret_mortar_shell.geo.json")
+repulsor(f"{out}/repulsor_turret.geo.json")
+repulsor_dome(f"{out}/repulsor_dome_turret.geo.json")

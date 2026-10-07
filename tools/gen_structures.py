@@ -58,6 +58,7 @@ TEMPLATES = {
     "arena": (13, 7, 7),   # 11 x 5 x 5 inside: hitscan weapons
     "range": (26, 12, 13),  # 24 x 10 x 11 inside: missiles climb before they dive
     "pit": (26, 32, 13),    # 24 x 30 x 11 inside: mortar shells arc ~22 blocks up
+    "yard": (30, 8, 30),    # 28 x 6 x 28 inside: the Repulsor Dome throws mobs ~5 blocks every way
 }
 
 if __name__ == "__main__":

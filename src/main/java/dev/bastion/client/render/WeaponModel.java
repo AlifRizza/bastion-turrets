@@ -58,6 +58,7 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
                 ? Mth.lerp(animationState.getPartialTick(), weapon.prevFocusAngle, weapon.focusAngle) : 0;
         float yawRad = yaw, pitchRad = pitch, spinRad = spin;
         getBone("focus_rings").ifPresent(bone -> bone.setRotZ(focus)); // Laser Rifle
+        getBone("dome_ring").ifPresent(bone -> bone.setRotY(focus)); // Repulsor Dome
         getBone("yaw_pivot").ifPresent(bone -> bone.setRotY(yawRad));
         getBone("pitch_pivot").ifPresent(bone -> bone.setRotX(pitchRad));
         // Absolute, never additive (unanimated bones are not always reset per frame). Untouched until the

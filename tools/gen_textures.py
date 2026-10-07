@@ -153,6 +153,11 @@ MODEL_MATERIALS = {
                          "ram": "steel", "glow_ram": "emitter"},
     "charging_station": {"body": "armor", "plate": "hex", "glow_plate": "emitter", "cradle": "frame", "pylons": "steel",
                          "coils": "frame", "glow_tips": "emitter"},
+    "repulsor_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "frame", "glow_strips": "emitter",
+                        "barrel_0": "frame", "glow_coil_0": "emitter", "glow_coil_1": "emitter", "glow_coil_2": "emitter",
+                        "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter"},
+    "repulsor_dome_turret": {"yaw_pivot": "armor", "body": "hex", "glow_strips": "emitter", "pylons": "steel", "dome_ring": "frame",
+                             "glow_orb": "emitter", "sensor": "steel", "glow_lens": "emitter"},
     "tesla_turret": {"yaw_pivot": "armor", "body": "hex", "body_frame": "frame", "glow_strips": "emitter", "column": "steel",
                      "coil": "frame", "glow_coil": "emitter", "crown": "armor", "glow_crown": "emitter", "terminal": "steel",
                      "glow_terminal": "emitter", "electrodes": "steel", "glow_electrodes": "emitter", "sensor": "steel",
@@ -849,6 +854,17 @@ def feed_hub_edge_glow():
 # --- VFX sprites (PLAN 5.2-5.4) -----------------------------------------------------------------
 # White/greyscale with alpha: particles and renderers tint them with the weapon energy colour at runtime.
 
+
+def dome_shell():
+    """Repulsor Dome shell (RepulsorEffects): soft white with slow swirling streaks, tileable on both axes, alpha in the
+    texture so the sphere reads as rushing air rather than glass."""
+    size = 64
+    yy, xx = np.mgrid[0:size, 0:size] / size
+    swirl = 0.62 + 0.22 * np.sin(2 * np.pi * (3 * xx + 0.5 * np.sin(2 * np.pi * yy))) + 0.12 * np.sin(2 * np.pi * (7 * xx - 2 * yy))
+    img = np.ones((size, size, 4))
+    img[..., 3] = np.clip(swirl * noise((size, size), 0.03, seed=211), 0, 1)
+    return img
+
 def grid(w, h=None):
     h = h or w
     y, x = np.mgrid[0:h, 0:w]
@@ -1225,6 +1241,11 @@ TEXTURES = {
     "item/mortar_shells.png": mortar_shells,
     "item/mortar_turret.png": lambda: paint_model("mortar_turret")[0],
     "item/mortar_turret_e.png": lambda: paint_model("mortar_turret")[1],
+    "item/repulsor_turret.png": lambda: paint_model("repulsor_turret")[0],
+    "item/repulsor_turret_e.png": lambda: paint_model("repulsor_turret")[1],
+    "item/repulsor_dome_turret.png": lambda: paint_model("repulsor_dome_turret")[0],
+    "item/repulsor_dome_turret_e.png": lambda: paint_model("repulsor_dome_turret")[1],
+    "vfx/dome.png": lambda: dome_shell(),
     "entity/turret_mortar_shell.png": lambda: paint_model("entity/turret_mortar_shell")[0],
     "entity/turret_mortar_shell_e.png": lambda: paint_model("entity/turret_mortar_shell")[1],
     "item/railgun_turret.png": lambda: paint_model("railgun_turret")[0],

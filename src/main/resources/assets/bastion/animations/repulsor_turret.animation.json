@@ -1,0 +1,238 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.repulsor_turret.deploy": {
+      "animation_length": 0.8,
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              4
+            ],
+            "0.5": [
+              0,
+              0,
+              -0.3
+            ],
+            "0.8": [
+              0,
+              0,
+              0
+            ]
+          },
+          "scale": {
+            "0.0": [
+              0.6,
+              0.6,
+              0.6
+            ],
+            "0.5": [
+              1.04,
+              1.04,
+              1.04
+            ],
+            "0.8": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "body": {
+          "scale": {
+            "0.0": [
+              0.92,
+              0.92,
+              0.92
+            ],
+            "0.3": [
+              1.02,
+              1.02,
+              1.02
+            ],
+            "0.45": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_turret.idle": {
+      "animation_length": 3,
+      "loop": true,
+      "bones": {
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              0,
+              10,
+              0
+            ],
+            "2.2": [
+              0,
+              -10,
+              0
+            ],
+            "3.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.5": [
+              0,
+              0,
+              0.15
+            ],
+            "3.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_turret.held_idle": {
+      "animation_length": 3,
+      "loop": true,
+      "bones": {
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.5": [
+              0,
+              8,
+              0
+            ],
+            "3.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_turret.aim": {
+      "animation_length": 0.3,
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              0,
+              0,
+              -0.5
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_turret.fire": {
+      "animation_length": 0.4,
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              2.2
+            ],
+            "0.12": [
+              0,
+              0,
+              0.6
+            ],
+            "0.4": [
+              0,
+              0,
+              0
+            ]
+          },
+          "scale": {
+            "0.0": [
+              1.1,
+              1.1,
+              0.9
+            ],
+            "0.15": [
+              0.98,
+              0.98,
+              1.02
+            ],
+            "0.4": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "body": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0.6
+            ],
+            "0.25": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.repulsor_turret.no_ammo": {
+      "animation_length": 1.2,
+      "loop": true,
+      "bones": {
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              10,
+              0,
+              0
+            ],
+            "0.6": [
+              14,
+              0,
+              0
+            ],
+            "1.2": [
+              10,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

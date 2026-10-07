@@ -194,7 +194,9 @@ public final class ClientTurret {
             ResourceLocation type = data == null ? null : data.type();
             var sound = BastionWeaponTypes.TESLA.getId().equals(type) ? BastionSounds.TESLA_CHARGE
                     : BastionWeaponTypes.LASER_RIFLE.getId().equals(type) ? BastionSounds.LASER_CHARGE
-                    : BastionWeaponTypes.RAILGUN.getId().equals(type) ? BastionSounds.RAILGUN_CHARGE : BastionSounds.SNIPER_CHARGE;
+                    : BastionWeaponTypes.RAILGUN.getId().equals(type) ? BastionSounds.RAILGUN_CHARGE
+                    : BastionWeaponTypes.REPULSOR.getId().equals(type) ? BastionSounds.REPULSOR_CHARGE
+                    : BastionWeaponTypes.REPULSOR_DOME.getId().equals(type) ? BastionSounds.DOME_CHARGE : BastionSounds.SNIPER_CHARGE;
             level.playLocalSound(at.x, at.y, at.z, sound.get(), SoundSource.HOSTILE, sound == BastionSounds.SNIPER_CHARGE ? 0.8f : 1f, 1f, false);
         } else if (state != TurretState.CHARGING) {
             chargeStart = -1;
@@ -229,6 +231,16 @@ public final class ClientTurret {
             weapon.coilFill = progress < 0 ? -1 : Math.min(1, progress / RailRenderer.FILL);
             weapon.chargeGlow = progress < 0 ? Math.max(0, weapon.chargeGlow - 0.07f) : Math.min(1, 0.4f + progress);
             if (progress >= 0) RailgunEffects.charging(level, this, progress, color);
+        } else if (data.type().equals(BastionWeaponTypes.REPULSOR.getId()) || data.type().equals(BastionWeaponTypes.REPULSOR_DOME.getId())) {
+            // Repulsor: the horn's three rings light back to front; Dome: its ring spins up; both glow brighter, then calm down.
+            int charge = Math.round(data.params().getOrDefault("charge_ticks", 1f));
+            float progress = state == TurretState.CHARGING ? chargeProgress(level.getGameTime(), 0, charge) : -1;
+            weapon.chargeColor = 0xFFFFFF;
+            weapon.chargeGlow = progress < 0 ? Math.max(0, weapon.chargeGlow - 0.08f) : Math.min(1, 0.3f + progress);
+            weapon.coilFill = progress < 0 ? -1 : Math.min(1, progress * 0.5f); // ring thresholds 0.13/0.30/0.47: ~26/60/94 % of the charge
+            weapon.focusSpeed = progress >= 0 ? 0.05f + 0.7f * progress * progress : Math.max(0.02f, weapon.focusSpeed * 0.92f);
+            weapon.prevFocusAngle = weapon.focusAngle;
+            weapon.focusAngle += weapon.focusSpeed;
         } else if (data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && !flaming(level)
                 && state != TurretState.DISABLED && state != TurretState.NO_AMMO) {
             FlameEffects.pilot(level, this);

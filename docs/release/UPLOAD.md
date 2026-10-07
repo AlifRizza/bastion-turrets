@@ -1,4 +1,4 @@
-# Upload sheet: 0.1.0-beta.4
+# Upload sheet: 0.1.1
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -23,19 +23,19 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field | Value |
 |---|---|
-| File | `build/libs/bastion-1.20.1-0.1.0-beta.4.jar` (`./gradlew build`) |
-| Version number | 0.1.0-beta.4 |
-| Version name | Bastion Turrets 0.1.0-beta.4 |
+| File | `build/libs/bastion-1.20.1-0.1.1.jar` (`./gradlew build`) |
+| Version number | 0.1.1 |
+| Version name | Bastion Turrets 0.1.1 |
 | Release channel / type | Beta |
 | Loader | Forge |
 | Game version | 1.20.1 |
 | Java | 17 |
 | Dependencies | GeckoLib: required. Create: optional. |
 
-Next betas: `0.1.0-beta.2`, `-beta.3`, ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta.
-First non-beta: `0.1.0` with channel Release.
+Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain numbers on the Beta channel: `0.1.1`, `0.1.2`,
+... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
 
-## Changelog: 0.1.0-beta.5 (not released yet)
+## Changelog: 0.1.1
 
 ```
 - New block: Feed Hub. Mount turret bases on its faces and feed only the hub (pipes, belts, funnels, hoppers,
@@ -49,6 +49,16 @@ First non-beta: `0.1.0` with channel Release.
 - Fix: shift-clicking ammo into a turret's GUI onto a stack already there, or taking only part of a stack out
   (inventory nearly full), was not saved: after a reload the rounds put in were gone, or the ones taken came back.
 - Creative Power Source: cables and pipes that pull energy (Pipez, Mekanism, ...) now connect to it and draw endless FE.
+
+New turrets (no damage, FE-powered): they push mobs away from your turrets, which can't shoot what hugs their barrels.
+- Repulsor (standard base): turns to its target, charges, then a wave of force throws every valid target in a 35°
+  cone up to 5 blocks out about 4 blocks back, several at once. Walls stop it. 500 FE per push, every 1.5 s.
+- Repulsor Dome (Large Turret Base): a dome of force bursts out and throws every valid target within 7 blocks about
+  6 blocks away, through walls. 2,000 FE per pulse, every 4 s.
+- Heavy mobs (server config `repulsorHeavyMobs`: iron golem, ravager, warden by default, add modded ones): the
+  Repulsor leaves them alone, the Dome throws them 60% less far (`repulsorHeavyMobPush`).
+- Both: only valid targets (you, pets and villagers stay put), parts and recipes at the Part Workstation / Part
+  Assembler.
 ```
 
 ## Changelog: 0.1.0-beta.4

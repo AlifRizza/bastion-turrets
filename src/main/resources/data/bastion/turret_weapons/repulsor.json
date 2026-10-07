@@ -1,0 +1,25 @@
+{
+  "type": "bastion:repulsor",
+  "ammo": "bastion:ammo/energy",
+  "energy_color": "#CFEFFF",
+  "range": 5,
+  "fire_interval": 30,
+  "damage": 0,
+  "ammo_per_shot": 0,
+  "turn_speed": 12,
+  "aim_tolerance": 15,
+  "aim_lock_ticks": 0,
+  "min_pitch": -90,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 0.75,
+  "params": {
+    "charge_ticks": 10,
+    "cone_angle": 35,
+    "knockback": 4,
+    "lift": 0.35,
+    "energy_per_shot": 500,
+    "energy_capacity": 10000,
+    "max_input": 500
+  }
+}

@@ -18,10 +18,12 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Rocket Launcher Turret | Standard | Leads moving targets. The blast only hurts what the turret is allowed to shoot. |
 | Flamethrower Turret | Standard | Sets valid targets in a short cone on fire. Burns through Fuel Canisters. |
 | Laser Rifle Turret | Standard | Charges up and fires one beam through all valid targets in a line. Walls stop it. |
+| Repulsor | Standard | No damage: after a short charge a wave of force throws everything in front of it, up to 5 blocks out, about 4 blocks back, several mobs at once, so they can't hug your guns. Too weak for heavy mobs like iron golems, ravagers and wardens. Runs on FE. |
 | Missile Launcher Turret | Large | 12 homing missiles. Fire them as they load, or wait for a full salvo spread over everything in range. |
 | Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits up to five targets at once. |
 | Railgun Turret | Large | Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target. |
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
+| Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 7 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE. |
 
 The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
@@ -30,7 +32,7 @@ The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Tur
 
 ## Turret bases
 
-The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun and Mortar) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.
+The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar and Repulsor Dome) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.
 
 Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, and a Repair Kit puts back 40% HP. A destroyed turret drops its weapon, ammo and modules while the base falls one tier (a T1 base turns into a Damaged Turret Base that you can restore). Mining a base works like breaking a shulker box, so tier and contents stay with the item.
 

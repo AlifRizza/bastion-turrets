@@ -5,6 +5,7 @@ import dev.bastion.Bastion;
 import dev.bastion.client.BurnEffects;
 import dev.bastion.client.ClientTurret;
 import dev.bastion.client.MortarEffects;
+import dev.bastion.client.RepulsorEffects;
 import dev.bastion.client.TeslaEffects;
 import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.render.ArcRenderer;
@@ -97,6 +98,7 @@ public final class VfxManager {
         RailRenderer.tick();
         TeslaEffects.tick(mc.level);
         MortarEffects.tick(mc.level);
+        RepulsorEffects.tick();
         BurnEffects.tick(mc.level);
         DecalRenderer.tick(mc.level);
         CasingRenderer.tick(mc.level);
@@ -121,6 +123,7 @@ public final class VfxManager {
         if (Minecraft.getInstance().level != null) LaserChargeRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) RailRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) MortarEffects.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
+        if (Minecraft.getInstance().level != null) RepulsorEffects.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) FlameJetRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) TurretHolograms.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         buffers.endBatch();
@@ -138,6 +141,7 @@ public final class VfxManager {
         RailRenderer.clear();
         TeslaEffects.clear();
         MortarEffects.clear();
+        RepulsorEffects.clear();
         BurnEffects.clear();
         DecalRenderer.clear();
         CasingRenderer.clear();

@@ -1,0 +1,20 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:repulsor_dome_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:copper_block",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:dome_pylons"
+  },
+  "time": 160,
+  "energy": 6000
+}

@@ -653,6 +653,47 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 **Di luar cakupan**: comparator, FE keluar ke kabel, struktur lebih besar dari 3x3x3, rotasi/mirror template struktur (pembentukan ulang setelah dipasang memperbaikinya).
 
 
+### Repulsor & Repulsor Dome (permintaan user 2026-10-07, disetujui 18:36)
+
+**Latar belakang**: banyak turret tidak bisa menembak mob yang sudah menempel atau ada di belakang larasnya; turret itu diam saja saat diserang dari dekat. Dua weapon module baru mendorong mob menjauh supaya turret penembak bisa bekerja lagi. Keputusan user: nama Repulsor / Repulsor Dome (1a), biaya FE (2a), tanpa damage (3a), interval 1,5 dtk / 4 dtk dengan charge 0,5 dtk (4a), pendekatan A (weapon module di base yang ada, bukan blok mandiri).
+
+**Bersama**
+- Weapon module biasa: filter target, ON/OFF, redstone, tier/HP, module, GUI, comparator, dan suplai FE dari Feed Hub berlaku seperti turret lain. Hanya **target sah** yang didorong (pemain, peliharaan, villager tidak, sesuai filter).
+- **Tanpa damage.** Dorongan = kecepatan menjauh dari turret (horizontal + sedikit terangkat), dikalibrasi supaya mob terlempar sekitar jarak `knockback` blok di tanah datar; jarak dorong **sama rata** di seluruh jangkauan (tanpa falloff). Mob tahan knockback (atribut) terdorong lebih pendek.
+- **Mob berat** (user 19:45-19:47; config server `repulsorHeavyMobs`, bawaan iron golem, ravager, warden; bisa ditambah mob mod lain): **Repulsor 1x1 tidak bisa mendorongnya sama sekali** (dan tidak menembak mereka, supaya FE tidak terbuang); **Repulsor Dome mendorongnya 60 % lebih pendek** (`repulsorHeavyMobPush` 0,4), atribut knockback resistance mereka diabaikan.
+- Biaya FE dari kapasitor base (seperti Tesla); Creative Ammo membayar. Tanpa FE cukup → state NO_AMMO, tidak menembak.
+- Module: Range Module memperluas jangkauan, Rapid Cycler mempercepat interval; Damage Amplifier tidak berpengaruh (tab Info: damage 0). Prioritas target dari GUI.
+- Semua angka di JSON senjata (`data/bastion/turret_weapons/repulsor.json`, `repulsor_dome.json`), profil `AREA_PULSE`.
+
+**Repulsor** (modul kecil, base 1x1; lantai, dinding, plafon)
+- Berputar ke target (12°/tick), tanpa batas pitch (-90..90): bisa membidik mob tepat di kakinya.
+- Charge 10 tick, lalu gelombang kerucut `cone_angle` 35° dari poros turret sejauh `range` **5** blok (user 19:45, dulu 3): **semua** target sah di kerucut yang terlihat (blok menghalangi) terdorong `knockback` **4** blok menjauh dari turret, dalam **satu** dorongan. (Diukur dari poros, bukan mulut corong: dari mulut corong, mob yang berdesakan di samping turret jatuh di luar kerucut.) Arah dorongan dihitung dari titik base menempel, jadi Repulsor di dinding mendorong mob menjauhi dinding, bukan ke dalamnya.
+- 500 FE per dorongan, `fire_interval` 30 tick. Kapasitor 10.000 FE, input 500 FE/t.
+
+**Repulsor Dome** (modul besar, Large Turret Base 2x2)
+- Tidak berputar (seperti Tesla). Aktif bila ada target sah dalam `range` **7** blok dari tengah base (user 19:45, dulu 6).
+- Charge 10 tick, lalu kubah: **semua** target sah dalam 7 blok terdorong `knockback` **6** blok keluar dari tengah base (dulu 5). **Menembus dinding** (medan, tanpa line of sight).
+- 2.000 FE per dorongan, `fire_interval` 80 tick. Kapasitor 40.000 FE, input 2.000 FE/t.
+
+**Model** (`tools/blockout/design_weapons.py`, gunmetal + satu glow cyan, konvensi bone bagian 6.2)
+- Repulsor: corong emitter pendek-lebar di atas yoke, 3 cincin glow di dalam mulut corong (`glow_coil_0..2`, mekanisme nyala yang sama dengan Railgun), sirip ventilasi samping. Charge: cincin menyala satu per satu dari belakang ke depan; tembak: corong recoil mundur, cincin berkilat.
+- Repulsor Dome: generator bulat pendek di turntable 2x2, bola inti glow di dalam sangkar 4 pilar melengkung, cincin horizontal yang berputar pelan mengelilingi bola. Charge: cincin berputar makin cepat, bola makin terang; tembak: bola berkilat, pilar terdorong sedikit keluar.
+
+**VFX** (framework sendiri, warna efek putih kebiruan; tanpa partikel vanilla)
+- Repulsor: 3–4 cincin transparan meluncur sepanjang kerucut sambil melebar (~0,3 dtk sampai ujung jangkauan), riak udara (heat haze) di kerucut, kilatan di moncong, cahaya dinamis singkat; tiap mob yang terdorong: kepulan debu di kaki + jejak gerak singkat.
+- Repulsor Dome (referensi user: bola putih "almighty push" + cincin debu di tanah): bola putih transparan membesar dari tengah sampai ujung jangkauan (7 blok) dalam ~8 tick, tepi paling terang, lalu memudar; cincin awan debu menggelinding di tanah di tepi kubah; garis-garis kecepatan radial sesaat; camera shake untuk pemain dalam ~10 blok, kilatan putih singkat, cahaya dinamis.
+- Charge: cahaya mengumpul di emitter/inti + dengung naik. Suara placeholder (`gen_sounds.py`): charge, dorongan, dentuman kubah.
+
+**Survival**: part lewat Part Workstation, dirakit di Part Assembler (angka di `tools/gen_recipes.py`). Repulsor (part kecil): Repulsor Emitter (iron, copper, piston), Repulsor Coil (copper, redstone), Repulsor Mount (iron, observer). Repulsor Dome (part besar): Dome Core (diamond, redstone block, 2 piston), Dome Pylons (iron block, copper block), Dome Mount (iron, copper, observer). Lang en_us + id_id, tooltip, creative tab Weapon Modules.
+
+**Selesai jika**
+- GameTest Repulsor: husk di depan terdorong ≥ 2,5 blok; dua husk di kerucut sama-sama terdorong; sapi tidak; husk di balik dinding tidak; tanpa FE tidak menembak; tidak ada damage.
+- GameTest Repulsor Dome: husk di 4 sisi terdorong keluar ≥ 4 blok, juga yang di balik dinding; sapi tidak; tanpa damage; butuh FE.
+- 83 GameTest lama tetap lolos; `./gradlew build` lolos; scene `-Pshowcase=repulsor` dicek (charge, gelombang, kubah, siang/malam); checklist di `docs/TESTING.md`.
+
+**Di luar cakupan**: damage atau efek status tambahan (slow, stun), dorongan ke atas/tarik ke dalam, module khusus Repulsor.
+
+
 ---
 ## 9. Aturan Kerja untuk Claude Code
 

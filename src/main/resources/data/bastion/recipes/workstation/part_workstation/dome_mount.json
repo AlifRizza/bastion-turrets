@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:repulsor_dome_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:dome_mount"
+  },
+  "time": 160,
+  "energy": 6000
+}

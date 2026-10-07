@@ -99,6 +99,16 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Creative Power Source + an energy pipe from another mod (dev: Pipez, set the pipe end at the source to extract): the pipe attaches and carries FE into a Feed Hub or workstation.
 - [ ] Turret GUI fix: shift-click rounds onto an ammo stack already in a turret, and shift-click part of a stack out with a nearly full inventory; save, quit, reload: the counts stay as they were (no lost or doubled rounds).
 
+## Repulsor & Repulsor Dome
+- [ ] Repulsor on a standard base (floor, wall, ceiling) with FE (Creative Power Source, cable, or a Feed Hub): turns to a mob even right at its feet, the three rings in its horn light up one by one while it charges, then a wave (rings + a sweeping air cone) throws every mob in front of it, up to 5 blocks out, ~4 blocks back in one push; dust at their feet. No damage.
+- [ ] Put it behind a Gun Turret and let zombies hug the gun: the Repulsor pushes them off so the gun can shoot again.
+- [ ] A mob behind a wall is not pushed by the Repulsor. You, pets and villagers in its cone are never pushed.
+- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 7 blocks with a sand ring rolling on the ground, the screen shakes (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
+- [ ] Without FE both sit in NO_AMMO and push nothing; 500 FE per Repulsor push, 2,000 per Dome pulse (GUI energy bar).
+- [ ] Range Module / Rapid Cycler work; the Info tab shows damage 0. Recipes: 3 parts each at the Part Workstation, assembled at the Part Assembler.
+- [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~2.4 blocks). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.
+- [ ] Put the Repulsor one block behind a Gun Turret: mobs in front of the gun (~4-5 blocks from the Repulsor) are pushed.
+
 ## Laser Rifle
 - [ ] Fits the standard base; Laser Cells as ammo (creative tab or `/give`, no recipe yet: they will come from a charging station later). Creative Ammo also works.
 - [ ] Locks on, then charges ~2.5 s: light gathers at the emitter from a spark into a big red orb, sparks stream into it, the focus rings on the barrel spin faster, a rising whine; a lens flare flashes just before the shot.

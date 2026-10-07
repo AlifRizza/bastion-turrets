@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:dome_core",
+      "count": 1
+    },
+    {
+      "item": "bastion:dome_pylons",
+      "count": 1
+    },
+    {
+      "item": "bastion:dome_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:repulsor_dome_turret"
+  },
+  "time": 300,
+  "energy": 15000
+}

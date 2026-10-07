@@ -58,6 +58,12 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> MORTAR_FIRE = register("mortar.fire");
     public static final RegistryObject<SoundEvent> MORTAR_FIRE_TAIL = register("mortar.fire_tail");
     public static final RegistryObject<SoundEvent> MORTAR_WHISTLE = register("mortar.whistle");
+    public static final RegistryObject<SoundEvent> REPULSOR_CHARGE = register("repulsor.charge");
+    public static final RegistryObject<SoundEvent> REPULSOR_PUSH = register("repulsor.push");
+    public static final RegistryObject<SoundEvent> REPULSOR_PUSH_TAIL = register("repulsor.push_tail");
+    public static final RegistryObject<SoundEvent> DOME_CHARGE = register("repulsor.dome_charge");
+    public static final RegistryObject<SoundEvent> DOME_BURST = register("repulsor.dome_burst");
+    public static final RegistryObject<SoundEvent> DOME_BURST_TAIL = register("repulsor.dome_burst_tail");
 
     public static final RegistryObject<SoundEvent> LASER_CHARGE = register("laser.charge");
     public static final RegistryObject<SoundEvent> LASER_FIRE = register("laser.fire");

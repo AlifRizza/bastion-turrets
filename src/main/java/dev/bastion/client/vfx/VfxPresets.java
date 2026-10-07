@@ -399,6 +399,46 @@ public final class VfxPresets {
             .burst(BastionParticles.SPARK.get(), 4, v.direction(), 70, 0.2f, 0.45f, 8, Curve.LINEAR, 0xFFFFC870)
             .burst(BastionParticles.SMOKE_WISP.get(), 1, UP, 10, 0.02f, 1.1f, 30, Curve.EASE_OUT, 0x90404448);
 
+    // --- Repulsor and Repulsor Dome, white-blue (rings and the dome sphere: RepulsorEffects) ---------------------
+
+    /** The emitter's pop: a pale flash, a light, a small kick. */
+    public static final VfxPreset REPULSOR_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.6f, 3, Curve.PULSE, v.params().color())
+            .light(11, 4)
+            .shake(0.15f, 6);
+
+    /** One ring of the wave (scale grows ring by ring as it travels). */
+    public static final VfxPreset REPULSOR_RING = v -> v
+            .ring(BastionParticles.SHOCKWAVE_RING.get(), v.origin(), v.direction(), 0, 3.4f * v.params().scale(), 8, Curve.EASE_OUT, v.params().color());
+
+    /** The air rippling along the wave. */
+    public static final VfxPreset REPULSOR_HAZE = v -> v
+            .burst(BastionParticles.HEAT_HAZE.get(), 3, v.direction(), 25, 0.12f, 2.4f, 10, Curve.EASE_OUT, 0x90FFFFFF);
+
+    /** A pushed mob: dust kicked up at its feet and a few pale streaks. */
+    public static final VfxPreset REPULSOR_HIT = v -> v
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), UP, 0, 5f, 16, Curve.EASE_OUT, 0xB0000000 | (v.params().blockColor() & 0xFFFFFF))
+            .burst(BastionParticles.SPARK.get(), 6, v.direction(), 30, 0.35f, 0.6f, 6, Curve.LINEAR, 0xFFF4FBFF);
+
+    /** The dome bursting: a white flash in the middle, speed lines thrown out all round, a light, a hard shake, a flash. */
+    public static final VfxPreset DOME_BURST = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 7f, 4, Curve.PULSE, 0xFFFFFFFF)
+            .burst(BastionParticles.SPARK.get(), 60, new Vec3(0, 0.2, 0), 180, 1.1f, 2.6f, 9, Curve.LINEAR, v.params().color())
+            .light(15, 8)
+            .shake(0.9f, 10) // PLAN: players within ~10 blocks
+            .flash(0.22f, 10);
+
+    /** The dust ring rolling out on the ground at the dome's edge (scale = the dome's radius / 6). */
+    public static final VfxPreset DOME_DUST = v -> v
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), UP, 0, 25f * v.params().scale(), 30, Curve.EASE_OUT, dust(v.params().blockColor(), 0xE0))
+            .burst(BastionParticles.SMOKE_PUFF.get(), 24, new Vec3(0, 0.15, 0), 175, 0.5f, 4f, 45, Curve.EASE_OUT, dust(v.params().blockColor(), 0xC0));
+
+    /** Dust kicked up off a block: its colour mixed with a darker sand, so it shows on any floor. */
+    private static int dust(int blockColor, int alpha) {
+        int r = blockColor >> 16 & 255, g = blockColor >> 8 & 255, b = blockColor & 255;
+        return alpha << 24 | (r + 0x8C) / 2 << 16 | (g + 0x76) / 2 << 8 | (b + 0x58) / 2;
+    }
+
     public static final Map<String, VfxPreset> ALL = new LinkedHashMap<>();
 
     static {
@@ -457,6 +497,12 @@ public final class VfxPresets {
         ALL.put("turret_destroyed", TURRET_DESTROYED);
         ALL.put("tier_up", TIER_UP);
         ALL.put("damaged_spark", DAMAGED_SPARK);
+        ALL.put("repulsor_muzzle", REPULSOR_MUZZLE);
+        ALL.put("repulsor_ring", REPULSOR_RING);
+        ALL.put("repulsor_haze", REPULSOR_HAZE);
+        ALL.put("repulsor_hit", REPULSOR_HIT);
+        ALL.put("dome_burst", DOME_BURST);
+        ALL.put("dome_dust", DOME_DUST);
     }
 
     private VfxPresets() {

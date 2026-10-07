@@ -470,5 +470,67 @@
         "attenuation_distance": 40
       }
     ]
+  },
+  "repulsor.charge": {
+    "subtitle": "subtitles.bastion.repulsor.charge",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/charge",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "repulsor.push": {
+    "subtitle": "subtitles.bastion.repulsor.push",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/push_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:repulsor/push_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "repulsor.push_tail": {
+    "subtitle": "subtitles.bastion.repulsor.push_tail",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/push_tail",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "repulsor.dome_charge": {
+    "subtitle": "subtitles.bastion.repulsor.dome_charge",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/dome_charge",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "repulsor.dome_burst": {
+    "subtitle": "subtitles.bastion.repulsor.dome_burst",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/dome_burst_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:repulsor/dome_burst_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "repulsor.dome_burst_tail": {
+    "subtitle": "subtitles.bastion.repulsor.dome_burst_tail",
+    "sounds": [
+      {
+        "name": "bastion:repulsor/dome_burst_tail",
+        "attenuation_distance": 128
+      }
+    ]
   }
 }

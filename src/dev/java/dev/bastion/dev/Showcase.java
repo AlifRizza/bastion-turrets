@@ -56,7 +56,8 @@ public final class Showcase {
             && !System.getProperty("bastion.showcase").equals("icon")
             && !System.getProperty("bastion.showcase").equals("railgun")
             && !System.getProperty("bastion.showcase").equals("mortar")
-            && !System.getProperty("bastion.showcase").equals("feedhub");
+            && !System.getProperty("bastion.showcase").equals("feedhub")
+            && !System.getProperty("bastion.showcase").equals("repulsor");
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0);
     private static final BlockPos GUN = ORIGIN.offset(-5, 0, 0), MG = ORIGIN, SHOTGUN = ORIGIN.offset(5, 0, 0);
     private static final BlockPos WALL = ORIGIN.offset(-11, 2, 6), CEILING = ORIGIN.offset(11, 4, 6);

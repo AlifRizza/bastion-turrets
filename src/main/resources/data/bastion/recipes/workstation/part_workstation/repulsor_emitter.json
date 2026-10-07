@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:repulsor_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 1
+    },
+    {
+      "item": "minecraft:piston",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:repulsor_emitter"
+  },
+  "time": 100,
+  "energy": 3000
+}

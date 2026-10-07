@@ -392,6 +392,33 @@ def burning():
     L = 0.9
     return fade_out(norm(crackles(L, 760, 22, 1000, (0.1, 0.8)) + onepole_lp(noise(L, 761), 400) * 0.15, 0.4), 0.1)
 
+# --- Repulsor and Repulsor Dome -------------------------------------------------------------------------
+def repulsor_charge():
+    L = 0.6
+    pitch = np.cumsum(np.linspace(180, 620, n(L))) / RATE
+    return fade_out(norm(np.sin(2 * np.pi * pitch) * env(L, 0.02, 0.6) * 0.6 + bp(noise(L, 970), 300, 2500) * np.linspace(0, 0.4, n(L))), 0.05)
+def repulsor_push(v):
+    j = jitter(972 + v); L = 0.9
+    whoomp = sweep(L, 160 * j, 45) * env(L, 0.003, 0.25) * 1.2
+    gust = bp(noise(L, 973 + v), 250, 2200) * env(L, 0.005, 0.35) * 0.7
+    return fade_out(norm(whoomp + gust), 0.15)
+def repulsor_push_tail():
+    L = 1.2
+    return fade_out(norm(onepole_lp(noise(L, 975), 300) * env(L, 0.01, 0.5)), 0.2)
+def dome_charge():
+    L = 0.6
+    pitch = np.cumsum(np.linspace(90, 380, n(L))) / RATE
+    return fade_out(norm(np.sin(2 * np.pi * pitch) * env(L, 0.03, 0.6) + sweep(L, 40, 120) * np.linspace(0, 0.6, n(L))), 0.05)
+def dome_burst(v):
+    j = jitter(978 + v); L = 2.0
+    boom = sweep(L, 70 * j, 25) * env(L, 0.004, 0.6) * 1.4
+    rush = bp(noise(L, 979 + v), 180, 3000) * env(L, 0.01, 0.8) * 0.8
+    return fade_out(norm(boom + rush), 0.3)
+def dome_burst_tail():
+    L = 2.4
+    return fade_out(norm(onepole_lp(noise(L, 981), 160) * env(L, 0.02, 0.9) + sweep(L, 50, 22) * env(L, 0.01, 0.6)), 0.3)
+
+
 SOUNDS = {
     "debug/ping.ogg": debug_ping,
     **{f"gun/fire_{v}.ogg": (lambda v=v: gun_fire(v)) for v in range(3)},
@@ -422,6 +449,9 @@ SOUNDS = {
     "workstation/loop.ogg": ws_loop, "workstation/weld.ogg": ws_weld, "workstation/press.ogg": ws_press, "workstation/done.ogg": ws_done,
     "flamethrower/ignite.ogg": flame_ignite, "flamethrower/loop.ogg": flame_loop, "flamethrower/burning.ogg": burning,
     "shotgun/pump.ogg": sg_pump, **{f"shotgun/shell_{v}.ogg": (lambda v=v: shell_drop(v)) for v in range(2)},
+    "repulsor/charge.ogg": repulsor_charge, **{f"repulsor/push_{v}.ogg": (lambda v=v: repulsor_push(v)) for v in range(2)},
+    "repulsor/push_tail.ogg": repulsor_push_tail, "repulsor/dome_charge.ogg": dome_charge,
+    **{f"repulsor/dome_burst_{v}.ogg": (lambda v=v: dome_burst(v)) for v in range(2)}, "repulsor/dome_burst_tail.ogg": dome_burst_tail,
 }
 
 if __name__ == "__main__":
