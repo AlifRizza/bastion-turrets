@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:mortar_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:mortar_ring"
+  },
+  "time": 160,
+  "energy": 6000
+}

@@ -4,7 +4,7 @@
   "energy_color": "#FF4FD8",
   "range": 12,
   "fire_interval": 24,
-  "damage": 2.5,
+  "damage": 5,
   "spread": 12,
   "ammo_per_shot": 1,
   "turn_speed": 10,

@@ -59,6 +59,12 @@ public final class BastionItems {
     /** Runs on Forge Energy fed into the base, no ammo. */
     public static final RegistryObject<WeaponModuleItem> TESLA_TURRET = REGISTER.register("tesla_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("tesla"), true));
+    /** Anti-boss gun: a Rail Slug and FE per shot. */
+    public static final RegistryObject<WeaponModuleItem> RAILGUN_TURRET = REGISTER.register("railgun_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("railgun"), true));
+    /** Lobs shells that leave fire patches; ground targets only. */
+    public static final RegistryObject<WeaponModuleItem> MORTAR_TURRET = REGISTER.register("mortar_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("mortar"), true));
 
     // Ammo, PLAN 7.4; tagged bastion:ammo/kinetic and bastion:ammo/scatter.
     public static final RegistryObject<Item> KINETIC_ROUNDS = REGISTER.register("kinetic_rounds", () -> new Item(new Item.Properties()));
@@ -71,6 +77,9 @@ public final class BastionItems {
     /** Charged into a Laser Cell with FE at the Charging Station. */
     public static final RegistryObject<Item> EMPTY_LASER_CELL = REGISTER.register("empty_laser_cell", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> FUEL_CANISTER = REGISTER.register("fuel_canister", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** One Railgun shot (plus FE from the base). */
+    public static final RegistryObject<Item> RAIL_SLUGS = REGISTER.register("rail_slugs", () -> new Item(new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<Item> MORTAR_SHELLS = REGISTER.register("mortar_shells", () -> new Item(new Item.Properties().stacksTo(16)));
     /** Creative-only (no recipe): fits every weapon and is never used up. */
     public static final RegistryObject<Item> CREATIVE_AMMO = REGISTER.register("creative_ammo",
             () -> hinted(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), "creative_ammo"));
@@ -124,7 +133,9 @@ public final class BastionItems {
             "missile_pod", "missile_guidance_core", "missile_launcher_mount",
             "tesla_coil", "tesla_crown", "tesla_capacitor_bank",
             "flamethrower_nozzle", "flamethrower_fuel_tanks", "flamethrower_housing",
-            "laser_focus_barrel", "laser_emitter_crystal", "laser_housing"
+            "laser_focus_barrel", "laser_emitter_crystal", "laser_housing",
+            "railgun_rails", "railgun_receiver", "railgun_mount",
+            "mortar_barrel", "mortar_housing", "mortar_ring"
     ).map(id -> REGISTER.register(id, () -> new PartItem(new Item.Properties().stacksTo(16)))).toList();
 
     private static RegistryObject<WorkstationItem> workstation(RegistryObject<WorkstationBlock> block) {

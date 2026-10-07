@@ -474,7 +474,9 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                 {"max_input", fe(data.param("max_input")) + " FE/t"},
                 {"max_hp", fmt(menu.maxHealth())},
                 {"regen", fmt(BastionConfig.regenPerSecond(menu.tier())) + "/s"},
-                {"bolts", String.valueOf(Math.round(data.param("bolts")))},
+                // Tesla: bolts per discharge; the Railgun also takes a slug per shot.
+                data.params().containsKey("bolts") ? new String[]{"bolts", String.valueOf(Math.round(data.param("bolts")))}
+                        : new String[]{"ammo", String.valueOf(data.ammoPerShot())},
         } : new String[][]{
                 {"heat_per_shot", fmt(stats.heatPerShot())},
                 {"max_heat", fmt(stats.maxHeat())},

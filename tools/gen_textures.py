@@ -117,6 +117,10 @@ MODEL_MATERIALS = {
                                "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter"},
     "entity/turret_rocket": {"body": "armor", "nose": "steel", "fins": "frame", "glow_nozzle": "emitter"},
     "entity/turret_missile": {"body": "steel", "nose": "armor", "fins": "frame", "glow_nozzle": "emitter"},
+    "entity/turret_mortar_shell": {"body": "armor", "nose": "steel", "fins": "frame", "glow_nozzle": "emitter"},
+    "mortar_turret": {"yaw_pivot": "armor", "glow_strips": "emitter", "vent_l": "vent", "vent_r": "vent", "sensor": "steel",
+                      "glow_lens": "emitter", "axle": "steel", "body": "frame", "barrel_0": "steel", "glow_barrel": "emitter",
+                      "bore": "bore"},
     "large_turret_base": {"plinth": "hex", "body": "armor", "glow_windows": "emitter", "status_light": "emitter",
                           "deck": "frame", "energy_ring": "emitter", "weapon_mount": "steel", "armor_t2": "hex",
                           "fins_t3": "frame", "glow_fins_t3": "emitter"},
@@ -131,6 +135,10 @@ MODEL_MATERIALS = {
     "laser_rifle_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "hex", "glow_strips": "emitter",
                            "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "barrel_0": "frame",
                            "focus_rings": "steel", "glow_focus": "emitter", "emitter": "steel", "glow_emitter": "emitter"},
+    "railgun_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "hex", "drum": "steel", "drum_mount": "frame",
+                       "glow_drum": "emitter", "glow_strips": "emitter", "vent_l": "vent", "vent_r": "vent", "sensor": "steel",
+                       "glow_lens": "emitter", "barrel_0": "frame", "coils": "armor", **{f"glow_coil_{i}": "emitter" for i in range(5)},
+                       "glow_channel": "emitter"},
     # workstations (PLAN Fase 9)
     "part_workstation": {"frame": "frame", "body": "armor", "top": "hex", "tools": "steel", "glow_drawers": "emitter",
                          "screen": "frame", "glow_screen": "emitter", "carriage": "steel", "spindle": "frame",
@@ -403,6 +411,53 @@ def damaged_large_base():
     stamp(img, Sprite(DAMAGED_BASE.rows, DAMAGED_BASE.palette), 0, 5)
     top = Sprite(["gggggggggggggggg", "gPPPkPPPPPPkPPPg", "gPPPPkPPPPkPPPPg", "gggggggggggggggg"], DAMAGED_BASE.palette)
     stamp(img, top, 0, 1)
+    return outline(img, OUTLINE)
+
+
+RAIL_SLUG = Sprite([
+    ".M.",
+    "MMm",
+    "Ggk",
+    "Ggk",
+    "Vvq",
+    "Ggk",
+    "Ggk",
+    "Ggk",
+    "Vvq",
+    "Ggk",
+    "Mmn",
+], {"M": METAL * 1.25, "m": METAL * 0.85, "n": METAL * 0.65, "G": GRAPHITE * 1.9, "g": GRAPHITE * 1.4, "k": GRAPHITE,
+    "V": rgb("D8B8FF"), "v": rgb("B57CFF"), "q": rgb("6A3FA0")})
+
+
+def rail_slugs():
+    """Railgun ammo: three dark ferrous slugs with violet driving bands."""
+    img = np.zeros((16, 16, 4))
+    for x, y in ((2, 4), (6, 2), (10, 4)):
+        stamp(img, RAIL_SLUG, x, y)
+    return outline(img, OUTLINE)
+
+
+MORTAR_SHELL = Sprite([
+    ".MM.",
+    "MMMm",
+    "WWWs",
+    "OOOo",
+    "WWWs",
+    "WWWs",
+    "WWWs",
+    ".Gk.",
+    "GGgk",
+    "G.gk",
+], {"M": METAL * 1.25, "m": METAL * 0.85, "W": GUNMETAL * 1.5, "s": GUNMETAL * 0.85, "G": GRAPHITE * 1.8, "g": GRAPHITE * 1.3,
+    "k": GRAPHITE * 0.9, "O": rgb("FFA040"), "o": rgb("B05A1C")})
+
+
+def mortar_shells():
+    """Mortar ammo: two fat finned shells with a fire-orange band."""
+    img = np.zeros((16, 16, 4))
+    for x, y in ((3, 2), (9, 4)):
+        stamp(img, MORTAR_SHELL, x, y)
     return outline(img, OUTLINE)
 
 
@@ -885,6 +940,23 @@ def flame_jet(frame):
     img[..., :3] = np.clip(0.6 + 0.4 * core + 0.25 * (turb - 0.5), 0, 1)[..., None]
     return img
 
+def fire_sheet():
+    """Mortar fire patch: rising tongues of flame, tileable both ways (the renderer scrolls it up and offsets it per
+    block; the flame's fade toward its tips comes from the quad). Greyscale, tinted per layer."""
+    def tiled(w, h, cx, cy, seed):  # value noise on a wrapping lattice
+        lat = np.random.default_rng(seed).random((cy, cx))
+        tx, ty = (np.arange(w) + 0.5) / w * cx, (np.arange(h) + 0.5) / h * cy
+        ix, iy = tx.astype(int), ty.astype(int)
+        fx, fy = tx - ix, ty - iy
+        fx, fy = (fx * fx * (3 - 2 * fx))[None, :], (fy * fy * (3 - 2 * fy))[:, None]
+        a, b = lat[np.ix_(iy, ix)], lat[np.ix_(iy, (ix + 1) % cx)]
+        c, d = lat[np.ix_((iy + 1) % cy, ix)], lat[np.ix_((iy + 1) % cy, (ix + 1) % cx)]
+        return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy
+    n = 0.6 * tiled(64, 64, 7, 3, 760) + 0.3 * tiled(64, 64, 14, 6, 761) + 0.1 * tiled(64, 64, 28, 12, 762)
+    img = white(np.clip((n - 0.22) * 3.2, 0, 1))
+    img[..., :3] = np.clip(0.75 + 0.5 * (n - 0.5), 0, 1)[..., None]
+    return img
+
 def dust_ring():
     """Ground dust sweeping out from a blast: ragged ring over a faint fill."""
     x, y = grid(64)
@@ -1027,7 +1099,7 @@ VFX_SPRITES = {
     **{f"particle/flame_{i}.png": (lambda i=i: flame(i)) for i in range(3)},
     "particle/dust_ring.png": dust_ring,
     **{f"particle/flame_jet_{i}.png": (lambda i=i: flame_jet(i)) for i in range(6)},
-    "vfx/arc.png": arc, "vfx/smoke_trail.png": smoke_strip, "vfx/flame_jet.png": flame_strip, "vfx/beam.png": beam_strip, "vfx/orb.png": orb, "vfx/flare.png": flare,
+    "vfx/arc.png": arc, "vfx/smoke_trail.png": smoke_strip, "vfx/flame_jet.png": flame_strip, "vfx/fire_sheet.png": fire_sheet, "vfx/beam.png": beam_strip, "vfx/orb.png": orb, "vfx/flare.png": flare,
 }
 
 
@@ -1070,6 +1142,14 @@ TEXTURES = {
     **{f"block/{n}_e.png": (lambda n=n: paint_model(n)[1]) for n in ("part_workstation", "part_assembler", "module_workstation", "ammo_workstation", "charging_station")},
     "item/laser_rifle_turret.png": lambda: paint_model("laser_rifle_turret")[0],
     "item/laser_rifle_turret_e.png": lambda: paint_model("laser_rifle_turret")[1],
+    "item/rail_slugs.png": rail_slugs,
+    "item/mortar_shells.png": mortar_shells,
+    "item/mortar_turret.png": lambda: paint_model("mortar_turret")[0],
+    "item/mortar_turret_e.png": lambda: paint_model("mortar_turret")[1],
+    "entity/turret_mortar_shell.png": lambda: paint_model("entity/turret_mortar_shell")[0],
+    "entity/turret_mortar_shell_e.png": lambda: paint_model("entity/turret_mortar_shell")[1],
+    "item/railgun_turret.png": lambda: paint_model("railgun_turret")[0],
+    "item/railgun_turret_e.png": lambda: paint_model("railgun_turret")[1],
     "item/damaged_large_turret_base.png": damaged_large_base,
     "entity/turret_rocket_e.png": lambda: paint_model("entity/turret_rocket")[1],
     **{f"item/{name}.png": (lambda name=name: modifier_chip(name)) for name in MODIFIER_GLYPHS},

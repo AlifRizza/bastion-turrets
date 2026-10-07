@@ -24,8 +24,8 @@ import java.util.List;
 /**
  * Tesla Coil (Large Turret Base): runs on Forge Energy instead of ammo (energy_per_shot from the base's capacitor, see
  * TurretBaseBlockEntity). It charges for charge_ticks, then throws `bolts` lightning bolts at random valid targets in
- * range; a lone target takes every bolt. The coil never turns: it only needs a clear line from its terminal (the
- * pivot, pivot_height above the base) to the target.
+ * range, at most bolts_per_target per target (a lone target takes that many). The coil never turns: it only needs a
+ * clear line from its terminal (the pivot, pivot_height above the base) to the target.
  */
 public class TeslaWeapon extends WeaponType {
     /** Most targets a discharge picks from. */
@@ -69,10 +69,12 @@ public class TeslaWeapon extends WeaponType {
 
         Vec3 terminal = turret.pivot(context.stats().data());
         DamageSource shock = BastionDamageTypes.of(context.level(), BastionDamageTypes.TURRET_SHOCK);
-        int bolts = Math.round(context.stats().data().param("bolts"));
+        // Fewer targets than bolts: they take the rest, at most bolts_per_target each; the leftover bolts are not thrown.
+        int bolts = Math.min(Math.round(context.stats().data().param("bolts")),
+                Math.round(context.stats().data().param("bolts_per_target")) * targets.size());
         List<TurretFireEvent.Shot> shots = new ArrayList<>(bolts);
         for (int i = 0; i < bolts; i++) {
-            LivingEntity target = targets.get(i % targets.size()); // fewer targets than bolts: they take the rest
+            LivingEntity target = targets.get(i % targets.size());
             Vec3 at = target.getBoundingBox().getCenter();
             Hitscan.damage(target, shock, context.stats().damage());
             // The client follows the bolt's target by id, so it stays on a moving mob.

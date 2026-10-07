@@ -1,0 +1,28 @@
+{
+  "type": "bastion:mortar",
+  "ammo": "bastion:ammo/mortar",
+  "energy_color": "#FF8F3A",
+  "range": 40,
+  "fire_interval": 60,
+  "damage": 6,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 4,
+  "aim_tolerance": 2,
+  "aim_lock_ticks": 4,
+  "min_pitch": 45,
+  "max_pitch": 86,
+  "pivot_height": 0.8125,
+  "muzzle_length": 1.53,
+  "params": {
+    "shell_speed": 1.5,
+    "gravity": 0.05,
+    "min_range": 8,
+    "blast_radius": 1.5,
+    "knockback": 0.4,
+    "patch_size": 3,
+    "fire_ticks": 100,
+    "burn_ticks": 60,
+    "burn_damage": 1.5
+  }
+}

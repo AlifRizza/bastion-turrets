@@ -22,6 +22,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Tesla Coil (Forge Energy, random bolts) and Flamethrower (cone, burning). */
 @GameTestHolder(Bastion.MOD_ID)
@@ -82,30 +83,31 @@ public class TurretTeslaFlameTests {
         });
     }
 
-    /** One discharge: two bolts at two different targets out of three, paid from the capacitor. */
-    @GameTest(template = RANGE, timeoutTicks = 200, batch = "teslaZapsTwoTargets")
-    public static void teslaZapsTwoTargets(GameTestHelper helper) {
+    /** One discharge: five bolts at five different targets out of six, paid from the capacitor. */
+    @GameTest(template = RANGE, timeoutTicks = 200, batch = "teslaZapsFiveTargets")
+    public static void teslaZapsFiveTargets(GameTestHelper helper) {
         TurretBaseBlockEntity turret = tesla(helper, true);
-        List<LivingEntity> husks = List.of(helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(10, 2, 2)),
-                helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(11, 2, 6)), helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(10, 2, 10)));
+        List<LivingEntity> husks = Stream.of(new BlockPos(10, 2, 2), new BlockPos(11, 2, 6), new BlockPos(10, 2, 10),
+                        new BlockPos(14, 2, 4), new BlockPos(14, 2, 8), new BlockPos(7, 2, 6))
+                .<LivingEntity>map(pos -> helper.spawnWithNoFreeWill(EntityType.HUSK, pos)).toList();
         helper.succeedWhen(() -> {
             helper.assertTrue(turret.energy() < CAPACITY, "no discharge yet, state " + turret.state());
             helper.assertTrue(turret.energy() == CAPACITY - PER_SHOT, "expected one discharge, energy " + turret.energy());
             long struck = husks.stream().filter(TurretTeslaFlameTests::hurt).count();
-            helper.assertTrue(struck == 2, "expected 2 struck targets, got " + struck);
+            helper.assertTrue(struck == 5, "expected 5 struck targets, got " + struck);
             disarm(turret);
         });
     }
 
-    /** A lone target takes both bolts. */
-    @GameTest(template = RANGE, timeoutTicks = 200, batch = "teslaLoneTargetTakesBoth")
-    public static void teslaLoneTargetTakesBoth(GameTestHelper helper) {
+    /** A lone target takes bolts_per_target (2) bolts, not all five. */
+    @GameTest(template = RANGE, timeoutTicks = 200, batch = "teslaLoneTargetTakesTwo")
+    public static void teslaLoneTargetTakesTwo(GameTestHelper helper) {
         TurretBaseBlockEntity turret = tesla(helper, true);
         LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(11, 2, 6));
         helper.succeedWhen(() -> {
-            helper.assertTrue(turret.energy() < CAPACITY, "no discharge yet, state " + turret.state());
-            // 2 x 10 damage, a little less through the husk's natural armor
-            helper.assertTrue(!husk.isAlive() || husk.getHealth() <= husk.getMaxHealth() - 19, "husk took one bolt only: " + husk.getHealth());
+            helper.assertTrue(turret.energy() == CAPACITY - PER_SHOT, "expected one discharge, energy " + turret.energy());
+            // 2 x 10 damage, a little less through the husk's natural armor: 20 HP leaves a sliver, a third bolt kills
+            helper.assertTrue(husk.isAlive() && husk.getHealth() <= husk.getMaxHealth() - 19, "expected 2 bolts, health " + husk.getHealth());
             disarm(turret);
         });
     }

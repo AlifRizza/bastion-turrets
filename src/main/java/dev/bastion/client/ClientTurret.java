@@ -1,6 +1,7 @@
 package dev.bastion.client;
 
 import dev.bastion.client.anim.WeaponAnimatable;
+import dev.bastion.client.render.RailRenderer;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
 import dev.bastion.client.vfx.VfxPresets;
@@ -192,7 +193,8 @@ public final class ClientTurret {
             chargeStart = level.getGameTime();
             ResourceLocation type = data == null ? null : data.type();
             var sound = BastionWeaponTypes.TESLA.getId().equals(type) ? BastionSounds.TESLA_CHARGE
-                    : BastionWeaponTypes.LASER_RIFLE.getId().equals(type) ? BastionSounds.LASER_CHARGE : BastionSounds.SNIPER_CHARGE;
+                    : BastionWeaponTypes.LASER_RIFLE.getId().equals(type) ? BastionSounds.LASER_CHARGE
+                    : BastionWeaponTypes.RAILGUN.getId().equals(type) ? BastionSounds.RAILGUN_CHARGE : BastionSounds.SNIPER_CHARGE;
             level.playLocalSound(at.x, at.y, at.z, sound.get(), SoundSource.HOSTILE, sound == BastionSounds.SNIPER_CHARGE ? 0.8f : 1f, 1f, false);
         } else if (state != TurretState.CHARGING) {
             chargeStart = -1;
@@ -200,7 +202,7 @@ public final class ClientTurret {
         lastState = state;
     }
 
-    /** Per-tick looks of weapons that live between shots: Tesla arcs while charging or idle, the Flamethrower's pilot light. */
+    /** Per-tick looks of weapons that live between shots: Tesla and Railgun arcs while charging, the Flamethrower's pilot light. */
     private void weaponTick(ClientLevel level, TurretState state, @Nullable WeaponData data) {
         if (data == null || weapon == null) return;
         int color = 0xFF000000 | data.energyColor();
@@ -219,6 +221,14 @@ public final class ClientTurret {
             weapon.prevFocusAngle = weapon.focusAngle;
             weapon.focusAngle += weapon.focusSpeed;
             if (state == TurretState.CHARGING) LaserEffects.gathering(level, this, progress, color);
+        } else if (data.type().equals(BastionWeaponTypes.RAILGUN.getId())) {
+            // The glow turns violet as it charges and the coil bands light up breech to muzzle; it fades after the shot.
+            int charge = Math.round(data.params().getOrDefault("charge_ticks", 1f));
+            float progress = state == TurretState.CHARGING ? chargeProgress(level.getGameTime(), 0, charge) : -1;
+            weapon.chargeColor = color & 0xFFFFFF;
+            weapon.coilFill = progress < 0 ? -1 : Math.min(1, progress / RailRenderer.FILL);
+            weapon.chargeGlow = progress < 0 ? Math.max(0, weapon.chargeGlow - 0.07f) : Math.min(1, 0.4f + progress);
+            if (progress >= 0) RailgunEffects.charging(level, this, progress, color);
         } else if (data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && !flaming(level)
                 && state != TurretState.DISABLED && state != TurretState.NO_AMMO) {
             FlameEffects.pilot(level, this);

@@ -1,4 +1,4 @@
-# Upload sheet: 0.1.0-beta.3
+# Upload sheet: 0.1.0-beta.4
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -23,9 +23,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field | Value |
 |---|---|
-| File | `build/libs/bastion-1.20.1-0.1.0-beta.3.jar` (`./gradlew build`) |
-| Version number | 0.1.0-beta.3 |
-| Version name | Bastion Turrets 0.1.0-beta.3 |
+| File | `build/libs/bastion-1.20.1-0.1.0-beta.4.jar` (`./gradlew build`) |
+| Version number | 0.1.0-beta.4 |
+| Version name | Bastion Turrets 0.1.0-beta.4 |
 | Release channel / type | Beta |
 | Loader | Forge |
 | Game version | 1.20.1 |
@@ -34,6 +34,26 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 Next betas: `0.1.0-beta.2`, `-beta.3`, ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta.
 First non-beta: `0.1.0` with channel Release.
+
+## Changelog: 0.1.0-beta.4
+
+```
+New turrets (Large Turret Base):
+- Railgun: the anti-boss gun. Each shot takes a Rail Slug and 8,000 FE. The coils light up one by one,
+  electricity crawls over the barrel, then a slug flies at 40 blocks per tick: 60 damage that ignores armor,
+  double against bosses, and a shockwave that throws mobs around the impact away. Always aims at the
+  biggest target in range.
+- Mortar: lobs shells on a high arc over walls at mobs on the ground (never flyers). It shells the spot where
+  its target stands, so it's best against crowds; a lone mob that keeps walking gets away. Each shell leaves a
+  3x3 fire patch for 5 seconds that burns everyone standing in it, you and your animals too, and sets
+  burnable blocks on fire with real fire (server config "mortarBlockFire" turns that off).
+- New ammo: Rail Slugs and Mortar Shells (Ammo Workstation). New parts for both turrets.
+
+Balance:
+- Tesla Coil: lightning now hits up to 5 targets per discharge (was 2), at most 2 bolts per target.
+  A lone mob still takes 2 bolts (20 damage). FE cost unchanged (3,000 per discharge).
+- Shotgun: 5 damage per pellet (was 2.5). Point blank, one blast kills a zombie.
+```
 
 ## Changelog: 0.1.0-beta.3
 
@@ -77,7 +97,7 @@ First public beta.
 |---|---|---|
 | 01_laser_rifle_beam | Laser Rifle | One beam through every valid target in line. |
 | 02_laser_rifle_charge | Charging up | Light gathers at the emitter before the shot. |
-| 03_tesla_coil | Tesla Coil | Lightning into two targets at once, powered by FE. |
+| 03_tesla_coil | Tesla Coil | Lightning into up to five targets at once, powered by FE. |
 | 04_night_defense | Night defense | Flamethrower and Tesla Coil holding a line. |
 | 05_missile_salvo | Missile salvo | 12 homing missiles spread over every target in range. |
 | 06_rocket_explosion | Rocket Launcher | Custom explosions that only hurt valid targets. |

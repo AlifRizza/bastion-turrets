@@ -33,4 +33,9 @@ public final class WeaponState {
     public int salvoFired;
     /** Whether the turret still holds ammo to load more tubes (a salvo fires a partial load once it runs out). */
     public boolean ammoLeft;
+
+    // Mortar: whether the shell's arc to a target is clear of blocks, re-checked every few ticks (it is ~30 ray casts).
+    public int arcTarget = -1;
+    public long arcCheckedAt;
+    public boolean arcClear;
 }

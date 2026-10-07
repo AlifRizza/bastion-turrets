@@ -29,7 +29,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <tr>
 <td>Shotgun Turret</td>
 <td>Standard</td>
-<td>8 pellets with damage falloff and heavy knockback.</td>
+<td>8 pellets of 5 damage each, falling off with distance, and heavy knockback.</td>
 </tr>
 <tr>
 <td>Sniper Turret</td>
@@ -59,7 +59,17 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <tr>
 <td>Tesla Coil Turret</td>
 <td>Large</td>
-<td>Runs on FE instead of ammo. Its lightning hits two targets at once.</td>
+<td>Runs on FE instead of ammo. Its lightning hits up to five targets at once.</td>
+</tr>
+<tr>
+<td>Railgun Turret</td>
+<td>Large</td>
+<td>Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target.</td>
+</tr>
+<tr>
+<td>Mortar Turret</td>
+<td>Large</td>
+<td>Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off).</td>
 </tr>
 </tbody>
 </table>
@@ -68,7 +78,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <p>[IMAGE: screenshots-840/05_missile_salvo.jpg]</p>
 
 <h2>Turret bases</h2>
-<p>The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher and Tesla Coil) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.</p>
+<p>The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun and Mortar) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.</p>
 <p>Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, and a Repair Kit puts back 40% HP. A destroyed turret drops its weapon, ammo and modules while the base falls one tier (a T1 base turns into a Damaged Turret Base that you can restore). Mining a base works like breaking a shulker box, so tier and contents stay with the item.</p>
 <p>[IMAGE: screenshots-840/07_floor_wall_ceiling.jpg]</p>
 
@@ -133,7 +143,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 </table>
 <p>Each kind of module fits once per base. Different modules add up, and a T3 base has four module slots.</p>
 <h2>Ammo and automation</h2>
-<p>Ammo comes in seven kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters and Laser Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well.</p>
+<p>Ammo comes in nine kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs and Mortar Shells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well.</p>
 <p>[IMAGE: screenshots-840/08_create_automation.jpg]</p>
 
 <h2>Workstations</h2>
@@ -152,15 +162,15 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <p>[IMAGE: screenshots-840/10_part_assembler_gui.jpg]</p>
 
 <h2>Effects</h2>
-<p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, flame jets and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
+<p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
 <h2>For modpack makers</h2>
 <p>Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.</p>
-<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets and how much energy the workstations hold and take in.</p>
+<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire and how much energy the workstations hold and take in.</p>
 <h2>Requirements</h2>
 <ul>
 <li>Minecraft 1.20.1 with Forge 47.2 or newer</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/geckolib">GeckoLib</a> 4.8 or newer (required)</li>
-<li>Any mod that produces FE, for the workstations and the Tesla Coil</li>
+<li>Any mod that produces FE, for the workstations, the Tesla Coil and the Railgun</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a> 6.0 or newer if you want Mechanical Arm support (optional)</li>
 </ul>
 <p>Install it on both client and server.</p>

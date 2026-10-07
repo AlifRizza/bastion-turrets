@@ -82,6 +82,17 @@ public final class ClientPacketHandler {
         var level = Minecraft.getInstance().level;
         if (level == null) return;
         Vec3 at = event.pos();
+        if (event.kind() == TurretImpactEvent.FIRE_PATCH) {
+            MortarEffects.firePatch(level, at, event.source(), Math.round(event.scale() * 20));
+            return;
+        }
+        if (event.kind() == TurretImpactEvent.MORTAR_BLAST) { // a small blast; the fire patch follows as its own event
+            SmokeTrailRenderer.end(event.source(), at, level.getGameTime());
+            rocketBlast(level, new TurretImpactEvent(at, event.kind(), event.scale() * 1.6f, event.normal(), event.source()), true);
+            level.playLocalSound(at.x, at.y, at.z, BastionSounds.ROCKET_EXPLODE.get(), SoundSource.HOSTILE, 1.6f,
+                    1.05f + level.random.nextFloat() * 0.12f, false);
+            return;
+        }
         if (event.kind() == TurretImpactEvent.ROCKET_BLAST || event.kind() == TurretImpactEvent.MISSILE_BLAST) {
             boolean missile = event.kind() == TurretImpactEvent.MISSILE_BLAST;
             SmokeTrailRenderer.end(event.source(), at, level.getGameTime());

@@ -37,11 +37,11 @@ public final class TargetSelector {
         Vec3 pivot = turret.pivot(stats.data());
         AABB area = new AABB(pivot, pivot).inflate(stats.range());
         Comparator<LivingEntity> nearest = Comparator.comparingDouble(e -> e.distanceToSqr(pivot));
-        Comparator<LivingEntity> order = switch (turret.filter().priority) {
+        Comparator<LivingEntity> order = type.targetOrder(switch (turret.filter().priority) {
             case NEAREST -> nearest;
             case LOWEST_HEALTH -> Comparator.<LivingEntity>comparingDouble(LivingEntity::getHealth).thenComparing(nearest);
             case HIGHEST_THREAT -> Comparator.<LivingEntity>comparingDouble(e -> -threat(e, turret)).thenComparing(nearest);
-        };
+        });
         return turret.getLevel().getEntitiesOfClass(LivingEntity.class, area, e -> isCandidate(turret, e, stats, type)).stream()
                 .sorted(order)
                 .filter(e -> type.sight(turret, e, stats) != null)

@@ -74,6 +74,11 @@ minecraft {
         // Runs every @GameTest in dev.bastion.gametest, then exits with the result.
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
+            // Own world (run/world stays runServer's). The server saves its arenas' mobs and drops on exit and the next
+            // run loaded them back into its tests (flaky drop and target counts), so their entities are wiped before each
+            // run (below). The terrain is kept: generating a fresh world every run cost ~25 s and once hung on a vanilla
+            // worldgen race (MissingPaletteEntryException in the light engine).
+            args '--world', 'gametestworld'
         }
     }
 }
@@ -199,6 +204,10 @@ tasks.matching { it.name in ['runClient', 'runGameTestServer'] && project.hasPro
 tasks.matching { it.name == 'runClient' && project.hasProperty('withRenderMods') }.configureEach {
     runtimeClasspathArtifacts.from(configurations.renderMods)
     classpath(configurations.renderMods)
+}
+
+tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+    doFirst { delete 'run/gametestworld/entities' }
 }
 
 // Dev runs load src/dev (see sourceSets above), so compile it first.

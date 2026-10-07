@@ -7,6 +7,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
+
 /** Per-weapon fire logic, entries of registry bastion:weapon_type (PLAN 4.3). Server side only. */
 public abstract class WeaponType {
     public abstract FireProfile fireProfile();
@@ -34,6 +36,11 @@ public abstract class WeaponType {
      */
     public boolean firesAsItReloads() {
         return false;
+    }
+
+    /** Order of valid targets, best first; {@code byFilter} is the GUI priority (Railgun: the biggest target first). */
+    public Comparator<LivingEntity> targetOrder(Comparator<LivingEntity> byFilter) {
+        return byFilter;
     }
 
     /** Ticks until the next shot; Machine Gun shortens it with spin. */

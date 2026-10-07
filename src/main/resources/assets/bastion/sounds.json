@@ -395,5 +395,80 @@
         "attenuation_distance": 16
       }
     ]
+  },
+  "railgun.charge": {
+    "subtitle": "subtitles.bastion.railgun.charge",
+    "sounds": [
+      {
+        "name": "bastion:railgun/charge",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "railgun.fire": {
+    "subtitle": "subtitles.bastion.railgun.fire",
+    "sounds": [
+      {
+        "name": "bastion:railgun/fire_0",
+        "attenuation_distance": 64
+      },
+      {
+        "name": "bastion:railgun/fire_1",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "railgun.fire_tail": {
+    "subtitle": "subtitles.bastion.railgun.fire_tail",
+    "sounds": [
+      {
+        "name": "bastion:railgun/fire_tail",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "railgun.impact": {
+    "subtitle": "subtitles.bastion.railgun.impact",
+    "sounds": [
+      {
+        "name": "bastion:railgun/impact_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:railgun/impact_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "mortar.fire": {
+    "subtitle": "subtitles.bastion.mortar.fire",
+    "sounds": [
+      {
+        "name": "bastion:mortar/fire_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:mortar/fire_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "mortar.fire_tail": {
+    "subtitle": "subtitles.bastion.mortar.fire_tail",
+    "sounds": [
+      {
+        "name": "bastion:mortar/fire_tail",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "mortar.whistle": {
+    "subtitle": "subtitles.bastion.mortar.whistle",
+    "sounds": [
+      {
+        "name": "bastion:mortar/whistle",
+        "attenuation_distance": 40
+      }
+    ]
   }
 }

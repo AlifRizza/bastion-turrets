@@ -15,7 +15,8 @@
   "muzzle_length": 0,
   "params": {
     "charge_ticks": 12,
-    "bolts": 2,
+    "bolts": 5,
+    "bolts_per_target": 2,
     "energy_per_shot": 3000,
     "energy_capacity": 60000,
     "max_input": 1000

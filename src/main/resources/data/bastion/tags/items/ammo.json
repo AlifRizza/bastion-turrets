@@ -7,6 +7,8 @@
     "#bastion:ammo/rocket",
     "#bastion:ammo/missile",
     "#bastion:ammo/fuel",
-    "#bastion:ammo/laser"
+    "#bastion:ammo/laser",
+    "#bastion:ammo/rail",
+    "#bastion:ammo/mortar"
   ]
 }

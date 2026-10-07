@@ -46,8 +46,10 @@ public final class BastionExplosion {
             double distance = offset.length();
             if (distance > radius) continue;
             float falloff = (float) (1 - distance / radius);
-            entity.invulnerableTime = 0; // a direct rocket hit a moment ago must not swallow the splash
-            entity.hurt(source, damage * falloff);
+            if (damage > 0) { // 0 = a push only (Railgun shockwave)
+                entity.invulnerableTime = 0; // a direct rocket hit a moment ago must not swallow the splash
+                entity.hurt(source, damage * falloff);
+            }
             if (entity instanceof LivingEntity living && distance > 1e-3) {
                 living.knockback(knockback * falloff, -offset.x / distance, -offset.z / distance);
             }

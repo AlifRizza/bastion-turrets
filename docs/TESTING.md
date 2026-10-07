@@ -1,6 +1,6 @@
 # Manual test checklist (Fase 2–7)
 
-Automated: `./gradlew runGameTestServer` (54 tests: base, combat, weapons, modifiers, filter, redstone, HP,
+Automated: `./gradlew runGameTestServer` (65 tests: base, combat, weapons, modifiers, filter, redstone, HP,
 destruction). Visual: `./gradlew devClasses runClient -Pshowcase`. The list below is what still needs eyes and hands.
 
 Setup: creative world, a turret base with a weapon module and Creative Ammo (never runs out). Targets:
@@ -13,6 +13,7 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Gun Turret does not shoot through a wall and stops with `No ammo` when empty.
 - [ ] Machine Gun: barrels spin up before firing, spin whine follows the barrels, heat bar rises, overheat vents steam + alarm, targets get Slowness.
 - [ ] Shotgun: 8-pellet spread, magenta muzzle shockwave, pump + shell ejection, heavy knockback, weaker at long range.
+- [ ] Shotgun damage (beta.4): 5 per pellet (~4.9 on a zombie). Point blank, one blast of ~4-5 pellets kills a 20 HP zombie; at ~6 blocks only 1-2 pellets land.
 - [ ] Sneak + empty hand removes the weapon; refused with a message while it is firing.
 - [ ] `/bastion vfx <preset>` plays every preset (tab-complete lists them, incl. `turret_destroyed`, `tier_up`, `damaged_spark`).
 - [ ] VFX quality LOW / MEDIUM / HIGH (client config) all look right.
@@ -52,7 +53,7 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Tesla Coil fits only the Large Turret Base. It never turns; the coil rings glow and the crown spins slowly.
 - [ ] Without power: red lamp, no zaps. Feed FE into any of the four base blocks (an FE mod's cable or generator); the Status tab's blue gauge fills (hover: `Energy x / 60,000 FE`), max 1,000 FE/t.
 - [ ] Creative Ammo in an ammo slot powers it for free (creative testing without an FE mod).
-- [ ] Charging (~0.6 s): arcs crackle off the crown with a rising whine; then 2 jagged blue-white bolts strike 2 random valid targets in range (16 blocks), with a flash, sparks and a crack. A lone target takes both bolts. Struck mobs crawl with small arcs for a moment.
+- [ ] Charging (~0.6 s): arcs crackle off the crown with a rising whine; then up to 5 jagged blue-white bolts strike 5 random valid targets in range (16 blocks), with a flash, sparks and a crack. At most 2 bolts per target: 1 mob takes 2 bolts (20), 2 mobs 2 each, 3 mobs 2+2+1, 5 or more mobs 1 each. Struck mobs crawl with small arcs for a moment.
 - [ ] Bolts follow moving mobs, never go through walls, never hit you, trusted players or passive mobs. 3,000 FE per discharge (gauge drops).
 - [ ] Idle with energy: a small spark jumps off the crown now and then (faint crackle).
 - [ ] Flamethrower: a solid jet of fire from the nozzle into billowing flames (~8 blocks), roaring while it fires; flames pile up and splash on walls. Each spot gets one scorch mark that glows while the fire is on it and widens the longer it burns (never a pile of marks); it cools and fades ~15 s after the fire moves on.
@@ -60,6 +61,22 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Water or rain puts a burning mob out. Blazes and other fire-immune mobs are ignored (the turret stays idle, no fuel used).
 - [ ] Fuel: 1 Fuel Canister lasts ~4 s of flame (`/give` or craft: iron + coal, makes 3). A blue pilot light flickers at the nozzle while it waits.
 - [ ] Death messages: "electrocuted", "burned to a crisp", "burned to death".
+
+## Railgun
+- [ ] Railgun fits only the Large Turret Base. Big two-rail gun (~5 blocks long) on a yoke, drum magazine on its left; it turns slowly and tilts from -10° to 60°.
+- [ ] Needs both: Rail Slugs in an ammo slot **and** FE in the base (gauge on the Status tab, 80,000 FE, 2,000 FE/t). Missing either: red lamp, no shot. Creative Ammo pays for both.
+- [ ] Charge (3 s): the glow turns violet and the five coil bands light up one by one from the back to the muzzle; then arcs crawl over the whole barrel with a crackle and a rising whine; a violet laser sight shows where it will hit.
+- [ ] Shot: rails slam back, flash + three rings ahead of the muzzle, camera shake, a violet trail with a spiral that hangs ~1.5 s; steam from the vents a moment later; the drum turns a quarter.
+- [ ] Impact: flash, violet ring, debris; valid mobs within 4 blocks are thrown away (no extra damage); you, pets and passive mobs are not pushed.
+- [ ] `/bastiondev zombie 100 3` plus a Wither (or any bigger mob): it shoots the biggest first, even when a smaller one is closer. 60 per hit (diamond armor makes no difference), 120 on the Wither. A boss hovering right above the gun (steeper than 60° or inside 5 blocks) cannot be hit.
+- [ ] Never aims at mobs closer than 5 blocks. Info tab: Damage 60, Range 80, Energy per shot 8k, Ammo 1.
+
+## Mortar
+- [ ] Mortar fits only the Large Turret Base. Squat armoured housing on a turning ring, short fat barrel that always points steeply up (45-86°), also when idle or out of ammo.
+- [ ] Mortar Shells in an ammo slot (or Creative Ammo). It shoots every 3 s at mobs on the ground 8 to 40 blocks away, also behind a wall (it lobs over it); never at flying mobs (phantoms, ghasts, blazes, bees, bats) or anything closer than 8 blocks.
+- [ ] Shot: the barrel slams down, a flash and a smoke ring blown up, a shell with a glowing fuse and a smoke trail climbing ~20 blocks; it whistles on the way down. No lead, no homing: it lands where the target stood when it fired, so a mob that keeps walking can get away (it is meant for crowds).
+- [ ] Impact: a small blast (6 damage close by, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
+- [ ] Burnable blocks in the patch (wood, leaves, wool, grass) catch real fire, which then spreads like vanilla fire. Server config `mortarBlockFire = false`: no block fire, mobs still burn.
 
 ## Laser Rifle
 - [ ] Fits the standard base; Laser Cells as ammo (creative tab or `/give`, no recipe yet: they will come from a charging station later). Creative Ammo also works.

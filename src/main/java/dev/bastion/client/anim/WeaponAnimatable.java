@@ -50,6 +50,12 @@ public class WeaponAnimatable implements GeoAnimatable {
     public float focusAngle, prevFocusAngle, focusSpeed;
     /** Missile Launcher: loaded tubes as a bit mask, copied from the turret each tick. */
     public int missiles;
+    /**
+     * Railgun: how far the charge has lit the coil bands (0 breech .. 1 muzzle; -1 = not charging, all lit) and how far the
+     * model glow has shifted to {@code chargeColor} (0..1, fades back after the shot).
+     */
+    public float coilFill = -1, chargeGlow;
+    public int chargeColor;
     private final int[] tubeDelay = new int[4];
     private static final int RELOAD_DELAY = 8, RELOAD_TICKS = 14;
 

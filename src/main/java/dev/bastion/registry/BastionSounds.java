@@ -51,6 +51,13 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> TESLA_ZAP = register("tesla.zap");
     public static final RegistryObject<SoundEvent> TESLA_ZAP_TAIL = register("tesla.zap_tail");
     public static final RegistryObject<SoundEvent> TESLA_CRACKLE = register("tesla.crackle");
+    public static final RegistryObject<SoundEvent> RAILGUN_CHARGE = register("railgun.charge");
+    public static final RegistryObject<SoundEvent> RAILGUN_FIRE = register("railgun.fire");
+    public static final RegistryObject<SoundEvent> RAILGUN_FIRE_TAIL = register("railgun.fire_tail");
+    public static final RegistryObject<SoundEvent> RAILGUN_IMPACT = register("railgun.impact");
+    public static final RegistryObject<SoundEvent> MORTAR_FIRE = register("mortar.fire");
+    public static final RegistryObject<SoundEvent> MORTAR_FIRE_TAIL = register("mortar.fire_tail");
+    public static final RegistryObject<SoundEvent> MORTAR_WHISTLE = register("mortar.whistle");
 
     public static final RegistryObject<SoundEvent> LASER_CHARGE = register("laser.charge");
     public static final RegistryObject<SoundEvent> LASER_FIRE = register("laser.fire");

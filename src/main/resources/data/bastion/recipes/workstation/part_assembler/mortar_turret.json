@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:mortar_barrel",
+      "count": 1
+    },
+    {
+      "item": "bastion:mortar_housing",
+      "count": 1
+    },
+    {
+      "item": "bastion:mortar_ring",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:mortar_turret"
+  },
+  "time": 300,
+  "energy": 15000
+}

@@ -11,6 +11,8 @@ import net.minecraft.world.level.Level;
 public final class BastionDamageTypes {
     public static final ResourceKey<DamageType> TURRET_SHOT = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_shot"));
     public static final ResourceKey<DamageType> TURRET_LASER = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_laser"));
+    /** Railgun slugs; in minecraft:bypasses_armor (the anti-boss gun ignores armor). */
+    public static final ResourceKey<DamageType> TURRET_RAIL = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_rail"));
     public static final ResourceKey<DamageType> TURRET_SHOCK = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_shock"));
     /** Flamethrower hits and the burning they leave; both in minecraft:is_fire, so fire-immune mobs and Fire Resistance ignore them. */
     public static final ResourceKey<DamageType> TURRET_FLAME = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_flame"));

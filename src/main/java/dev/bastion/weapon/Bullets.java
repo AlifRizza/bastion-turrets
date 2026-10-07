@@ -53,6 +53,10 @@ public final class Bullets {
         /** After every tick in which this shot hit something (Shotgun: knockback summed over its pellets). */
         default void endTick() {
         }
+
+        /** The bullet stopped at a block, at {@code at} (Railgun: the shockwave goes off there too). */
+        default void blocked(Bullet bullet, Vec3 at) {
+        }
     }
 
     public static final class Bullet {
@@ -127,6 +131,7 @@ public final class Bullets {
             TOUCHED.add(bullet.onHit);
         }
         bullet.pierce -= trace.entities().size();
+        if (trace.end().getType() == HitResult.Type.BLOCK) bullet.onHit.blocked(bullet, trace.end().getLocation());
         if (bullet.pierce < 0 || trace.end().getType() == HitResult.Type.BLOCK) {
             end(bullet, trace.end());
             return false;

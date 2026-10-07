@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:railgun_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "minecraft:redstone_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    },
+    {
+      "item": "minecraft:dispenser",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:railgun_receiver"
+  },
+  "time": 160,
+  "energy": 6000
+}

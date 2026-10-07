@@ -14,6 +14,7 @@ public final class BastionConfig {
     public static final ForgeConfigSpec.DoubleValue LARGE_HEALTH_MULTIPLIER;
     public static final ForgeConfigSpec.IntValue WORKSTATION_ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue WORKSTATION_MAX_INPUT;
+    public static final ForgeConfigSpec.BooleanValue MORTAR_BLOCK_FIRE;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_HEALTH;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_REGEN;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_TURN_SPEED;
@@ -38,6 +39,9 @@ public final class BastionConfig {
         WORKSTATION_MAX_INPUT = b
                 .comment("Most FE a workstation accepts per tick.")
                 .defineInRange("workstationMaxInput", 2000, 1, Integer.MAX_VALUE);
+        MORTAR_BLOCK_FIRE = b
+                .comment("Whether Mortar shells set burnable blocks in their fire patch on (vanilla) fire. The patch burns mobs and players either way.")
+                .define("mortarBlockFire", true);
         b.push("tiers");
         TIER_HEALTH = b.comment("Max HP per tier T1, T2, T3.")
                 .defineList("health", List.of(100.0, 250.0, 500.0), o -> o instanceof Double d && d > 0);

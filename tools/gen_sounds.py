@@ -305,6 +305,52 @@ def laser_fire_tail():
     L = 1.6
     return fade_out(norm(onepole_lp(sweep(L, 700, 120) * env(L, 0.005, 0.4) + noise(L, 850) * env(L, 0.005, 0.3) * 0.4, 800), 0.6), 0.2)
 
+# --- Railgun ---------------------------------------------------------------------------------------
+def railgun_charge():
+    L = 3.0; ramp = np.linspace(0, 1, n(L)) ** 1.4
+    tt = t(L)
+    whine = sweep(L, 110, 2600) * (0.2 + 0.8 * ramp) * (0.8 + 0.2 * np.sin(2 * np.pi * (4 + 30 * ramp) * tt))
+    hum = onepole_lp(square(L, 50, 100), 700) * (0.12 + 0.12 * ramp)
+    crackle = crackles(L, 900, 70, 2200, (0.1, 0.7), (0.55, 1.0))
+    return fade_out(norm(whine + hum + crackle, 0.75), 0.02)
+def railgun_fire(v):
+    j = jitter(910 + v); L = 1.8
+    crack = hp(noise(L, 911 + v), 2500) * env(L, 0.0002, 0.012) * 1.4
+    zap = sweep(L, 4200 * j, 280) * env(L, 0.0005, 0.06) * 0.7
+    ring = (np.sin(2 * np.pi * np.cumsum(np.linspace(3100 * j, 2700 * j, n(L))) / RATE)
+            + 0.5 * np.sin(2 * np.pi * np.cumsum(np.linspace(4650 * j, 4100 * j, n(L))) / RATE)) * env(L, 0.001, 0.35) * 0.22
+    boom = sweep(L, 75 * j, 28) * env(L, 0.002, 0.45) * 1.1
+    sizzle = bp(noise(L, 912 + v), 2500, 9000) * env(L, 0.01, 0.6) * 0.25
+    return fade_out(norm(crack + zap + ring + boom + sizzle + crackles(L, 913 + v, 40, 2000, (0.1, 0.5), (0.02, 0.4))), 0.15)
+def railgun_fire_tail():
+    L = 2.2
+    rumble = onepole_lp(noise(L, 920), 260) * env(L, 0.01, 0.9) * 1.4
+    return fade_out(norm(rumble + sweep(L, 60, 25) * env(L, 0.005, 0.6) + onepole_lp(crackles(L, 921, 30, 600, (0.1, 0.5)), 1200), 0.6), 0.3)
+def railgun_impact(v):
+    j = jitter(930 + v); L = 1.5
+    thump = sweep(L, 85 * j, 30) * env(L, 0.002, 0.3) * 1.2
+    crunch = bp(noise(L, 931 + v), 250, 2600) * env(L, 0.001, 0.14)
+    gust = bp(noise(L, 932 + v), 400, 1800) * env(L, 0.03, 0.5) * 0.45
+    return fade_out(norm(thump + crunch + gust + crackles(L, 933 + v, 30, 1500, (0.1, 0.5), (0.05, 0.6))), 0.15)
+
+# --- Mortar -----------------------------------------------------------------------------------------
+def mortar_fire(v):
+    j = jitter(950 + v); L = 1.4
+    thoomp = sweep(L, 130 * j, 38) * env(L, 0.002, 0.22) * 1.3
+    pop = onepole_lp(noise(L, 951 + v), 900) * env(L, 0.001, 0.06)
+    hiss = bp(noise(L, 952 + v), 1500, 6000) * env(L, 0.01, 0.4) * 0.2
+    clank = np.sin(2 * np.pi * 620 * j * t(L)) * env(L, 0.001, 0.08) * 0.15
+    return fade_out(norm(thoomp + pop + hiss + clank), 0.15)
+def mortar_fire_tail():
+    L = 1.8
+    return fade_out(norm(onepole_lp(noise(L, 960), 200) * env(L, 0.01, 0.6) + sweep(L, 70, 30) * env(L, 0.005, 0.4), 0.6), 0.25)
+def mortar_whistle():
+    L = 1.6; tt = t(L)
+    pitch = np.cumsum(np.linspace(1900, 850, n(L)) * (1 + 0.012 * np.sin(2 * np.pi * 7 * tt))) / RATE
+    tone = np.sin(2 * np.pi * pitch) * np.linspace(0.35, 1, n(L))
+    air = bp(noise(L, 970), 800, 3000) * np.linspace(0.1, 0.35, n(L))
+    return fade_out(norm(tone * 0.8 + air, 0.6), 0.05)
+
 # --- Workstations (PLAN Fase 9) --------------------------------------------------------------------
 def ws_loop():
     L = 2.0  # loop: a low machine hum, a servo whir that swells and settles, a faint mechanical tick
@@ -369,6 +415,10 @@ SOUNDS = {
     "tesla/zap_tail.ogg": tesla_zap_tail, **{f"tesla/crackle_{v}.ogg": (lambda v=v: tesla_crackle(v)) for v in range(2)},
     "laser/charge.ogg": laser_charge, **{f"laser/fire_{v}.ogg": (lambda v=v: laser_fire(v)) for v in range(2)},
     "laser/fire_tail.ogg": laser_fire_tail,
+    "railgun/charge.ogg": railgun_charge, **{f"railgun/fire_{v}.ogg": (lambda v=v: railgun_fire(v)) for v in range(2)},
+    "railgun/fire_tail.ogg": railgun_fire_tail,
+    **{f"mortar/fire_{v}.ogg": (lambda v=v: mortar_fire(v)) for v in range(2)}, "mortar/fire_tail.ogg": mortar_fire_tail,
+    "mortar/whistle.ogg": mortar_whistle, **{f"railgun/impact_{v}.ogg": (lambda v=v: railgun_impact(v)) for v in range(2)},
     "workstation/loop.ogg": ws_loop, "workstation/weld.ogg": ws_weld, "workstation/press.ogg": ws_press, "workstation/done.ogg": ws_done,
     "flamethrower/ignite.ogg": flame_ignite, "flamethrower/loop.ogg": flame_loop, "flamethrower/burning.ogg": burning,
     "shotgun/pump.ogg": sg_pump, **{f"shotgun/shell_{v}.ogg": (lambda v=v: shell_drop(v)) for v in range(2)},

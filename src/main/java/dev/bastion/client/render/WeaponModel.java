@@ -19,6 +19,8 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
     /** Bones whose world position the client needs for VFX: muzzles, casing port, sensor. */
     /** How far (px) a reloading rocket sits back inside its tube before it slides forward. */
     private static final float ROCKET_SLIDE = 2.6f;
+    /** Railgun coil bands along the channel, breech 0 to muzzle 1 (design_weapons.py RG_COILS). */
+    private static final float[] RAIL_COILS = {0.128f, 0.299f, 0.470f, 0.642f, 0.813f};
     static final String[] TRACKED = {"muzzle_0", "muzzle_1", "muzzle_2", "muzzle_3", "muzzle_4", "muzzle_5", "muzzle_6", "muzzle_7",
             "muzzle_8", "muzzle_9", "muzzle_10", "muzzle_11", "eject_0", "sensor"};
 
@@ -66,6 +68,12 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
         for (int i = 0; i < MissileLauncherWeapon.TUBES; i++) {
             boolean loaded = (missiles & 1 << i) != 0;
             getBone("missile_" + i).ifPresent(bone -> bone.setHidden(!loaded));
+        }
+        // Railgun: while it charges, each coil band stays dark until the light reaches it (always lit in hand).
+        float coilFill = animatable instanceof WeaponAnimatable weapon ? weapon.coilFill : -1;
+        for (int i = 0; i < RAIL_COILS.length; i++) {
+            boolean dark = coilFill >= 0 && coilFill < RAIL_COILS[i];
+            getBone("glow_coil_" + i).ifPresent(bone -> bone.setHidden(dark));
         }
         // Rocket Launcher: each tube shows its own rocket, slid back into the pod while it reloads (always full in hand).
         for (int i = 0; i < 4; i++) {

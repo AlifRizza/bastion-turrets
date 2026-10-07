@@ -48,6 +48,7 @@ public final class BastionClient {
         event.registerEntityRenderer(BastionEntities.TURRET_HITBOX.get(), NoopRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_ROCKET.get(), RocketRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer(context, "turret_missile"));
+        event.registerEntityRenderer(BastionEntities.TURRET_MORTAR_SHELL.get(), context -> new RocketRenderer(context, "turret_mortar_shell"));
     }
 
     /** How each particle moves and looks (PLAN 5.4); sprites come from assets/bastion/particles/<type>.json. */

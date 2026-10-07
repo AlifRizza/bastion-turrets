@@ -1,0 +1,29 @@
+{
+  "type": "bastion:railgun",
+  "ammo": "bastion:ammo/rail",
+  "energy_color": "#B57CFF",
+  "range": 80,
+  "fire_interval": 40,
+  "damage": 60,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 3,
+  "aim_tolerance": 1.5,
+  "aim_lock_ticks": 4,
+  "min_pitch": -10,
+  "max_pitch": 60,
+  "pivot_height": 1.125,
+  "muzzle_length": 4.656,
+  "params": {
+    "charge_ticks": 60,
+    "slug_speed": 40,
+    "lead_accuracy": 0.9,
+    "min_range": 5,
+    "boss_multiplier": 2,
+    "shock_radius": 4,
+    "shock_knockback": 2.5,
+    "energy_per_shot": 8000,
+    "energy_capacity": 80000,
+    "max_input": 2000
+  }
+}

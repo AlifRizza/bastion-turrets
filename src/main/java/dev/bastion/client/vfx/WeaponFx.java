@@ -46,10 +46,20 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
     public static final WeaponFx LASER_RIFLE = new WeaponFx(VfxPresets.LASER_MUZZLE, VfxPresets.LASER_IMPACT, VfxPresets.LASER_IMPACT,
             0.13f, 1f, 80f, false, false, BastionSounds.LASER_FIRE, BastionSounds.LASER_FIRE_TAIL);
 
-    private static final Map<ResourceLocation, WeaponFx> BY_TYPE = Map.of(
-            Bastion.id("gun"), GUN, Bastion.id("machine_gun"), MACHINE_GUN, Bastion.id("shotgun"), SHOTGUN,
-            Bastion.id("sniper"), SNIPER, Bastion.id("rocket_launcher"), ROCKET_LAUNCHER, Bastion.id("missile_launcher"), MISSILE_LAUNCHER,
-            Bastion.id("tesla"), TESLA, Bastion.id("flamethrower"), FLAMETHROWER, Bastion.id("laser_rifle"), LASER_RIFLE);
+    /** A slug, rings and an ion trail (RailgunEffects); the heaviest kick of all. */
+    public static final WeaponFx RAILGUN = new WeaponFx(VfxPresets.RAIL_MUZZLE, VfxPresets.RAIL_IMPACT, VfxPresets.RAIL_IMPACT,
+            0.2f, 1f, 140f, false, false, BastionSounds.RAILGUN_FIRE, BastionSounds.RAILGUN_FIRE_TAIL);
+
+    /** No tracer: the shell is a real entity (RocketEffects); the barrel slams down. */
+    public static final WeaponFx MORTAR = new WeaponFx(VfxPresets.MORTAR_LAUNCH, v -> {}, v -> {},
+            0, 1f, 40f, false, false, BastionSounds.MORTAR_FIRE, BastionSounds.MORTAR_FIRE_TAIL);
+
+    private static final Map<ResourceLocation, WeaponFx> BY_TYPE = Map.ofEntries(
+            Map.entry(Bastion.id("gun"), GUN), Map.entry(Bastion.id("machine_gun"), MACHINE_GUN), Map.entry(Bastion.id("shotgun"), SHOTGUN),
+            Map.entry(Bastion.id("sniper"), SNIPER), Map.entry(Bastion.id("rocket_launcher"), ROCKET_LAUNCHER),
+            Map.entry(Bastion.id("missile_launcher"), MISSILE_LAUNCHER), Map.entry(Bastion.id("tesla"), TESLA),
+            Map.entry(Bastion.id("flamethrower"), FLAMETHROWER), Map.entry(Bastion.id("laser_rifle"), LASER_RIFLE),
+            Map.entry(Bastion.id("railgun"), RAILGUN), Map.entry(Bastion.id("mortar"), MORTAR));
 
     public static WeaponFx of(ResourceLocation weaponType) {
         return BY_TYPE.getOrDefault(weaponType, GUN);

@@ -304,6 +304,69 @@ public final class VfxPresets {
             .burst(BastionParticles.EMBER.get(), 6, UP, 60, 0.06f, 0.5f, 20, Curve.FLICKER, v.params().color())
             .light(10, 6);
 
+    // --- Railgun, violet (channel glow and ion trail: RailRenderer, arcs over the rails: RailgunEffects) --------------
+
+    /** The slug leaving the rails: a blinding flash in a violet one, sparks down the line of fire, smoke, a hard light, a kick. */
+    public static final VfxPreset RAIL_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 6.5f, 4, Curve.PULSE, v.params().color())
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 3.4f, 3, Curve.PULSE, 0xFFF6F0FF)
+            .burst(BastionParticles.SPARK.get(), 14, v.direction(), 18, 0.7f, 0.7f, 7, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.SMOKE_PUFF.get(), 5, v.direction(), 35, 0.08f, 2.2f, 40, Curve.EASE_OUT, 0xA0C8C4D0)
+            .light(15, 4)
+            .shake(0.6f, 24)
+            .flash(0.15f, 8);
+
+    /** One of the rings the shot punches through the air ahead of the muzzle (scale grows ring by ring). */
+    public static final VfxPreset RAIL_RING = v -> v
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.04f, 2.6f * v.params().scale(), 9, Curve.EASE_OUT, v.params().color());
+
+    /** Where the slug lands, on a mob or a block: a flash, a violet shockwave, sparks, debris, smoke and embers. */
+    public static final VfxPreset RAIL_IMPACT = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 8f, 4, Curve.PULSE, 0xFFF6F0FF)
+            .ring(BastionParticles.SHOCKWAVE_RING.get(), v.origin(), UP, 0, 19f, 12, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 24, v.params().normal(), 110, 0.7f, 1.1f, 14, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.DEBRIS.get(), 10, UP, 100, 0.45f, 0.9f, 40, Curve.LINEAR, v.params().blockColor())
+            .burst(BastionParticles.BLAST_SMOKE.get(), 6, UP, 80, 0.1f, 3.5f, 60, Curve.BILLOW, 0xC0505058)
+            .burst(BastionParticles.EMBER.get(), 10, UP, 90, 0.14f, 0.8f, 40, Curve.FLICKER, v.params().color())
+            .light(15, 6)
+            .shake(0.8f, 24)
+            .flash(0.25f, 12);
+
+    /** On a block only: dust sweeping out across the surface and a scorch that glows violet and cools. */
+    public static final VfxPreset RAIL_GROUND = v -> v
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), v.params().normal(), 0, 16f, 26, Curve.EASE_OUT,
+                    0xB0000000 | (v.params().blockColor() & 0xFFFFFF))
+            .scorch(1.4f, 300);
+
+    // --- Mortar, fire orange (shell trail: RocketEffects, fire patch: MortarEffects) -----------------------------
+
+    /** The shell leaving the barrel: a flash, a pale smoke ring blown up the line of fire, a plume of smoke, sparks. */
+    public static final VfxPreset MORTAR_LAUNCH = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 4.5f, 3, Curve.PULSE, v.params().color())
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.12f, 3.2f, 14, Curve.EASE_OUT, 0xC0D8D8D8)
+            .burst(BastionParticles.BLAST_SMOKE.get(), 8, v.direction(), 30, 0.12f, 3.0f, 50, Curve.BILLOW, 0xB0A0A4AA)
+            .burst(BastionParticles.SPARK.get(), 6, v.direction(), 25, 0.5f, 0.6f, 8, Curve.LINEAR, v.params().color())
+            .light(14, 3)
+            .shake(0.45f, 16);
+
+    /** Every tick behind a shell in flight: its glowing fuse and a wisp of smoke. */
+    public static final VfxPreset MORTAR_TRAIL = v -> v
+            .burst(BastionParticles.FLAME.get(), 1, v.direction(), 10, 0.06f, 0.9f, 4, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.SMOKE_WISP.get(), 1, v.direction(), 15, 0.01f, 0.9f, 18, Curve.EASE_OUT, 0xA0B4B8BE);
+
+    /** A flame licking up at a point of a fire patch (a few per tick across it). */
+    public static final VfxPreset FIRE_PATCH = v -> v
+            .burst(BastionParticles.FLAME_JET.get(), 1, UP, 25, 0.05f, 3.0f, 14, Curve.BILLOW, v.params().color())
+            .burst(BastionParticles.FLAME.get(), 1, UP, 15, 0.08f, 1.3f, 6, Curve.LINEAR, 0xFFFFB050);
+
+    /** Now and then over a fire patch: smoke and an ember rising off it. */
+    public static final VfxPreset FIRE_PATCH_SMOKE = v -> v
+            .burst(BastionParticles.BLAST_SMOKE.get(), 1, UP, 20, 0.03f, 2.4f, 45, Curve.BILLOW, 0x90303236)
+            .burst(BastionParticles.EMBER.get(), 1, UP, 40, 0.07f, 0.5f, 25, Curve.FLICKER, v.params().color());
+
+    /** The patch's burn on the ground: glows while it burns, then cools and fades. */
+    public static final VfxPreset MORTAR_SCORCH = v -> v.scorch(1.6f * v.params().scale(), 500);
+
     // --- shared turret states -------------------------------------------------------------------
 
     /** Overheat vent: steam and heat haze (PLAN 4.4). */
@@ -379,6 +442,15 @@ public final class VfxPresets {
         ALL.put("laser_muzzle", LASER_MUZZLE);
         ALL.put("laser_impact", LASER_IMPACT);
         ALL.put("laser_end", LASER_END);
+        ALL.put("rail_muzzle", RAIL_MUZZLE);
+        ALL.put("rail_ring", RAIL_RING);
+        ALL.put("rail_impact", RAIL_IMPACT);
+        ALL.put("rail_ground", RAIL_GROUND);
+        ALL.put("mortar_launch", MORTAR_LAUNCH);
+        ALL.put("mortar_trail", MORTAR_TRAIL);
+        ALL.put("fire_patch", FIRE_PATCH);
+        ALL.put("fire_patch_smoke", FIRE_PATCH_SMOKE);
+        ALL.put("mortar_scorch", MORTAR_SCORCH);
         ALL.put("flame_stream", FLAME_STREAM);
         ALL.put("flame_splash", FLAME_SPLASH);
         ALL.put("burning", BURNING);

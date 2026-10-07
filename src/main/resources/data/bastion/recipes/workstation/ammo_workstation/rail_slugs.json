@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:kinetic_rounds",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 1
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:rail_slugs",
+    "count": 4
+  },
+  "time": 60,
+  "energy": 800
+}

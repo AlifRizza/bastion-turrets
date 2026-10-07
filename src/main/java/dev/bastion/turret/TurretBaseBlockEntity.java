@@ -453,9 +453,12 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         regenerate();
         WeaponData data = inventory.weaponData();
         WeaponType type = data == null ? null : BastionWeaponTypes.REGISTRY.get().getValue(data.type());
-        if (data != null && data.aim().fixedPitch()) { // fixed-elevation weapons (Missile Launcher) keep their angle, even switched off
-            pitch = -data.aim().minPitch();
-            pitchVelocity = 0;
+        if (data != null) { // the barrel stays inside its elevation limits, even switched off (Missile Launcher: fixed, Mortar: up)
+            float limited = -Mth.clamp(-pitch, data.aim().minPitch(), data.aim().maxPitch());
+            if (limited != pitch) {
+                pitch = limited;
+                pitchVelocity = 0;
+            }
         }
         if (data == null || type == null || !active(level)) {
             state = TurretState.DISABLED;
@@ -680,11 +683,11 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         float wantedYaw = clientYaw, wantedPitch = clientPitch;
         WeaponData data = inventory.weaponData();
         if (clientState == TurretState.IDLE && (data == null || data.aim().turnSpeed() > 0)) {
-            // Scanning sweep, client-only (PLAN 4.5): +-45 deg around where the turret last looked. A fixed-elevation
-            // weapon keeps its angle; everything else levels out. Weapons that never turn (Tesla Coil) do not sweep.
+            // Scanning sweep, client-only (PLAN 4.5): +-45 deg around where the turret last looked, level, or as near as
+            // its elevation limits allow (Missile Launcher: fixed, Mortar: always up). Weapons that never turn (Tesla) do not sweep.
             scanTicks++;
             wantedYaw = scanCenterYaw + 45f * Mth.sin(scanTicks * 0.03f);
-            wantedPitch = data != null && data.aim().fixedPitch() ? -data.aim().minPitch() : 0;
+            wantedPitch = data == null ? 0 : -Mth.clamp(0, data.aim().minPitch(), data.aim().maxPitch());
         } else {
             scanTicks = 0;
             scanCenterYaw = clientYaw;
@@ -734,7 +737,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     /** Barrels reach past the block; keep rendering while any part of the turret is on screen. */
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).inflate(large() ? 4 : 2.5);
+        return new AABB(worldPosition).inflate(large() ? 6 : 2.5); // the Railgun's barrel reaches ~5 blocks
     }
 
     // --- persistence & sync --------------------------------------------------------------------

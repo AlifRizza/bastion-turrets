@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:rockets",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:gunpowder",
+      "count": 2
+    },
+    {
+      "tag": "minecraft:coals",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:mortar_shells",
+    "count": 4
+  },
+  "time": 60,
+  "energy": 600
+}

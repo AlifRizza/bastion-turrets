@@ -390,6 +390,116 @@ def tesla(path):
         k.bone(f"muzzle_{i + 1}", "crown", pivot=(x, 25.2, z))
     k.write("tesla_turret", path, bounds=(3, 3), offset=(0, 1, 0))
 
+# Railgun: pitch axle height and where the channel runs; railgun.json pivot_height = RG_P / 16, muzzle_length = -RG_TIP / 16.
+RG_P, RG_BREECH, RG_TIP = 18.0, -22.0, -74.5
+RG_COILS = (-30.0, -39.0, -48.0, -57.0, -66.0)  # coil clamps along the rails (RailgunEffects lights them in this order)
+
+
+def railgun(path):
+    """Railgun for the Large Turret Base (user reference: a heavy two-rail gun on a yoke, drum magazine on its side).
+    A turntable and pedestal with two arms, a long receiver on the axle with the drum on its left, and a barrel of two
+    rails (upper and lower) with a glowing channel between them, held by five coil clamps; ~4.6 blocks from the axle to
+    the muzzle. muzzle_0 = the muzzle, muzzle_1 = the back of the channel, muzzle_2/3 = the upper/lower rail tips (the
+    client lights the channel and runs arcs along the rails from these); eject_0 = the vents (steam after a shot)."""
+    k = Kit(256)  # long rails: their faces do not fit a 128 sheet
+    P = RG_P
+    k.bone("root")
+    yaw = k.octagon("turn", 12, 0, 1.6) + k.chamfer("pedestal", 9, 2.5, 1.6, 6.0)
+    for side in (-1, 1):
+        x0, x1 = sorted((side * 9.4, side * 12.6))
+        yaw += [k.box("arm", x0, 6.0, -5.0, x1, P + 3.5, 5.0), k.box("armcap", x0, P + 3.5, -3.4, x1, P + 5.0, 3.4)]
+        r0, r1 = sorted((side * 12.6, side * 13.4))
+        yaw.append(k.box("armrib", r0, 6.6, -2.0, r1, P - 1.5, 2.0))
+    k.bone("yaw_pivot", "root", cubes=yaw)
+    k.bone("axle", "yaw_pivot", pivot=(0, P, 0), cubes=k.rod_x("axle", P, 0, -13.0, 13.0, 3.4))
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(0, P, 0))
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("rcv", -7.5, P - 6.0, -20.0, 7.5, P + 6.0, 9.0), k.box("rcvtop", -6.0, P + 6.0, -17.0, 6.0, P + 7.4, 6.0),
+        k.box("rcvrear", -6.0, P - 4.0, 9.0, 6.0, P + 4.0, 11.5), k.box("chin", -5.0, P - 7.2, -18.0, 5.0, P - 6.0, 2.0)])
+    k.bone("body_frame", "body", pivot=(0, P, 0), cubes=[
+        k.box("sideplate", -8.3, P - 5.0, -18.0, -7.5, P + 5.0, 7.0), k.box("sideplate", 7.5, P - 5.0, -18.0, 8.3, P + 5.0, 7.0),
+        k.box("rearplate", -5.0, P - 3.0, 11.5, 5.0, P + 3.0, 12.1)])
+    # Drum magazine on the weapon's left (geo +X, GeckoLib mirrors X): outboard of the arms and forward of them, so it
+    # clears them over the whole pitch range; a bracket ties it to the receiver.
+    # The fire clip turns the drum a quarter (square caps, so the turn loops without a jump); bracket and gauge stay put.
+    k.bone("drum", "body", pivot=(17.4, P - 0.5, -13.5), cubes=k.rod_z("drum", 17.4, P - 0.5, -20.0, -7.0, 7.6) + [
+        k.box("drumcap", 14.0, P - 3.9, -20.8, 20.8, P + 2.9, -19.8), k.box("drumcap", 14.0, P - 3.9, -7.2, 20.8, P + 2.9, -6.2)])
+    k.bone("drum_mount", "body", pivot=(11.0, P, -13.5), cubes=[k.box("drumbracket", 8.3, P - 2.0, -17.0, 13.8, P + 1.0, -10.0)])
+    k.bone("glow_drum", "body", pivot=(17.4, P - 0.5, -13.5), cubes=[k.box("drumglow", 21.25, P - 1.2, -18.0, 21.35, P + 0.2, -9.0)])
+    k.bone("glow_strips", "body", pivot=(0, P, 0), cubes=[
+        k.box("gstrip", -8.4, P + 2.6, -16.0, -8.3, P + 3.2, 5.0), k.box("gstrip", 8.3, P + 2.6, -16.0, 8.4, P + 3.2, 5.0)])
+    k.bone("vent_l", "body", pivot=(-2.5, P + 7.4, 5.0), cubes=[k.box("vent", -4.6, P + 7.4, -2.0, -0.6, P + 8.0, 5.0)])
+    k.bone("vent_r", "body", pivot=(2.5, P + 7.4, 5.0), cubes=[k.box("vent", 0.6, P + 7.4, -2.0, 4.6, P + 8.0, 5.0)])
+    k.bone("sensor", "body", pivot=(-3.8, P + 8.6, -12.0), cubes=[k.box("scope", -5.6, P + 7.4, -16.0, -2.0, P + 9.8, -8.0)])
+    k.bone("glow_lens", "sensor", pivot=(-3.8, P + 8.6, -16.05), cubes=[k.box("lens", -5.0, P + 7.8, -16.1, -2.6, P + 9.4, -16.0)])
+    # The barrel slides back on each shot (fire clip): breech block, two rails with the channel between, spines.
+    barrel = [k.box("breech", -6.2, P - 6.6, -24.0, 6.2, P + 6.6, -20.0),
+              k.box("rail", -4.5, P + 1.5, RG_TIP + 1.0, 4.5, P + 5.5, -24.0), k.box("rail", -4.5, P - 5.5, RG_TIP + 1.0, 4.5, P - 1.5, -24.0),
+              k.box("spine", -1.6, P + 5.5, -68.0, 1.6, P + 6.8, -24.0), k.box("spine", -1.6, P - 6.8, -68.0, 1.6, P - 5.5, -24.0),
+              k.box("railtip", -5.0, P + 1.5, RG_TIP - 0.5, 5.0, P + 6.2, RG_TIP + 1.0),
+              k.box("railtip", -5.0, P - 6.2, RG_TIP - 0.5, 5.0, P - 1.5, RG_TIP + 1.0)]
+    k.bone("barrel_0", "body", pivot=(0, P, -20.0), cubes=barrel)
+    k.bone("coils", "barrel_0", pivot=(0, P, -48.0), cubes=[k.box("coil", -5.8, P - 7.0, z, 5.8, P + 7.0, z + 2.6) for z in RG_COILS])
+    for i, z in enumerate(RG_COILS):  # one bone per band: while charging, the client lights them breech to muzzle
+        k.bone(f"glow_coil_{i}", "coils", pivot=(0, P, z + 1.3), cubes=[k.box("coilglow", -5.9, P - 7.1, z + 1.0, 5.9, P + 7.1, z + 1.6)])
+    k.bone("glow_channel", "barrel_0", pivot=(0, P, -48.0), cubes=[k.box("channel", -2.6, P - 0.35, RG_TIP + 2.0, 2.6, P + 0.35, -24.0)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, RG_TIP))
+    k.bone("muzzle_1", "barrel_0", pivot=(0, P, RG_BREECH))
+    k.bone("muzzle_2", "barrel_0", pivot=(0, P + 3.5, RG_TIP))
+    k.bone("muzzle_3", "barrel_0", pivot=(0, P - 3.5, RG_TIP))
+    k.bone("eject_0", "body", pivot=(0, P + 8.2, 1.5))
+    k.write("railgun_turret", path, bounds=(6, 4), offset=(0, 1, 0))
+
+
+# Mortar: trunnion height and barrel tip; mortar.json pivot_height = MO_P / 16, muzzle_length = -MO_TIP / 16.
+MO_P, MO_TIP = 13.0, -24.5
+
+
+def mortar(path):
+    """Mortar for the Large Turret Base (user reference: a squat riveted armoured housing on a turning ring, a short fat
+    barrel standing steeply up). The barrel pivots on trunnions in two cheeks on top of the housing; the code keeps it
+    between 45 and 85 degrees up, so its breech sinks into the housing. muzzle_0 = the barrel's mouth."""
+    k = Kit(128)
+    P = MO_P
+    k.bone("root")
+    yaw = (k.octagon("turn", 12, 0, 1.6) + k.chamfer("housing", 10.5, 3, 1.6, 9.5) + k.chamfer("hood", 8, 2.5, 9.5, 12.5)
+           + k.faces4("plate", 10.5, 3.0, 8.5, 9.0, 0.8))
+    for side in (-1, 1):
+        x0, x1 = sorted((side * 4.6, side * 7.6))
+        yaw.append(k.box("cheek", x0, 12.5, -4.0, x1, P + 3.0, 4.0))
+    k.bone("yaw_pivot", "root", cubes=yaw)
+    k.bone("glow_strips", "yaw_pivot", pivot=(0, 6.0, 0), cubes=k.faces4("gstrip", 11.3, 5.7, 6.3, 6.0, 0.1))
+    k.bone("vent_l", "yaw_pivot", pivot=(-3.5, 12.5, 6.5), cubes=[k.box("vent", -6.0, 12.5, 4.5, -1.0, 13.1, 7.5)])
+    k.bone("vent_r", "yaw_pivot", pivot=(3.5, 12.5, 6.5), cubes=[k.box("vent", 1.0, 12.5, 4.5, 6.0, 13.1, 7.5)])
+    k.bone("sensor", "yaw_pivot", pivot=(-8.5, 11.0, -6.0), cubes=[k.box("scope", -9.6, 9.5, -8.0, -7.0, 12.5, -4.0)])
+    k.bone("glow_lens", "sensor", pivot=(-8.3, 11.0, -8.05), cubes=[k.box("lens", -9.2, 10.2, -8.1, -7.4, 11.8, -8.0)])
+    k.bone("axle", "yaw_pivot", pivot=(0, P, 0), cubes=k.rod_x("axle", P, 0, -8.2, 8.2, 3.6))
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(0, P, 0))
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[k.box("breech", -3.8, P - 3.8, -2.0, 3.8, P + 3.8, 6.0),
+                                                          k.box("breechcap", -2.8, P - 2.8, 6.0, 2.8, P + 2.8, 7.2)])
+    # The barrel slides down into the breech on each shot (fire clip).
+    k.bone("barrel_0", "body", pivot=(0, P, -2.0), cubes=k.rod_z("mbarrel", 0, P, MO_TIP + 1.5, -2.0, 8.0, 6.4) + [
+        k.box("collar", -4.7, P - 4.7, -6.5, 4.7, P + 4.7, -3.0), k.box("lip", -4.5, P - 4.5, MO_TIP, 4.5, P + 4.5, MO_TIP + 1.5)])
+    k.bone("glow_barrel", "barrel_0", pivot=(0, P, -4.75), cubes=[k.box("collarglow", -4.8, P - 4.8, -5.1, 4.8, P + 4.8, -4.4)])
+    k.bone("bore", "barrel_0", pivot=(0, P, MO_TIP), cubes=[k.box("bore", -2.8, P - 2.8, MO_TIP - 0.05, 2.8, P + 2.8, MO_TIP + 0.05)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, MO_TIP - 0.3))
+    k.write("mortar_turret", path, bounds=(3, 3), offset=(0, 1, 0))
+
+
+def mortar_shell(path):
+    """Mortar shell: a fat teardrop with tail fins, origin at its centre, nose north (-Z); the tail fuse glows."""
+    k = Kit(32)
+    k.bone("root")
+    k.bone("body", "root", cubes=k.rod_z("sbody", 0, 0, -1.6, 1.6, 2.4, 1.8))
+    k.bone("nose", "body", pivot=(0, 0, -1.6), cubes=[k.box("nose", -0.8, -0.8, -2.6, 0.8, 0.8, -1.6),
+                                                       k.box("tip", -0.35, -0.35, -3.1, 0.35, 0.35, -2.6)])
+    k.bone("fins", "body", pivot=(0, 0, 2.4), cubes=[k.box("tail", -0.6, -0.6, 1.6, 0.6, 0.6, 3.2),
+                                                      k.box("finh", -1.4, -0.1, 2.4, 1.4, 0.1, 3.4),
+                                                      k.box("finv", -0.1, -1.4, 2.45, 0.1, 1.4, 3.35)])
+    k.bone("glow_nozzle", "body", pivot=(0, 0, 3.3), cubes=[k.box("fuse", -0.4, -0.4, 3.2, 0.4, 0.4, 3.5)])
+    k.write("turret_mortar_shell", path, bounds=(1, 1), offset=(0, 0, 0))
+
+
 out = sys.argv[1] if len(sys.argv) > 1 else GEO
 gun(f"{out}/gun_turret.geo.json")
 machine_gun(f"{out}/machine_gun_turret.geo.json")
@@ -402,3 +512,6 @@ missile(f"{out}/entity/turret_missile.geo.json")
 flamethrower(f"{out}/flamethrower_turret.geo.json")
 tesla(f"{out}/tesla_turret.geo.json")
 laser_rifle(f"{out}/laser_rifle_turret.geo.json")
+railgun(f"{out}/railgun_turret.geo.json")
+mortar(f"{out}/mortar_turret.geo.json")
+mortar_shell(f"{out}/entity/turret_mortar_shell.geo.json")

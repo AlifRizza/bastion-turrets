@@ -1,0 +1,20 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:mortar_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_block",
+      "count": 2
+    },
+    {
+      "item": "minecraft:blast_furnace",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:mortar_barrel"
+  },
+  "time": 160,
+  "energy": 6000
+}

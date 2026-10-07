@@ -19,15 +19,21 @@ public class WeaponModelRenderer extends GeoObjectRenderer<WeaponAnimatable> {
         addRenderLayer(new EmissiveLayer<>(this, WeaponModelRenderer::glowColor));
     }
 
-    /** The shared model glow, shifting to red above half heat (PLAN 7.2 barrels glow, 7.5 overheat red). */
+    /**
+     * The shared model glow, shifting to red above half heat (PLAN 7.2 barrels glow, 7.5 overheat red) and to the energy
+     * colour while a Railgun charges.
+     */
     static int glowColor(WeaponAnimatable weapon) {
-        int base = EmissiveLayer.MODEL_GLOW;
-        float t = Mth.clamp((weapon.heat - 0.5f) / 0.5f, 0, 1);
-        if (t <= 0) return base;
-        int r = (int) Mth.lerp(t, base >> 16 & 255, OVERHEAT_RED >> 16 & 255);
-        int g = (int) Mth.lerp(t, base >> 8 & 255, OVERHEAT_RED >> 8 & 255);
-        int b = (int) Mth.lerp(t, base & 255, OVERHEAT_RED & 255);
-        return r << 16 | g << 8 | b;
+        int base = lerp(EmissiveLayer.MODEL_GLOW, OVERHEAT_RED, Mth.clamp((weapon.heat - 0.5f) / 0.5f, 0, 1));
+        return lerp(base, weapon.chargeColor, weapon.chargeGlow);
+    }
+
+    private static int lerp(int a, int b, float t) {
+        if (t <= 0) return a;
+        int r = (int) Mth.lerp(t, a >> 16 & 255, b >> 16 & 255);
+        int g = (int) Mth.lerp(t, a >> 8 & 255, b >> 8 & 255);
+        int bl = (int) Mth.lerp(t, a & 255, b & 255);
+        return r << 16 | g << 8 | bl;
     }
 
     /** The caller already placed the origin at the mount, so skip GeoObjectRenderer's block-centre offset. */

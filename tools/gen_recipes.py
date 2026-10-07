@@ -70,8 +70,14 @@ PARTS = {
     "laser_rifle_turret": {"laser_focus_barrel": ({"iron_ingot": 3, "glass": 2}, SMALL_PART),
                            "laser_emitter_crystal": ({"amethyst_shard": 1, "glass": 1, "redstone": 1}, SPECIAL_PART),
                            "laser_housing": ({"iron_ingot": 1, "redstone_block": 1, "observer": 1, "dispenser": 1}, SMALL_PART)},
+    "railgun_turret": {"railgun_rails": ({"iron_block": 2, "copper_block": 2, "lightning_rod": 1}, LARGE_PART),
+                       "railgun_receiver": ({"diamond": 2, "redstone_block": 1, "observer": 1, "dispenser": 1}, LARGE_PART),
+                       "railgun_mount": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
+    "mortar_turret": {"mortar_barrel": ({"iron_block": 2, "blast_furnace": 1}, LARGE_PART),
+                      "mortar_housing": ({"iron_block": 2, "smooth_stone": 4, "redstone": 2}, LARGE_PART),
+                      "mortar_ring": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
 }
-LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret"}
+LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret"}
 PART_COUNT = {"missile_pod": 2}  # the launcher has two pods
 
 # Module Workstation: the old crafting recipes as ingredient counts; ammo likewise at the Ammo Workstation.
@@ -89,6 +95,8 @@ AMMO = {  # result: (ingredients, time, energy, count, tab)
     "missiles": ({"iron_nugget": 3, "gunpowder": 1, "firework_rocket": 1}, 60, 800, 6, "rockets"),
     "fuel_canister": ({"iron_ingot": 3, "iron_nugget": 1, "#minecraft:coals": 1}, 40, 300, 3, "laser_cell"),
     "empty_laser_cell": ({"iron_ingot": 2, "glass": 1, "redstone": 1}, 40, 400, 4, "laser_cell"),
+    "rail_slugs": ({"iron_ingot": 2, "copper_ingot": 1, "redstone": 1}, 60, 800, 4, "kinetic_rounds"),
+    "mortar_shells": ({"iron_ingot": 2, "gunpowder": 2, "#minecraft:coals": 1}, 60, 600, 4, "rockets"),
 }
 # Charging Station: ammo that stores energy (Plasma Cells will go here too).
 CHARGE = {"laser_cell": ({B + "empty_laser_cell": 1}, 60, 3000, 1)}

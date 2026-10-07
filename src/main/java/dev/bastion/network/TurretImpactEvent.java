@@ -20,7 +20,8 @@ public record TurretImpactEvent(Vec3 pos, int kind, float scale, Vec3 normal, in
         this(pos, kind, scale, Vec3.ZERO, -1);
     }
 
-    public static final int DESTROYED = 0, TIER_UP = 1, ROCKET_BLAST = 2, MISSILE_BLAST = 3;
+    /** FIRE_PATCH: a Mortar's fire patch centred on pos (on the ground); scale = seconds it burns, source = its width in blocks. */
+    public static final int DESTROYED = 0, TIER_UP = 1, ROCKET_BLAST = 2, MISSILE_BLAST = 3, MORTAR_BLAST = 4, FIRE_PATCH = 5;
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeDouble(pos.x);

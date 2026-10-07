@@ -7,6 +7,7 @@ import dev.bastion.network.TurretImpactEvent;
 import dev.bastion.registry.BastionEntities;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretHitboxEntity;
+import dev.bastion.weapon.FirePatches;
 import dev.bastion.weapon.LeadSolver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -30,11 +31,12 @@ import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * Rocket from a Rocket Launcher Turret, or homing missile from a Missile Launcher Turret (same class, two entity types).
- * A rocket flies straight; a missile launches slanting up, then steers toward its target with a limited turn rate,
- * picking a new valid target if its own dies. Both explode on the first block or valid target they meet, or in the
- * air when the fuel runs out. Valid = what the firing turret's filter would shoot; they fly past everything else, and
- * the blast spares it too. Short-lived, so never saved.
+ * Rocket from a Rocket Launcher Turret, homing missile from a Missile Launcher Turret, or shell from a Mortar (same class,
+ * three entity types). A rocket flies straight; a missile launches slanting up, then steers toward its target with a
+ * limited turn rate, picking a new valid target if its own dies; a shell falls on a ballistic arc and leaves a fire patch
+ * (FirePatches). All explode on the first block or valid target they meet, or in the air when the fuel runs out.
+ * Valid = what the firing turret's filter would shoot; they fly past everything else, and the blast spares it too.
+ * Short-lived, so never saved.
  */
 public class TurretRocketEntity extends Projectile implements GeoEntity {
     /** How far a missile looks for a new target when its own dies. */
@@ -52,6 +54,10 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     /** The homing target's velocity, smoothed over a few ticks. */
     private Vec3 targetVelocity = Vec3.ZERO;
     private int blastKind = TurretImpactEvent.ROCKET_BLAST;
+    /** Mortar shells: blocks per tick per tick pulled down (server side; clients get the velocity every tick). */
+    private float gravity;
+    @Nullable
+    private FirePatches.Patch firePatch;
 
     public TurretRocketEntity(EntityType<? extends TurretRocketEntity> type, Level level) {
         super(type, level);
@@ -86,6 +92,14 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         return this;
     }
 
+    /** Turns this into a mortar shell: it falls with {@code gravity} and leaves {@code patch} where it lands. */
+    public TurretRocketEntity ballistic(float gravity, FirePatches.Patch patch) {
+        this.gravity = gravity;
+        this.firePatch = patch;
+        this.blastKind = TurretImpactEvent.MORTAR_BLAST;
+        return this;
+    }
+
     public void launch(Vec3 velocity) {
         setDeltaMovement(velocity);
         double horizontal = velocity.horizontalDistance();
@@ -99,6 +113,9 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     public void tick() {
         super.tick();
         if (!level().isClientSide && turnRate > 0) steer();
+        // Gravity half before and half after the move: the shell then follows the exact parabola the Mortar aimed with.
+        boolean falling = !level().isClientSide && gravity > 0;
+        if (falling) setDeltaMovement(getDeltaMovement().add(0, -gravity / 2, 0));
         Vec3 motion = getDeltaMovement();
         if (!level().isClientSide) {
             HitResult hit = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
@@ -117,6 +134,10 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
             }
         }
         setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
+        if (falling) {
+            setDeltaMovement(motion.add(0, -gravity / 2, 0));
+            hasImpulse = true; // velocity to clients every tick, so they follow the arc
+        }
     }
 
     /**
@@ -198,12 +219,13 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
 
     private void explode(Vec3 at, @Nullable Entity direct, Vec3 normal) {
         if (!(level() instanceof ServerLevel server)) return;
-        if (direct != null) {
+        if (direct != null && damage > 0) {
             direct.invulnerableTime = 0;
             direct.hurt(BastionDamageTypes.turretShot(server), damage);
         }
         BastionExplosion.detonate(server, at, splashRadius, splashDamage, knockback, this::affects, this);
         BastionNetwork.sendNear(server, BlockPos.containing(at), new TurretImpactEvent(at, blastKind, splashRadius / 3.5f, normal, getId()));
+        if (firePatch != null) FirePatches.start(server, at, firePatch);
         discard();
     }
 

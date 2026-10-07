@@ -49,7 +49,7 @@ public final class TurretFireEffects {
 
         Vec3 muzzle = client.muzzles[Math.floorMod(event.muzzle(), client.muzzles.length)];
         Vec3 firstEnd = event.shots().isEmpty() ? null : event.shots().get(0).end();
-        if (muzzle == null || muzzle.distanceToSqr(Vec3.atCenterOf(event.pos())) > 9) {
+        if (muzzle == null || muzzle.distanceToSqr(Vec3.atCenterOf(event.pos())) > (turret.large() ? 49 : 9)) { // Railgun: ~5 blocks out
             muzzle = turret.alongMount(1.45); // not drawn yet: near the pivot, whichever way the turret is mounted
         }
         // No shot to follow (rockets fly as entities): the barrel's own direction.
@@ -68,6 +68,10 @@ public final class TurretFireEffects {
         // Weapons with their own delivery: lightning bolts and a flame stream instead of tracers.
         if (fx == WeaponFx.TESLA) {
             TeslaEffects.discharge(level, event, muzzle, color);
+            return;
+        }
+        if (fx == WeaponFx.RAILGUN) {
+            RailgunEffects.fire(level, event, client, muzzle, color);
             return;
         }
         if (fx == WeaponFx.LASER_RIFLE) {

@@ -31,6 +31,12 @@ public final class BastionEntities {
                     .sized(0.3f, 0.3f).clientTrackingRange(8).updateInterval(1).setShouldReceiveVelocityUpdates(true).noSummon().fireImmune()
                     .build(Bastion.id("turret_missile").toString()));
 
+    /** Mortar shell: falls on a ballistic arc (velocity to clients every tick), bursts into a fire patch. */
+    public static final RegistryObject<EntityType<TurretRocketEntity>> TURRET_MORTAR_SHELL = REGISTER.register("turret_mortar_shell",
+            () -> EntityType.Builder.<TurretRocketEntity>of(TurretRocketEntity::new, MobCategory.MISC)
+                    .sized(0.4f, 0.4f).clientTrackingRange(8).updateInterval(1).setShouldReceiveVelocityUpdates(true).noSummon().fireImmune()
+                    .build(Bastion.id("turret_mortar_shell").toString()));
+
     /** The hitbox is a LivingEntity (so mobs can target it) and every LivingEntity needs attributes. */
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(TURRET_HITBOX.get(), TurretHitboxEntity.createAttributes().build());

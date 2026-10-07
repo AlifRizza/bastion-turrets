@@ -13,13 +13,15 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 |---|---|---|
 | Gun Turret | Standard | Precise rifle. Hold a target for a second and the next shot deals x1.5 (another x1.5 on a headshot). |
 | Machine Gun Turret | Standard | Spins up into a stream of bullets. Builds heat, slows what it hits and overheats if you push it. |
-| Shotgun Turret | Standard | 8 pellets with damage falloff and heavy knockback. |
+| Shotgun Turret | Standard | 8 pellets of 5 damage each, falling off with distance, and heavy knockback. |
 | Sniper Turret | Standard | Charges behind a laser sight, then sends one heavy round through 2 targets. 64 block range. |
 | Rocket Launcher Turret | Standard | Leads moving targets. The blast only hurts what the turret is allowed to shoot. |
 | Flamethrower Turret | Standard | Sets valid targets in a short cone on fire. Burns through Fuel Canisters. |
 | Laser Rifle Turret | Standard | Charges up and fires one beam through all valid targets in a line. Walls stop it. |
 | Missile Launcher Turret | Large | 12 homing missiles. Fire them as they load, or wait for a full salvo spread over everything in range. |
-| Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits two targets at once. |
+| Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits up to five targets at once. |
+| Railgun Turret | Large | Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target. |
+| Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
 
 The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
@@ -28,7 +30,7 @@ The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Tur
 
 ## Turret bases
 
-The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher and Tesla Coil) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.
+The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun and Mortar) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.
 
 Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, and a Repair Kit puts back 40% HP. A destroyed turret drops its weapon, ammo and modules while the base falls one tier (a T1 base turns into a Damaged Turret Base that you can restore). Mining a base works like breaking a shulker box, so tier and contents stay with the item.
 
@@ -61,7 +63,7 @@ Each kind of module fits once per base. Different modules add up, and a T3 base 
 
 ## Ammo and automation
 
-Ammo comes in seven kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters and Laser Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well.
+Ammo comes in nine kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs and Mortar Shells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well.
 
 <!-- screenshot: 08_create_automation.png -->
 
@@ -83,19 +85,19 @@ The crafting table only makes the stations. A station accepts nothing but the in
 
 ## Effects
 
-Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, flame jets and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.
+Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.
 
 ## For modpack makers
 
 Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.
 
-Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets and how much energy the workstations hold and take in.
+Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire and how much energy the workstations hold and take in.
 
 ## Requirements
 
 - Minecraft 1.20.1 with Forge 47.2 or newer
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
-- Any mod that produces FE, for the workstations and the Tesla Coil
+- Any mod that produces FE, for the workstations, the Tesla Coil and the Railgun
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
 
 Install it on both client and server.
