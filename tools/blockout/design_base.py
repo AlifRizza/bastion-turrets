@@ -26,15 +26,15 @@ for ang in (0, 90, 180, -90):
     body.append(k.box("lintel", -2.6, 10.4, -7.15, 2.6, 10.9, -6.3, rot=[0, ang, 0], pivot=[0, 0, 0]))
 k.bone("body", "root", pivot=(0, 3.4, 0), cubes=body)
 
-# window slits glow; the front one doubles as the status light (blinks red when damaged)
-slits = [k.box("slit", -1.3, 7.6, -7.0, 1.3, 8.4, -6.85, rot=[0, ang, 0], pivot=[0, 0, 0]) for ang in (90, 180, -90)]
+# tall window slits glow (the health light: cyan, yellow, blinking red); the front one is the status light
+slits = [k.box("slit", -1.0, 6.6, -7.0, 1.0, 10.0, -6.85, rot=[0, ang, 0], pivot=[0, 0, 0]) for ang in (90, 180, -90)]
 k.bone("glow_windows", "body", pivot=(0, 8, 0), cubes=slits)
-k.bone("status_light", "body", pivot=(0, 8, -6.9), cubes=[k.box("status", -1.3, 7.6, -7.0, 1.3, 8.4, -6.85)])
+k.bone("status_light", "body", pivot=(0, 8, -6.9), cubes=[k.box("status", -1.0, 6.6, -7.0, 1.0, 10.0, -6.85)])
 
 # rim: collar band, glowing seam beneath it, merlons on top
 k.bone("deck", "root", pivot=(0, 11.6, 0), cubes=k.octagon("collar", 7.4, 11.6, 13.6) + k.octagon("deckplate", 5.2, 13.6, 14.8)
        + k.ring8("merlon", 6.0, 13.6, 15.6, 1.4, width=2.6))
-k.bone("energy_ring", "root", pivot=(0, 11.4, 0), cubes=k.ring8("seam", 6.45, 11.1, 11.6, 0.25))
+k.bone("energy_ring", "root", pivot=(0, 11.4, 0), cubes=k.ring8("seam", 6.45, 10.9, 11.6, 0.4))
 
 # turntable the weapon sits on
 k.bone("weapon_mount", "root", pivot=(0, 16, 0), cubes=k.octagon("turntable", 4.2, 14.8, 16))

@@ -72,8 +72,8 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     /** Ticks after a shot during which the burst counts as still going (Aim.sweep_tolerance applies). */
     private static final int SWEEP_GRACE = 10;
     private static final int SYNC_INTERVAL = 2;
-    /** Below this fraction the base shows its damaged state (PLAN 4.1). */
-    public static final float DAMAGED_FRACTION = 0.3f;
+    /** Below these fractions the glow turns yellow, then blinks red, and sparks fly (PLAN 4.1, user 2026-10-07). */
+    public static final float DAMAGED_FRACTION = 0.5f, CRITICAL_FRACTION = 0.25f;
     /** Fraction of the turn speed gained or lost per tick: the servo inertia. */
     private static final float SERVO_ACCELERATION = 0.3f;
 
@@ -340,22 +340,20 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     /**
-     * 0 HP (PLAN 4.1): a custom blast without block damage, weapon and contents drop, the base drops one
-     * tier lower (a damaged base at T1) and the block is removed (a large base takes its parts with it).
+     * 0 HP (PLAN 4.1, user 2026-10-07): a custom blast without block damage. The weapon and the ammo are lost, the modules
+     * drop, the base drops damaged and keeps its tier (the Part Assembler restores it), and the block is removed (a large
+     * base takes its parts with it). Mining a base is not this: that keeps everything (shulker-style).
      */
     private void destroy(ServerLevel server) {
         Vec3 center = alongMount(0.6);
         BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f);
         BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED, 1f));
         for (int i = 0; i < inventory.getSlots(); i++) {
-            Containers.dropItemStack(server, center.x, center.y, center.z, inventory.getStackInSlot(i));
+            if (i >= TurretInventory.MODIFIER_START) Containers.dropItemStack(server, center.x, center.y, center.z, inventory.getStackInSlot(i));
             inventory.setStackInSlot(i, ItemStack.EMPTY);
         }
-        ItemStack base = tier != TurretTier.T1 ? new ItemStack(getBlockState().getBlock())
-                : new ItemStack(large() ? BastionItems.DAMAGED_LARGE_TURRET_BASE.get() : BastionItems.DAMAGED_TURRET_BASE.get());
-        if (tier == TurretTier.T3) {
-            base.getOrCreateTagElement("BlockEntityTag").putString("Tier", TurretTier.T2.name());
-        }
+        ItemStack base = new ItemStack(large() ? BastionItems.DAMAGED_LARGE_TURRET_BASE.get() : BastionItems.DAMAGED_TURRET_BASE.get());
+        if (tier != TurretTier.T1) base.getOrCreateTagElement("BlockEntityTag").putString("Tier", tier.name());
         Containers.dropItemStack(server, center.x, center.y, center.z, base);
         server.removeBlock(worldPosition, false);
     }
@@ -717,9 +715,14 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         return clientHealth;
     }
 
-    /** Below this fraction the base shows its damaged state (PLAN 4.1). */
+    /** Below half HP: yellow glow, the odd spark (PLAN 4.1). */
     public boolean clientDamaged() {
         return clientHealth < DAMAGED_FRACTION;
+    }
+
+    /** Below a quarter HP: red blinking glow, sparks all the time. */
+    public boolean clientCritical() {
+        return clientHealth < CRITICAL_FRACTION;
     }
 
     public int clientTargetId() {

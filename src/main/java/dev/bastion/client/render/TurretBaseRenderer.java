@@ -9,17 +9,13 @@ import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
-import software.bernie.geckolib.util.RenderUtils;
 
 /** Turret base in the world plus its mounted weapon (PLAN 6.1). */
 public class TurretBaseRenderer extends GeoBlockRenderer<TurretBaseBlockEntity> {
-    private static final int DAMAGED_RED = 0xFF3A30;
-
     public TurretBaseRenderer() {
         super(new TurretBaseModel<>());
-        // The shared model glow; below 30% HP it blinks red (PLAN 4.1).
-        addRenderLayer(new EmissiveLayer<>(this, turret ->
-                turret.clientDamaged() && RenderUtils.getCurrentTick() % 16 < 8 ? DAMAGED_RED : EmissiveLayer.MODEL_GLOW));
+        // The shared model glow, yellow below half HP and blinking red below a quarter (PLAN 4.1).
+        addRenderLayer(new EmissiveLayer<>(this, turret -> EmissiveLayer.healthGlow(turret.clientHealth())));
         addRenderLayer(new WeaponMountLayer(this));
     }
 

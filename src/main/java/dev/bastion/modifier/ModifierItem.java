@@ -2,12 +2,15 @@ package dev.bastion.modifier;
 
 import dev.bastion.weapon.WeaponModuleItem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -46,6 +49,32 @@ public class ModifierItem extends Item {
                     .map(i -> i.getDescription().getString()).collect(Collectors.joining(", "));
             tooltip.add(Component.translatable("tooltip.bastion.modifier.only", fits).withStyle(ChatFormatting.GOLD));
         }
+        if (!Boolean.TRUE.equals(DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> Screen::hasShiftDown))) {
+            tooltip.add(Component.translatable("tooltip.bastion.modifier.shift").withStyle(ChatFormatting.DARK_GRAY));
+            return;
+        }
+        List<WeaponModuleItem> all = weapons(), works = worksOn();
+        if (works.size() == all.size()) {
+            tooltip.add(Component.translatable("tooltip.bastion.modifier.works_all").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        boolean except = works.size() > all.size() / 2; // a long list reads better as the few it skips
+        tooltip.add(Component.translatable(except ? "tooltip.bastion.modifier.works_except" : "tooltip.bastion.modifier.works_on")
+                .withStyle(ChatFormatting.GRAY));
+        for (WeaponModuleItem weapon : except ? all.stream().filter(w -> !works.contains(w)).toList() : works) {
+            tooltip.add(Component.literal(" - ").append(weapon.getDescription()).withStyle(except ? ChatFormatting.RED : ChatFormatting.GREEN));
+        }
+    }
+
+    /** The weapon modules this module changes something on, in registry order (ModifierEffect.affects). */
+    public List<WeaponModuleItem> worksOn() {
+        ModifierEffect e = effect();
+        return weapons().stream().filter(w -> e.affects(w.weaponId(), w.data())).toList();
+    }
+
+    private static List<WeaponModuleItem> weapons() {
+        return BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null)
+                .map(i -> (WeaponModuleItem) i).toList();
     }
 
     private static void percent(List<Component> tooltip, String key, float value) {

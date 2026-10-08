@@ -39,6 +39,14 @@ public final class BastionRenderTypes extends RenderType {
                     .setOutputState(PARTICLES_TARGET)
                     .createCompositeState(false)));
 
+    private static final RenderType GHOST_BOX = create("bastion_ghost_box", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS,
+            256, false, true, CompositeState.builder()
+                    .setShaderState(POSITION_COLOR_SHADER)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
     /**
      * GeckoLib emissive layer: vanilla entity_translucent_emissive without the per-frame quad sort. The glow lies on the
      * model's own faces, so the order never shows, while sorting every turret's glow each frame was a top render cost.
@@ -67,6 +75,11 @@ public final class BastionRenderTypes extends RenderType {
     /** Vertex order as {@link #additiveGlow}. */
     public static RenderType translucentGlow(ResourceLocation texture) {
         return TRANSLUCENT_GLOW.apply(texture);
+    }
+
+    /** Placement hologram boxes: flat colour, translucent, both sides, no depth write. */
+    public static RenderType ghostBox() {
+        return GHOST_BOX;
     }
 
     /** Emissive panels and lights on models (GeckoLib emissive layer): translucent, fullbright. */

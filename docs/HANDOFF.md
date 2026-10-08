@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-07, 20:05 WIB)
+# Bastion Turrets — Session Handoff (2026-10-07, 23:00 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -8,10 +8,80 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 ## 0. Where we stopped
 
 **NOW (read first):**
+00000000. **Railgun fix (user 10:31, screenshot: raised Railgun ignoring a zombie crowd ~7 blocks out), committed 10-08 10:53 (0.1.2 work, not pushed).**
+   Two root causes, each pinned by a test that failed first: (1) `railgun.json` `min_pitch` -10 → **-30** (from a base
+   one block up the head of a ground mob 6.5 out is 12° down: `TargetSelector.firstVisible` rejected it → IDLE;
+   `railgunShootsDownFromARaisedBase`); (2) `Bullets.step` dropped a whole step when its far end was unloaded or out of
+   the world, so a 40 b/t slug aimed down near y -64 (superflat) vanished even with a target 2 blocks ahead; now the
+   step is halved until its end is loaded (`fastBulletIntoTheVoidStillHits`, all bullet weapons). **105/105** twice.
+   Not checked on screen: the barrel at -30° (computed: clears the base edge by ~0.5 block).
+0000000. **Placement hologram (user 00:44, design B 00:46, plan approved "native" 00:53), committed 10-08 10:53 (0.1.2 work, not pushed).** Spec PLAN
+   "Hologram penempatan multiblock", plan `docs/superpowers/plans/2026-10-08-placement-hologram.md`, ledger in
+   `.superpowers/sdd/2026-10-08-placement-hologram/`. `turret/Multiblock` + `Footprint(blocks, blocked, front)`:
+   LargeTurretBaseBlock/WorkstationBlock `footprint(BlockPlaceContext)` feeds both `getStateForPlacement` and the
+   preview (1x1 stations: null). Client `PlacementPreview` (RenderLevelStageEvent **AFTER_PARTICLES**; AFTER_TRANSLUCENT_BLOCKS
+   drew nothing) builds the click's context from `mc.hitResult` (main hand's block wins), draws boxes
+   (`BastionRenderTypes.ghostBox()` fill 15% + vanilla line box 60%) and `GhostRenderer` (GeoObjectRenderer,
+   `PlacementGhost.of(blockIdPath, tier)`, `GhostModel` resets shared bones to rest + `showTier`, translucentEmissive,
+   40% alpha, cyan / red 0xFF3A30). Tests `TurretPlacementTests` (large base + assembler with a blocker + `stationRefusesToBuildInsideAMob`), **103/103**.
+   Final review (fresh reviewer): fixed workstations building around mobs in their other cells (pre-existing; now
+   `isUnobstructed` like the large base). Deferred minors: clicked cell not red for an entity; hologram shows where the
+   click would open a GUI / adventure mode / F1; scene lacks red-assembler and large-base night shots.
+   Scene `-Pshowcase=placement` (PlacementShowcase): checked free/blocked/west-facing ghost vs placed/main hand wins/night.
+000000. **Dev command (user 00:28):** `/bastiondev` also spawns `skeleton` (bow, drop chance 0) and `ravager`, count up to
+   200 (sunflower spiral, one body width apart), HP up to 5,000 (vanilla max_health cap 1,024 raised in DevCommands'
+   static init, src/dev only). Dev GameTest `DevCommandTests.devCommandSpawnsTankyMobs` runs the real command (failed
+   before, passes). **100/100.**
+00000. **Health lights, creative T2/T3 bases, module Shift tooltip (user 23:55; tooltip = "turrets it affects"),
+   committed 10-08 10:53 (0.1.2 work, not pushed).** `EmissiveLayer.healthGlow(health)`: cyan, yellow < `DAMAGED_FRACTION` 0.5, red blinking
+   (10-tick cycle bright/dim) < `CRITICAL_FRACTION` 0.25, used by the **base glow only** (user 00:15: weapon stays cyan,
+   the earlier weapon tint was removed). User 00:15 also: bigger base glow (design_base: slits 2 x 3.4 px, seam
+   10.9-11.6 depth 0.4; design_large_base: slits 12 x 2, seam 11.2-12 depth 0.35) and a fix for cyan showing through
+   yellow/red: base glow bones use gen_textures material `status` (neutral STATUS_BASE albedo, glows like `emitter`)
+   instead of cyan `emitter`. Large Base idle clip no longer spins `energy_ring` (straight bars on a square cut through
+   the body while turning). Sparks 1/40 per tick below half, 1/8 below a quarter.
+   Creative: `BastionItems.tab` adds `TurretBaseItem.withTier(item, T2/T3)` after each base. Modules: `ModifierEffect.affects`
+   (fits + per stat: damage>0, heat_per_shot>0, turn speed>0, lead_accuracy param, bullet_speed/slug_speed for pierce,
+   ammo_per_shot>0, spread>0; range/fire rate/max HP/reload = all), `ModifierItem.worksOn()`, Shift via DistExecutor +
+   Screen::hasShiftDown; > half the turrets → "every turret except". Tests `moduleListsTurretsItWorksOn` + creative T2/T3
+   asserts; **99/99**. New dev scene `-Pshowcase=health` (HealthShowcase: T1 Gun bases + T3 Large Tesla bases at
+   100/40/15% HP, day/night/large shots): colours pure, weapon cyan, no diagonal bars.
+0000. **Destruction rule (user 23:42, answers: modifiers drop / ammo lost, damaged base keeps its tier), committed 10-08 10:53 (0.1.2 work, not pushed):**
+   `TurretBaseBlockEntity.destroy` drops only the modifier slots, clears weapon + ammo, drops DAMAGED(_LARGE)_TURRET_BASE
+   with `BlockEntityTag.Tier` when T2/T3. `WorkstationBlockEntity.result()` puts the first consumed ingredient's tier on
+   the result (so the Part Assembler repair recipes give T2/T3 back); `outputFits` checks that real result. Damaged items
+   show "Tier N" (`BastionItems.damaged`). Tests: `destroyedLosesWeaponAndAmmo`, `destroyedT3KeepsTierOnDamagedBase`
+   (replace the old T1/T3 drop tests), `assemblerRestoresDamagedTier`; failed before, pass after. **98/98.**
+   Also the **Feed Hub fix**: a refused real insert goes back into its slot (`feedAmmo`, was voided). Store text
+   (DESCRIPTION.md/.html) already describes the new rule: it ships with 0.1.2 (DESCRIPTION_UPDATE_0.1.1.md untouched).
+000. **Balance (user 23:01), committed 10-08 10:53 (0.1.2 work, not pushed):** Mortar `damage` 6 → 20; `burn_damage` 1.5 → 3 per second in
+   both `mortar.json` and `flamethrower.json` (the only two users of TurretBurn). 97/97 GameTests (the mortar test still
+   sees the husk burning after the blast).
+00. **Lighter camera shake (user 22:53 "terlalu geter kalau banyak turret dan gw deket"), committed 10-08 10:53 (0.1.2 work, not pushed):**
+   `CameraShake.add` takes the max instead of adding (sources no longer stack; PLAN 5.6). Presets: ROCKET_LAUNCH
+   0.3/10 → 0.15/8, ROCKET_EXPLOSION 0.75/18 → 0.5/14 (Missile explosion untouched, 0.35/12), DOME_BURST 0.9 → 0.5
+   (radius 10). Shake = trauma²: rocket blast at 3 blocks 0.39 → 0.15, dome at 2 blocks 0.52 → 0.16, and 4 turrets
+   together no longer hit the cap. 97/97 GameTests; shake can't be seen in a screenshot: the user checks it in game.
+0. **UV fix in 3 older models (user 22:41 "boleh perbaiki dulu semua"), committed 10-08 10:53 (0.1.2 work, not pushed):** boxes of different
+   sizes shared one kit tag, so they shared one UV region (paint_model keeps the first face's paint: a bigger face
+   repainted it, a smaller one lost its dark bevel row). New tags: Machine Gun `bladev` (fan), `gring2` (barrel ring),
+   Flamethrower `pipe2` (feed), Part Workstation `drawer2` (bottom drawer), `wrench2`. **Guard:** `Kit.region()` now
+   asserts a reused tag has the same face size (all 4 design scripts pass; negative control fires). Changed: 3 geo +
+   6 textures + kit/design scripts. 97/97 GameTests; scenes default/elemental/workshop checked (scratch world
+   `run/saves/showcase_fx`, a copy of `showcase`). `blockbench/machine_gun_turret.bbmodel` was already out of sync
+   with its geo (left alone). `build/libs/bastion-1.20.1-0.1.1.jar` was rebuilt and now contains this fix (tag v0.1.1
+   does not). Changelog block "0.1.2 (not released yet)" in UPLOAD.md; `mod_version` still 0.1.1.
 1. **0.1.1 released to GitHub (2026-10-07 ~20:05, user: "commit, push"):** commits `fad802f` (Feed Hub multiblock + energy,
    turret GUI shift-click fix, Creative Power Source pull fix, Pipez dev mod) and the 0.1.1 commit (Repulsor + Repulsor
    Dome, version bump), tag `v0.1.1`, pushed. **The user uploads `build/libs/bastion-1.20.1-0.1.1.jar` to CurseForge and
-   Modrinth** (fields + changelog in `docs/release/UPLOAD.md`). Versioning (user 20:04): stays on the **Beta** channel
+   Modrinth** (fields + changelog in `docs/release/UPLOAD.md`). Store text: the user pastes only the changed parts,
+   `docs/release/DESCRIPTION_UPDATE_0.1.1.md` (7 parts, Markdown + HTML, since the beta.2/beta.3 text on both stores).
+   New gallery images `11_repulsor_dome`, `12_railgun_charge` (screenshots/ + screenshots-840/, captions in UPLOAD.md),
+   from `-PnoDevMods -Pshowcase=repulsor` (low camera, 8 husks) and `-Pshowcase=railgun` frame r_barrel_29. Changelog in
+   UPLOAD.md reordered (new turrets first, then Feed Hub, then Fixes). **Uncommitted since `v0.1.1`:** the store
+   docs above (DESCRIPTION.md/.html markers + FE/config sentences, UPLOAD.md, DESCRIPTION_UPDATE_0.1.1.md, 4 images),
+   HANDOFF, and the RepulsorShowcase camera/8-husk tweak; commit only on "commit" (not part of the jar).
+   Versioning (user 20:04): stays on the **Beta** channel
    with plain numbers `0.1.1`, `0.1.2`, ...; the first Release will be **1.0.0**. Never commit `modlist.html`.
 2. **Feed Hub multiblock + energy: built** (design 15:35, approved 15:47 incl. the full 4a look; defaults taken without
    an answer: 8 items/tick **per block**, FE of a broken block is **lost**). See "Feed Hub multiblock" below.
@@ -123,7 +193,7 @@ fields, Tesla gallery caption). Screenshot `03_tesla_coil` still shows 2 bolts (
 - Large module `railgun_turret`, weapon `railgun.json` (type `bastion:railgun`, `RailgunWeapon`): 60 dmg, damage type
   `turret_rail` in `minecraft:bypasses_armor` + `always_hurts_ender_dragons` (NOT `is_projectile`: endermen would dodge),
   x`boss_multiplier` 2 vs `forge:bosses`, range 80, charge 60 t + 40 t, slug 40 b/t (Bullets, lead), `min_range` 5,
-  pitch -10..60, turn 3°/t. Cost: 1 `rail_slugs` (Ammo Workstation) + 8k FE (cap 80k, 2k/t). Shockwave: `BastionExplosion`
+  pitch -30..60 (was -10, 10-08), turn 3°/t. Cost: 1 `rail_slugs` (Ammo Workstation) + 8k FE (cap 80k, 2k/t). Shockwave: `BastionExplosion`
   with damage 0 (push only, valid targets) at the hit or block (`Bullets.Hit#blocked`, new). Target order: new hook
   `WeaponType#targetOrder` (biggest max HP first, GUI priority breaks ties).
 - Model `tools/blockout/design_weapons.py railgun()` (Kit 256; RG_* constants = railgun.json pivot/muzzle and the client's
@@ -142,11 +212,11 @@ fields, Tesla gallery caption). Screenshot `03_tesla_coil` still shows 2 bolts (
   escape, it is for crowds; the lead first built looked like homing), `sight` = feet if the arc is clear
   (parabola cast in 2-tick segments, cached in `WeaponState.arc*` for 10 t), `canTarget` = grounded (no FlyingMob,
   FlyingAnimal, AmbientCreature, Blaze, Vex, Allay, Wither, Dragon, noGravity) + `min_range` 8. Shell speed 1.5, gravity 0.05
-  (range 45 flat), every 60 t, 1 `mortar_shells`. Blast = `stats.damage` 6 r1.5 (valid targets), no direct hit damage.
+  (range 45 flat), every 60 t, 1 `mortar_shells`. Blast = `stats.damage` 20 (was 6, user 10-07 23:01) r1.5 (valid targets), no direct hit damage.
 - Shell = third `TurretRocketEntity` type `turret_mortar_shell` via `ballistic(gravity, patch)`: gravity half before /
   half after each move (exact parabola, matches the solver), server-side, velocity synced every tick (`hasImpulse`).
 - `weapon/FirePatches`: patch on the ground below the burst (clip down 4), size x size blocks, 100 t, every 5 t
-  `TurretBurn.ignite` (60 t, 1.5/s) on **every** living entity in it (fire-immune skipped by TurretBurn); vanilla fire in
+  `TurretBurn.ignite` (60 t, 3/s since 10-07 23:01) on **every** living entity in it (fire-immune skipped by TurretBurn); vanilla fire in
   free spots touching a flammable block (`BaseFireBlock.canBePlacedAt`) unless config `mortarBlockFire` false. Client:
   `TurretImpactEvent` MORTAR_BLAST + FIRE_PATCH (scale = seconds, source = width) → `MortarEffects`: renders the patch
   itself (user 13:15: the whole 3x3 must look burnt; scattered particles read as ~1 block): an alpha-blended ember layer
@@ -236,6 +306,16 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 | 10-07 10:45 | **Railgun** (2x2, anti-boss, slug + FE, user's reference image: long two-rail barrel, drum; charge = barrel lights up then arcs over it). |
 | 10-07 11:18 | **Mortar** (2x2, arcing, ground only, 3x3 fire patch burns everyone, vanilla fire on burnable blocks). Approved 12:09. |
 | 10-07 12:09 | Railgun approved in game. **beta.4 ships after the Mortar** (balance + Railgun + Mortar). |
+| 10-08 10:31 | Railgun min pitch -30 (was -10); bullets no longer vanish when a step ends out of the world. |
+| 10-08 00:46 | Placement hologram, design B (ghost model + per-block boxes, red where blocked). |
+| 10-08 00:15 | Health colour on the base only (weapon stays cyan); bigger base glow; no cyan mixing in. |
+| 10-07 23:55 | Health glow yellow < 50%, red blinking < 25%. T2/T3 bases in creative. Module Shift tooltip lists the turrets it affects (answer: affected, not merely fits). |
+| 10-07 23:42 | Destroyed turret: weapon module + ammo lost, modifiers drop, base drops as a Damaged Base that keeps its tier (restored at the Part Assembler). Feed Hub insert fix. |
+| 10-07 23:37 | **No new turrets for now**, until the placeholder sounds (58 events in sounds.json) are replaced by generated or found SFX. 0.1.2 = adjustments, balancing, small additions. |
+| 10-07 23:09 | Addon support (TaCZ-style turret packs) goes in the backlog, after release. |
+| 10-07 23:01 | Mortar damage 20; burn (Flamethrower + Mortar patch) 3 per second. |
+| 10-07 22:53 | Less camera shake from Rocket Launcher and Repulsor Dome; shakes from many turrets must not add up. |
+| 10-07 22:41 | Fix the UV overlap in the 3 older models (offer (a) below). |
 | 10-07 20:04 | Versioning: Beta channel with plain numbers (0.1.1, 0.1.2, ...), first Release = 1.0.0. Repulsor Dome orb all blue (UV fix). |
 | 10-07 19:45 | Repulsor buff: range 5 / push 4; Dome range 7 / push 6. Heavy mobs (config list, default iron golem, ravager, warden): Repulsor cannot push them (ignores them), Dome x0.4. |
 | 10-07 18:32 | **Repulsor + Repulsor Dome** (push mobs off the turrets, FE, no damage, 1.5 s / 4 s, charge 0.5 s). Cone measured from the pivot (19:08, so one push hits mobs crowding the turret's sides). |
@@ -264,10 +344,10 @@ tier_upgrade_kit_t2/t3, turret_configurator, damaged (large) turret bases, 33 pa
 | Rocket Launcher | projectile, lead, splash, smoke trail | 8 + 12 splash r3.5, 40 range, 36 t (Autoloader: /1.4), min range 4 |
 | Missile Launcher (large) | homing, fixed 30°, 12 tubes, contrails | 7 + 6 splash r2.2, 48 range, reload 30 t/tube (Autoloader: /1.4) |
 | Tesla Coil (large) | ARC, never turns, FE | 10/bolt **x5 bolts, max 2 per target**, 16 range, 12 t charge + 18 t, 3k FE/discharge |
-| Flamethrower | CONE, custom burn, sweep 180° | 1.2/pulse every 2 t + burn 1.5/s 4 s, 8 range |
+| Flamethrower | CONE, custom burn, sweep 180° | 1.2/pulse every 2 t + burn 3/s 4 s, 8 range |
 | Laser Rifle | CHARGED beam, pierces all valid targets | 28, 40 range, 50 t charge + 50 t, 1 Laser Cell/shot |
 | Railgun (large) | charged slug 40 b/t, ignores armor, boss x2, biggest first, push shockwave r4 | 60, 80 range, 60 t + 40 t, 1 slug + 8k FE |
-| Mortar (large) | ballistic shell (45-86°), no lead, ground targets, over walls, 3x3 fire patch 5 s burns everyone | 6 blast r1.5, 8-40 range, 60 t, 1 shell |
+| Mortar (large) | ballistic shell (45-86°), no lead, ground targets, over walls, 3x3 fire patch 5 s burns everyone | 20 blast r1.5, 8-40 range, 60 t, 1 shell; patch burn 3/s |
 | Repulsor | no damage, cone 35° push, line of sight, FE, ignores heavy mobs | push 4 blocks, range 5, charge 10 t, every 30 t, 500 FE |
 | Repulsor Dome (large) | no damage, push everything around, through walls, FE, heavy mobs x0.4 | push 6 blocks, range 7, charge 10 t, every 80 t, 2,000 FE |
 
@@ -334,18 +414,28 @@ player per level tick.
   TurretTeslaFlameTests 7 (flamethrower sweeps to next target), TurretLaserTests 4, TurretWorkstationTests 7, dev
   CreatePlacementTests 1, dev PipezEnergyTests 1. Negative controls were checked for the bullet pass-through and sweep tests.
 - **Scenes** (`-Pshowcase=<name> -PshowcaseWorld=showcase_fx`): default, `weapons`, `missiles`, `automation`,
-  `elemental`, `laser`, `workshop`, `stress`, `icon`. Shots in `run/screenshots/showcase_*.png`.
+  `elemental`, `laser`, `workshop`, `stress`, `icon`, `railgun`, `mortar`, `feedhub`, `repulsor`, `health`, `placement`. Shots in
+  `run/screenshots/showcase_*.png`. Store shots: add `-PnoDevMods` (no ToroHealth numbers).
 - **Load test**: `-Pshowcase=stress -PstressCount=200 [-Pjfr=<file>]` over the spawn chunks; `[stress]` MSPT/FPS lines.
   Mac (M4 Air): 200 turrets idle 75-80 FPS, combat 55, MSPT ~7; 400 turrets combat 39 FPS, MSPT 10.
 - **`-PwithPerfMods`** (Radium, AI Improvements, ModernFix, FerriteCore, Clumps): combat MSPT -35%, spikes gone; tests pass.
 - **`-PwithRenderMods`** (Embeddium + Oculus, MakeUp shader in `run/shaderpacks`): Embeddium identical; with shaders the
   model glow is white and holograms green (known limit in DESCRIPTION.md).
-- Dev commands: `/bastiondev zombie [hp] [count]`, `/bastiondev automation [report]`, `/bastion vfx <preset>`.
+- Dev commands: `/bastiondev zombie|skeleton|ravager [hp <= 5000] [count <= 200]` (DevCommands raises the max_health
+  cap by reflection, dev only; dev test `devCommandSpawnsTankyMobs`), `/bastiondev automation [report]`, `/bastion vfx <preset>`.
 
 ## 8. Backlog / known gaps
 
 - Base Extender (PLAN Fase 10): spec kept, **tidak direncanakan dulu**.
-- Next: the user's other idea (not told yet). Then user-planned: Plasma Cell turret, Mk1-3 tiers, 3x3x1 base.
+- Both user ideas of 2026-10-07 are done (Feed Hub multiblock, Repulsor). Addon support ("turret pack", like TaCZ gun packs, no Java; recorded 23:09, after release ~1.0.0, PLAN 7.6 end). User-planned next: Plasma Cell turret, Mk1-3
+  tiers (bonuses undecided), 3x3x1 base.
+- **Offered, waiting for the user's answer:** (a) UV overlap in 3 older models: **done 22:50** (see NOW 0); (b) a night version of
+  `12_railgun_charge` (violet reads much stronger at night); (c) Repulsor Dome pylon caps are steel grey like other
+  turrets' steel parts: make them dark gunmetal or glowing blue if the user meant those (orb fixed 20:01).
+- Deferred minors (user decides): FeedHubMenu.stillValid ignores
+  isRemoved, two misplaced registry comments (BastionBlocks:36, BastionBlockEntities:36); Repulsor riders cost FE without
+  moving, wave/dome visuals use data.range() not stats.range() (Range Module), the wave is drawn from the muzzle
+  (~0.75 block past the push reach), focusAngle unbounded (Laser too).
 - Shader packs: paint the cyan into `_e` textures and tint only for damage/heat (glow shows white under Oculus).
 - Fase 8: Jade/JEI/Ponder compat (JEI would list workstation recipes), particle budget (flamethrower ~130/s vs 120),
   dedicated server test with a second player. All sounds are placeholders.

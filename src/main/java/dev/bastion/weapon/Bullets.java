@@ -117,6 +117,9 @@ public final class Bullets {
     /** Moves a bullet one tick; false once it has ended (hit, blocked, out of range or into an unloaded chunk). */
     private static boolean step(Bullet bullet) {
         double length = Math.min(bullet.speed, bullet.left);
+        // A step whose far end is unloaded or out of the world is shortened, not dropped: a 40 block/tick slug fired
+        // down near the world's bottom (superflat) or at a chunk border still hits what is a few blocks ahead.
+        while (length > 0.5 && !bullet.level.isLoaded(BlockPos.containing(bullet.pos.add(bullet.direction.scale(length))))) length /= 2;
         Vec3 to = bullet.pos.add(bullet.direction.scale(length));
         if (!bullet.level.isLoaded(BlockPos.containing(to))) {
             end(bullet, null);

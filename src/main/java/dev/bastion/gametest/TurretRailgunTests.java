@@ -17,6 +17,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -60,6 +61,27 @@ public class TurretRailgunTests {
         husk.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         husk.setHealth(health);
         return husk;
+    }
+
+    /**
+     * User report 2026-10-08: on a base raised one block (a Feed Hub under it), a husk on the ground 6.5 blocks out (past
+     * min_range) needs ~12 degrees down to the head; the gun must still reach it.
+     */
+    @GameTest(template = RANGE, timeoutTicks = 300, batch = "railgunShootsDownFromARaisedBase")
+    public static void railgunShootsDownFromARaisedBase(GameTestHelper helper) {
+        for (int x = 2; x <= 3; x++) for (int z = 5; z <= 6; z++) helper.setBlock(new BlockPos(x, 2, z), Blocks.STONE);
+        BlockPos raised = LARGE.above();
+        LargeTurretBaseBlock.placeAt(helper.getLevel(), helper.absolutePos(raised), BastionBlocks.LARGE_TURRET_BASE.get());
+        TurretBaseBlockEntity turret = (TurretBaseBlockEntity) helper.getBlockEntity(raised);
+        turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.RAILGUN_TURRET.get()));
+        turret.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.RAIL_SLUGS.get(), 4));
+        IEnergyStorage energy = helper.getBlockEntity(raised).getCapability(ForgeCapabilities.ENERGY, Direction.UP).orElseThrow(IllegalStateException::new);
+        while (energy.receiveEnergy(Integer.MAX_VALUE, false) > 0) ;
+        LivingEntity husk = tough(helper, new BlockPos(9, 2, 6), 200);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurt(husk), "never shot the husk below it, state " + turret.state() + ", pitch " + turret.pitch());
+            disarm(turret);
+        });
     }
 
     /** Slugs but no FE: it waits (red lamp); fed FE, it fires, paying one slug and energy_per_shot. */

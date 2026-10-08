@@ -2,6 +2,7 @@ package dev.bastion.dev;
 
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.bastion.Bastion;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -11,8 +12,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -22,17 +28,29 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
- * Dev-only test helpers (src/dev, never in the jar). {@code /bastiondev zombie [health] [count]} spawns tanky,
- * sunlight-proof zombies where you look, to watch turret damage numbers. {@code /bastiondev automation} builds the
+ * Dev-only test helpers (src/dev, never in the jar). {@code /bastiondev zombie|skeleton|ravager [health] [count]} spawns
+ * tanky, sunlight-proof mobs where you look (up to 200, up to 5,000 HP), to watch turret damage numbers. {@code /bastiondev automation} builds the
  * Create belt/arm/funnel test rig next to you, {@code /bastiondev automation report} shows what reached each turret.
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class DevCommands {
     private static final String DUMMY_TAG = "bastion_dummy";
-    private static final float DEFAULT_HEALTH = 500;
+    private static final float DEFAULT_HEALTH = 500, MAX_HEALTH = 5000;
+    private static final int MAX_COUNT = 200;
+
+    static { // vanilla caps max_health at 1,024; dev runs only (this class is never in the jar)
+        try {
+            Field max = RangedAttribute.class.getDeclaredField("maxValue");
+            max.setAccessible(true);
+            max.setDouble(Attributes.MAX_HEALTH, Math.max(max.getDouble(Attributes.MAX_HEALTH), MAX_HEALTH));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("could not raise the max_health cap", e);
+        }
+    }
 
     private DevCommands() {
     }
@@ -53,32 +71,45 @@ public final class DevCommands {
                             lines.forEach(line -> c.getSource().sendSuccess(() -> Component.literal(line), false));
                             return lines.size();
                         })))
-                .then(Commands.literal("zombie")
-                        .executes(c -> spawnZombies(c.getSource(), DEFAULT_HEALTH, 1))
-                        .then(Commands.argument("health", FloatArgumentType.floatArg(1, 100_000))
-                                .executes(c -> spawnZombies(c.getSource(), FloatArgumentType.getFloat(c, "health"), 1))
-                                .then(Commands.argument("count", IntegerArgumentType.integer(1, 20))
-                                        .executes(c -> spawnZombies(c.getSource(), FloatArgumentType.getFloat(c, "health"),
-                                                IntegerArgumentType.getInteger(c, "count")))))));
+                .then(mob("zombie", EntityType.ZOMBIE))
+                .then(mob("skeleton", EntityType.SKELETON))
+                .then(mob("ravager", EntityType.RAVAGER)));
     }
 
-    private static int spawnZombies(CommandSourceStack source, float health, int count) {
+    /** {@code <name> [health] [count]}. */
+    private static LiteralArgumentBuilder<CommandSourceStack> mob(String name, EntityType<? extends Mob> type) {
+        return Commands.literal(name)
+                .executes(c -> spawn(c.getSource(), type, DEFAULT_HEALTH, 1))
+                .then(Commands.argument("health", FloatArgumentType.floatArg(1, MAX_HEALTH))
+                        .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"), 1))
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_COUNT))
+                                .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"),
+                                        IntegerArgumentType.getInteger(c, "count")))));
+    }
+
+    private static int spawn(CommandSourceStack source, EntityType<? extends Mob> type, float health, int count) {
         ServerLevel level = source.getLevel();
         Vec3 at = lookTarget(source);
         for (int i = 0; i < count; i++) {
-            Zombie zombie = EntityType.ZOMBIE.create(level);
-            if (zombie == null) return i;
+            Mob mob = type.create(level);
+            if (mob == null) return i;
             // No finalizeSpawn: no random armour (it would change the damage taken), no baby, no reinforcements.
-            double angle = i * 2.4;
-            double radius = count > 1 ? 1.2 : 0;
-            zombie.moveTo(at.x + Math.cos(angle) * radius, at.y, at.z + Math.sin(angle) * radius, level.random.nextFloat() * 360, 0);
-            zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
-            zombie.setHealth(health);
-            zombie.setPersistenceRequired();
-            zombie.addTag(DUMMY_TAG);
-            level.addFreshEntity(zombie);
+            // A sunflower spiral one body apart, so 200 of them stand side by side (ponytail: assumes flat ground).
+            double angle = i * 2.4, radius = mob.getBbWidth() * 1.1 * Math.sqrt(i);
+            mob.moveTo(at.x + Math.cos(angle) * radius, at.y, at.z + Math.sin(angle) * radius, level.random.nextFloat() * 360, 0);
+            mob.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+            mob.setHealth(health);
+            if (mob instanceof AbstractSkeleton skeleton) { // the bow finalizeSpawn would give, so it shoots back
+                skeleton.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+                skeleton.setDropChance(EquipmentSlot.MAINHAND, 0);
+                skeleton.reassessWeaponGoal();
+            }
+            mob.setPersistenceRequired();
+            mob.addTag(DUMMY_TAG);
+            level.addFreshEntity(mob);
         }
-        source.sendSuccess(() -> Component.literal("Spawned " + count + " sunlight-proof zombie(s) with " + health + " HP"), true);
+        source.sendSuccess(() -> Component.literal("Spawned " + count + " sunlight-proof " + type.getDescription().getString()
+                + "(s) with " + health + " HP"), true);
         return count;
     }
 
@@ -95,7 +126,7 @@ public final class DevCommands {
     }
 
     /**
-     * Zombies set themselves alight in aiStep when the sun hits them; this runs at the start of the next tick,
+     * Zombies and skeletons set themselves alight in aiStep when the sun hits them; this runs at the start of the next tick,
      * before the fire deals damage or shows flames. Only while in sunlight; lava still burns.
      */
     @SubscribeEvent

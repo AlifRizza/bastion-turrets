@@ -13,11 +13,15 @@ TAN22 = math.tan(math.radians(22.5))
 
 class Kit:
     def __init__(self, tex=128):
-        self.tex, self.regions, self.cursor, self.bones = tex, {}, [0, 0, 0], []
+        self.tex, self.regions, self.sizes, self.cursor, self.bones = tex, {}, {}, [0, 0, 0], []
 
     # --- UV packing: faces with the same key share one region (identical repeated parts) ---
     def region(self, key, w, h):
-        if key in self.regions: return self.regions[key]
+        if key in self.regions:
+            # a bigger face would read past the region, a smaller one would lose its bevel row
+            assert self.sizes[key] == (r4(w), r4(h)), f"tag {key} reused at another size {self.sizes[key]} vs {(r4(w), r4(h))}: give the box its own tag"
+            return self.regions[key]
+        self.sizes[key] = (r4(w), r4(h))
         w, h = max(1, math.ceil(w - 1e-6)), max(1, math.ceil(h - 1e-6))
         if self.cursor[0] + w > self.tex: self.cursor[:] = [0, self.cursor[1] + self.cursor[2] + 1, 0]
         self.regions[key] = (self.cursor[0], self.cursor[1], w, h)

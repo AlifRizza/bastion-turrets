@@ -21,7 +21,7 @@ public class WeaponModelRenderer extends GeoObjectRenderer<WeaponAnimatable> {
 
     /**
      * The shared model glow, shifting to red above half heat (PLAN 7.2 barrels glow, 7.5 overheat red) and to the energy
-     * colour while a Railgun charges.
+     * colour while a Railgun charges. Health shows on the base only (user 2026-10-08).
      */
     static int glowColor(WeaponAnimatable weapon) {
         int base = lerp(EmissiveLayer.MODEL_GLOW, OVERHEAT_RED, Mth.clamp((weapon.heat - 0.5f) / 0.5f, 0, 1));

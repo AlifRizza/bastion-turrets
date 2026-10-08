@@ -5,6 +5,7 @@ import dev.bastion.modifier.ModifierItem;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretConfiguratorItem;
 import dev.bastion.turret.TurretInventory;
+import dev.bastion.turret.TurretTier;
 import dev.bastion.weapon.WeaponModuleItem;
 import dev.bastion.workstation.PartItem;
 import dev.bastion.workstation.WorkstationBlock;
@@ -110,10 +111,10 @@ public final class BastionItems {
     public static final RegistryObject<Item> TIER_UPGRADE_KIT_T3 = REGISTER.register("tier_upgrade_kit_t3", () -> hinted(new Item.Properties().stacksTo(16), "tier_upgrade_kit", 2));
     public static final RegistryObject<TurretConfiguratorItem> TURRET_CONFIGURATOR = REGISTER.register("turret_configurator",
             () -> new TurretConfiguratorItem(new Item.Properties()));
-    /** What a destroyed T1 base leaves behind; crafted with a repair kit back into a base. */
-    public static final RegistryObject<Item> DAMAGED_TURRET_BASE = REGISTER.register("damaged_turret_base", () -> hinted(new Item.Properties(), "damaged_turret_base"));
+    /** What a destroyed base leaves behind (its tier in BlockEntityTag Tier); restored at the Part Assembler with repair kits. */
+    public static final RegistryObject<Item> DAMAGED_TURRET_BASE = REGISTER.register("damaged_turret_base", () -> damaged(new Item.Properties(), "damaged_turret_base"));
     public static final RegistryObject<Item> DAMAGED_LARGE_TURRET_BASE = REGISTER.register("damaged_large_turret_base",
-            () -> hinted(new Item.Properties().stacksTo(16), "damaged_large_turret_base"));
+            () -> damaged(new Item.Properties().stacksTo(16), "damaged_large_turret_base"));
 
     // Workstations (PLAN Fase 9): the only way to make turret items in survival.
     public static final RegistryObject<WorkstationItem> PART_WORKSTATION = workstation(BastionBlocks.PART_WORKSTATION);
@@ -167,6 +168,17 @@ public final class BastionItems {
         };
     }
 
+    /** A damaged base: the usage hint and the tier it comes back as. */
+    private static Item damaged(Item.Properties properties, String key) {
+        return new Item(properties) {
+            @Override
+            public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+                tooltip.add(Component.translatable("tooltip.bastion.turret_base.tier", TurretBaseItem.tier(stack).ordinal() + 1).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.translatable("tooltip.bastion." + key).withStyle(ChatFormatting.GRAY));
+            }
+        };
+    }
+
     private static RegistryObject<ModifierItem> modifier(String name) {
         return REGISTER.register(name, () -> new ModifierItem(new Item.Properties().stacksTo(1)));
     }
@@ -202,7 +214,13 @@ public final class BastionItems {
             CreativeModeTab.Builder builder = CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + name))
                     .icon(() -> icon.get().getDefaultInstance())
-                    .displayItems((params, output) -> REGISTER.getEntries().stream().map(RegistryObject::get).filter(holds).forEach(output::accept));
+                    .displayItems((params, output) -> REGISTER.getEntries().stream().map(RegistryObject::get).filter(holds).forEach(item -> {
+                        output.accept(item);
+                        if (item instanceof TurretBaseItem) { // ready-made T2 and T3 bases next to the plain one (user 2026-10-07)
+                            output.accept(TurretBaseItem.withTier(item, TurretTier.T2));
+                            output.accept(TurretBaseItem.withTier(item, TurretTier.T3));
+                        }
+                    }));
             if (after != null) builder.withTabsBefore(Bastion.id(after));
             return builder.build();
         });

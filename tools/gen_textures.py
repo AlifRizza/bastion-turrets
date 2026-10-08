@@ -96,9 +96,9 @@ class Sprite:
 
 # Material per bone of each Blockbench model. Every bone that owns cubes must be listed.
 MODEL_MATERIALS = {
-    "turret_base": {"plinth": "hex", "buttress": "armor", "body": "armor", "glow_windows": "emitter",
-                    "status_light": "emitter", "deck": "frame", "energy_ring": "emitter", "weapon_mount": "steel",
-                    "armor_t2": "hex", "fins_t3": "frame", "glow_fins_t3": "emitter"},
+    "turret_base": {"plinth": "hex", "buttress": "armor", "body": "armor", "glow_windows": "status",
+                    "status_light": "status", "deck": "frame", "energy_ring": "status", "weapon_mount": "steel",
+                    "armor_t2": "hex", "fins_t3": "frame", "glow_fins_t3": "status"},
     "gun_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "hex", "glow_strips": "emitter",
                    "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "barrel_0": "frame",
                    "glow_barrel": "emitter", "muzzle_brake": "steel", "bore": "bore"},
@@ -121,9 +121,9 @@ MODEL_MATERIALS = {
     "mortar_turret": {"yaw_pivot": "armor", "glow_strips": "emitter", "vent_l": "vent", "vent_r": "vent", "sensor": "steel",
                       "glow_lens": "emitter", "axle": "steel", "body": "frame", "barrel_0": "steel", "glow_barrel": "emitter",
                       "bore": "bore"},
-    "large_turret_base": {"plinth": "hex", "body": "armor", "glow_windows": "emitter", "status_light": "emitter",
-                          "deck": "frame", "energy_ring": "emitter", "weapon_mount": "steel", "armor_t2": "hex",
-                          "fins_t3": "frame", "glow_fins_t3": "emitter"},
+    "large_turret_base": {"plinth": "hex", "body": "armor", "glow_windows": "status", "status_light": "status",
+                          "deck": "frame", "energy_ring": "status", "weapon_mount": "steel", "armor_t2": "hex",
+                          "fins_t3": "frame", "glow_fins_t3": "status"},
     "missile_launcher_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "pod_l": "armor", "pod_r": "armor",
                                 "pod_l_bores": "bore", "pod_r_bores": "bore", "glow_pod_l": "emitter", "glow_pod_r": "emitter",
                                 **{f"missile_{i}": "steel" for i in range(12)}, "sensor": "steel", "glow_lens": "emitter",
@@ -172,10 +172,11 @@ STEEL = rgb("858E99")
 DARKSTEEL = rgb("272B30")
 BORE = rgb("111316")
 GLOW_BASE = rgb("2E9FBF")  # emitter texels as seen without the emissive layer
+STATUS_BASE = rgb("3A4046")  # base glow texels: neutral, the translucent health glow (cyan/yellow/red) must not mix with cyan
 # v1 material names still map, so an unconverted model keeps painting
 MATERIAL_ALIASES = {"panel": "armor", "panel_plain": "armor", "graphite": "frame", "metal": "steel"}
 MATERIAL_COLOURS = {"armor": GUNMETAL, "hex": GUNMETAL, "frame": DARKSTEEL, "steel": STEEL, "vent": DARKSTEEL,
-                    "bore": BORE, "emitter": GLOW_BASE}
+                    "bore": BORE, "emitter": GLOW_BASE, "status": STATUS_BASE}
 
 
 def hex_lines(h, w, size=3.0):
@@ -213,7 +214,7 @@ def face_pixels(material, face, w, h, seed):
         for y, x in ((1, 1), (1, w - 2), (h - 2, 1), (h - 2, w - 2)):
             shade[y, x] *= 1.35  # rivets
     # bevels: light catches the top-left edges, the bottom-right ones fall into shadow
-    if side and material not in ("bore", "emitter"):
+    if side and material not in ("bore", "emitter", "status"):
         if h > 1:
             shade[0] *= 1.28
             shade[-1] *= 0.66
@@ -224,7 +225,7 @@ def face_pixels(material, face, w, h, seed):
         shade *= 1.1
     elif face == "down":
         shade *= 0.55
-    if material == "emitter":
+    if material in ("emitter", "status"):
         glow[:] = 1
         shade *= 1 + 0.15 * np.linspace(1, -1, h)[:, None]  # a little gradient inside the strip
         rough = 0.01

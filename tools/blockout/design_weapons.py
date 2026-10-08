@@ -69,7 +69,7 @@ def machine_gun(path):
     k.bone("vent_r", "body", pivot=(4.9, 5.0, 3.0), cubes=[k.box("vent", 4.85, 4.2, 2.6, 5.0, 6.6, 5.4)])
     k.bone("fan", "body", pivot=(0, P, 6.4), cubes=[
         k.box("fanframe", -2.8, P - 2.8, 6.0, 2.8, P + 2.8, 6.8), k.box("blade", -2.3, P - 0.4, 6.8, 2.3, P + 0.4, 7.1),
-        k.box("blade", -0.4, P - 2.3, 6.8, 0.4, P + 2.3, 7.1)])
+        k.box("bladev", -0.4, P - 2.3, 6.8, 0.4, P + 2.3, 7.1)])
     k.bone("sensor", "body", pivot=(-2.4, 11.8, -3.0), cubes=[k.box("scope", -3.6, 11.0, -4.8, -1.2, 12.6, -1.4)])
     k.bone("glow_lens", "sensor", pivot=(-2.4, 11.8, -4.9), cubes=[k.box("lens", -3.1, 11.3, -4.9, -1.7, 12.3, -4.75)])
     # rotary cluster around the bore axis (0, P): six barrels, rear hub, mid and front clamps
@@ -84,7 +84,7 @@ def machine_gun(path):
         cluster.append(k.box("mgbarrel", cx - 0.55, cy - 0.55, -24.0, cx + 0.55, cy + 0.55, -8.0))
     k.bone("barrel_cluster", "body", pivot=(0, P, -6.4), cubes=cluster)
     k.bone("glow_barrels", "barrel_cluster", pivot=(0, P, -14), cubes=[
-        k.box("gring", -3.0, P - 3.0, -13.75, 3.0, P + 3.0, -13.45), k.box("gring", -2.9, P - 2.9, -20.65, 2.9, P + 2.9, -20.35)])
+        k.box("gring", -3.0, P - 3.0, -13.75, 3.0, P + 3.0, -13.45), k.box("gring2", -2.9, P - 2.9, -20.65, 2.9, P + 2.9, -20.35)])
     for i in range(4):  # four of the six barrel tips; the code reads up to four muzzles
         a = math.radians(60 * (i + 1) - 30)
         k.bone(f"muzzle_{i}", "barrel_cluster", pivot=(round(1.9 * math.cos(a), 4), round(P + 1.9 * math.sin(a), 4), -24.2))
@@ -292,7 +292,7 @@ def flamethrower(path):
         tanks += [k.box("tankcap", x - 1.2, 11.4, 6.6, x + 1.2, 13.8, 7.4), k.box("valve", x - 0.5, 14.4, -2.2, x + 0.5, 15.2, -1.2)]
     k.bone("tanks", "body", pivot=(0, 12.6, 2.0), cubes=tanks)
     k.bone("feed", "body", pivot=(0, 10.5, -3.6), cubes=[k.box("pipe", -0.6, 10.8, -4.0, 0.6, 12.2, -2.6),
-                                                        k.box("pipe", -0.6, 10.2, -5.4, 0.6, 11.4, -4.0)])
+                                                        k.box("pipe2", -0.6, 10.2, -5.4, 0.6, 11.4, -4.0)])
     tube = k.rod_z("ftube", 0, P, -16.0, -5.0, 3.4)
     tube += [k.box("fin", -2.4, P - 2.4, z - 0.6, 2.4, P + 2.4, z) for z in (-7.0, -9.0, -11.0, -13.0)]
     k.bone("barrel_0", "body", pivot=(0, P, -5.0), cubes=tube)

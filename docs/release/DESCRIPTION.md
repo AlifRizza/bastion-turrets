@@ -28,13 +28,15 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
 <!-- screenshot: 03_tesla_coil.png -->
+<!-- screenshot: 12_railgun_charge.png -->
+<!-- screenshot: 11_repulsor_dome.png -->
 <!-- screenshot: 05_missile_salvo.png -->
 
 ## Turret bases
 
-The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar and Repulsor Dome) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP.
+The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar and Repulsor Dome) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
 
-Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, and a Repair Kit puts back 40% HP. A destroyed turret drops its weapon, ammo and modules while the base falls one tier (a T1 base turns into a Damaged Turret Base that you can restore). Mining a base works like breaking a shulker box, so tier and contents stay with the item.
+Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them: a turret's lights turn yellow below half HP and blink red when it's about to go, and a Repair Kit puts back 40% HP. Let one get destroyed and the weapon and its ammo are gone for good: only the modules drop, plus a Damaged Turret Base that the Part Assembler restores with a Repair Kit, at the tier it had. Mining a base works like breaking a shulker box, so tier and contents stay with the item.
 
 <!-- screenshot: 07_floor_wall_ceiling.png -->
 
@@ -93,13 +95,13 @@ Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera 
 
 Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.
 
-Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire and how much energy the workstations hold and take in.
+Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations and Feed Hubs hold and take in, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
 
 ## Requirements
 
 - Minecraft 1.20.1 with Forge 47.2 or newer
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
-- Any mod that produces FE, for the workstations, the Tesla Coil and the Railgun
+- Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun and the Repulsors
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
 
 Install it on both client and server.

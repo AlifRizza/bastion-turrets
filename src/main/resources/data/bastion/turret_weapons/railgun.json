@@ -10,7 +10,7 @@
   "turn_speed": 3,
   "aim_tolerance": 1.5,
   "aim_lock_ticks": 4,
-  "min_pitch": -10,
+  "min_pitch": -30,
   "max_pitch": 60,
   "pivot_height": 1.125,
   "muzzle_length": 4.656,

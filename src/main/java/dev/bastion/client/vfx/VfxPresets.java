@@ -118,7 +118,7 @@ public final class VfxPresets {
             .burst(BastionParticles.SMOKE_PUFF.get(), 8, v.direction().reverse(), 35, 0.12f, 2.2f, 40, Curve.EASE_OUT, 0xA0A8ADB4)
             .burst(BastionParticles.SPARK.get(), 4, v.direction(), 20, 0.3f, 0.5f, 6, Curve.LINEAR, v.params().color())
             .light(13, 4)
-            .shake(0.3f, 10);
+            .shake(0.15f, 8);
 
     /** Every tick behind a flying rocket: a flame tongue, puffs of smoke around the SmokeTrailRenderer ribbon, the odd ember. */
     public static final VfxPreset ROCKET_TRAIL = v -> v
@@ -146,7 +146,7 @@ public final class VfxPresets {
                 .burst(BastionParticles.DEBRIS.get(), 14, UP, 120, 0.45f, 1.0f, 40, Curve.LINEAR, v.params().blockColor())
                 .burst(BastionParticles.EMBER.get(), 18, UP, 100, 0.16f, 0.9f, 55, Curve.FLICKER, fire)
                 .light(15, 10)
-                .shake(0.75f, 18)
+                .shake(0.5f, 14)
                 .flash(0.35f, 10);
     };
 
@@ -425,7 +425,7 @@ public final class VfxPresets {
             .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 7f, 4, Curve.PULSE, 0xFFFFFFFF)
             .burst(BastionParticles.SPARK.get(), 60, new Vec3(0, 0.2, 0), 180, 1.1f, 2.6f, 9, Curve.LINEAR, v.params().color())
             .light(15, 8)
-            .shake(0.9f, 10) // PLAN: players within ~10 blocks
+            .shake(0.5f, 10) // PLAN: players within ~10 blocks
             .flash(0.22f, 10);
 
     /** The dust ring rolling out on the ground at the dome's edge (scale = the dome's radius / 6). */

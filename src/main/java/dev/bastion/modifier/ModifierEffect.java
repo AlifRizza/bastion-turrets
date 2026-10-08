@@ -2,6 +2,7 @@ package dev.bastion.modifier;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.bastion.weapon.WeaponData;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +39,24 @@ public record ModifierEffect(float range, float fireRate, float damage, float he
     /** Whether this module works with the weapon (null = no weapon mounted: nothing to refuse yet). */
     public boolean fits(@Nullable ResourceLocation weapon) {
         return weapons.isEmpty() || weapon == null || weapons.contains(weapon);
+    }
+
+    /**
+     * Whether this module changes anything on that weapon (the Shift tooltip lists these, user 2026-10-07). It may fit
+     * where it does nothing: a Coolant Loop goes on a Tesla Coil, which has no heat to cool.
+     */
+    public boolean affects(ResourceLocation weapon, WeaponData w) {
+        if (!fits(weapon)) return false;
+        return range != 0 || fireRate != 0 || maxHealth != 0 // every turret has a range, a fire interval and a base
+                || damage != 0 && w.damage() > 0
+                || (heatPerShot != 0 || heatDissipation != 0) && w.heat().perShot() > 0 // max_heat defaults to 100: heating is perShot
+                || turnSpeed != 0 && w.aim().turnSpeed() > 0
+                || leadAccuracy != 0 && w.params().containsKey("lead_accuracy")
+                // ponytail: bullets and slugs are what read pierce (Bullets.fire); a new piercing weapon adds its key here
+                || pierce != 0 && (w.params().containsKey("bullet_speed") || w.params().containsKey("slug_speed"))
+                || ammoSaveChance != 0 && w.ammoPerShot() > 0
+                || spread != 0 && w.spread() > 0
+                || reloadSpeed != 0;
     }
 
     /** Sum of two effects; ammo save chances combine as independent rolls. */

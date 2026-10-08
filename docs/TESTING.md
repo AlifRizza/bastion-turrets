@@ -4,7 +4,8 @@ Automated: `./gradlew runGameTestServer` (67 tests: base, combat, weapons, modif
 destruction). Visual: `./gradlew devClasses runClient -Pshowcase`. The list below is what still needs eyes and hands.
 
 Setup: creative world, a turret base with a weapon module and Creative Ammo (never runs out). Targets:
-`/bastiondev zombie` (500 HP, sunlight-proof), or `/bastiondev zombie 100 5` for five 100 HP zombies.
+`/bastiondev zombie` (500 HP, sunlight-proof), or `/bastiondev zombie 100 5` for five 100 HP zombies. Also `skeleton`
+(with a bow, shoots back) and `ravager`; up to 5,000 HP and 200 at once, spread in a spiral (dev runs lift vanilla's 1,024 HP cap).
 Damage numbers and the target's HP bar come from ToroHealth (dev runClient only). Vanilla zombies have 2 armour,
 so a 7-damage shot lands as ~6.9.
 
@@ -18,6 +19,33 @@ so a 7-damage shot lands as ~6.9.
 - [ ] `/bastion vfx <preset>` plays every preset (tab-complete lists them, incl. `turret_destroyed`, `tier_up`, `damaged_spark`).
 - [ ] VFX quality LOW / MEDIUM / HIGH (client config) all look right.
 
+## Model textures (0.1.2 UV fix)
+- [ ] Machine Gun from behind: both fan blades (the cross) have the same shading, no odd light/dark pixel at the centre; the two cyan barrel rings glow evenly all round.
+- [ ] Flamethrower: the small fuel pipe on top (between the tanks and the tube) looks like plain metal, no stray stripe.
+- [ ] Part Workstation: all three drawers have a dark bottom edge (the bottom drawer too); the two wrenches on the tool board look alike.
+
+## Camera shake (0.1.2)
+- [ ] Stand 2-3 blocks from 3-4 Rocket Launchers firing at a crowd: the camera shakes only a little and no harder than with one launcher; the explosions still feel like a thump.
+- [ ] Same next to 2 Repulsor Domes: each burst gives a short light shake, never a long strong wobble.
+- [ ] Railgun, Mortar and Shotgun still shake as before when fired alone.
+
+## Placement hologram (0.1.2)
+- [ ] Hold each of Large Turret Base, Part Workstation, Part Assembler, Module Workstation, Ammo Workstation and aim at the floor: a see-through cyan model plus a cyan box per block it will fill; workstations show their front toward you. Click: it lands exactly there.
+- [ ] Put a solid block in one of the cells: that cell's box and the whole model turn red; clicking does nothing. Tall grass or a snow layer there stays cyan (it gets replaced).
+- [ ] A T3 Large Turret Base from creative shows its corner posts in the hologram; a T1 one does not. Placed T3 bases nearby keep their armour/posts.
+- [ ] Aim a Large Turret Base at a wall or ceiling: no hologram. Turret Base, Charging Station, Feed Hub (1 block): no hologram.
+- [ ] Main hand another block, off hand a workstation: no hologram (the main-hand block is what gets placed). Open a GUI: the hologram goes away.
+- [ ] A mob, pet or you standing in one of the cells: that cell turns red and the click fails (no more stations built around a dog). Only the clicked cell itself is not marked red for an entity (vanilla refuses that click anyway). Dev scene: `-Pshowcase=placement -PshowcaseWorld=showcase_fx`.
+
+## Health lights, creative bases, module tooltip (0.1.2)
+- [ ] Damage a turret (`/bastiondev zombie`, or arrows): above half HP the base glows cyan; below half its tall window slits, energy ring (and T3 fin/post caps) turn steady yellow and the odd spark flies; below a quarter they blink red fast and spark often. The weapon module keeps its cyan glow throughout. No cyan showing through the yellow/red. Repair Kit: back to yellow/cyan. Dev scene: `-Pshowcase=health -PshowcaseWorld=showcase_fx`.
+- [ ] Creative tab Turret Bases: Turret Base and Large Turret Base each appear three times (T1, tooltip Tier 2, Tier 3); a placed T3 shows armour + fins at once and full T3 HP.
+- [ ] Module tooltip: "Hold Shift: ..." line; with Shift: Range Module "Works on every turret", Coolant Loop "Works on: Machine Gun Turret", Penetrator lists Gun, Machine Gun, Shotgun, Sniper, Railgun; Damage Amplifier "every turret except" the two Repulsors; Ammo Recycler skips Tesla and both Repulsors. In Indonesian too.
+
+## Balance 0.1.2
+- [ ] Mortar: one shell kills a plain zombie or husk standing where it lands; tankier mobs survive the blast and burn in the patch.
+- [ ] Burn (Flamethrower and Mortar patch): one hit per second of ~3 (ToroHealth shows ~2.9 on a zombie); a zombie that leaves the Flamethrower cone after one touch keeps losing ~3 a second for 4 s (~12 HP).
+
 ## Bullets (travel time)
 - [ ] Gun, Machine Gun, Shotgun and Sniper: the tracer visibly flies to the target (Sniper fastest, Shotgun slowest), the impact sparks appear when it arrives, not when the turret fires.
 - [ ] A zombie walking sideways at 20+ blocks still gets hit: the turret aims ahead of it (with a Targeting AI module even more precisely).
@@ -25,7 +53,7 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Shotgun knockback still throws a close zombie back; Sniper bullet still goes through 2 mobs in a line.
 
 ## Big bases (performance)
-- [ ] Bases look exactly as before (they are now part of the world mesh): tier armour (T2) and fins (T3) appear right after a Tier Upgrade Kit, the energy ring still turns, the glow still breathes and blinks red when damaged.
+- [ ] Bases look exactly as before (they are now part of the world mesh): tier armour (T2) and fins (T3) appear right after a Tier Upgrade Kit, the energy ring still turns on the standard base (the Large Base ring stands still since 0.1.2), the glow still breathes and turns yellow/red when damaged.
 - [ ] 50+ turrets in view: FPS stays playable; sounds don't cut out (only a few nearby shot sounds per tick play, near ones first); casings only fly from turrets within ~32 blocks.
 - [ ] Dev load test (dev runs only): `./gradlew runClient -Pshowcase=stress -PstressCount=200 -PshowcaseWorld=<scratch copy>` logs `[stress]` MSPT and FPS for empty / idle / combat.
 
@@ -69,13 +97,13 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Shot: rails slam back, flash + three rings ahead of the muzzle, camera shake, a violet trail with a spiral that hangs ~1.5 s; steam from the vents a moment later; the drum turns a quarter.
 - [ ] Impact: flash, violet ring, debris; valid mobs within 4 blocks are thrown away (no extra damage); you, pets and passive mobs are not pushed.
 - [ ] `/bastiondev zombie 100 3` plus a Wither (or any bigger mob): it shoots the biggest first, even when a smaller one is closer. 60 per hit (diamond armor makes no difference), 120 on the Wither. A boss hovering right above the gun (steeper than 60° or inside 5 blocks) cannot be hit.
-- [ ] Never aims at mobs closer than 5 blocks. Info tab: Damage 60, Range 80, Energy per shot 8k, Ammo 1.
+- [ ] Never aims at mobs closer than 5 blocks. On a base raised a block or two (e.g. on Feed Hubs), it still shoots zombies on the ground 6-8 blocks out (barrel dips to -30°, was -10°), also on a superflat world. Info tab: Damage 60, Range 80, Energy per shot 8k, Ammo 1.
 
 ## Mortar
 - [ ] Mortar fits only the Large Turret Base. Squat armoured housing on a turning ring, short fat barrel that always points steeply up (45-86°), also when idle or out of ammo.
 - [ ] Mortar Shells in an ammo slot (or Creative Ammo). It shoots every 3 s at mobs on the ground 8 to 40 blocks away, also behind a wall (it lobs over it); never at flying mobs (phantoms, ghasts, blazes, bees, bats) or anything closer than 8 blocks.
 - [ ] Shot: the barrel slams down, a flash and a smoke ring blown up, a shell with a glowing fuse and a smoke trail climbing ~20 blocks; it whistles on the way down. No lead, no homing: it lands where the target stood when it fired, so a mob that keeps walking can get away (it is meant for crowds).
-- [ ] Impact: a small blast (6 damage close by, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
+- [ ] Impact: a blast (20 damage close by since 0.1.2: kills a zombie outright, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
 - [ ] Burnable blocks in the patch (wood, leaves, wool, grass) catch real fire, which then spreads like vanilla fire. Server config `mortarBlockFire = false`: no block fire, mobs still burn.
 
 ## Feed Hub
@@ -103,7 +131,7 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Repulsor on a standard base (floor, wall, ceiling) with FE (Creative Power Source, cable, or a Feed Hub): turns to a mob even right at its feet, the three rings in its horn light up one by one while it charges, then a wave (rings + a sweeping air cone) throws every mob in front of it, up to 5 blocks out, ~4 blocks back in one push; dust at their feet. No damage.
 - [ ] Put it behind a Gun Turret and let zombies hug the gun: the Repulsor pushes them off so the gun can shoot again.
 - [ ] A mob behind a wall is not pushed by the Repulsor. You, pets and villagers in its cone are never pushed.
-- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 7 blocks with a sand ring rolling on the ground, the screen shakes (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
+- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 7 blocks with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
 - [ ] Without FE both sit in NO_AMMO and push nothing; 500 FE per Repulsor push, 2,000 per Dome pulse (GUI energy bar).
 - [ ] Range Module / Rapid Cycler work; the Info tab shows damage 0. Recipes: 3 parts each at the Part Workstation, assembled at the Part Assembler.
 - [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~2.4 blocks). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.
@@ -137,8 +165,9 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Arrows, explosions and hostile mobs lower HP (Status tab, left bar); a sword swing mines the block instead. Below 30%: glow blinks red, sparks.
 - [ ] Zombies walk up to a turret and hit it from the side (never stand on an armed one); a nearby survival player is still chased first. Off with `mobsAttackTurrets=false` in `config/bastion-common.toml`.
 - [ ] Repair Kit restores 40% HP.
-- [ ] At 0 HP: custom blast (no vanilla explosion), weapon + ammo + modules drop, base drops one tier lower (T1: Damaged Turret Base).
-- [ ] Damaged Turret Base + Repair Kit in a crafting grid gives a Turret Base back.
+- [ ] At 0 HP (0.1.2): custom blast (no vanilla explosion); the weapon module and the ammo are gone, only the modules drop, plus a Damaged Turret Base whose tooltip shows the tier it had (T3 turret: "Tier 3").
+- [ ] Damaged Turret Base + Repair Kit at the Part Assembler gives a Turret Base of that tier back (T3 stays T3, armour and fins on when placed). Same for a Damaged Large Turret Base (two kits).
+- [ ] Mining your own base with a pickaxe still keeps everything (weapon, ammo, modules, tier).
 
 ## GUI & settings (Fase 7)
 - [ ] Status tab: HP bar, heat bar, state lamp under the weapon (green idle, cyan tracking, amber firing, red blinking = overheat/no ammo; hover any of them for details), ON/OFF toggle.

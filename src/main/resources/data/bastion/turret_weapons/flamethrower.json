@@ -17,6 +17,6 @@
   "params": {
     "cone_angle": 16,
     "burn_ticks": 80,
-    "burn_damage": 1.5
+    "burn_damage": 3
   }
 }

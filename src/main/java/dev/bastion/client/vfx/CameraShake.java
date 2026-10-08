@@ -12,7 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 
 /**
  * Trauma-model camera shake (PLAN 5.6): sources add trauma scaled by distance, shake = trauma^2,
- * trauma decays every tick. Disabled by the cameraShake client option.
+ * trauma decays every tick. Sources don't stack: many turrets firing at once shake like the strongest one.
+ * Disabled by the cameraShake client option.
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID, value = Dist.CLIENT)
 public final class CameraShake {
@@ -26,7 +27,7 @@ public final class CameraShake {
         if (!BastionClientConfig.CAMERA_SHAKE.get() || Minecraft.getInstance().player == null) return;
         double distance = Minecraft.getInstance().player.getEyePosition().distanceTo(source);
         if (distance >= radius) return;
-        trauma = Mth.clamp(trauma + amount * (float) (1 - distance / radius), 0, 1);
+        trauma = Mth.clamp(Math.max(trauma, amount * (float) (1 - distance / radius)), 0, 1);
     }
 
     static void tick() {

@@ -154,6 +154,28 @@ public class TurretCombatTests {
         });
     }
 
+    /**
+     * User report 2026-10-08 (Railgun on a superflat world): a 40 block/tick slug fired down at a husk a few blocks away
+     * must hit it even though the step's far end is below the world's bottom (it used to drop the whole step).
+     */
+    @GameTest(template = ARENA, timeoutTicks = 20, batch = "fastBulletIntoTheVoidStillHits")
+    public static void fastBulletIntoTheVoidStillHits(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 0);
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        Vec3 muzzle = helper.absoluteVec(Vec3.atCenterOf(BASE).add(1, 2.5, 0)); // above the husk: the shot goes down
+        Vec3 direction = husk.getBoundingBox().getCenter().subtract(muzzle).normalize();
+        Vec3 farEnd = muzzle.add(direction.scale(40));
+        helper.assertTrue(!helper.getLevel().isInWorldBounds(BlockPos.containing(farEnd)), "set-up: the step's far end must be out of the world, " + farEnd);
+        StatSheet stats = StatSheet.of(turret.inventory().weaponData(), turret.tier(), turret.inventory().modifierEffect());
+        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false);
+        WeaponType gun = BastionWeaponTypes.GUN.get();
+        Bullets.fire(context, gun, 0, List.of(direction), 40, 0, Bullets.validTargets(context, gun),
+                (bullet, hit) -> Hitscan.damage(hit.getEntity(), helper.getLevel(), 5));
+        helper.assertTrue(husk.getHealth() < husk.getMaxHealth(), "the slug vanished instead of hitting the husk " + muzzle.distanceTo(husk.position()) + " blocks ahead");
+        disarm(turret);
+        helper.succeed();
+    }
+
     /** Bullets fly through what the turret may not shoot: a villager in the line is spared, the husk behind is hit. */
     @GameTest(template = ARENA, timeoutTicks = 200, batch = "bulletsPassNonTargets")
     public static void bulletsPassNonTargets(GameTestHelper helper) {

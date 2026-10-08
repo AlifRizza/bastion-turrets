@@ -214,7 +214,12 @@ public class FeedHubBlockEntity extends BlockEntity implements MenuProvider {
                         noRoom.add(one);
                         break;
                     }
-                    ItemHandlerHelper.insertItem(feeds.get(best).ammo(), items.extractItem(slot, 1, false), false);
+                    ItemStack left = ItemHandlerHelper.insertItem(feeds.get(best).ammo(), items.extractItem(slot, 1, false), false);
+                    if (!left.isEmpty()) { // refused after the simulation said yes: back into the slot it just left, it waits
+                        items.insertItem(slot, left, false);
+                        noRoom.add(one);
+                        break;
+                    }
                     stock[best]++;
                     budget--;
                 }

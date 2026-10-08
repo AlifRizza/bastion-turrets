@@ -157,8 +157,8 @@ Visual tier diatur lewat visibility bone di model base yang sama (`armor_t2`, `f
 **HP base.** Block tidak punya HP bawaan, jadi:
 - BlockEntity menyimpan `health`.
 - Saat aktif, base men-spawn `TurretHitboxEntity` (tidak di-render, tanpa gravitasi, tidak bisa didorong) seukuran turret. Entity ini menerima damage dari proyektil/serangan/ledakan dan meneruskannya ke BlockEntity.
-- HP 0 → turret hancur: ledakan custom (tanpa merusak block), drop weapon + isi inventory + base yang turun 1 tier (atau drop "damaged base" di T1).
-- Saat HP < 30%: animasi `damaged` (percikan, asap custom tipis, lampu status berkedip merah).
+- HP 0 → turret hancur: ledakan custom (tanpa merusak block). **Weapon module dan amunisi hilang**, modul modifier drop, base drop sebagai "damaged base" yang **ingat tier-nya** (BlockEntityTag Tier); Part Assembler + Repair Kit memulihkannya ke tier itu (user 2026-10-07 23:42, sebelumnya: semua drop + base turun 1 tier). Menambang base sendiri tetap menyimpan semuanya (gaya shulker).
+- Indikator HP (user 2026-10-07/08): glow **base saja** (senjata tetap cyan) cyan saat sehat, **kuning tetap** di bawah 50% HP, **merah berkedip cepat** (terang/redup, 0,5 dtk) di bawah 25%. Percikan custom mulai di bawah 50% (jarang) dan sering di bawah 25%. Area glow base diperbesar (celah jendela vertikal 2x3,4 px, cincin energi lebih tebal; Large Base: celah 12x2, cincin tidak berputar lagi karena batang lurusnya memotong badan saat berputar), dan teksel glow di tekstur base netral (abu gelap) supaya warna HP tidak tercampur cyan.
 - Perbaikan: klik kanan dengan item `bastion:repair_kit`.
 
 ### 4.2 Inventory & Otomasi Ammo
@@ -328,7 +328,7 @@ Setiap particle mendukung parameter: warna (ARGB), skala, umur, dan kurva (`EASE
 
 ### 5.6 Screen Effects
 
-- `CameraShake`: lewat `ViewportEvent.ComputeCameraAngles`. Intensitas berkurang sesuai jarak pemain ke sumber, trauma model (`shake = trauma²`, decay per tick). MVP: Shotgun (radius 8) dan kehancuran turret.
+- `CameraShake`: lewat `ViewportEvent.ComputeCameraAngles`. Intensitas berkurang sesuai jarak pemain ke sumber, trauma model (`shake = trauma²`, decay per tick). Beberapa sumber **tidak menumpuk**: trauma = yang terkuat (user 2026-10-07: banyak turret dekat pemain terlalu geter). MVP: Shotgun (radius 8) dan kehancuran turret.
 - `ScreenFlash`: overlay singkat saat turret hancur sangat dekat (< 6 block). Dipakai lebih banyak oleh senjata ledakan post-MVP.
 - Semua bisa dimatikan di client config (aksesibilitas).
 
@@ -484,6 +484,8 @@ Semua model mengikuti satu bahasa visual supaya terasa satu keluarga:
 **Ditambahkan 2026-10-07 (keputusan user):** **Railgun** di Large Turret Base 2x2, peran anti-bos: 60 damage menembus armor, x2 ke `forge:bosses`, selalu membidik target dengan max HP terbesar, butuh 1 Rail Slug **dan** 8.000 FE per tembakan. Charge 3 dtk: glow model berubah ke warna efek (violet) dan pita kumparan menyala satu per satu dari pangkal ke moncong, lalu listrik merayap di seluruh laras seperti Tesla Coil; peluru 40 blok/tick; tumbukan memicu shockwave knockback radius 4 yang hanya mendorong target sah (tanpa damage tambahan). Model mengikuti referensi user: dua rel panjang (~4,6 blok dari poros) dengan celah bercahaya, drum magazine di samping, yoke di atas turntable. **Mortar** di Large Turret Base 2x2 (desain disetujui user 12:09, sudah dibuat): lintasan melengkung tanpa homing, laras selalu menghadap ke atas, hanya target di darat, bisa menembak melewati tembok; tumbukan menyisakan api custom 3x3 blok yang membakar **semua** yang berdiri di atasnya (burn custom, tetap terbakar 3 dtk setelah keluar), dan blok yang bisa terbakar di area itu diberi api vanilla (pengecualian aturan NO-VANILLA atas keputusan user). Model mengikuti foto referensi user: rumah berlapis baja berpaku keling di atas cincin putar, laras pendek gemuk.
 
 Disimpan untuk setelah MVP rilis, memakai framework yang sama: **Laser** (beam kontinu dengan ramp-up), **Plasma Charge** (proyektil charged + ledakan), **Missile** (homing salvo), **Flak** (proximity fuse anti-udara), **Rail** (hitscan charged menembus), **EMP** (pulsa stun area), **Hive** (spawner drone). Komponen framework yang khusus untuk mereka (beam renderer, `energy_mote`, `plasma_arc`, `flak_burst`, ledakan custom, entity proyektil sungguhan) baru dibangun saat senjata itu dikerjakan.
+
+**Dukungan addon "turret pack" (dicatat 2026-10-07 23:09, permintaan user, dikerjakan setelah rilis, sekitar 1.0.0; belum didesain):** pembuat addon cukup membuat desain (model Bedrock/GeckoLib + tekstur), animasi, suara, dan JSON berisi daftar variabel; tanpa Java. Contoh acuan: gun pack TaCZ (zip atau folder di `.minecraft/tacz`; per senjata file index, data, display, model, animasi, tekstur, suara OGG). Yang perlu dibangun: (1) satu item module generik yang dibuat dari isi pack, menggantikan pendaftaran Java per senjata; (2) path model/animasi/tekstur memakai namespace addon, bukan `bastion`; (3) file *display* JSON untuk efek (muzzle flash, tracer, warna, suara, model proyektil) yang sekarang ada di Java (VfxPresets); (4) folder pack `.minecraft/bastion/` + template + satu contoh addon + dokumen daftar variabel; (5) proyektil: addon memilih jenis yang sudah ada (peluru, roket, misil homing, peluru mortar) dan mengatur angka serta modelnya; perilaku baru tetap lewat addon Java. Format pack diberi nomor versi dan dijaga kompatibel. Sebelum mulai: ringkasan desain dalam bahasa Indonesia untuk disetujui user.
 
 ---
 
@@ -692,6 +694,29 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 - 83 GameTest lama tetap lolos; `./gradlew build` lolos; scene `-Pshowcase=repulsor` dicek (charge, gelombang, kubah, siang/malam); checklist di `docs/TESTING.md`.
 
 **Di luar cakupan**: damage atau efek status tambahan (slow, stun), dorongan ke atas/tarik ke dalam, module khusus Repulsor.
+
+### Hologram penempatan multiblock (permintaan user 2026-10-08 00:44, desain B disetujui 00:46)
+
+**Tujuan**: sebelum memasang blok multiblock, pemain melihat persis blok mana saja yang akan terisi dan bentuk jadinya, tanpa menebak.
+
+**Item**: blok yang lebih dari 1 blok: Large Turret Base (2x2x1), Part Workstation (2x1x2), Part Assembler (2x2x2), Module Workstation (1x1x2), Ammo Workstation (1x1x2). Blok 1x1 (Turret Base, Charging Station, Feed Hub) tidak memakai hologram; outline vanilla sudah cukup.
+
+**Kapan muncul**: item dipegang di tangan utama (atau tangan kedua bila tangan utama bukan item multiblock), crosshair mengenai blok dalam jangkauan, pemain bukan spectator, tidak ada GUI terbuka. Large Turret Base hanya bisa dipasang di permukaan atas blok: saat crosshair di sisi lain, tidak ada hologram.
+
+**Tampilan** (fullbright, diuji kedalaman sehingga tidak tembus dinding, tidak menulis kedalaman sehingga tidak menutupi blok lain):
+1. **Model hantu**: model GeckoLib blok itu, di posisi dan arah persis hasil pasang (tengah footprint, arah depan workstation = menghadap pemain), pose diam, tier dari item (base T3 dari creative tampil dengan armor + sirip T3). Tekstur asli, transparan ~40%, diwarnai cyan hologram (`MODEL_GLOW`); merah bila tidak bisa dipasang.
+2. **Kotak per blok**: isi transparan ~15% dan garis tepi ~60%; cyan untuk blok yang bebas, **merah untuk blok yang menghalangi**, jadi pemain tahu blok mana yang harus disingkirkan.
+
+**Satu sumber kebenaran**: blok `LargeTurretBaseBlock` dan `WorkstationBlock` mendapat satu fungsi penempatan (`Multiblock.footprint(BlockPlaceContext)`: daftar blok, blok yang terhalang, arah depan) yang dipakai **baik** oleh `getStateForPlacement` maupun hologram. Hologram tidak bisa berbeda dari hasil pasang.
+
+**Performa**: satu hologram (milik pemain sendiri), dihitung per frame dari state yang sudah ada; tidak ada packet, tidak ada state server.
+
+**Acceptance**:
+- GameTest: untuk Large Turret Base dan Part Assembler, blok dari `footprint()` sama persis dengan blok yang terisi setelah item dipakai oleh pemain palsu; blok penghalang tercantum di `blocked` dan pemasangan gagal.
+- Scene dev `-Pshowcase=placement`: screenshot hologram bebas (cyan) dan terhalang (merah) untuk Large Base T3 dan Part Assembler, siang dan malam.
+- Semua GameTest lama lolos, `./gradlew build` lolos, checklist di `docs/TESTING.md`.
+
+**Di luar cakupan**: hologram untuk blok 1x1, memutar arah sebelum memasang (arah tetap mengikuti pemain), hologram yang terlihat oleh pemain lain.
 
 
 ---

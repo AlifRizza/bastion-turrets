@@ -1,6 +1,8 @@
 package dev.bastion.workstation;
 
 import dev.bastion.registry.BastionBlockEntities;
+import dev.bastion.turret.Footprint;
+import dev.bastion.turret.Multiblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,12 +29,15 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A workstation (PLAN Fase 9): a multiblock of {@link WorkstationType} size that grows to the right of, behind and above
@@ -40,7 +45,7 @@ import java.util.List;
  * WorkstationBlockEntity and renders the whole model; the other blocks hand clicks and automation to it. Breaking any
  * block breaks the whole station and drops it once.
  */
-public class WorkstationBlock extends BaseEntityBlock {
+public class WorkstationBlock extends BaseEntityBlock implements Multiblock {
     /** Where the station's front looks. */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     /** Index of this block in the footprint: x + width * (z + depth * y), local axes as in {@link #offset}. */
@@ -91,16 +96,30 @@ public class WorkstationBlock extends BaseEntityBlock {
         return level.getBlockEntity(block.corePos(state, pos)) instanceof WorkstationBlockEntity station ? station : null;
     }
 
+    /** Grows to the right of, up from and away from its front, which faces the player; never around a mob. 1x1 stations: none. */
+    @Override
+    @Nullable
+    public Footprint footprint(BlockPlaceContext context) {
+        if (type.blocks() == 1) return null;
+        Direction front = context.getHorizontalDirection().getOpposite();
+        Level level = context.getLevel();
+        List<BlockPos> blocks = footprint(context.getClickedPos(), front);
+        Set<BlockPos> blocked = new HashSet<>();
+        if (!context.canPlace()) blocked.add(context.getClickedPos());
+        for (BlockPos pos : blocks) {
+            if (pos.equals(context.getClickedPos())) continue;
+            if (pos.getY() >= level.getMaxBuildHeight() || !level.getBlockState(pos).canBeReplaced(context)
+                    || !level.isUnobstructed(defaultBlockState(), pos, CollisionContext.empty())) blocked.add(pos); // no mob built in
+        }
+        return new Footprint(blocks, blocked, front);
+    }
+
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction front = context.getHorizontalDirection().getOpposite();
-        Level level = context.getLevel();
-        for (BlockPos pos : footprint(context.getClickedPos(), front)) {
-            if (pos.equals(context.getClickedPos())) continue;
-            if (pos.getY() >= level.getMaxBuildHeight() || !level.getBlockState(pos).canBeReplaced(context)) return null;
-        }
-        return defaultBlockState().setValue(FACING, front).setValue(PART, 0);
+        Footprint footprint = footprint(context);
+        if (footprint != null && !footprint.placeable()) return null;
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(PART, 0);
     }
 
     @Override

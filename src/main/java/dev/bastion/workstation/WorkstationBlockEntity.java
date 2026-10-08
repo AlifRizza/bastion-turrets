@@ -3,6 +3,8 @@ package dev.bastion.workstation;
 import dev.bastion.client.WorkstationEffects;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.registry.BastionBlockEntities;
+import dev.bastion.turret.TurretBaseItem;
+import dev.bastion.turret.TurretTier;
 import dev.bastion.registry.BastionRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -141,14 +143,15 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
 
     private void tickServer() {
         WorkstationRecipe recipe = recipe();
-        boolean ready = recipe != null && available(recipe, inputs()) && outputFits(recipe.result());
+        boolean ready = recipe != null && available(recipe, inputs()) && outputFits(result(recipe, inputs()));
         if (!ready) progress = 0;
         working = ready && energy >= recipe.energyPerTick();
         if (working) {
             energy -= recipe.energyPerTick();
             if (++progress >= recipe.time()) {
+                ItemStack result = result(recipe, inputs());
                 take(recipe, inputs());
-                items.insertItem(OUTPUT, recipe.result().copy(), false);
+                items.insertItem(OUTPUT, result, false);
                 progress = 0;
                 crafted();
             }
@@ -169,9 +172,9 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
         if (recipe == null || !type().instant) return;
         int done = 0;
         while (done < times && energy >= recipe.energy() && available(recipe, sources(player))) {
+            ItemStack result = result(recipe, sources(player));
             take(recipe, sources(player));
             energy -= recipe.energy();
-            ItemStack result = recipe.result().copy();
             if (!player.getInventory().add(result)) player.drop(result, false);
             done++;
         }
@@ -179,6 +182,20 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
             setChanged();
             crafted();
         }
+    }
+
+    /**
+     * What one craft from these stacks makes: the recipe's result, except that a damaged base keeps its tier (its
+     * BlockEntityTag Tier, set when the turret was destroyed). take() uses up the first matching stack of each
+     * ingredient, so that is the one read here.
+     */
+    private static ItemStack result(WorkstationRecipe recipe, List<ItemStack> stacks) {
+        ItemStack result = recipe.result().copy();
+        for (WorkstationRecipe.Counted counted : recipe.ingredients()) {
+            stacks.stream().filter(counted.ingredient()).findFirst().map(TurretBaseItem::tier).filter(tier -> tier != TurretTier.T1)
+                    .ifPresent(tier -> result.getOrCreateTagElement("BlockEntityTag").putString("Tier", tier.name()));
+        }
+        return result;
     }
 
     /** Input slot stacks, live (taking from them changes the station). */

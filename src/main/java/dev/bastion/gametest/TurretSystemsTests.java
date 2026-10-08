@@ -2,10 +2,12 @@ package dev.bastion.gametest;
 
 import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
+import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlockEntity;
+import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
@@ -28,6 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 
@@ -253,7 +256,29 @@ public class TurretSystemsTests {
         helper.assertTrue(BastionItems.MODULES_TAB.get().contains(new ItemStack(BastionItems.CHOKE_MODULE.get())), "Choke not with the modules");
         helper.assertTrue(BastionItems.WORKSHOP_TAB.get().contains(new ItemStack(BastionItems.PART_ASSEMBLER.get())), "Part Assembler not in the workshop tab");
         helper.assertTrue(BastionItems.PARTS_TAB.get().contains(new ItemStack(BastionItems.PARTS.get(0).get())), "parts not in the parts tab");
+        for (TurretTier tier : List.of(TurretTier.T2, TurretTier.T3)) { // ready-made T2/T3 bases (user 2026-10-07)
+            helper.assertTrue(BastionItems.TAB.get().contains(TurretBaseItem.withTier(BastionItems.TURRET_BASE.get(), tier)), tier + " base missing");
+            helper.assertTrue(BastionItems.TAB.get().contains(TurretBaseItem.withTier(BastionItems.LARGE_TURRET_BASE.get(), tier)), tier + " large base missing");
+        }
         helper.succeed();
+    }
+
+    /** The Shift tooltip of a module lists the turrets it changes something on, not every turret it fits (user 2026-10-07). */
+    @GameTest(template = ARENA, batch = "moduleListsTurretsItWorksOn")
+    public static void moduleListsTurretsItWorksOn(GameTestHelper helper) {
+        helper.assertTrue(worksOn(BastionItems.COOLANT_LOOP).equals(List.of("machine_gun")), "Coolant Loop: " + worksOn(BastionItems.COOLANT_LOOP));
+        helper.assertTrue(worksOn(BastionItems.PENETRATOR).equals(List.of("gun", "machine_gun", "shotgun", "sniper", "railgun")),
+                "Penetrator: " + worksOn(BastionItems.PENETRATOR));
+        helper.assertTrue(worksOn(BastionItems.CHOKE_MODULE).equals(List.of("shotgun")), "Choke: " + worksOn(BastionItems.CHOKE_MODULE));
+        List<String> amplified = worksOn(BastionItems.DAMAGE_AMPLIFIER), recycled = worksOn(BastionItems.AMMO_RECYCLER);
+        helper.assertTrue(!amplified.contains("repulsor") && !amplified.contains("repulsor_dome") && amplified.contains("tesla"), "Damage Amplifier: " + amplified);
+        helper.assertTrue(!recycled.contains("tesla") && !recycled.contains("repulsor") && recycled.contains("railgun"), "Ammo Recycler: " + recycled);
+        helper.assertTrue(worksOn(BastionItems.RANGE_MODULE).size() == 13, "Range Module: " + worksOn(BastionItems.RANGE_MODULE));
+        helper.succeed();
+    }
+
+    private static List<String> worksOn(RegistryObject<ModifierItem> module) {
+        return module.get().worksOn().stream().map(w -> w.weaponId().getPath()).toList();
     }
 
     // --- target filter ------------------------------------------------------------------------
@@ -357,29 +382,34 @@ public class TurretSystemsTests {
         helper.succeed();
     }
 
-    @GameTest(template = ARENA, timeoutTicks = 60, batch = "destroyedT1DropsDamagedBase")
-    public static void destroyedT1DropsDamagedBase(GameTestHelper helper) {
+    /** 0 HP (user 2026-10-07): the weapon and the ammo are lost, the modules drop, the base drops damaged. */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "destroyedLosesWeaponAndAmmo")
+    public static void destroyedLosesWeaponAndAmmo(GameTestHelper helper) {
         TurretBaseBlockEntity turret = gun(helper);
+        turret.inventory().setStackInSlot(TurretInventory.MODIFIER_START, new ItemStack(BastionItems.RANGE_MODULE.get()));
         turret.takeDamage(helper.getLevel().damageSources().generic(), 10_000);
         helper.assertBlockPresent(Blocks.AIR, BASE);
         helper.assertItemEntityPresent(BastionItems.DAMAGED_TURRET_BASE.get(), BASE, 2);
-        helper.assertItemEntityPresent(BastionItems.GUN_TURRET.get(), BASE, 2);
-        helper.assertItemEntityPresent(BastionItems.KINETIC_ROUNDS.get(), BASE, 2);
+        helper.assertItemEntityPresent(BastionItems.RANGE_MODULE.get(), BASE, 2);
+        helper.assertItemEntityNotPresent(BastionItems.GUN_TURRET.get(), BASE, 2);
+        helper.assertItemEntityNotPresent(BastionItems.KINETIC_ROUNDS.get(), BASE, 2);
         helper.succeed();
     }
 
-    @GameTest(template = ARENA, timeoutTicks = 60, batch = "destroyedT3DropsT2Base")
-    public static void destroyedT3DropsT2Base(GameTestHelper helper) {
+    /** A destroyed T3 drops a damaged base that remembers T3 (the Part Assembler restores it as T3), not a T2 base. */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "destroyedT3KeepsTierOnDamagedBase")
+    public static void destroyedT3KeepsTierOnDamagedBase(GameTestHelper helper) {
         helper.setBlock(BASE, BastionBlocks.TURRET_BASE.get());
         TurretBaseBlockEntity turret = (TurretBaseBlockEntity) helper.getBlockEntity(BASE);
         turret.upgradeTo(TurretTier.T2);
         turret.upgradeTo(TurretTier.T3);
         turret.takeDamage(helper.getLevel().damageSources().generic(), 10_000);
+        helper.assertItemEntityNotPresent(BastionItems.TURRET_BASE.get(), BASE, 2);
         List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BASE)).inflate(2),
-                e -> e.getItem().is(BastionItems.TURRET_BASE.get()));
-        helper.assertTrue(drops.size() == 1, "expected one turret base drop, found " + drops.size());
+                e -> e.getItem().is(BastionItems.DAMAGED_TURRET_BASE.get()));
+        helper.assertTrue(drops.size() == 1, "expected one damaged base drop, found " + drops.size());
         String tier = drops.get(0).getItem().getOrCreateTagElement("BlockEntityTag").getString("Tier");
-        helper.assertTrue(tier.equals("T2"), "a destroyed T3 must drop a T2 base, got '" + tier + "'");
+        helper.assertTrue(tier.equals("T3"), "the damaged base must remember T3, got '" + tier + "'");
         helper.succeed();
     }
 }

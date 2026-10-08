@@ -2,6 +2,7 @@ package dev.bastion.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.bastion.turret.TurretBaseBlockEntity;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -25,6 +26,14 @@ public class EmissiveLayer<T extends GeoAnimatable> extends GeoRenderLayer<T> {
      * identity stays in the VFX, which keep each weapon's energy colour.
      */
     public static final int MODEL_GLOW = 0x4FD8FF;
+    /** Health glows (user 2026-10-07): steady yellow below half HP, red blinking fast (bright/dim) below a quarter. */
+    public static final int DAMAGED_YELLOW = 0xFFC21F, CRITICAL_RED = 0xFF2A1A, CRITICAL_DIM = 0x6E100A;
+
+    /** The glow of a turret base at this health fraction (the weapon keeps MODEL_GLOW). */
+    public static int healthGlow(float health) {
+        if (health < TurretBaseBlockEntity.CRITICAL_FRACTION) return RenderUtils.getCurrentTick() % 10 < 5 ? CRITICAL_RED : CRITICAL_DIM;
+        return health < TurretBaseBlockEntity.DAMAGED_FRACTION ? DAMAGED_YELLOW : MODEL_GLOW;
+    }
 
     private final ToIntFunction<T> color;
 

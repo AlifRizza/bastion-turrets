@@ -157,8 +157,8 @@ public final class ClientTurret {
             weapon.tickTubes(state != TurretState.NO_AMMO);
             weapon.missiles = turret.clientTubes();
         }
-        if (turret.clientDamaged() && level.random.nextInt(30) == 0) {
-            // Damaged: short-circuit sparks off a random side of the base (PLAN 4.1).
+        if (turret.clientDamaged() && level.random.nextInt(turret.clientCritical() ? 8 : 40) == 0) {
+            // Damaged: short-circuit sparks off a random side of the base, often once it is critical (PLAN 4.1).
             float angle = level.random.nextFloat() * Mth.TWO_PI;
             Vec3 side = new Vec3(Mth.cos(angle), 0.4, Mth.sin(angle));
             VfxManager.play(VfxPresets.DAMAGED_SPARK, Vec3.atBottomCenterOf(pos).add(side.x * 0.45, 0.35, side.z * 0.45), side,

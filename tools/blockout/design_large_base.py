@@ -16,13 +16,13 @@ body += k.faces4("panel", 14.5, 5.5, 10.5, 15, 0.3)              # recessed pane
 k.bone("body", "root", pivot=(0, 3.5, 0), cubes=body)
 
 # panel slits glow; the north one is the status light (blinks red when damaged)
-slits = k.faces4("slit", 14.85, 7.6, 8.4, 10, 0.1)
+slits = k.faces4("slit", 14.85, 7.0, 9.0, 12, 0.1)
 k.bone("glow_windows", "body", pivot=(0, 8, 0), cubes=slits[1:])
 k.bone("status_light", "body", pivot=(0, 8, -14.9), cubes=slits[:1])
 
 deck = k.chamfer("deck", 13.5, 3, 12, 14) + k.chamfer("deckplate", 11, 2.5, 14, 15)
 k.bone("deck", "root", pivot=(0, 12, 0), cubes=deck)
-k.bone("energy_ring", "root", pivot=(0, 11.8, 0), cubes=k.faces4("seam", 14.5, 11.5, 12, 20, 0.2))
+k.bone("energy_ring", "root", pivot=(0, 11.8, 0), cubes=k.faces4("seam", 14.5, 11.2, 12, 20, 0.35))
 
 k.bone("weapon_mount", "root", pivot=(0, 16, 0),
        cubes=k.octagon("turnring", 9.5, 14.6, 15.2) + k.octagon("turntable", 8, 15, 16))

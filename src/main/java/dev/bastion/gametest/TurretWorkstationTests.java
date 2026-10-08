@@ -3,6 +3,8 @@ package dev.bastion.gametest;
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.TurretBaseItem;
+import dev.bastion.turret.TurretTier;
 import dev.bastion.workstation.WorkstationBlock;
 import dev.bastion.workstation.WorkstationBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -103,6 +105,23 @@ public class TurretWorkstationTests {
         helper.runAtTickTime(100, () -> helper.assertTrue(station.working(), "not working with parts and power"));
         helper.succeedWhen(() -> helper.assertTrue(station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).is(BastionItems.GUN_TURRET.get()),
                 "no Gun Turret yet, progress " + station.progress()));
+    }
+
+    /** A damaged base that was T3 comes out of the Part Assembler as a T3 base (user 2026-10-07). */
+    @GameTest(template = ARENA, timeoutTicks = 300, batch = "assemblerRestoresDamagedTier")
+    public static void assemblerRestoresDamagedTier(GameTestHelper helper) {
+        WorkstationBlockEntity station = station(helper, BastionBlocks.PART_ASSEMBLER, true);
+        select(station, "part_assembler", "turret_base_from_damaged");
+        IItemHandler belt = items(helper, CORE);
+        ItemStack damaged = new ItemStack(BastionItems.DAMAGED_TURRET_BASE.get());
+        damaged.getOrCreateTagElement("BlockEntityTag").putString("Tier", TurretTier.T3.name());
+        helper.assertTrue(ItemHandlerHelper.insertItem(belt, damaged, false).isEmpty(), "refused the damaged base");
+        helper.assertTrue(ItemHandlerHelper.insertItem(belt, new ItemStack(BastionItems.REPAIR_KIT.get()), false).isEmpty(), "refused the kit");
+        helper.succeedWhen(() -> {
+            ItemStack out = station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT);
+            helper.assertTrue(out.is(BastionItems.TURRET_BASE.get()), "no base yet, progress " + station.progress());
+            helper.assertTrue(TurretBaseItem.tier(out) == TurretTier.T3, "restored as " + TurretBaseItem.tier(out));
+        });
     }
 
     /** Instant: the player's materials and the station's FE, the result straight into the player's inventory. */

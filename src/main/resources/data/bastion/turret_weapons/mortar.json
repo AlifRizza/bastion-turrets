@@ -4,7 +4,7 @@
   "energy_color": "#FF8F3A",
   "range": 40,
   "fire_interval": 60,
-  "damage": 6,
+  "damage": 20,
   "spread": 0,
   "ammo_per_shot": 1,
   "turn_speed": 4,
@@ -23,6 +23,6 @@
     "patch_size": 3,
     "fire_ticks": 100,
     "burn_ticks": 60,
-    "burn_damage": 1.5
+    "burn_damage": 3
   }
 }

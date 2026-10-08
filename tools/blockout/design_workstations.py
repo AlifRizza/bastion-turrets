@@ -19,11 +19,11 @@ def part_workstation(path):
         k.box("beam", -16, 29, 1, 16, 31.5, 5)])
     k.bone("body", "root", cubes=[
         k.box("cabinet", -15, 1, -7, -2, 12, 7),
-        k.box("drawer", -14, 2, -7.4, -3, 5, -7), k.box("drawer", -14, 6, -7.4, -3, 9, -7), k.box("drawer", -14, 10, -7.4, -3, 12, -7),
+        k.box("drawer", -14, 2, -7.4, -3, 5, -7), k.box("drawer", -14, 6, -7.4, -3, 9, -7), k.box("drawer2", -14, 10, -7.4, -3, 12, -7),
         k.box("backpanel", -13.5, 15.5, 5, 13.5, 29, 8)])
     k.bone("top", "root", cubes=[k.box("tabletop", -16, 13, -8, 16, 15.5, 8)])
     k.bone("tools", "body", cubes=[
-        k.box("wrench", -11, 19, 4.4, -10, 26, 5), k.box("wrench", -8.5, 20, 4.4, -7.5, 26, 5), k.box("plier", -6, 21, 4.4, -4.5, 26, 5),
+        k.box("wrench", -11, 19, 4.4, -10, 26, 5), k.box("wrench2", -8.5, 20, 4.4, -7.5, 26, 5), k.box("plier", -6, 21, 4.4, -4.5, 26, 5),
         k.box("vise", 8.5, 15.5, -6.5, 14, 18.5, -2), k.box("vise_jaw", 8.5, 18.5, -5, 14, 19.5, -3.5)])
     k.bone("glow_drawers", "body", cubes=[k.box("handle", -10, 3.2, -7.5, -7, 3.8, -7.4), k.box("handle", -10, 7.2, -7.5, -7, 7.8, -7.4),
                                           k.box("handle", -10, 10.7, -7.5, -7, 11.3, -7.4)])

@@ -38,6 +38,9 @@ public final class RepulsorShowcase {
     private static final boolean ON = "repulsor".equals(System.getProperty("bastion.showcase"));
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0), REPULSOR = ORIGIN.offset(-5, 0, 0), DOME = ORIGIN.offset(4, 0, -1);
     private static final Vec3 DOME_MIDDLE = new Vec3(5, 151, 0);
+    /** Husks all round the dome, 2-4 blocks from its middle. */
+    private static final BlockPos[] RING = {DOME.offset(-2, 0, 1), DOME.offset(4, 0, 1), DOME.offset(1, 0, -3), DOME.offset(1, 0, 4),
+            DOME.offset(-1, 0, -2), DOME.offset(3, 0, -2), DOME.offset(-1, 0, 3), DOME.offset(3, 0, 3)};
     private static int tick = -1, phase, mark;
     private static long seenShot = -100;
 
@@ -74,8 +77,8 @@ public final class RepulsorShowcase {
                 if (tick == mark + 2) Showcase.shot(mc, "r_wave");
                 if (tick == mark + 6) Showcase.shot(mc, "r_wave_late");
                 if (tick == mark + 20) {
-                    Showcase.camera(server, DOME_MIDDLE.add(0.5, 7, 13), DOME_MIDDLE.add(0, -0.5, 0));
-                    Showcase.server(server, s -> husks(s, DOME.offset(-2, 0, 1), DOME.offset(4, 0, 1), DOME.offset(1, 0, -3), DOME.offset(1, 0, 4)));
+                    Showcase.camera(server, DOME_MIDDLE.add(3.0, 2.4, 11.5), DOME_MIDDLE.add(0, 2.0, 0)); // low: the sphere against the sky
+                    Showcase.server(server, s -> husks(s, RING));
                     seenShot = ClientTurret.of(DOME).lastShotTick;
                     phase = 2;
                 }
@@ -92,7 +95,7 @@ public final class RepulsorShowcase {
                 if (tick == mark + 8) Showcase.shot(mc, "r_dome_3");
                 if (tick == mark + 30) {
                     Showcase.server(server, s -> s.overworld().setDayTime(18000));
-                    Showcase.server(server, s -> husks(s, DOME.offset(-2, 0, 1), DOME.offset(4, 0, 1), DOME.offset(1, 0, -3)));
+                    Showcase.server(server, s -> husks(s, RING));
                     seenShot = ClientTurret.of(DOME).lastShotTick;
                     phase = 4;
                 }

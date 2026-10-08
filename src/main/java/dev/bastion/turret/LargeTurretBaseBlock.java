@@ -24,14 +24,16 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Large turret base: a 2x2x1 multiblock, floor only, for big weapon modules (Missile Launcher). The block the player
  * placed is the core: it holds the TurretBaseBlockEntity and renders the whole model; the three other blocks are
  * parts that hand clicks, shape and automation to it. Breaking any block breaks the whole base and drops it once.
  */
-public class LargeTurretBaseBlock extends TurretBaseBlock {
+public class LargeTurretBaseBlock extends TurretBaseBlock implements Multiblock {
     /** Which corner of the 2x2 this block is: bit 0 = the +X half, bit 1 = the +Z half. */
     public static final IntegerProperty QUADRANT = IntegerProperty.create("quadrant", 0, 3);
     /** The block holding the block entity (the one the player placed). */
@@ -66,26 +68,37 @@ public class LargeTurretBaseBlock extends TurretBaseBlock {
 
     /**
      * Floor only, clicking the top of a block: the base grows forward and to the right of the player from the
-     * clicked spot, and only if all four blocks are free.
+     * clicked spot. A block is in the way when it cannot be replaced or something stands in it.
      */
     @Override
     @Nullable
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
+    public Footprint footprint(BlockPlaceContext context) {
         if (context.getClickedFace() != Direction.UP) return null;
         BlockPos pos = context.getClickedPos();
         Direction forward = context.getHorizontalDirection();
         List<BlockPos> blocks = List.of(pos, pos.relative(forward), pos.relative(forward.getClockWise()),
                 pos.relative(forward).relative(forward.getClockWise()));
         Level level = context.getLevel();
-        int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
+        Set<BlockPos> blocked = new HashSet<>();
+        if (!context.canPlace()) blocked.add(pos);
         for (BlockPos p : blocks) {
-            minX = Math.min(minX, p.getX());
-            minZ = Math.min(minZ, p.getZ());
             if (p.equals(pos)) continue;
             if (!level.getBlockState(p).canBeReplaced(context) || !level.isUnobstructed(defaultBlockState(), p, CollisionContext.empty())) {
-                return null;
+                blocked.add(p);
             }
         }
+        return new Footprint(blocks, blocked, Direction.UP);
+    }
+
+    /** Only if all four blocks are free (footprint). */
+    @Override
+    @Nullable
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Footprint footprint = footprint(context);
+        if (footprint == null || !footprint.placeable()) return null;
+        BlockPos pos = context.getClickedPos();
+        int minX = footprint.blocks().stream().mapToInt(BlockPos::getX).min().orElseThrow();
+        int minZ = footprint.blocks().stream().mapToInt(BlockPos::getZ).min().orElseThrow();
         int quadrant = (pos.getX() - minX) | (pos.getZ() - minZ) << 1;
         return defaultBlockState().setValue(QUADRANT, quadrant).setValue(CORE, true);
     }

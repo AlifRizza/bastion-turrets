@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -35,6 +36,13 @@ public class TurretBaseItem extends BlockItem implements GeoItem {
     /** The 2x2 Large Turret Base rather than the standard one. */
     public boolean large() {
         return getBlock() instanceof LargeTurretBaseBlock;
+    }
+
+    /** A fresh base of that tier, as a placed one would drop it (BlockEntityTag Tier; T1 has no tag). */
+    public static ItemStack withTier(Item item, TurretTier tier) {
+        ItemStack stack = new ItemStack(item);
+        if (tier != TurretTier.T1) stack.getOrCreateTagElement("BlockEntityTag").putString("Tier", tier.name());
+        return stack;
     }
 
     public static TurretTier tier(ItemStack stack) {

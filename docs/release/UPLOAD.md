@@ -35,30 +35,64 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain numbers on the Beta channel: `0.1.1`, `0.1.2`,
 ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
 
+## Changelog: 0.1.2 (not released yet, `mod_version` still 0.1.1)
+
+```
+New
+- Placement hologram: holding a Large Turret Base or a multi-block workstation shows a see-through model and a box per
+  block where it will go, red where something is in the way.
+- Health lights: a turret base's lights turn yellow below half HP and blink red below a quarter, with sparks (the
+  weapon keeps its glow); before, it only blinked red under 30%. The base lights are bigger: tall window slits and a
+  thicker energy ring (the Large Base ring no longer spins, its straight bars cut through the body as they turned).
+- Creative tab: Turret Base and Large Turret Base also come ready-made at T2 and T3.
+- Modules: hold Shift on a module to see which turrets it actually does something on (e.g. Coolant Loop: Machine Gun).
+
+Changes
+- A destroyed turret (0 HP) now loses its weapon module and its ammo; only the modules drop. The base always drops as
+  a Damaged Turret Base that remembers its tier: restore it at the Part Assembler with a Repair Kit and it comes back
+  as T1, T2 or T3 (before: everything dropped and the base only fell one tier). Mining your own base still keeps all.
+- Mortar: blast damage 6 -> 20 (a shell now kills a plain zombie where it lands).
+- Burning (Flamethrower and Mortar fire patch): 1.5 -> 3 damage per second.
+- Lighter camera shake: Rocket Launcher launches and explosions and the Repulsor Dome burst shake much less, and
+  shakes from several turrets no longer add up (many turrets firing at once shake like the strongest one).
+
+Fixes
+- Railgun: ignored mobs on the ground a few blocks away when it stood on a raised base (it could only dip 10°, now
+  30°), and its slugs vanished when fired downward near the bottom of the world (superflat worlds). The second fix
+  covers every bullet weapon.
+- Workstations: placing one no longer builds its upper/back blocks around a mob or pet standing there (it suffocated).
+- Feed Hub: an ammo item a turret refused at the last moment could vanish; it now stays in the hub.
+- Textures: a few small faces showed the wrong strip of their texture (Machine Gun fan blades and barrel rings,
+  Flamethrower fuel pipe, Part Workstation bottom drawer and one wrench on its tool board).
+```
+
 ## Changelog: 0.1.1
 
 ```
-- New block: Feed Hub. Mount turret bases on its faces and feed only the hub (pipes, belts, funnels, hoppers,
-  Mechanical Arms): it hands the ammo out to the turrets whose weapon takes it, the emptiest first, and keeps
-  what doesn't fit yet in a 9-slot buffer. Made at the Module Workstation.
-- Feed Hubs placed together merge into one block, up to 3x3x3 (square base, never taller than wide), with
-  one frame and glow line around it. The structure shares its slots (9 per block) and stores FE (50,000 per
-  block, up to 4,000 FE/t in per block) for the energy turrets on it. Large Turret Bases standing on top of a
-  2x2 or wider structure are fed too. Breaking one block drops only its own slots; the rest re-forms.
-- Feed Hub GUI: Summary tab (size, turrets, energy, ammo totals) and a scrolling Storage tab.
-- Fix: shift-clicking ammo into a turret's GUI onto a stack already there, or taking only part of a stack out
-  (inventory nearly full), was not saved: after a reload the rounds put in were gone, or the ones taken came back.
-- Creative Power Source: cables and pipes that pull energy (Pipez, Mekanism, ...) now connect to it and draw endless FE.
-
 New turrets (no damage, FE-powered): they push mobs away from your turrets, which can't shoot what hugs their barrels.
 - Repulsor (standard base): turns to its target, charges, then a wave of force throws every valid target in a 35°
   cone up to 5 blocks out about 4 blocks back, several at once. Walls stop it. 500 FE per push, every 1.5 s.
 - Repulsor Dome (Large Turret Base): a dome of force bursts out and throws every valid target within 7 blocks about
   6 blocks away, through walls. 2,000 FE per pulse, every 4 s.
-- Heavy mobs (server config `repulsorHeavyMobs`: iron golem, ravager, warden by default, add modded ones): the
-  Repulsor leaves them alone, the Dome throws them 60% less far (`repulsorHeavyMobPush`).
+- Heavy mobs (server config "repulsorHeavyMobs": iron golem, ravager, warden by default, add modded ones): the
+  Repulsor leaves them alone, the Dome throws them 60% less far ("repulsorHeavyMobPush").
 - Both: only valid targets (you, pets and villagers stay put), parts and recipes at the Part Workstation / Part
   Assembler.
+
+New block: Feed Hub
+- Mount turret bases on its faces and feed only the hub (pipes, belts, funnels, hoppers, Mechanical Arms): it hands
+  the ammo out to the turrets whose weapon takes it, the emptiest first, and keeps what doesn't fit yet in a 9-slot
+  buffer. Made at the Module Workstation.
+- Feed Hubs placed together merge into one block, up to 3x3x3 (square base, never taller than wide), with one frame
+  and glow line around it. The structure shares its slots (9 per block) and stores FE (50,000 per block, up to
+  4,000 FE/t in per block) for the energy turrets on it. Large Turret Bases standing on top of a 2x2 or wider
+  structure are fed too. Breaking one block drops only its own slots; the rest re-forms.
+- GUI with a Summary tab (size, turrets, energy, ammo totals) and a scrolling Storage tab.
+
+Fixes
+- Shift-clicking ammo into a turret's GUI onto a stack already there, or taking only part of a stack out (inventory
+  nearly full), was not saved: after a reload the rounds put in were gone, or the ones taken came back.
+- Creative Power Source: cables and pipes that pull energy (Pipez, Mekanism, ...) now connect to it and draw endless FE.
 ```
 
 ## Changelog: 0.1.0-beta.4
@@ -131,6 +165,8 @@ First public beta.
 | 08_create_automation | Automation | Create belts and Mechanical Arms keep turrets loaded. |
 | 09_workstations | Workstations | Five FE-powered machines make every part, weapon and round. |
 | 10_part_assembler_gui | Part Assembler | Recipe list, 3D preview, have/need, energy and progress. |
+| 11_repulsor_dome | Repulsor Dome | A dome of force throws every mob within 7 blocks away from your turrets. |
+| 12_railgun_charge | Railgun charging | The coils light up, then electricity crawls over the barrel before the shot. |
 
 Featured image: `01_laser_rifle_beam` (or the generated banner below).
 
