@@ -29,6 +29,14 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Same next to 2 Repulsor Domes: each burst gives a short light shake, never a long strong wobble.
 - [ ] Railgun, Mortar and Shotgun still shake as before when fired alone.
 
+## Mod compatibility (0.1.2): `-PwithCompatMods` (Fungal Infection: Spore 2.2.0j, TaCZ 1.1.8-hotfix2)
+Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `CompatModTests` with the mods (without them those 3 tests pass at once).
+- [ ] Spore: `/summon spore:inf_human` (or any infected) near a turret: the turret shoots it; an unarmed turret gets walked up to and hit (lights go yellow/red).
+- [ ] TaCZ: shoot a turret that is not yours (or run `/bastiondev owndamage true` first to test on your own): it takes damage and breaks at 0 HP (weapon + ammo lost, Damaged Base drops). Afterwards `/bastiondev owndamage false`.
+- [ ] TaCZ with owndamage false: shooting your own turret does nothing to it (the bullet stops at it, like an arrow).
+- [ ] Crosshair still goes through the turret to its base block: right-click opens the GUI, mining works, you still cannot punch it.
+- [ ] Flyers: `/bastiondev busser [hp] [count] [variant]` (Spore's flying Busser; variant default/kidnapper/kamikaze/noxious/transporter, only **noxious** shoots stingers, the rest fight in melee; without a variant it is default). Every turret that can aim up shoots it without hitting the ground or itself; the Mortar should ignore it (ground only); its stingers hit and damage turrets.
+
 ## Placement hologram (0.1.2)
 - [ ] Hold each of Large Turret Base, Part Workstation, Part Assembler, Module Workstation, Ammo Workstation and aim at the floor: a see-through cyan model plus a cyan box per block it will fill; workstations show their front toward you. Click: it lands exactly there.
 - [ ] Put a solid block in one of the cells: that cell's box and the whole model turn red; clicking does nothing. Tall grass or a snow layer there stays cyan (it gets replaced).
@@ -97,7 +105,8 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Shot: rails slam back, flash + three rings ahead of the muzzle, camera shake, a violet trail with a spiral that hangs ~1.5 s; steam from the vents a moment later; the drum turns a quarter.
 - [ ] Impact: flash, violet ring, debris; valid mobs within 4 blocks are thrown away (no extra damage); you, pets and passive mobs are not pushed.
 - [ ] `/bastiondev zombie 100 3` plus a Wither (or any bigger mob): it shoots the biggest first, even when a smaller one is closer. 60 per hit (diamond armor makes no difference), 120 on the Wither. A boss hovering right above the gun (steeper than 60° or inside 5 blocks) cannot be hit.
-- [ ] Never aims at mobs closer than 5 blocks. On a base raised a block or two (e.g. on Feed Hubs), it still shoots zombies on the ground 6-8 blocks out (barrel dips to -30°, was -10°), also on a superflat world. Info tab: Damage 60, Range 80, Energy per shot 8k, Ammo 1.
+- [ ] Never aims at mobs closer than 5 blocks. On a base raised a block or two (e.g. on Feed Hubs), it still shoots zombies on the ground 6-8 blocks out (barrel dips to -30°, was -10°), also on a superflat world.
+- [ ] Watch a Railgun shot from the side in an open field: the violet trail ends at the mob it hits from the first frame (it used to flash past the mob for a tick). Info tab: Damage 60, Range 80, Energy per shot 8k, Ammo 1.
 
 ## Mortar
 - [ ] Mortar fits only the Large Turret Base. Squat armoured housing on a turning ring, short fat barrel that always points steeply up (45-86°), also when idle or out of ammo.

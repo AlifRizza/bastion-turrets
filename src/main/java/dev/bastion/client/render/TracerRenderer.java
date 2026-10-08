@@ -35,6 +35,10 @@ public final class TracerRenderer {
     @FunctionalInterface
     public interface Landing {
         void land(Vec3 end, Vec3 normal, int hit, int blockState);
+
+        /** The end is known (the impact packet came), before the tracer arrives: visuals that must not overshoot it trim now. */
+        default void known(Vec3 end) {
+        }
     }
 
     private TracerRenderer() {
@@ -57,6 +61,7 @@ public final class TracerRenderer {
         Tracer tracer = BULLETS.remove(id);
         if (tracer == null) return; // already gone (dropped over the cap)
         tracer.setEnd(end);
+        tracer.landing.known(end);
         tracer.onArrive = () -> tracer.landing.land(end, normal, hit, blockState);
     }
 

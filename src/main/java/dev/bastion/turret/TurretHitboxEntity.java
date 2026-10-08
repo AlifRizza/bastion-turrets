@@ -120,9 +120,14 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
         return facing == Direction.DOWN ? 0 : dimensions.height / 2;
     }
 
+    /**
+     * Server only: gun mods pick what their bullets hit with isPickable (TaCZ's EntityUtil), so on the server the turret
+     * can be shot (user 2026-10-08). On the client it stays unpickable, so the crosshair goes through to the base block:
+     * clicks open the GUI and mining works as before, and players still cannot melee it.
+     */
     @Override
     public boolean isPickable() {
-        return false;
+        return !level().isClientSide;
     }
 
     @Override

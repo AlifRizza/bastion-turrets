@@ -8,6 +8,23 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 ## 0. Where we stopped
 
 **NOW (read first):**
+0000000000. **Railgun trail overshoot (user 12:51, there since the Railgun was built), committed 10-08 13:32 (not pushed):** the shot event carries the
+   path's far end (range, MISS); the trail head runs `speed x (age+1)` = 40 blocks on frame one and was only trimmed by
+   `trail.land()` when the tracer *arrived*, so for a tick it drew past the target. `TracerRenderer.Landing` got a default
+   `known(end)`, called from `TracerRenderer.land` the moment the server's `BulletImpact` arrives; RailgunEffects trims
+   the trail there. Shown with a temporary side-view, wall-less railgun scene: frame 82 trail to the screen edge before,
+   ends at the husk after (scene restored). 109/109.
+000000000. **Mod compat (user 11:10), committed 10-08 13:32 (not pushed):** `-PwithCompatMods` (build.gradle `compatMods`: Fungal Infection: Spore
+   2.2.0j `PbOZOahW`, TaCZ 1.1.8-hotfix2 `AzCBJlex`, runClient + GameTests). Dev `CompatModTests` (pass at once without
+   the mods): Spore Infected is shot and attacks an unarmed turret (worked as is: `Infected extends Monster`, Calamity/
+   Organoid implement Enemy, so TargetFilter HOSTILE + TurretAggro apply); TaCZ picks bullet hits with
+   `EntityUtil.findEntityOnPath` = box swept by motion + `isPickable && !isSpectator` → turret hitbox was never hit. Fix
+   (user picked "server-side"): `TurretHitboxEntity.isPickable()` = `!level().isClientSide` (client crosshair still goes
+   to the block). RED with the old value, GREEN; 108/108 with and without the compat mods. Owner protection unchanged
+   (user: own turrets only fall to hostile mobs); for testing `/bastiondev owndamage true|false` sets trustedCanDamage.
+   Not checked by hand: a real TaCZ gun shot (needs the user's gun pack). User 12:19: `/bastiondev busser` added (dev test
+   `devCommandSpawnsBussers`, RED→GREEN, 109/109 with and without compat mods) to test turrets vs flyers and stingers.
+   Watch: Mortar `grounded()` knows vanilla flyers only; Spore's Busser is a Monster (marker FlyingInfected).
 00000000. **Railgun fix (user 10:31, screenshot: raised Railgun ignoring a zombie crowd ~7 blocks out), committed 10-08 10:53 (0.1.2 work, not pushed).**
    Two root causes, each pinned by a test that failed first: (1) `railgun.json` `min_pitch` -10 → **-30** (from a base
    one block up the head of a ground mob 6.5 out is 12° down: `TargetSelector.firstVisible` rejected it → IDLE;
@@ -306,6 +323,7 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 | 10-07 10:45 | **Railgun** (2x2, anti-boss, slug + FE, user's reference image: long two-rail barrel, drum; charge = barrel lights up then arcs over it). |
 | 10-07 11:18 | **Mortar** (2x2, arcing, ground only, 3x3 fire patch burns everyone, vanilla fire on burnable blocks). Approved 12:09. |
 | 10-07 12:09 | Railgun approved in game. **beta.4 ships after the Mortar** (balance + Railgun + Mortar). |
+| 10-08 11:10 | TaCZ bullets hit turrets (server-side pickable hitbox); own turrets stay protected (dev `owndamage` toggle for testing). Spore mobs fight turrets as is. |
 | 10-08 10:31 | Railgun min pitch -30 (was -10); bullets no longer vanish when a step ends out of the world. |
 | 10-08 00:46 | Placement hologram, design B (ghost model + per-block boxes, red where blocked). |
 | 10-08 00:15 | Health colour on the base only (weapon stays cyan); bigger base glow; no cyan mixing in. |
@@ -421,7 +439,8 @@ player per level tick.
 - **`-PwithPerfMods`** (Radium, AI Improvements, ModernFix, FerriteCore, Clumps): combat MSPT -35%, spikes gone; tests pass.
 - **`-PwithRenderMods`** (Embeddium + Oculus, MakeUp shader in `run/shaderpacks`): Embeddium identical; with shaders the
   model glow is white and holograms green (known limit in DESCRIPTION.md).
-- Dev commands: `/bastiondev zombie|skeleton|ravager [hp <= 5000] [count <= 200]` (DevCommands raises the max_health
+- Dev commands: `/bastiondev zombie|skeleton|ravager [hp <= 5000] [count <= 200]` (+ `busser [hp] [count] [variant]` when Spore is
+  loaded, variant via Busser#setVariant(int): default 0, kidnapper 1, kamikaze 2, noxious 3 = stingers, transporter 4; `owndamage true|false`) (DevCommands raises the max_health
   cap by reflection, dev only; dev test `devCommandSpawnsTankyMobs`), `/bastiondev automation [report]`, `/bastion vfx <preset>`.
 
 ## 8. Backlog / known gaps

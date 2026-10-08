@@ -1,13 +1,19 @@
 package dev.bastion.dev;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.bastion.Bastion;
+import dev.bastion.config.BastionConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,13 +33,16 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
 /**
  * Dev-only test helpers (src/dev, never in the jar). {@code /bastiondev zombie|skeleton|ravager [health] [count]} spawns
- * tanky, sunlight-proof mobs where you look (up to 200, up to 5,000 HP), to watch turret damage numbers. {@code /bastiondev automation} builds the
+ * tanky, sunlight-proof mobs where you look (up to 200, up to 5,000 HP), to watch turret damage numbers. With Spore in the
+ * run (-PwithCompatMods) also {@code busser}, its flying ranged mob. {@code /bastiondev automation} builds the
  * Create belt/arm/funnel test rig next to you, {@code /bastiondev automation report} shows what reached each turret.
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
@@ -41,6 +50,8 @@ public final class DevCommands {
     private static final String DUMMY_TAG = "bastion_dummy";
     private static final float DEFAULT_HEALTH = 500, MAX_HEALTH = 5000;
     private static final int MAX_COUNT = 200;
+    /** Spore's BusserVariants in order (setVariant takes the index): only noxious (TOXIC) shoots stingers. */
+    private static final List<String> BUSSER_VARIANTS = List.of("default", "kidnapper", "kamikaze", "noxious", "transporter");
 
     static { // vanilla caps max_health at 1,024; dev runs only (this class is never in the jar)
         try {
@@ -57,7 +68,11 @@ public final class DevCommands {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
-        event.getDispatcher().register(Commands.literal("bastiondev").requires(source -> source.hasPermission(2))
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("bastiondev");
+        // Compat mobs, only when their mod is in the run (-PwithCompatMods): Spore's flying Busser shoots stingers.
+        EntityType<? extends Mob> busser = modMob("spore", "busser");
+        if (busser != null) root.then(mob("busser", busser, BUSSER_VARIANTS));
+        event.getDispatcher().register(root.requires(source -> source.hasPermission(2))
                 .then(Commands.literal("automation")
                         .executes(c -> {
                             BlockPos origin = BlockPos.containing(c.getSource().getPosition()).east(3);
@@ -71,23 +86,49 @@ public final class DevCommands {
                             lines.forEach(line -> c.getSource().sendSuccess(() -> Component.literal(line), false));
                             return lines.size();
                         })))
-                .then(mob("zombie", EntityType.ZOMBIE))
-                .then(mob("skeleton", EntityType.SKELETON))
-                .then(mob("ravager", EntityType.RAVAGER)));
+                .then(Commands.literal("owndamage") // testing only: owners and trusted players can hurt their own turrets
+                        .then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
+                            boolean on = BoolArgumentType.getBool(c, "on");
+                            BastionConfig.TRUSTED_CAN_DAMAGE.set(on);
+                            c.getSource().sendSuccess(() -> Component.literal("Own turrets " + (on ? "CAN" : "can no longer")
+                                    + " be damaged by their owner and trusted players (server config trustedCanDamage = " + on + ")"), true);
+                            return 1;
+                        })))
+                .then(mob("zombie", EntityType.ZOMBIE, null))
+                .then(mob("skeleton", EntityType.SKELETON, null))
+                .then(mob("ravager", EntityType.RAVAGER, null)));
     }
 
-    /** {@code <name> [health] [count]}. */
-    private static LiteralArgumentBuilder<CommandSourceStack> mob(String name, EntityType<? extends Mob> type) {
+    /** Another mod's mob type, or null when that mod is not loaded. */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private static EntityType<? extends Mob> modMob(String namespace, String path) {
+        ResourceLocation id = new ResourceLocation(namespace, path);
+        return ForgeRegistries.ENTITY_TYPES.containsKey(id) ? (EntityType<? extends Mob>) ForgeRegistries.ENTITY_TYPES.getValue(id) : null;
+    }
+
+    /** {@code <name> [health] [count]}, plus {@code [variant]} for mobs whose mod picks a variant at spawn (setVariant(int)). */
+    private static LiteralArgumentBuilder<CommandSourceStack> mob(String name, EntityType<? extends Mob> type, @Nullable List<String> variants) {
+        var count = Commands.argument("count", IntegerArgumentType.integer(1, MAX_COUNT))
+                .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"), IntegerArgumentType.getInteger(c, "count"), -1));
+        if (variants != null) {
+            count.then(Commands.argument("variant", StringArgumentType.word())
+                    .suggests((c, builder) -> SharedSuggestionProvider.suggest(variants, builder))
+                    .executes(c -> {
+                        int variant = variants.indexOf(StringArgumentType.getString(c, "variant"));
+                        if (variant < 0) throw new SimpleCommandExceptionType(Component.literal("Variants: " + String.join(", ", variants))).create();
+                        return spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"), IntegerArgumentType.getInteger(c, "count"), variant);
+                    }));
+        }
         return Commands.literal(name)
-                .executes(c -> spawn(c.getSource(), type, DEFAULT_HEALTH, 1))
+                .executes(c -> spawn(c.getSource(), type, DEFAULT_HEALTH, 1, -1))
                 .then(Commands.argument("health", FloatArgumentType.floatArg(1, MAX_HEALTH))
-                        .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"), 1))
-                        .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_COUNT))
-                                .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"),
-                                        IntegerArgumentType.getInteger(c, "count")))));
+                        .executes(c -> spawn(c.getSource(), type, FloatArgumentType.getFloat(c, "health"), 1, -1))
+                        .then(count));
     }
 
-    private static int spawn(CommandSourceStack source, EntityType<? extends Mob> type, float health, int count) {
+    /** @param variant index for the mob's own setVariant(int) (its mod adds that variant's AI), or -1 to leave it */
+    private static int spawn(CommandSourceStack source, EntityType<? extends Mob> type, float health, int count, int variant) {
         ServerLevel level = source.getLevel();
         Vec3 at = lookTarget(source);
         for (int i = 0; i < count; i++) {
@@ -103,6 +144,14 @@ public final class DevCommands {
                 skeleton.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
                 skeleton.setDropChance(EquipmentSlot.MAINHAND, 0);
                 skeleton.reassessWeaponGoal();
+            }
+            if (variant >= 0) {
+                try {
+                    mob.getClass().getMethod("setVariant", int.class).invoke(mob, variant);
+                } catch (ReflectiveOperationException e) {
+                    source.sendFailure(Component.literal(type.getDescription().getString() + " has no setVariant(int): " + e));
+                    return i;
+                }
             }
             mob.setPersistenceRequired();
             mob.addTag(DUMMY_TAG);

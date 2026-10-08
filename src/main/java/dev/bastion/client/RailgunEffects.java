@@ -89,9 +89,16 @@ public final class RailgunEffects {
                     VfxParams.of().color(color).scale(1 + 0.45f * i).seed(event.seed() + i));
         }
         RailRenderer.Trail trail = RailRenderer.trail(muzzle, direction, event.speed(), shot.end().distanceTo(muzzle), color);
-        TracerRenderer.spawnBullet(shot.blockState(), muzzle, shot.end(), event.speed(), color, 0.2f, (end, normal, hit, blockState) -> {
-            trail.land(end);
-            land(level, end, normal, hit, blockState, color, event.seed());
+        TracerRenderer.spawnBullet(shot.blockState(), muzzle, shot.end(), event.speed(), color, 0.2f, new TracerRenderer.Landing() {
+            @Override
+            public void known(Vec3 end) { // the trail's head runs 40 blocks a tick: cut it at the hit before it draws past it
+                trail.land(end);
+            }
+
+            @Override
+            public void land(Vec3 end, Vec3 normal, int hit, int blockState) {
+                RailgunEffects.land(level, end, normal, hit, blockState, color, event.seed());
+            }
         });
         client.after(12, () -> {
             if (client.eject != null) VfxManager.play(VfxPresets.OVERHEAT_STEAM, client.eject, new Vec3(0, 1, 0), VfxParams.of().seed(event.seed()));

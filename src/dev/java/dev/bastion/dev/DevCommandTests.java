@@ -36,4 +36,31 @@ public class DevCommandTests {
         skeletons.forEach(Mob::discard);
         helper.succeed();
     }
+
+    /** With Spore in the run: /bastiondev busser spawns its flying Busser with the HP, count and variant asked for. */
+    @GameTest(template = "arena", batch = "devCommandSpawnsBussers")
+    public static void devCommandSpawnsBussers(GameTestHelper helper) {
+        net.minecraft.resources.ResourceLocation id = new net.minecraft.resources.ResourceLocation("spore", "busser");
+        if (!net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.containsKey(id)) {
+            helper.succeed();
+            return;
+        }
+        Vec3 at = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 2, 4)));
+        var source = helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()).withPosition(at).withSuppressedOutput();
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(source, "bastiondev busser 300 2 noxious");
+        var type = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(id);
+        List<Mob> bussers = helper.getLevel().getEntitiesOfClass(Mob.class, new AABB(at, at).inflate(8), m -> m.getType() == type);
+        helper.assertTrue(bussers.size() == 2, bussers.size() + " bussers");
+        helper.assertTrue(bussers.stream().allMatch(b -> b.getMaxHealth() == 300), "busser HP " + bussers.get(0).getMaxHealth());
+        for (Mob b : bussers) { // noxious = Spore's TOXIC variant (3), the one that shoots stingers
+            try {
+                int variant = (int) b.getClass().getMethod("getTypeVariant").invoke(b);
+                helper.assertTrue(variant == 3, "busser variant " + variant + ", expected 3 (noxious)");
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        bussers.forEach(Mob::discard);
+        helper.succeed();
+    }
 }

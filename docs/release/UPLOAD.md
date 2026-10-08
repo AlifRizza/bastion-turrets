@@ -57,6 +57,10 @@ Changes
   shakes from several turrets no longer add up (many turrets firing at once shake like the strongest one).
 
 Fixes
+- Railgun: the ion trail no longer flashes through and past the target for a moment before the hit shows; it stops
+  where the slug lands from the first frame.
+- Guns from other mods (tested: TaCZ) now hit turrets: their bullets used to fly through. Owner protection still
+  applies, so only turrets that are not yours (or hostile mobs) can break them.
 - Railgun: ignored mobs on the ground a few blocks away when it stood on a raised base (it could only dip 10°, now
   30°), and its slugs vanished when fired downward near the bottom of the world (superflat worlds). The second fix
   covers every bullet weapon.
