@@ -154,6 +154,15 @@ def main():
                                                                  {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, "hopper": 1}, 80, 2000))
     write(out / "module_workstation" / "autoloader.json", recipe("module_workstation", B + "choke_module", B + "autoloader",
                                                                {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, "piston": 1}, 80, 2000))
+    # Mk2 / Mk3 (PLAN 4.6): upgrade the tier below at the Module Workstation, listed under the same tab as the Mk1.
+    for module in [*MODULE, "choke_module", "autoloader"]:
+        tab = B + ("choke_module" if module in ("choke_module", "autoloader") else "range_module")
+        write(out / "module_workstation" / f"{module}_mk2.json", recipe("module_workstation", tab, B + f"{module}_mk2",
+                                                                      {B + module: 1, "diamond": 2, "redstone": 4}, 100, 4000))
+        write(out / "module_workstation" / f"{module}_mk3.json", recipe("module_workstation", tab, B + f"{module}_mk3",
+                                                                      {B + f"{module}_mk2": 1, "netherite_scrap": 1, "diamond": 2, "amethyst_shard": 1},
+                                                                      140, 8000))
+        n += 2
     for tool, (ingredients, time, energy, count) in TOOLS.items():
         write(out / "module_workstation" / f"{tool}.json", recipe("module_workstation", B + "repair_kit", B + tool, ingredients, time, energy, count))
     for ammo, (ingredients, time, energy, count, tab) in AMMO.items():

@@ -25,6 +25,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -92,6 +93,8 @@ public final class BastionItems {
             () -> hinted(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), "creative_ammo"));
 
     // Modifiers, PLAN 4.6; effects in data/bastion/turret_modifiers/<name>.json.
+    /** Mk2 and Mk3 of every modifier, each registered right after its Mk1 so the creative tab keeps them together (PLAN 4.6). */
+    public static final List<RegistryObject<ModifierItem>> MODIFIER_TIERS = new ArrayList<>();
     public static final RegistryObject<ModifierItem> RANGE_MODULE = modifier("range_module");
     public static final RegistryObject<ModifierItem> RAPID_CYCLER = modifier("rapid_cycler");
     public static final RegistryObject<ModifierItem> DAMAGE_AMPLIFIER = modifier("damage_amplifier");
@@ -180,7 +183,12 @@ public final class BastionItems {
     }
 
     private static RegistryObject<ModifierItem> modifier(String name) {
-        return REGISTER.register(name, () -> new ModifierItem(new Item.Properties().stacksTo(1)));
+        RegistryObject<ModifierItem> mk1 = REGISTER.register(name, () -> new ModifierItem(new Item.Properties().stacksTo(1), 1));
+        for (int mk = 2; mk <= 3; mk++) {
+            int tier = mk;
+            MODIFIER_TIERS.add(REGISTER.register(name + "_mk" + mk, () -> new ModifierItem(new Item.Properties().stacksTo(1), tier)));
+        }
+        return mk1;
     }
 
     // Creative tabs (user: bases, weapon modules, ammo and modules apart), sorted by item type so new items land in the

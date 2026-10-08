@@ -23,7 +23,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits up to five targets at once. |
 | Railgun Turret | Large | Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target. |
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
-| Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 7 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE. |
+| Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE. |
 
 The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
@@ -63,7 +63,7 @@ Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn
 | Choke Module | -40% spread (Shotgun only) |
 | Autoloader | +40% reload speed (Rocket and Missile Launcher only) |
 
-Each kind of module fits once per base. Different modules add up, and a T3 base has four module slots.
+Every module comes in Mk1, Mk2 and Mk3 (one and a half and twice the Mk1 effect): upgrade the one you have at the Module Workstation with diamonds, then netherite scrap. Each kind of module fits once per base, whatever its Mk. Different modules add up, and a T3 base has four module slots.
 
 ## Ammo and automation
 

@@ -385,6 +385,8 @@ public class TurretSystemsTests {
     /** 0 HP (user 2026-10-07): the weapon and the ammo are lost, the modules drop, the base drops damaged. */
     @GameTest(template = ARENA, timeoutTicks = 60, batch = "destroyedLosesWeaponAndAmmo")
     public static void destroyedLosesWeaponAndAmmo(GameTestHelper helper) {
+        // Asserts no rounds lie around: clear what an earlier test may have left at this arena spot.
+        helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BASE)).inflate(3)).forEach(ItemEntity::discard);
         TurretBaseBlockEntity turret = gun(helper);
         turret.inventory().setStackInSlot(TurretInventory.MODIFIER_START, new ItemStack(BastionItems.RANGE_MODULE.get()));
         turret.takeDamage(helper.getLevel().damageSources().generic(), 10_000);

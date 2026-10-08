@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:range_module",
+  "ingredients": [
+    {
+      "item": "bastion:damage_amplifier_mk2",
+      "count": 1
+    },
+    {
+      "item": "minecraft:netherite_scrap",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "minecraft:amethyst_shard",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:damage_amplifier_mk3"
+  },
+  "time": 140,
+  "energy": 8000
+}

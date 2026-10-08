@@ -2,7 +2,7 @@
   "type": "bastion:repulsor_dome",
   "ammo": "bastion:ammo/energy",
   "energy_color": "#E8F6FF",
-  "range": 7,
+  "range": 9,
   "fire_interval": 80,
   "damage": 0,
   "ammo_per_shot": 0,

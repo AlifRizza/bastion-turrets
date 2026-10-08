@@ -96,10 +96,11 @@ public class TurretInventory extends ItemStackHandler {
         return getStackInSlot(WEAPON).getItem() instanceof WeaponModuleItem weapon ? weapon.weaponId() : null;
     }
 
-    /** Each modifier counts once per base (PLAN 4.6). */
+    /** Each modifier kind counts once per base, whatever its Mk (PLAN 4.6). */
     private boolean hasModifierElsewhere(Item item, int slot) {
+        if (!(item instanceof ModifierItem modifier)) return false;
         for (int i = MODIFIER_START; i < SIZE; i++) {
-            if (i != slot && getStackInSlot(i).is(item)) return true;
+            if (i != slot && getStackInSlot(i).getItem() instanceof ModifierItem other && other.family().equals(modifier.family())) return true;
         }
         return false;
     }

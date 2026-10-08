@@ -302,13 +302,13 @@ public class TurretRepulsorTests {
         helper.succeedWhen(() -> helper.assertTrue(moved(husk, start) >= 3, "a husk 4 blocks out moved " + moved(husk, start)));
     }
 
-    /** The Dome reaches 7 blocks: a husk ~6.8 blocks from its middle is thrown ~6 blocks. */
-    @GameTest(template = YARD, timeoutTicks = 160, batch = "domeReachesSevenBlocks")
-    public static void domeReachesSevenBlocks(GameTestHelper helper) {
+    /** The Dome reaches 9 blocks (user 2026-10-08, was 7): a husk 8.5 blocks out (~8.7 from the orb) is thrown, the push unchanged. */
+    @GameTest(template = YARD, timeoutTicks = 160, batch = "domeReachesNineBlocks")
+    public static void domeReachesNineBlocks(GameTestHelper helper) {
         dome(helper, true);
-        BlockPos at = new BlockPos(21, 2, 15);
+        BlockPos at = new BlockPos(23, 2, 15);
         LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, at);
         Vec3 start = spot(helper, at);
-        helper.succeedWhen(() -> helper.assertTrue(moved(husk, start) >= 4.5, "a husk 6.5 blocks out moved " + moved(husk, start)));
+        helper.succeedWhen(() -> helper.assertTrue(moved(husk, start) >= 4.5, "a husk 8.5 blocks out moved " + moved(husk, start)));
     }
 }

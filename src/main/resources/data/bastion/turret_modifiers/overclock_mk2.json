@@ -1,0 +1,6 @@
+{
+  "fire_rate": 0.6,
+  "damage": 0.15,
+  "heat_per_shot": 0.9,
+  "max_health": -0.225
+}

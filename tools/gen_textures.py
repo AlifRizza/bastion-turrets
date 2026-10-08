@@ -524,13 +524,19 @@ MODIFIER_GLYPHS = {
 }
 
 
-def modifier_chip(name):
-    """Circuit chip with a per-modifier glyph; the glyph also goes into the emissive layer (PLAN 7.5)."""
+TIER_FRAME = {1: GRAPHITE, 2: rgb("2FA8CC"), 3: rgb("E0A81C")}  # Mk1 as before, Mk2 cyan, Mk3 gold (PLAN 4.6)
+TIER_PIP = {1: METAL * 1.2, 2: rgb("7FE6FF"), 3: rgb("FFE07A")}
+
+
+def modifier_chip(name, mk=1):
+    """Circuit chip with a per-modifier glyph; the frame colour and 1-3 pips in the lower right corner tell the Mk."""
     img = np.zeros((16, 16, 4))
-    stamp(img, CHIP, 0, 1)
+    stamp(img, Sprite(CHIP.rows, {**CHIP.palette, "g": TIER_FRAME[mk]}), 0, 1)
     hex_code, rows = MODIFIER_GLYPHS[name]
     accent = rgb(hex_code)
     stamp(img, Sprite(rows, {"a": accent, "d": accent * 0.55}), 4, 4)
+    for i in range(mk):
+        rect(img, 11 - 2 * i, 11, 1, 1, TIER_PIP[mk])
     return outline(img, OUTLINE)
 
 
@@ -1254,6 +1260,7 @@ TEXTURES = {
     "item/damaged_large_turret_base.png": damaged_large_base,
     "entity/turret_rocket_e.png": lambda: paint_model("entity/turret_rocket")[1],
     **{f"item/{name}.png": (lambda name=name: modifier_chip(name)) for name in MODIFIER_GLYPHS},
+    **{f"item/{name}_mk{mk}.png": (lambda name=name, mk=mk: modifier_chip(name, mk)) for name in MODIFIER_GLYPHS for mk in (2, 3)},
     "item/repair_kit.png": repair_kit,
     "item/tier_upgrade_kit_t2.png": lambda: upgrade_kit(2),
     "item/tier_upgrade_kit_t3.png": lambda: upgrade_kit(3),

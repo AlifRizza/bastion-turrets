@@ -39,6 +39,9 @@ Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain number
 
 ```
 New
+- Upgrade modules come in Mk1, Mk2 and Mk3 (x1.5 / x2 of Mk1, Penetrator +1/+2/+3): upgrade the one you have at the
+  Module Workstation (2 diamonds + 4 redstone, then 1 netherite scrap + 2 diamonds + 1 amethyst shard). One of each kind
+  per turret, whatever its Mk.
 - Placement hologram: holding a Large Turret Base or a multi-block workstation shows a see-through model and a box per
   block where it will go, red where something is in the way.
 - Health lights: a turret base's lights turn yellow below half HP and blink red below a quarter, with sparks (the
@@ -48,6 +51,7 @@ New
 - Modules: hold Shift on a module to see which turrets it actually does something on (e.g. Coolant Loop: Machine Gun).
 
 Changes
+- Repulsor Dome reaches 9 blocks (was 7); it still throws them about 6 blocks.
 - A destroyed turret (0 HP) now loses its weapon module and its ammo; only the modules drop. The base always drops as
   a Damaged Turret Base that remembers its tier: restore it at the Part Assembler with a Repair Kit and it comes back
   as T1, T2 or T3 (before: everything dropped and the base only fell one tier). Mining your own base still keeps all.
@@ -169,7 +173,7 @@ First public beta.
 | 08_create_automation | Automation | Create belts and Mechanical Arms keep turrets loaded. |
 | 09_workstations | Workstations | Five FE-powered machines make every part, weapon and round. |
 | 10_part_assembler_gui | Part Assembler | Recipe list, 3D preview, have/need, energy and progress. |
-| 11_repulsor_dome | Repulsor Dome | A dome of force throws every mob within 7 blocks away from your turrets. |
+| 11_repulsor_dome | Repulsor Dome | A dome of force throws every mob within 9 blocks away from your turrets. |
 | 12_railgun_charge | Railgun charging | The coils light up, then electricity crawls over the barrel before the shot. |
 
 Featured image: `01_laser_rifle_beam` (or the generated banner below).

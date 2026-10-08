@@ -232,6 +232,16 @@ Diterapkan sebagai multiplier/additive ke `StatSheet`. Stat final = `WeaponData`
 
 Satu modifier yang sama tidak bisa dipasang dua kali.
 
+**Tier modul Mk1/Mk2/Mk3 (permintaan user 2026-10-08 13:35, desain disetujui 13:39):**
+- Semua 10 modul upgrade (8 di tabel + Choke Module + Autoloader) punya Mk1, Mk2, Mk3. Weapon module tidak bertier. Nama "Mk" (bukan "Tier") supaya tidak tertukar dengan tier base T1–T3.
+- **Item terpisah per tier**: Mk1 = id lama (`range_module`, world lama aman), Mk2 = `<id>_mk2`, Mk3 = `<id>_mk3`. Nama Mk1 tetap ("Range Module"), Mk2/Mk3 diberi akhiran ("Range Module Mk2"); tooltip baris pertama "Mk N".
+- **Kekuatan**: setiap angka efek Mk1 dikali **1,5 (Mk2)** dan **2 (Mk3)**, termasuk efek negatif (Overclock HP −15% → −22,5% → −30%). Pengecualian **Penetrator**: tembus +1 / +2 / +3. Daftar `weapons` (Choke, Autoloader) sama untuk semua tier.
+- **Data**: satu JSON per item di `data/bastion/turret_modifiers/` (`range_module_mk2.json`, ...), dibuat oleh `tools/gen_modifier_tiers.py` dari JSON Mk1 (angka bisa diubah per tier lewat datapack).
+- **Didapat dengan upgrade** di Module Workstation (instan untuk pemain, berwaktu untuk otomasi, butuh FE): Mk1 + 2 diamond + 4 redstone → Mk2; Mk2 + 1 netherite scrap + 2 diamond + 1 amethyst shard → Mk3 (`tools/gen_recipes.py`).
+- **Satu per jenis**: modul sejenis dihitung sekali per base apa pun tier-nya (Range Mk1 dan Range Mk3 tidak bisa bersama).
+- **Tekstur**: chip yang sama dengan tanda tier: bingkai berwarna (Mk1 seperti sekarang, Mk2 cyan, Mk3 emas) dan 1–3 titik di sudut.
+- **Acceptance**: GameTest: angka Mk2/Mk3 = Mk1 × 1,5 / × 2 untuk setiap modul (Penetrator 1/2/3); Range Mk1 + Range Mk3 ditolak di satu base; upgrade di Module Workstation mengubah Mk1 + bahan menjadi Mk2. Semua GameTest lama lolos; tekstur dicek visual.
+
 ### 4.7 GUI
 
 Layar custom dengan tekstur original, 3 tab:
@@ -674,7 +684,7 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 
 **Repulsor Dome** (modul besar, Large Turret Base 2x2)
 - Tidak berputar (seperti Tesla). Aktif bila ada target sah dalam `range` **7** blok dari tengah base (user 19:45, dulu 6).
-- Charge 10 tick, lalu kubah: **semua** target sah dalam 7 blok terdorong `knockback` **6** blok keluar dari tengah base (dulu 5). **Menembus dinding** (medan, tanpa line of sight).
+- Charge 10 tick, lalu kubah: **semua** target sah dalam **9** blok (user 2026-10-08, dulu 7) terdorong `knockback` **6** blok keluar dari tengah base (dulu 5). **Menembus dinding** (medan, tanpa line of sight).
 - 2.000 FE per dorongan, `fire_interval` 80 tick. Kapasitor 40.000 FE, input 2.000 FE/t.
 
 **Model** (`tools/blockout/design_weapons.py`, gunmetal + satu glow cyan, konvensi bone bagian 6.2)
@@ -683,7 +693,7 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 
 **VFX** (framework sendiri, warna efek putih kebiruan; tanpa partikel vanilla)
 - Repulsor: 3–4 cincin transparan meluncur sepanjang kerucut sambil melebar (~0,3 dtk sampai ujung jangkauan), riak udara (heat haze) di kerucut, kilatan di moncong, cahaya dinamis singkat; tiap mob yang terdorong: kepulan debu di kaki + jejak gerak singkat.
-- Repulsor Dome (referensi user: bola putih "almighty push" + cincin debu di tanah): bola putih transparan membesar dari tengah sampai ujung jangkauan (7 blok) dalam ~8 tick, tepi paling terang, lalu memudar; cincin awan debu menggelinding di tanah di tepi kubah; garis-garis kecepatan radial sesaat; camera shake untuk pemain dalam ~10 blok, kilatan putih singkat, cahaya dinamis.
+- Repulsor Dome (referensi user: bola putih "almighty push" + cincin debu di tanah): bola putih transparan membesar dari tengah sampai ujung jangkauan (9 blok) dalam ~8 tick, tepi paling terang, lalu memudar; cincin awan debu menggelinding di tanah di tepi kubah; garis-garis kecepatan radial sesaat; camera shake untuk pemain dalam ~10 blok, kilatan putih singkat, cahaya dinamis.
 - Charge: cahaya mengumpul di emitter/inti + dengung naik. Suara placeholder (`gen_sounds.py`): charge, dorongan, dentuman kubah.
 
 **Survival**: part lewat Part Workstation, dirakit di Part Assembler (angka di `tools/gen_recipes.py`). Repulsor (part kecil): Repulsor Emitter (iron, copper, piston), Repulsor Coil (copper, redstone), Repulsor Mount (iron, observer). Repulsor Dome (part besar): Dome Core (diamond, redstone block, 2 piston), Dome Pylons (iron block, copper block), Dome Mount (iron, copper, observer). Lang en_us + id_id, tooltip, creative tab Weapon Modules.

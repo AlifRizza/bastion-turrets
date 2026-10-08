@@ -29,6 +29,14 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Same next to 2 Repulsor Domes: each burst gives a short light shake, never a long strong wobble.
 - [ ] Railgun, Mortar and Shotgun still shake as before when fired alone.
 
+## Module tiers (0.1.2)
+- [ ] Creative Modules tab: each module three times (Mk1, Mk2 cyan frame, Mk3 gold frame), tooltip first line "Mk1/Mk2/Mk3", names "... Mk2/Mk3" (also in Indonesian).
+- [ ] Module Workstation, Range Module tab: "Range Module Mk2" needs the Mk1 + 2 diamonds + 4 redstone, "Mk3" needs the Mk2 + netherite scrap + 2 diamonds + amethyst shard; Choke Module tab has the Choke and Autoloader upgrades. The recipe list still scrolls.
+- [ ] Turret with Range Module (Mk1): a Range Mk3 is refused (click and shift-click); a Damage Amplifier Mk2 goes in. (Automation never puts modules into turrets: their item port takes ammo only.)
+- [ ] Hopper/chest above a Module Workstation set to Range Module Mk2, holding several Mk1 + diamonds + redstone, a hopper below: it keeps upgrading one after another (inputs never fill up with modules).
+- [ ] Info tab with Range Module Mk3: range +50%; Overclock Mk3: turret HP -30%; Penetrator Mk3: a Gun Turret bullet hits 4 mobs in a line (pierces 3).
+- [ ] Choke Mk3 (Shotgun) tightens the spread a lot but still spreads a little; Autoloader Mk3 refills rockets/missiles clearly faster.
+
 ## Mod compatibility (0.1.2): `-PwithCompatMods` (Fungal Infection: Spore 2.2.0j, TaCZ 1.1.8-hotfix2)
 Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `CompatModTests` with the mods (without them those 3 tests pass at once).
 - [ ] Spore: `/summon spore:inf_human` (or any infected) near a turret: the turret shoots it; an unarmed turret gets walked up to and hit (lights go yellow/red).
@@ -140,7 +148,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Repulsor on a standard base (floor, wall, ceiling) with FE (Creative Power Source, cable, or a Feed Hub): turns to a mob even right at its feet, the three rings in its horn light up one by one while it charges, then a wave (rings + a sweeping air cone) throws every mob in front of it, up to 5 blocks out, ~4 blocks back in one push; dust at their feet. No damage.
 - [ ] Put it behind a Gun Turret and let zombies hug the gun: the Repulsor pushes them off so the gun can shoot again.
 - [ ] A mob behind a wall is not pushed by the Repulsor. You, pets and villagers in its cone are never pushed.
-- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 7 blocks with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
+- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 9 blocks (was 7 before 0.1.2) with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
 - [ ] Without FE both sit in NO_AMMO and push nothing; 500 FE per Repulsor push, 2,000 per Dome pulse (GUI energy bar).
 - [ ] Range Module / Rapid Cycler work; the Info tab shows damage 0. Recipes: 3 parts each at the Part Workstation, assembled at the Part Assembler.
 - [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~2.4 blocks). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.

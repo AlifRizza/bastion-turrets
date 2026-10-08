@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-07, 23:00 WIB)
+# Bastion Turrets — Session Handoff (2026-10-08, 16:00 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -7,14 +7,47 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
-**NOW (read first):**
-0000000000. **Railgun trail overshoot (user 12:51, there since the Railgun was built), committed 10-08 13:32 (not pushed):** the shot event carries the
+**State at a glance (2026-10-08 16:00):**
+- Git: `main` at the commit "Module tiers Mk1/Mk2/Mk3; Repulsor Dome reach 9" (user 16:00 "commit"), **3 commits not
+  pushed** (`32ba29a` 0.1.2 work, `d25ce7d` compat + Railgun trail, module tiers + Dome reach); GitHub has `v0.1.1`
+  (`40db2a2`). `mod_version` is still **0.1.1**; 0.1.2 is not released (changelog ready in `docs/release/UPLOAD.md`).
+  Working tree clean except `modlist.html` (the user's file, never commit it).
+- Tests: **113/113** GameTests (`./gradlew runGameTestServer --offline`); with `-PwithCompatMods` (Spore + TaCZ) also 113.
+- Open user decisions: upgrade modules still drop from destroyed turrets (user 14:45 "biarkan dulu"); no new turrets
+  until the placeholder sounds are replaced (23:37); addon "turret pack" support is backlog for ~1.0.0 (PLAN 7.6 end).
+- Deferred minors (offer when relevant): see item 2 (fire-rate display cap, Mortar range vs Range Mk2/3, tooltip x.5%
+  rounding, unused `MODIFIER_TIERS`, long Range recipe tab) and the placement hologram item (clicked cell not red for
+  an entity, hologram where a click opens a GUI / adventure / F1, scene shots).
+- Scenes run in the scratch world `-PshowcaseWorld=showcase_fx` (a copy of the user's `showcase`); never the default.
+
+**NOW (read first, newest first):**
+1. **Repulsor Dome reach 7 → 9 (user 14:45, push unchanged at 6), committed 10-08 16:00:** `repulsor_dome.json` range 9; test
+   `domeReachesNineBlocks` (husk 8.5 out, RED at 7 → GREEN); dome sphere/dust ring follow the range (scene repulsor
+   checked). 113/113. User 14:45: destroyed turrets keep dropping their upgrade modules for now ("biarkan dulu").
+2. **Module tiers Mk1/Mk2/Mk3 (user 13:35, design + 4 answers 13:39, plan "oke, langsung" 13:43), committed 10-08 16:00.** Spec PLAN
+   §4.6 "Tier modul", plan `docs/superpowers/plans/2026-10-08-module-tiers.md`. `ModifierItem(props, mk)` + `mk()` +
+   `family()` (Mk1 id); `BastionItems.modifier()` registers `<id>_mk2/_mk3` right after each Mk1 (`MODIFIER_TIERS`);
+   `TurretInventory.hasModifierElsewhere` compares families. Data + item models from `tools/gen_modifier_tiers.py`
+   (x1.5/x2, pierce x mk, weapons copied); upgrade recipes in `gen_recipes.py` (Mk2: +2 diamond +4 redstone 100 t 4k FE;
+   Mk3: +netherite scrap +2 diamond +amethyst shard 140 t 8k FE, Range or Choke tab); chips: frame graphite/cyan/gold +
+   1-3 pips (`modifier_chip(name, mk)`); lang "<name> Mk2/Mk3" + `tooltip.bastion.modifier.mk`. Tests
+   `TurretModifierTierTests` (one per kind, scaling of every field, upgrade at the Module Workstation, upgrade by
+   hopper), **113/113**. Final review fixed: hopper-fed upgrades jammed the Module Workstation (modules stack to one and
+   filled all 6 inputs) → `WorkstationBlockEntity.acceptsInto`: automation opens an empty input only while the inputs
+   hold less of that ingredient than one craft takes. Deferred minors: fire rate shown above the real 1 shot/tick cap
+   (MG + Overclock Mk3 + Rapid Cycler Mk3: Info 26/s, real 20/s; clamp in StatSheet); Mortar range with Range Mk2/Mk3
+   exceeds a shell's ~45-block reach; tooltip rounds x.5% (Overclock Mk2 shows -22%); `BastionItems.MODIFIER_TIERS`
+   unused; Range tab now lists 24 recipes in a 4-row list.
+   Found on the way: GameTest arenas keep loose items an earlier batch left (a turret broken when the next arena was
+   placed spilled 10 rounds); the two drop-counting tests now discard items present at their start. Scene
+   `-Pshowcase=modules` (hotbar: all models load).
+3. **Railgun trail overshoot (user 12:51, there since the Railgun was built), committed 10-08 13:32 (not pushed):** the shot event carries the
    path's far end (range, MISS); the trail head runs `speed x (age+1)` = 40 blocks on frame one and was only trimmed by
    `trail.land()` when the tracer *arrived*, so for a tick it drew past the target. `TracerRenderer.Landing` got a default
    `known(end)`, called from `TracerRenderer.land` the moment the server's `BulletImpact` arrives; RailgunEffects trims
    the trail there. Shown with a temporary side-view, wall-less railgun scene: frame 82 trail to the screen edge before,
    ends at the husk after (scene restored). 109/109.
-000000000. **Mod compat (user 11:10), committed 10-08 13:32 (not pushed):** `-PwithCompatMods` (build.gradle `compatMods`: Fungal Infection: Spore
+4. **Mod compat (user 11:10), committed 10-08 13:32 (not pushed):** `-PwithCompatMods` (build.gradle `compatMods`: Fungal Infection: Spore
    2.2.0j `PbOZOahW`, TaCZ 1.1.8-hotfix2 `AzCBJlex`, runClient + GameTests). Dev `CompatModTests` (pass at once without
    the mods): Spore Infected is shot and attacks an unarmed turret (worked as is: `Infected extends Monster`, Calamity/
    Organoid implement Enemy, so TargetFilter HOSTILE + TurretAggro apply); TaCZ picks bullet hits with
@@ -25,14 +58,14 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    Not checked by hand: a real TaCZ gun shot (needs the user's gun pack). User 12:19: `/bastiondev busser` added (dev test
    `devCommandSpawnsBussers`, RED→GREEN, 109/109 with and without compat mods) to test turrets vs flyers and stingers.
    Watch: Mortar `grounded()` knows vanilla flyers only; Spore's Busser is a Monster (marker FlyingInfected).
-00000000. **Railgun fix (user 10:31, screenshot: raised Railgun ignoring a zombie crowd ~7 blocks out), committed 10-08 10:53 (0.1.2 work, not pushed).**
+5. **Railgun fix (user 10:31, screenshot: raised Railgun ignoring a zombie crowd ~7 blocks out), committed 10-08 10:53 (0.1.2 work, not pushed).**
    Two root causes, each pinned by a test that failed first: (1) `railgun.json` `min_pitch` -10 → **-30** (from a base
    one block up the head of a ground mob 6.5 out is 12° down: `TargetSelector.firstVisible` rejected it → IDLE;
    `railgunShootsDownFromARaisedBase`); (2) `Bullets.step` dropped a whole step when its far end was unloaded or out of
    the world, so a 40 b/t slug aimed down near y -64 (superflat) vanished even with a target 2 blocks ahead; now the
    step is halved until its end is loaded (`fastBulletIntoTheVoidStillHits`, all bullet weapons). **105/105** twice.
    Not checked on screen: the barrel at -30° (computed: clears the base edge by ~0.5 block).
-0000000. **Placement hologram (user 00:44, design B 00:46, plan approved "native" 00:53), committed 10-08 10:53 (0.1.2 work, not pushed).** Spec PLAN
+6. **Placement hologram (user 00:44, design B 00:46, plan approved "native" 00:53), committed 10-08 10:53 (0.1.2 work, not pushed).** Spec PLAN
    "Hologram penempatan multiblock", plan `docs/superpowers/plans/2026-10-08-placement-hologram.md`, ledger in
    `.superpowers/sdd/2026-10-08-placement-hologram/`. `turret/Multiblock` + `Footprint(blocks, blocked, front)`:
    LargeTurretBaseBlock/WorkstationBlock `footprint(BlockPlaceContext)` feeds both `getStateForPlacement` and the
@@ -45,11 +78,11 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    `isUnobstructed` like the large base). Deferred minors: clicked cell not red for an entity; hologram shows where the
    click would open a GUI / adventure mode / F1; scene lacks red-assembler and large-base night shots.
    Scene `-Pshowcase=placement` (PlacementShowcase): checked free/blocked/west-facing ghost vs placed/main hand wins/night.
-000000. **Dev command (user 00:28):** `/bastiondev` also spawns `skeleton` (bow, drop chance 0) and `ravager`, count up to
+7. **Dev command (user 00:28):** `/bastiondev` also spawns `skeleton` (bow, drop chance 0) and `ravager`, count up to
    200 (sunflower spiral, one body width apart), HP up to 5,000 (vanilla max_health cap 1,024 raised in DevCommands'
    static init, src/dev only). Dev GameTest `DevCommandTests.devCommandSpawnsTankyMobs` runs the real command (failed
    before, passes). **100/100.**
-00000. **Health lights, creative T2/T3 bases, module Shift tooltip (user 23:55; tooltip = "turrets it affects"),
+8. **Health lights, creative T2/T3 bases, module Shift tooltip (user 23:55; tooltip = "turrets it affects"),
    committed 10-08 10:53 (0.1.2 work, not pushed).** `EmissiveLayer.healthGlow(health)`: cyan, yellow < `DAMAGED_FRACTION` 0.5, red blinking
    (10-tick cycle bright/dim) < `CRITICAL_FRACTION` 0.25, used by the **base glow only** (user 00:15: weapon stays cyan,
    the earlier weapon tint was removed). User 00:15 also: bigger base glow (design_base: slits 2 x 3.4 px, seam
@@ -63,7 +96,7 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    Screen::hasShiftDown; > half the turrets → "every turret except". Tests `moduleListsTurretsItWorksOn` + creative T2/T3
    asserts; **99/99**. New dev scene `-Pshowcase=health` (HealthShowcase: T1 Gun bases + T3 Large Tesla bases at
    100/40/15% HP, day/night/large shots): colours pure, weapon cyan, no diagonal bars.
-0000. **Destruction rule (user 23:42, answers: modifiers drop / ammo lost, damaged base keeps its tier), committed 10-08 10:53 (0.1.2 work, not pushed):**
+9. **Destruction rule (user 23:42, answers: modifiers drop / ammo lost, damaged base keeps its tier), committed 10-08 10:53 (0.1.2 work, not pushed):**
    `TurretBaseBlockEntity.destroy` drops only the modifier slots, clears weapon + ammo, drops DAMAGED(_LARGE)_TURRET_BASE
    with `BlockEntityTag.Tier` when T2/T3. `WorkstationBlockEntity.result()` puts the first consumed ingredient's tier on
    the result (so the Part Assembler repair recipes give T2/T3 back); `outputFits` checks that real result. Damaged items
@@ -71,15 +104,15 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    (replace the old T1/T3 drop tests), `assemblerRestoresDamagedTier`; failed before, pass after. **98/98.**
    Also the **Feed Hub fix**: a refused real insert goes back into its slot (`feedAmmo`, was voided). Store text
    (DESCRIPTION.md/.html) already describes the new rule: it ships with 0.1.2 (DESCRIPTION_UPDATE_0.1.1.md untouched).
-000. **Balance (user 23:01), committed 10-08 10:53 (0.1.2 work, not pushed):** Mortar `damage` 6 → 20; `burn_damage` 1.5 → 3 per second in
+10. **Balance (user 23:01), committed 10-08 10:53 (0.1.2 work, not pushed):** Mortar `damage` 6 → 20; `burn_damage` 1.5 → 3 per second in
    both `mortar.json` and `flamethrower.json` (the only two users of TurretBurn). 97/97 GameTests (the mortar test still
    sees the husk burning after the blast).
-00. **Lighter camera shake (user 22:53 "terlalu geter kalau banyak turret dan gw deket"), committed 10-08 10:53 (0.1.2 work, not pushed):**
+11. **Lighter camera shake (user 22:53 "terlalu geter kalau banyak turret dan gw deket"), committed 10-08 10:53 (0.1.2 work, not pushed):**
    `CameraShake.add` takes the max instead of adding (sources no longer stack; PLAN 5.6). Presets: ROCKET_LAUNCH
    0.3/10 → 0.15/8, ROCKET_EXPLOSION 0.75/18 → 0.5/14 (Missile explosion untouched, 0.35/12), DOME_BURST 0.9 → 0.5
    (radius 10). Shake = trauma²: rocket blast at 3 blocks 0.39 → 0.15, dome at 2 blocks 0.52 → 0.16, and 4 turrets
    together no longer hit the cap. 97/97 GameTests; shake can't be seen in a screenshot: the user checks it in game.
-0. **UV fix in 3 older models (user 22:41 "boleh perbaiki dulu semua"), committed 10-08 10:53 (0.1.2 work, not pushed):** boxes of different
+12. **UV fix in 3 older models (user 22:41 "boleh perbaiki dulu semua"), committed 10-08 10:53 (0.1.2 work, not pushed):** boxes of different
    sizes shared one kit tag, so they shared one UV region (paint_model keeps the first face's paint: a bigger face
    repainted it, a smaller one lost its dark bevel row). New tags: Machine Gun `bladev` (fan), `gring2` (barrel ring),
    Flamethrower `pipe2` (feed), Part Workstation `drawer2` (bottom drawer), `wrench2`. **Guard:** `Kit.region()` now
@@ -88,7 +121,7 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    `run/saves/showcase_fx`, a copy of `showcase`). `blockbench/machine_gun_turret.bbmodel` was already out of sync
    with its geo (left alone). `build/libs/bastion-1.20.1-0.1.1.jar` was rebuilt and now contains this fix (tag v0.1.1
    does not). Changelog block "0.1.2 (not released yet)" in UPLOAD.md; `mod_version` still 0.1.1.
-1. **0.1.1 released to GitHub (2026-10-07 ~20:05, user: "commit, push"):** commits `fad802f` (Feed Hub multiblock + energy,
+13. **0.1.1 released to GitHub (2026-10-07 ~20:05, user: "commit, push"):** commits `fad802f` (Feed Hub multiblock + energy,
    turret GUI shift-click fix, Creative Power Source pull fix, Pipez dev mod) and the 0.1.1 commit (Repulsor + Repulsor
    Dome, version bump), tag `v0.1.1`, pushed. **The user uploads `build/libs/bastion-1.20.1-0.1.1.jar` to CurseForge and
    Modrinth** (fields + changelog in `docs/release/UPLOAD.md`). Store text: the user pastes only the changed parts,
@@ -100,9 +133,9 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
    HANDOFF, and the RepulsorShowcase camera/8-husk tweak; commit only on "commit" (not part of the jar).
    Versioning (user 20:04): stays on the **Beta** channel
    with plain numbers `0.1.1`, `0.1.2`, ...; the first Release will be **1.0.0**. Never commit `modlist.html`.
-2. **Feed Hub multiblock + energy: built** (design 15:35, approved 15:47 incl. the full 4a look; defaults taken without
+14. **Feed Hub multiblock + energy: built** (design 15:35, approved 15:47 incl. the full 4a look; defaults taken without
    an answer: 8 items/tick **per block**, FE of a broken block is **lost**). See "Feed Hub multiblock" below.
-3. **Released in 0.1.1: Repulsor (1x1) + Repulsor Dome (2x2)** (user idea 18:29: turrets can't hit
+15. **Released in 0.1.1: Repulsor (1x1) + Repulsor Dome (2x2)** (user idea 18:29: turrets can't hit
    mobs hugging/behind their barrel; these push valid targets away, no damage, FE). Decisions 18:32: 1a names, 2a FE,
    3a no damage, 4a 1.5 s / 4 s with a 0.5 s charge; approach A (weapon modules); spec PLAN "Repulsor & Repulsor Dome";
    plan `docs/superpowers/plans/2026-10-07-repulsor.md`. **92/92 GameTests**, scene `-Pshowcase=repulsor` checked,
@@ -323,6 +356,8 @@ an FE generator (Bastion has none; survival needs an FE mod, stated in the descr
 | 10-07 10:45 | **Railgun** (2x2, anti-boss, slug + FE, user's reference image: long two-rail barrel, drum; charge = barrel lights up then arcs over it). |
 | 10-07 11:18 | **Mortar** (2x2, arcing, ground only, 3x3 fire patch burns everyone, vanilla fire on burnable blocks). Approved 12:09. |
 | 10-07 12:09 | Railgun approved in game. **beta.4 ships after the Mortar** (balance + Railgun + Mortar). |
+| 10-08 14:45 | Repulsor Dome range 9 (push 6 unchanged). Upgrade modules still drop from destroyed turrets (left as is). |
+| 10-08 13:39 | Module tiers Mk1-Mk3: modifier modules only, Mk2 x1.5 / Mk3 x2 (Penetrator +1/+2/+3), upgrade at the Module Workstation, one per kind. |
 | 10-08 11:10 | TaCZ bullets hit turrets (server-side pickable hitbox); own turrets stay protected (dev `owndamage` toggle for testing). Spore mobs fight turrets as is. |
 | 10-08 10:31 | Railgun min pitch -30 (was -10); bullets no longer vanish when a step ends out of the world. |
 | 10-08 00:46 | Placement hologram, design B (ghost model + per-block boxes, red where blocked). |
@@ -432,7 +467,7 @@ player per level tick.
   TurretTeslaFlameTests 7 (flamethrower sweeps to next target), TurretLaserTests 4, TurretWorkstationTests 7, dev
   CreatePlacementTests 1, dev PipezEnergyTests 1. Negative controls were checked for the bullet pass-through and sweep tests.
 - **Scenes** (`-Pshowcase=<name> -PshowcaseWorld=showcase_fx`): default, `weapons`, `missiles`, `automation`,
-  `elemental`, `laser`, `workshop`, `stress`, `icon`, `railgun`, `mortar`, `feedhub`, `repulsor`, `health`, `placement`. Shots in
+  `elemental`, `laser`, `workshop`, `stress`, `icon`, `railgun`, `mortar`, `feedhub`, `repulsor`, `health`, `placement`, `modules`. Shots in
   `run/screenshots/showcase_*.png`. Store shots: add `-PnoDevMods` (no ToroHealth numbers).
 - **Load test**: `-Pshowcase=stress -PstressCount=200 [-Pjfr=<file>]` over the spawn chunks; `[stress]` MSPT/FPS lines.
   Mac (M4 Air): 200 turrets idle 75-80 FPS, combat 55, MSPT ~7; 400 turrets combat 39 FPS, MSPT 10.
@@ -474,4 +509,11 @@ player per level tick.
 - GameTest: own world `run/gametestworld`, entities wiped per run; structures sit a block up, so a template's floor is at
   test y 1 (stand things at y 2); `destroyBlock` never drops loot; arenas persist (closed boxes, one batch per test, disarm turrets);
   `helper.onEachTick` for tick-exact checks; `FakePlayerFactory` for player-driven tests.
+- GameTest arenas are hollow stone boxes: blocks and **loose items** a test leaves inside stay for the next batch placed
+  there (adding tests reshuffles which test lands where). Tests that count drops must discard items present at their
+  start; tests that place workstations/sources should clear them. Spawn mobs at absolute coords when comparing with
+  absolute footprints (`helper.relativePos` → `spawnWithNoFreeWill(Vec3)` landed elsewhere once).
+- `runClient` with `-PwithCompatMods` loads Spore + TaCZ; Spore logs its own recipe/model errors (not ours).
+- The dev source set (`src/dev`) is compiled by `runGameTestServer`/`runClient`, not by `./gradlew build`: run
+  `./gradlew compileDevJava --offline` after editing dev classes.
 - Memory: `~/.claude/projects/-Users-alifrizzaz-Documents-Minecraft-Modding-Turret/memory/bastion-phase0-defaults.md`.

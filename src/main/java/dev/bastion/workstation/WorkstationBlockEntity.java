@@ -247,6 +247,22 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
         return recipe != null && recipe.ingredients().stream().anyMatch(c -> c.ingredient().test(stack));
     }
 
+    /**
+     * Whether automation may put this into input {@code slot}: onto a stack of the same item, or into an empty slot only
+     * while the inputs hold less of that ingredient than one craft takes. Without the limit an ingredient that stacks to
+     * one (a module being upgraded) filled every input and the other ingredients never got in.
+     */
+    private boolean acceptsInto(int slot, ItemStack stack) {
+        WorkstationRecipe recipe = recipe();
+        if (recipe == null || slot >= INPUTS) return false;
+        ItemStack there = items.getStackInSlot(slot);
+        if (!there.isEmpty()) return ItemStack.isSameItemSameTags(there, stack) && accepts(stack);
+        for (WorkstationRecipe.Counted counted : recipe.ingredients()) {
+            if (counted.ingredient().test(stack)) return count(counted, inputs()) < counted.count();
+        }
+        return false;
+    }
+
     private void crafted() {
         if (level != null) level.blockEvent(worldPosition, getBlockState().getBlock(), CRAFTED, 0);
     }
@@ -284,7 +300,7 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
 
         @Override
         public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            return slot < INPUTS && accepts(stack) ? items.insertItem(slot, stack, simulate) : stack;
+            return acceptsInto(slot, stack) ? items.insertItem(slot, stack, simulate) : stack;
         }
 
         @Override
@@ -299,7 +315,7 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return slot < INPUTS && accepts(stack);
+            return acceptsInto(slot, stack);
         }
     }
 

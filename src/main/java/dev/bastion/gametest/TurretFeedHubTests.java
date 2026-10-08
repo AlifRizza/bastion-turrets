@@ -235,6 +235,9 @@ public class TurretFeedHubTests {
     @GameTest(template = ARENA, timeoutTicks = 60, batch = "feedHubDropsOwnShare")
     public static void feedHubDropsOwnShare(GameTestHelper helper) {
         BlockPos min = new BlockPos(4, 2, 2);
+        // Counts loose drops: items an earlier test left at this arena spot (a turret broken when this arena was
+        // placed spilled 10 rounds here once) must not count.
+        helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(min)).inflate(3)).forEach(ItemEntity::discard);
         hubs(helper, min, 2, 1);
         helper.runAtTickTime(3, () -> {
             ((FeedHubBlockEntity) helper.getBlockEntity(min)).buffer().setStackInSlot(0, new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 10));

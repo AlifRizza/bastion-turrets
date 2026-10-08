@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -21,8 +22,22 @@ import java.util.stream.Collectors;
  * accepts each modifier once (TurretInventory rejects duplicates).
  */
 public class ModifierItem extends Item {
-    public ModifierItem(Properties properties) {
+    private final int mk;
+
+    public ModifierItem(Properties properties, int mk) {
         super(properties);
+        this.mk = mk;
+    }
+
+    /** 1, 2 or 3 (PLAN 4.6 "Tier modul"). */
+    public int mk() {
+        return mk;
+    }
+
+    /** The module kind every Mk shares (its Mk1 id): a base takes one of each kind. */
+    public ResourceLocation family() {
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(this);
+        return mk == 1 ? id : new ResourceLocation(id.getNamespace(), id.getPath().substring(0, id.getPath().length() - "_mk2".length()));
     }
 
     public ModifierEffect effect() {
@@ -31,6 +46,7 @@ public class ModifierItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bastion.modifier.mk", mk).withStyle(ChatFormatting.GRAY));
         ModifierEffect e = effect();
         percent(tooltip, "range", e.range());
         percent(tooltip, "fire_rate", e.fireRate());
