@@ -1,0 +1,25 @@
+{
+  "type": "bastion:plasma_cannon",
+  "ammo": "bastion:ammo/plasma",
+  "energy_color": "#3DFF6E",
+  "range": 40,
+  "fire_interval": 30,
+  "damage": 18,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 4,
+  "aim_tolerance": 1.5,
+  "aim_lock_ticks": 4,
+  "min_pitch": -30,
+  "max_pitch": 60,
+  "pivot_height": 0.71875,
+  "muzzle_length": 2.14375,
+  "params": {
+    "charge_ticks": 20,
+    "orb_speed": 0.8,
+    "lead_accuracy": 0.9,
+    "min_range": 4,
+    "blast_radius": 4,
+    "blast_damage": 14
+  }
+}

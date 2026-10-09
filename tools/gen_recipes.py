@@ -82,8 +82,17 @@ PARTS = {
     "repulsor_dome_turret": {"dome_core": ({"diamond": 1, "redstone_block": 1, "piston": 2}, LARGE_PART),
                              "dome_pylons": ({"iron_block": 1, "copper_block": 1}, LARGE_PART),
                              "dome_mount": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
+    "ion_rifle_turret": {"ion_barrel": ({"iron_ingot": 2, "copper_ingot": 1, "amethyst_shard": 1}, SPECIAL_PART),
+                         "ion_capacitor": ({"copper_ingot": 2, "redstone": 2, "gold_ingot": 1}, SMALL_PART),
+                         "ion_mount": ({"iron_ingot": 1, "observer": 1}, SMALL_PART)},
+    "plasma_repeater_turret": {"plasma_barrel": ({"iron_ingot": 2, "glass": 1, "glowstone_dust": 2}, SMALL_PART),
+                               "plasma_chamber": ({"copper_ingot": 2, "glowstone_dust": 2, "blaze_powder": 1}, SPECIAL_PART),
+                               "repeater_mount": ({"iron_ingot": 1, "observer": 1}, SMALL_PART)},
+    "plasma_cannon_turret": {"plasma_cannon_core": ({"diamond": 1, "glowstone": 1, "blaze_rod": 1}, LARGE_PART),
+                             "plasma_cannon_barrel": ({"iron_block": 1, "copper_block": 1}, LARGE_PART),
+                             "plasma_cannon_mount": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
 }
-LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret", "repulsor_dome_turret"}
+LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret", "repulsor_dome_turret", "plasma_cannon_turret"}
 PART_COUNT = {"missile_pod": 2}  # the launcher has two pods
 
 # Module Workstation: the old crafting recipes as ingredient counts; ammo likewise at the Ammo Workstation.
@@ -102,11 +111,12 @@ AMMO = {  # result: (ingredients, time, energy, count, tab)
     "missiles": ({"iron_nugget": 3, "gunpowder": 1, "firework_rocket": 1}, 60, 800, 6, "rockets"),
     "fuel_canister": ({"iron_ingot": 3, "iron_nugget": 1, "#minecraft:coals": 1}, 40, 300, 3, "laser_cell"),
     "empty_laser_cell": ({"iron_ingot": 2, "glass": 1, "redstone": 1}, 40, 400, 4, "laser_cell"),
+    "empty_plasma_cell": ({"iron_ingot": 2, "glass": 1, "glowstone_dust": 1}, 40, 400, 4, "laser_cell"),
     "rail_slugs": ({"iron_ingot": 2, "copper_ingot": 1, "redstone": 1}, 60, 800, 4, "kinetic_rounds"),
     "mortar_shells": ({"iron_ingot": 2, "gunpowder": 2, "#minecraft:coals": 1}, 60, 600, 4, "rockets"),
 }
-# Charging Station: ammo that stores energy (Plasma Cells will go here too).
-CHARGE = {"laser_cell": ({B + "empty_laser_cell": 1}, 60, 3000, 1)}
+# Charging Station: ammo that stores energy.
+CHARGE = {"laser_cell": ({B + "empty_laser_cell": 1}, 60, 3000, 1), "plasma_cell": ({B + "empty_plasma_cell": 1}, 80, 4000, 1)}
 
 WORKSTATIONS = {  # crafting table: pattern, key
     "part_workstation": (["PSP", "RCR", "III"], {"P": "piston", "S": "smithing_table", "R": "redstone", "C": "crafting_table", "I": "iron_ingot"}),

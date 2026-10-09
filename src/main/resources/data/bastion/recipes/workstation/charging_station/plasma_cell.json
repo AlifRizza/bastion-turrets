@@ -1,0 +1,16 @@
+{
+  "type": "bastion:workstation",
+  "station": "charging_station",
+  "category": "bastion:plasma_cell",
+  "ingredients": [
+    {
+      "item": "bastion:empty_plasma_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:plasma_cell"
+  },
+  "time": 80,
+  "energy": 4000
+}

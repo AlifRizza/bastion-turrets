@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        17.27,
+        -4.6,
+        -21.2
+      ],
+      "scale": [
+        1.833,
+        1.833,
+        1.833
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -6.21,
+        11.57
+      ],
+      "scale": [
+        0.868,
+        0.868,
+        0.868
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        21.85,
+        -11.74,
+        0.0
+      ],
+      "scale": [
+        1.64,
+        1.64,
+        1.64
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -12.43,
+        -23.13
+      ],
+      "scale": [
+        1.736,
+        1.736,
+        1.736
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        12.75,
+        -11.99
+      ],
+      "scale": [
+        1.157,
+        1.157,
+        1.157
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        12.75,
+        -11.99
+      ],
+      "scale": [
+        1.157,
+        1.157,
+        1.157
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        3.12,
+        -9.67,
+        -17.72
+      ],
+      "scale": [
+        1.35,
+        1.35,
+        1.35
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -3.12,
+        -9.67,
+        -17.72
+      ],
+      "scale": [
+        1.35,
+        1.35,
+        1.35
+      ]
+    }
+  }
+}

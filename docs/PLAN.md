@@ -493,7 +493,7 @@ Semua model mengikuti satu bahasa visual supaya terasa satu keluarga:
 
 **Ditambahkan 2026-10-07 (keputusan user):** **Railgun** di Large Turret Base 2x2, peran anti-bos: 60 damage menembus armor, x2 ke `forge:bosses`, selalu membidik target dengan max HP terbesar, butuh 1 Rail Slug **dan** 8.000 FE per tembakan. Charge 3 dtk: glow model berubah ke warna efek (violet) dan pita kumparan menyala satu per satu dari pangkal ke moncong, lalu listrik merayap di seluruh laras seperti Tesla Coil; peluru 40 blok/tick; tumbukan memicu shockwave knockback radius 4 yang hanya mendorong target sah (tanpa damage tambahan). Model mengikuti referensi user: dua rel panjang (~4,6 blok dari poros) dengan celah bercahaya, drum magazine di samping, yoke di atas turntable. **Mortar** di Large Turret Base 2x2 (desain disetujui user 12:09, sudah dibuat): lintasan melengkung tanpa homing, laras selalu menghadap ke atas, hanya target di darat, bisa menembak melewati tembok; tumbukan menyisakan api custom 3x3 blok yang membakar **semua** yang berdiri di atasnya (burn custom, tetap terbakar 3 dtk setelah keluar), dan blok yang bisa terbakar di area itu diberi api vanilla (pengecualian aturan NO-VANILLA atas keputusan user). Model mengikuti foto referensi user: rumah berlapis baja berpaku keling di atas cincin putar, laras pendek gemuk.
 
-Disimpan untuk setelah MVP rilis, memakai framework yang sama: **Laser** (beam kontinu dengan ramp-up), **Plasma Charge** (proyektil charged + ledakan), **Missile** (homing salvo), **Flak** (proximity fuse anti-udara), **Rail** (hitscan charged menembus), **EMP** (pulsa stun area), **Hive** (spawner drone). Komponen framework yang khusus untuk mereka (beam renderer, `energy_mote`, `plasma_arc`, `flak_burst`, ledakan custom, entity proyektil sungguhan) baru dibangun saat senjata itu dikerjakan.
+Disimpan untuk setelah MVP rilis, memakai framework yang sama: **Laser** (beam kontinu dengan ramp-up), **Plasma Charge** (proyektil charged + ledakan; sekarang di-spec sebagai Plasma Repeater + Plasma Cannon, bagian 8 "Ion Rifle, Plasma Repeater & Plasma Cannon"), **Missile** (homing salvo), **Flak** (proximity fuse anti-udara), **Rail** (hitscan charged menembus), **EMP** (pulsa stun area), **Hive** (spawner drone). Komponen framework yang khusus untuk mereka (beam renderer, `energy_mote`, `plasma_arc`, `flak_burst`, ledakan custom, entity proyektil sungguhan) baru dibangun saat senjata itu dikerjakan.
 
 **Dukungan addon "turret pack" (dicatat 2026-10-07 23:09, permintaan user, dikerjakan setelah rilis, sekitar 1.0.0; belum didesain):** pembuat addon cukup membuat desain (model Bedrock/GeckoLib + tekstur), animasi, suara, dan JSON berisi daftar variabel; tanpa Java. Contoh acuan: gun pack TaCZ (zip atau folder di `.minecraft/tacz`; per senjata file index, data, display, model, animasi, tekstur, suara OGG). Yang perlu dibangun: (1) satu item module generik yang dibuat dari isi pack, menggantikan pendaftaran Java per senjata; (2) path model/animasi/tekstur memakai namespace addon, bukan `bastion`; (3) file *display* JSON untuk efek (muzzle flash, tracer, warna, suara, model proyektil) yang sekarang ada di Java (VfxPresets); (4) folder pack `.minecraft/bastion/` + template + satu contoh addon + dokumen daftar variabel; (5) proyektil: addon memilih jenis yang sudah ada (peluru, roket, misil homing, peluru mortar) dan mengatur angka serta modelnya; perilaku baru tetap lewat addon Java. Format pack diberi nomor versi dan dijaga kompatibel. Sebelum mulai: ringkasan desain dalam bahasa Indonesia untuk disetujui user.
 
@@ -727,6 +727,70 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 - Semua GameTest lama lolos, `./gradlew build` lolos, checklist di `docs/TESTING.md`.
 
 **Di luar cakupan**: hologram untuk blok 1x1, memutar arah sebelum memasang (arah tetap mengikuti pemain), hologram yang terlihat oleh pemain lain.
+
+### Ion Rifle, Plasma Repeater & Plasma Cannon (permintaan user 2026-10-08 16:54, desain disetujui 17:09–17:11)
+
+**Status**: selesai 2026-10-10 (plan `docs/superpowers/plans/2026-10-10-ion-plasma-turrets.md`): 128 GameTest lolos (setelah ledakan menggantikan cincin, 2026-10-10 06:15), scene `-Pshowcase=ion` dan `-Pshowcase=plasma` dicek siang/malam; belum dites user di game. User 2026-10-09 23:40 mencabut aturan "tidak ada turret baru sampai SFX placeholder diganti" (2026-10-07 23:37): SFX masih placeholder, diganti menyusul lewat `docs/SOUND_SHEET.md`. Urutan: Ion Rifle → Plasma Repeater (bersama Plasma Cell) → Plasma Cannon.
+
+**Latar belakang**: user ingin turret plasma dan turret ion. Laser Rifle = garis cahaya instan yang menembus; plasma = bola panas yang terlihat terbang dan menyebar saat kena; ion = meniru Ion Rifle di Crimsonland (perilaku dibaca dari reimplementasi `banteg/crimson`: peluru cepat berjejak biru, berhenti di musuh pertama, lalu inti biru 0,25 dtk menarik sinar lurus ke **semua** musuh dalam radius dan memberi damage ke mereka). Keputusan user: sebaran Ion bentuk **bintang** dari satu titik, bukan pohon/rantai (17:00); plasma **dua-duanya**, Repeater 1x1 + Cannon 2x2; amunisi **Plasma Cell** untuk kedua plasma, **FE** untuk Ion; Repeater dengan **splash kecil**; warna efek plasma **hijau `#3DFF6E`** (awalnya toska `#3DFFB5`; user 2026-10-10 01:08: di layar terlihat cyan, harusnya hijau), ion **biru Crimsonland `#8099FF`**.
+
+**Bersama**
+- Weapon module biasa: filter target, ON/OFF, redstone, tier/HP, module, GUI, comparator, Feed Hub (ammo dan FE) berlaku seperti turret lain.
+- Peluru/bola hanya mengenai **target sah**, menembus yang lain, berhenti di block (aturan peluru bagian 7). Damage area, sinar dan ledakan juga hanya ke target sah, tidak merusak block, tidak mengenai base sendiri.
+- Semua peluru punya waktu terbang dan turret melakukan lead (`lead_accuracy`, Targeting AI berlaku).
+- Jarak untuk radius (sinar Ion, splash Repeater) diukur dari titik kena ke kotak tubuh target terdekat, bukan ke titik tengahnya.
+- Kunci kecepatan di JSON: `bolt_speed` / `orb_speed`, **bukan** `bullet_speed` / `slug_speed`, supaya Penetrator tidak tercantum sebagai berpengaruh (`ModifierEffect.affects`).
+- Semua angka di `data/bastion/turret_weapons/ion_rifle.json`, `plasma_repeater.json`, `plasma_cannon.json`.
+
+**Ion Rifle** (modul kecil, base 1x1; lantai, dinding, plafon; FE)
+- Peluru ion `bolt_speed` 4 blok/tick, `lead_accuracy` 0,9. Berhenti di target sah pertama **atau** block.
+- Di titik berhenti terbentuk **inti ion** selama `field_ticks` 6. Inti menarik sinar ke **setiap** target sah dalam `field_radius` 3 blok (bintang, satu lapis). Sinar **tidak butuh line of sight** (medan, seperti Repulsor Dome): peluru yang kena dinding tetap mengenai musuh di balik dinding tipis dalam radius.
+- Damage: target yang kena langsung `damage` **8**; tiap target lain yang tersambung sinar `field_damage` **5**, **sekali** per tembakan (bukan per tick, supaya tidak terhalang i-frame).
+- `range` 32, `fire_interval` 16 tick, `turn_speed` 8, `aim_tolerance` 1,5, pitch -35..90. Ammo `bastion:ammo/energy`, `ammo_per_shot` 0; `energy_per_shot` 1.200 FE, kapasitor 40.000 FE, input 1.000 FE/t (Creative Ammo membayar). Tanpa FE cukup → NO_AMMO.
+- Module: Range, Damage Amplifier (langsung dan sinar), Overclock, Rapid Cycler, Targeting AI. Penetrator tidak berlaku (peluru selalu berhenti di target pertama); Ammo Recycler tidak berlaku (FE).
+- Beda dengan Tesla: Tesla menyambar 5 target dalam 16 blok dari coil, instan; Ion menembak sampai 32 blok lalu mengenai satu gerombolan di titik kena.
+
+**Plasma Repeater** (modul kecil, base 1x1; lantai, dinding, plafon; Plasma Cell)
+- Bola plasma kecil `bolt_speed` 1,5 blok/tick (lambat dan terlihat terbang), `lead_accuracy` 0,9. Berhenti di target sah pertama atau block, lalu ledakan kecil: target yang kena `damage` **5**, target sah lain dalam `splash_radius` 1,2 blok `splash_damage` **3**. Bola yang kena block juga meledak.
+- `range` 24, `fire_interval` 5 tick (4/dtk), `turn_speed` 10, `aim_tolerance` 2, pitch -35..90.
+- Heat (sistem MG yang sudah ada): `heat_per_shot` 8, `heat_dissipation_per_second` 15, `max_heat` 100, `overheat_ticks` 60. Kira-kira 6 dtk menembak, lalu vent 3 dtk.
+- Ammo `bastion:ammo/plasma`, `ammo_per_shot` 0,1 (10 tembakan per cell).
+- Peran: single target lebih lemah dari MG (sekitar 20 vs 30 dmg/dtk), unggul di gerombolan rapat; bola lambat bisa meleset ke target cepat (disengaja).
+- Module: Range, Damage Amplifier (langsung dan splash), Overclock, Rapid Cycler, Coolant Loop, Targeting AI, Ammo Recycler. Penetrator tidak berlaku.
+
+**Plasma Cannon** (modul besar, Large Turret Base 2x2; Plasma Cell)
+- Charge `charge_ticks` 20 (bola tumbuh di moncong), lalu bola besar `orb_speed` 0,8 blok/tick, `lead_accuracy` 0,9. Berhenti di target sah pertama atau block; target yang kena `damage` **18**.
+- **Ledakan ala BFG 9000 Vic's Point Blank** (user 2026-10-10 06:01, ganti cincin 12 pecahan yang sering meleset ke depan; charge dan tembakan tetap sama, 06:06): di titik berhenti bola meledak dengan radius `blast_radius` **4** blok. Setiap target sah dalam radius (jarak ke kotak tubuh) kena `blast_damage` **14** di tengah, turun linear ke **7** di tepi; target yang kena langsung dapat 18 + ledakan. Tanpa line of sight, tanpa knockback, tidak merusak block, tidak mengenai non-target. Bola yang terbang sampai batas range tanpa kena apa-apa tidak meledak.
+- `range` 40, `min_range` 4, `fire_interval` 30 + `charge_ticks` 20 = siklus 50 tick (state machine mengisi setelah cooldown), `turn_speed` 4, `aim_tolerance` 1,5, pitch -30..60. Ammo `bastion:ammo/plasma`, `ammo_per_shot` 1.
+- Module: Range, Damage Amplifier (bola dan ledakan), Overclock, Rapid Cycler, Targeting AI, Ammo Recycler. Penetrator dan Autoloader tidak berlaku.
+
+**Plasma Cell** (`plasma_cell`, `empty_plasma_cell`, stack 16 seperti Laser Cell, tag `bastion:ammo/plasma`)
+- Empty Plasma Cell di Ammo Workstation: 2 iron ingot + 1 glass + 1 glowstone dust → 4 cell (40 tick, 400 FE).
+- Diisi di Charging Station: 1 empty → 1 Plasma Cell, 80 tick, 4.000 FE (kategori `bastion:plasma_cell`).
+- Turret tidak mengembalikan cell kosong (sama dengan Laser Cell).
+
+**Model** (`tools/blockout/design_weapons.py`, gunmetal + satu glow cyan, konvensi bone bagian 6.2)
+- Ion Rifle: laras ramping panjang dengan 3 cincin coil glow di dekat moncong (`glow_coil_0..2`), kapasitor kotak di belakang. Tembak: cincin berkilat dari belakang ke depan, recoil pendek.
+- Plasma Repeater: laras pendek tebal dengan ruang penampung bulat di pangkal dan sirip vent di samping. Tembak: recoil cepat; heat tinggi: sirip menyala; vent: sirip membuka.
+- Plasma Cannon (desain ulang user 2026-10-10 06:28, referensi Kromlech "Battle Tank Turret: Plasma Cannon"): turret tank lapis baja besar. Hull lebar di turntable 2x2 (glacis bertingkat, rok samping berpaku keling, bustle belakang dengan sirip vent, kubah palka, tabung coil glow di dek belakang, sensor di depan), hanya berputar kiri-kanan; laras coil tebal (rusuk gelap di atas inti glow `glow_coils`, tutup berat dengan satu lubang moncong bulat gelap (user 06:35: dua celah terlihat aneh)) naik-turun pada mantlet di depan hull (`pivot_height` 0,71875, `muzzle_length` 2,14375; user 06:38: dibuat lebih tinggi, hull di atas cincin turret). Palet tetap gunmetal + glow cyan (aturan model); glow jadi hijau saat charge. Tembak: laras recoil berat, coil berkilat.
+- Animasi: `idle`, `aim`, `fire`, `deploy`; Repeater + `overheat`/`cooldown_vent`; Cannon + `charge`.
+
+**VFX** (framework sendiri, tanpa partikel vanilla)
+- Ion (`#8099FF`): kilatan biru di moncong; peluru = kepala putih kekuningan + jejak biru lurus ~6 blok yang memudar ke belakang; kena: cincin biru membesar + percikan biru, kepala mengecil jadi inti biru; sinar ke tiap target = strip lurus dua lapis (inti terang + pinggiran lembut, render `BEAM`) dengan glow kecil di ujung target; semua memudar dalam 6 tick. Bentuk lurus membedakannya dari petir zig-zag Tesla yang warnanya mirip.
+- Plasma Repeater (`#3DFF6E`): bola = inti putih + halo hijau + jejak pendek ~1 blok; kena: semburan hijau kecil + percikan + decal hangus kecil (memudar ~2 dtk); laras berpendar hijau sesuai heat, uap + desis saat vent (pola MG).
+- Plasma Cannon (`#3DFF6E`): charge = bola hijau tumbuh di moncong + partikel tersedot masuk; bola besar = inti putih + halo hijau berdenyut + jejak ~3 blok (charge dan tembakan tidak berubah). Ledakan (dari frame video BFG 9000): kilatan inti putih-kuning yang menyilaukan, awan bola api hijau bergulung sebesar radius (~1 dtk, putih di tengah lalu hijau lalu memudar gelap), bintik gelap, percikan dan bara hijau, gelombang hijau datar, cahaya kuat, camera shake ~12 blok, kilatan layar untuk yang dekat, bekas hangus hijau besar di tanah (juga saat kena mob: di tanah di bawahnya).
+- SFX placeholder baru (8, `gen_sounds.py`, masuk sound sheet): `ion_fire`, `ion_hit`, `plasma_repeater_fire`, `plasma_hit_small`, `plasma_vent`, `plasma_cannon_charge`, `plasma_cannon_fire`, `plasma_cannon_hit` (`plasma_fragment` dihapus bersama cincin pecahan).
+
+**Survival**: part lewat Part Workstation, dirakit di Part Assembler (angka di `tools/gen_recipes.py`). Ion Rifle (part kecil): Ion Barrel (iron, copper, amethyst shard), Ion Capacitor (copper, redstone, gold), Ion Mount (iron, observer). Plasma Repeater (part kecil): Plasma Barrel (iron, glass, glowstone dust), Plasma Chamber (copper, glowstone dust, blaze powder), Repeater Mount (iron, observer). Plasma Cannon (part besar): Cannon Core (diamond, glowstone block, blaze rod), Cannon Barrel (iron block, copper block), Cannon Mount (iron, copper, observer). Lang en_us + id_id, tooltip, creative tab Weapon Modules dan Ammo.
+
+**Selesai jika**
+- GameTest Ion: husk yang kena langsung -8; dua husk dalam 3 blok dari titik kena masing-masing -5; husk di 4 blok utuh; sapi dalam radius utuh; peluru yang kena block di dekat husk tetap membentuk inti (husk di balik dinding 1 blok dalam radius -5); tanpa FE tidak menembak; 1.200 FE per tembakan.
+- GameTest Plasma Repeater: husk yang kena -5, husk 1 blok di sebelahnya -3, husk 2 blok utuh; sapi utuh; tidak ada block rusak; overheat setelah sekitar 6 dtk lalu berhenti 60 tick; 10 tembakan = 1 cell.
+- GameTest Plasma Cannon: husk utama kena 18 + ledakan penuh; husk dan laba-laba dalam 4 blok kena ledakan (lebih kecil di tepi); husk di luar 4 blok utuh; sapi dalam radius utuh; bola yang kena dinding tetap meledak (husk dekat dinding, juga di baliknya, kena); 1 cell per tembakan; tidak menembak di bawah 4 blok; modul ditukar saat bola terbang tidak membuat crash.
+- GameTest Plasma Cell: Ammo Workstation membuat 4 empty cell; Charging Station mengisi 1 cell (80 tick, 4.000 FE).
+- 113 GameTest lama tetap lolos (juga dengan `-PwithCompatMods`; total jadi 128); `./gradlew build` lolos; scene `-Pshowcase=ion` dan `-Pshowcase=plasma` di `-PshowcaseWorld=showcase_fx` dicek (tembak, kena, sinar, splash, overheat, ledakan, siang/malam); checklist di `docs/TESTING.md`.
+
+**Di luar cakupan**: sebaran Ion bentuk pohon/rantai dan perk Shock Chain, varian Ion Minigun/Ion Cannon, debuff Melt, cincin pecahan (diganti ledakan 2026-10-10), ledakan di udara saat bola habis range, awan plasma yang tertinggal, merusak block, efek status (stun, slow), cell kosong yang dikembalikan turret, Plasma Cell untuk Laser Rifle.
 
 
 ---

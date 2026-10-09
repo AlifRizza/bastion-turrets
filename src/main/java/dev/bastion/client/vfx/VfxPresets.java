@@ -367,6 +367,86 @@ public final class VfxPresets {
     /** The patch's burn on the ground: glows while it burns, then cools and fades. */
     public static final VfxPreset MORTAR_SCORCH = v -> v.scorch(1.6f * v.params().scale(), 500);
 
+    // --- Ion Rifle, Crimsonland blue (bolt: TracerRenderer streak, beams: BeamRenderer, IonEffects) ------------------
+
+    /** The bolt leaving the barrel: a blue flash with a white core, a tight ring, a few sparks. */
+    public static final VfxPreset ION_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.6f, 3, Curve.PULSE, v.params().color())
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 1.2f, 2, Curve.PULSE, 0xFFF4F6FF)
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.06f, 1.8f, 5, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 4, v.direction(), 20, 0.3f, 0.5f, 6, Curve.LINEAR, v.params().color())
+            .light(11, 2);
+
+    /** The ion core: a white-blue flash that shrinks to a small blue core over ~6 ticks, an expanding ring, blue sparks. */
+    public static final VfxPreset ION_HIT = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 4.5f, 3, Curve.PULSE, 0xFFE8EEFF)
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 1.6f, 6, Curve.EASE_OUT, v.params().color())
+            .ring(BastionParticles.SHOCKWAVE_RING.get(), v.origin(), v.params().normal(), 0, 12f, 7, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 12, v.params().normal(), 170, 0.32f, 0.55f, 9, Curve.LINEAR, v.params().color())
+            .light(13, 6);
+
+    /** Where a beam meets a target: a small flash and sparks. */
+    public static final VfxPreset ION_ZAP = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 1.6f, 3, Curve.PULSE, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 4, v.params().normal(), 120, 0.2f, 0.4f, 7, Curve.LINEAR, v.params().color());
+
+    // --- Plasma Repeater and Plasma Cannon, teal (balls: TracerRenderer orbs, PlasmaEffects) ------------------------
+
+    public static final VfxPreset PLASMA_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.2f, 2, Curve.PULSE, v.params().color())
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.05f, 1.4f, 4, Curve.EASE_OUT, v.params().color())
+            .light(10, 2);
+
+    /** A small ball bursting: a teal flash, a splash ring about the splash radius across, sparks and embers. */
+    public static final VfxPreset PLASMA_HIT = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.4f, 3, Curve.PULSE, v.params().color())
+            .ring(BastionParticles.IMPACT_SPLASH.get(), v.origin(), v.params().normal(), 0, 2.4f, 6, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.SPARK.get(), 6, v.params().normal(), 90, 0.22f, 0.5f, 8, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.EMBER.get(), 2, v.params().normal(), 60, 0.05f, 0.5f, 14, Curve.FLICKER, v.params().color())
+            .light(9, 3);
+
+    /** A small burn on the struck block that fades within ~2 s. */
+    public static final VfxPreset PLASMA_SCORCH = v -> v.scorch(0.35f, 40);
+
+    /** The big ball leaving the barrel: a flash in a white one, a wide ring, a puff of smoke, a hard light, a kick. */
+    public static final VfxPreset PLASMA_CANNON_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 5f, 4, Curve.PULSE, v.params().color())
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.4f, 3, Curve.PULSE, 0xFFEAFFF6)
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.1f, 3.2f, 7, Curve.EASE_OUT, v.params().color())
+            .burst(BastionParticles.SMOKE_PUFF.get(), 4, v.direction(), 30, 0.06f, 2f, 35, Curve.EASE_OUT, 0x90C8D8D2)
+            .light(14, 4)
+            .shake(0.3f, 10);
+
+    /**
+     * The Cannon's explosion, from frames of Vic's Point Blank BFG 9000 (user 2026-10-10): a blinding white-yellow core, a
+     * billowing green fireball cloud filling the blast (white at heart, green, then darkening as it fades, ~1 s), dark specks,
+     * green sparks and embers, a flat green shockwave, a hard light, a shake and a flash for players close by.
+     * Scale = blast radius / 4.
+     */
+    public static final VfxPreset PLASMA_BURST = v -> {
+        float s = v.params().scale();
+        int green = v.params().color();
+        // Smoke first: SOFT particles draw in creation order, so the fireballs spawned after it sit in front.
+        v.burst(BastionParticles.BLAST_SMOKE.get(), 4, UP, 90, 0.12f * s, 12f * s, 50, Curve.BILLOW, 0x60203A24)
+                .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 28f * s, 5, Curve.PULSE, 0xFFFFFAD8)
+                .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 20f * s, 10, Curve.EASE_OUT, green)
+                .ring(BastionParticles.SHOCKWAVE_RING.get(), v.origin(), UP, 0, 30f * s, 12, Curve.EASE_OUT, green)
+                // The cloud: fireballs thrown out to the blast's edge (drag 0.86: ~3.6 blocks at this speed), white-hot, then green.
+                .burst(BastionParticles.FIREBALL.get(), 40, UP, 180, 0.45f * s, 15f * s, 20, Curve.BILLOW, lighten(green, 0.3f))
+                .burst(BastionParticles.FIREBALL.get(), 12, UP, 60, 0.15f * s, 14f * s, 26, Curve.BILLOW, lighten(green, 0.55f))
+                // Glowing lime blobs over it, so the cloud reads as energy rather than smoke.
+                .burst(BastionParticles.MUZZLE_FLASH.get(), 22, UP, 180, 0.5f * s, 10f * s, 14, Curve.EASE_OUT, 0xFFB0FF80)
+                .burst(BastionParticles.SPARK.get(), 28, UP, 170, 0.75f, 1.3f, 16, Curve.LINEAR, green)
+                .burst(BastionParticles.DEBRIS.get(), 12, UP, 120, 0.45f, 0.9f, 35, Curve.LINEAR, 0xFF1C241C)
+                .burst(BastionParticles.EMBER.get(), 18, UP, 100, 0.16f, 0.9f, 50, Curve.FLICKER, green)
+                .light(15, 12)
+                .shake(0.6f, 12)
+                .flash(0.3f, 10);
+    };
+
+    /** The blast's burn on the ground or the struck face: glows green and cools, about 3.5 blocks across, fades in ~15 s. */
+    public static final VfxPreset PLASMA_SCORCH_BIG = v -> v.scorch(1.8f * v.params().scale(), 300);
+
     // --- shared turret states -------------------------------------------------------------------
 
     /** Overheat vent: steam and heat haze (PLAN 4.4). */
@@ -432,6 +512,12 @@ public final class VfxPresets {
     public static final VfxPreset DOME_DUST = v -> v
             .ring(BastionParticles.DUST_RING.get(), v.origin(), UP, 0, 25f * v.params().scale(), 30, Curve.EASE_OUT, dust(v.params().blockColor(), 0xE0))
             .burst(BastionParticles.SMOKE_PUFF.get(), 24, new Vec3(0, 0.15, 0), 175, 0.5f, 4f, 45, Curve.EASE_OUT, dust(v.params().blockColor(), 0xC0));
+
+    /** {@code argb} mixed toward white by {@code t} (a paler, brighter shade of an energy colour). */
+    private static int lighten(int argb, float t) {
+        int r = argb >> 16 & 255, g = argb >> 8 & 255, b = argb & 255;
+        return argb & 0xFF000000 | Math.round(r + (255 - r) * t) << 16 | Math.round(g + (255 - g) * t) << 8 | Math.round(b + (255 - b) * t);
+    }
 
     /** Dust kicked up off a block: its colour mixed with a darker sand, so it shows on any floor. */
     private static int dust(int blockColor, int alpha) {
@@ -503,6 +589,15 @@ public final class VfxPresets {
         ALL.put("repulsor_hit", REPULSOR_HIT);
         ALL.put("dome_burst", DOME_BURST);
         ALL.put("dome_dust", DOME_DUST);
+        ALL.put("ion_muzzle", ION_MUZZLE);
+        ALL.put("ion_hit", ION_HIT);
+        ALL.put("ion_zap", ION_ZAP);
+        ALL.put("plasma_muzzle", PLASMA_MUZZLE);
+        ALL.put("plasma_hit", PLASMA_HIT);
+        ALL.put("plasma_scorch", PLASMA_SCORCH);
+        ALL.put("plasma_cannon_muzzle", PLASMA_CANNON_MUZZLE);
+        ALL.put("plasma_burst", PLASMA_BURST);
+        ALL.put("plasma_scorch_big", PLASMA_SCORCH_BIG);
     }
 
     private VfxPresets() {

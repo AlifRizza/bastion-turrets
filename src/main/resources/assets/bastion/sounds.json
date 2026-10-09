@@ -532,5 +532,96 @@
         "attenuation_distance": 128
       }
     ]
+  },
+  "ion.fire": {
+    "subtitle": "subtitles.bastion.ion.fire",
+    "sounds": [
+      {
+        "name": "bastion:ion/fire_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:ion/fire_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "ion.hit": {
+    "subtitle": "subtitles.bastion.ion.hit",
+    "sounds": [
+      {
+        "name": "bastion:ion/hit_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:ion/hit_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "plasma_repeater.fire": {
+    "subtitle": "subtitles.bastion.plasma_repeater.fire",
+    "sounds": [
+      {
+        "name": "bastion:plasma/repeater_fire_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:plasma/repeater_fire_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:plasma/repeater_fire_2",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "plasma.hit_small": {
+    "subtitle": "subtitles.bastion.plasma.hit_small",
+    "sounds": [
+      "bastion:plasma/hit_small_0",
+      "bastion:plasma/hit_small_1"
+    ]
+  },
+  "plasma.vent": {
+    "subtitle": "subtitles.bastion.plasma.vent",
+    "sounds": [
+      "bastion:plasma/vent"
+    ]
+  },
+  "plasma_cannon.charge": {
+    "subtitle": "subtitles.bastion.plasma_cannon.charge",
+    "sounds": [
+      {
+        "name": "bastion:plasma/cannon_charge",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "plasma_cannon.fire": {
+    "subtitle": "subtitles.bastion.plasma_cannon.fire",
+    "sounds": [
+      {
+        "name": "bastion:plasma/cannon_fire_0",
+        "attenuation_distance": 64
+      },
+      {
+        "name": "bastion:plasma/cannon_fire_1",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "plasma_cannon.hit": {
+    "subtitle": "subtitles.bastion.plasma_cannon.hit",
+    "sounds": [
+      {
+        "name": "bastion:plasma/cannon_hit_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:plasma/cannon_hit_1",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

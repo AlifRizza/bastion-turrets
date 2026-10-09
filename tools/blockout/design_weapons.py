@@ -1,7 +1,7 @@
 """Weapon modules v2 (~1 block): shared yoke + per-weapon receiver and barrels. PLAN 6.2 bone names.
 Origin = top of the base's turntable (weapon_mount), +Y = mount axis, barrels point north (-Z). Units px."""
 import sys
-from kit import Kit, GEO
+from kit import Kit, GEO, TAN22
 
 P = 7.0  # pitch axle height above the mount -> pivot_height 0.4375
 
@@ -569,6 +569,129 @@ def repulsor_dome(path):
     k.bone("muzzle_0", "body", pivot=(0, DOME_ORB, 0))
     k.write("repulsor_dome_turret", path, bounds=(3, 3), offset=(0, 1, 0))
 
+def octagon_z(k, tag, r, cy, z0, z1, step=0.01):
+    """Octagon prism along Z (a barrel or chamber seen end-on), flats at distance r: four boxes turned about Z."""
+    a = 2 * r * TAN22
+    return [k.box(tag, -r, cy - a / 2, z0 - step * i, r, cy + a / 2, z1 - step * i, rot=[0, 0, rz], pivot=[0, cy, z0], hide=("up", "down"))
+            for i, rz in enumerate((0, 45, 90, -45))]
+
+
+def ion_rifle(path):
+    """Ion Rifle (after Crimsonland's): a slim receiver with a capacitor block behind, a long thin barrel with three coil
+    rings near the tip (glow_coils; the fire clip pulses them) and a short emitter tip. muzzle_0 = the tip
+    (ion_rifle.json muzzle_length 1.5375 = 24.6 px)."""
+    k = Kit(128)
+    yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("rcv", -3.4, 3.8, -6.0, 3.4, 10.0, 5.0), k.box("rcvtop", -2.6, 10.0, -5.0, 2.6, 10.8, 3.6),
+        k.box("cap", -3.0, 4.4, 5.0, 3.0, 9.4, 8.6)])
+    k.bone("body_frame", "body", pivot=(0, P, 0), cubes=[k.box("capfin", -3.4, y, 5.4, 3.4, y + 0.5, 8.2) for y in (5.0, 6.6, 8.2)] + [
+        k.box("rail", -4.2, 5.6, -5.0, -3.4, 8.4, 3.0), k.box("rail", 3.4, 5.6, -5.0, 4.2, 8.4, 3.0)])
+    k.bone("glow_strips", "body", pivot=(0, P, 0), cubes=[
+        k.box("gstrip", -4.25, 6.6, -4.4, -4.15, 7.4, 2.4), k.box("gstrip", 4.15, 6.6, -4.4, 4.25, 7.4, 2.4),
+        k.box("capglow", -2.0, 9.4, 5.8, 2.0, 9.5, 7.8)])
+    k.bone("vent_l", "body", pivot=(-3.45, 5.0, 2.0), cubes=[k.box("vent", -3.5, 4.2, 0.6, -3.35, 5.8, 3.4)])
+    k.bone("vent_r", "body", pivot=(3.45, 5.0, 2.0), cubes=[k.box("vent", 3.35, 4.2, 0.6, 3.5, 5.8, 3.4)])
+    k.bone("sensor", "body", pivot=(2.6, 11.2, -3.0), cubes=[k.box("scope", 1.8, 10.8, -4.6, 3.4, 11.8, -1.6)])
+    k.bone("glow_lens", "sensor", pivot=(2.6, 11.3, -4.65), cubes=[k.box("lens", 2.0, 11.0, -4.65, 3.2, 11.6, -4.6)])
+    k.bone("barrel_0", "body", pivot=(0, P, -6.0), cubes=k.rod_z("ibarrel", 0, P, -23.0, -6.0, 1.8) + [
+        k.box("shroud", -1.4, P - 1.4, -10.0, 1.4, P + 1.4, -6.0), k.box("tip", -1.1, P - 1.1, -24.2, 1.1, P + 1.1, -23.0)])
+    coils, glow = [], []
+    for z in (-15.0, -18.0, -21.0):
+        coils += square_frame(k, "icoil", P, z - 0.6, z + 0.6, 2.4, 0.8)
+        glow += square_frame(k, "icoilglow", P, z - 0.25, z + 0.25, 1.6, 0.3)
+    k.bone("coils", "barrel_0", pivot=(0, P, -18.0), cubes=coils)
+    k.bone("glow_coils", "coils", pivot=(0, P, -18.0), cubes=glow)
+    k.bone("glow_tip", "barrel_0", pivot=(0, P, -24.25), cubes=[k.box("tipglow", -0.6, P - 0.6, -24.3, 0.6, P + 0.6, -24.2)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, -24.6))
+    k.write("ion_rifle_turret", path, bounds=(3.5, 2.5), offset=(0, 0.5, 0))
+
+
+def plasma_repeater(path):
+    """Plasma Repeater: a squat finned receiver, a round containment chamber at the base of a short thick barrel
+    (glow_chamber windows; the client tints the model glow teal as it heats), two flaps on top that swing open when it
+    overheats (vent_l / vent_r). muzzle_0 = the mouth (plasma_repeater.json muzzle_length 1.05 = 16.8 px)."""
+    k = Kit(128)
+    yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("rcv", -3.8, 3.4, -4.0, 3.8, 10.4, 5.4), k.box("rcvtop", -3.0, 10.4, -3.0, 3.0, 11.2, 4.4),
+        k.box("rcvrear", -2.8, 4.6, 5.4, 2.8, 9.2, 6.8)])
+    k.bone("body_frame", "body", pivot=(0, P, 0), cubes=[k.box("fin", x0, y, -2.4, x1, y + 0.6, 4.6)
+                                                         for side in (-1, 1) for x0, x1 in [sorted((side * 3.8, side * 4.7))]
+                                                         for y in (4.4, 5.8, 7.2, 8.6)])
+    k.bone("chamber", "body", pivot=(0, P, -6.5), cubes=octagon_z(k, "chamber", 3.4, P, -9.0, -4.0) + octagon_z(k, "chambercap", 2.6, P, -9.8, -3.2))
+    k.bone("glow_chamber", "chamber", pivot=(0, P, -6.5), cubes=[
+        k.box("window", -3.5, P - 0.9, -7.6, -3.4, P + 0.9, -5.4), k.box("window", 3.4, P - 0.9, -7.6, 3.5, P + 0.9, -5.4),
+        k.box("windowtop", -0.9, P + 3.4, -7.6, 0.9, P + 3.5, -5.4)])
+    k.bone("barrel_0", "body", pivot=(0, P, -9.8), cubes=k.rod_z("pbarrel", 0, P, -15.8, -9.8, 3.2, 2.4) + [
+        k.box("lip", -2.1, P - 2.1, -16.8, 2.1, P + 2.1, -15.8)])
+    k.bone("bore", "barrel_0", pivot=(0, P, -16.8), cubes=[k.box("bore", -1.3, P - 1.3, -16.85, 1.3, P + 1.3, -16.8)])
+    k.bone("glow_strips", "body", pivot=(0, P, 0), cubes=[k.box("gstrip", -3.0, 11.2, 3.8, 3.0, 11.3, 4.3)])
+    k.bone("vent_l", "body", pivot=(-2.9, 11.2, 0.6), cubes=[k.box("vent", -2.9, 11.2, -2.2, -0.3, 11.7, 3.4)])
+    k.bone("vent_r", "body", pivot=(2.9, 11.2, 0.6), cubes=[k.box("vent", 0.3, 11.2, -2.2, 2.9, 11.7, 3.4)])
+    k.bone("sensor", "body", pivot=(0, 11.7, -3.2), cubes=[k.box("scope", -1.0, 11.2, -4.0, 1.0, 12.2, -2.4)])
+    k.bone("glow_lens", "sensor", pivot=(0, 11.7, -4.05), cubes=[k.box("lens", -0.6, 11.4, -4.05, 0.6, 12.0, -4.0)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, -16.8))
+    k.write("plasma_repeater_turret", path, bounds=(3, 2.5), offset=(0, 0.5, 0))
+
+
+# Plasma Cannon v2 (user 2026-10-10 06:28, reference: Kromlech "Battle Tank Turret: Plasma Cannon"): a big armoured tank
+# turret. The hull only turns (yaw); the barrel pitches on a mantlet at the hull's front. plasma_cannon.json pivot_height =
+# PC_P / 16 (the server aims from the turning axis at that height), muzzle_length = -PC_TIP / 16.
+PC_P, PC_MANTLET, PC_TIP = 11.5, -10.0, -34.3
+
+
+def plasma_cannon(path):
+    """Plasma Cannon for the Large Turret Base: a tall armoured hull (user 06:38: it looked flat) standing on a raised
+    turret ring (stepped glacis, riveted side skirts, a rear bustle with vent flaps, a domed hatch, glowing coil tubes on the
+    rear deck, the sensor up front) and, on a round mantlet, a thick coil barrel: dark ribs over a glowing core (glow_coils;
+    the client turns the model glow green while it charges), a heavy cap with one dark round muzzle. muzzle_0 = the cap's
+    face."""
+    k = Kit(256)
+    P = PC_P
+    k.bone("root")
+    hull = k.octagon("turn", 12, 0, 1.6) + k.chamfer("ring", 10, 2.5, 1.6, 5.0) + [
+        k.box("hull", -11, 5, -9, 11, 13, 14), k.box("hullup", -9.5, 13, -7, 9.5, 18, 13),
+        k.box("glacis", -10, 5, -11.5, 10, 11, -9), k.box("glacisup", -9.5, 11, -9, 9.5, 13, -7),
+        k.box("bustle", -8, 8, 14, 8, 16, 18)]
+    k.bone("yaw_pivot", "root", cubes=hull)
+    k.bone("hull_plates", "yaw_pivot", pivot=(0, 12, 0), cubes=[
+        k.box("skirt", -11.8, 6.5, -7, -11, 13, 12), k.box("skirt", 11, 6.5, -7, 11.8, 13, 12),
+        k.box("cheek", -10.4, 13, -6, -9.5, 17, 10), k.box("cheek", 9.5, 13, -6, 10.4, 17, 10),
+        k.box("deck", -7.5, 18, 6, 7.5, 18.7, 12.5), k.box("brow", -8.5, 17, -8, 8.5, 18, -7)])
+    rivets = [k.box("rivet", x - 0.3, 13, z - 0.3, x + 0.3, 13.5, z + 0.3) for x in (-11.4, 11.4) for z in (-5, -1, 3, 7, 11)]
+    rivets += [k.box("rivet", x - 0.3, 11, -10.6, x + 0.3, 11.5, -10.0) for x in (-8, -4, 0, 4, 8)]
+    rivets += [k.box("rivet", x - 0.3, 16, 17.0, x + 0.3, 16.5, 17.6) for x in (-7.2, 7.2)]
+    k.bone("rivets", "yaw_pivot", pivot=(0, 12, 0), cubes=rivets)
+    k.bone("dome", "yaw_pivot", pivot=(0, 18.5, 0), cubes=k.octagon("dome", 4.5, 18, 19.7) + k.octagon("cupola", 2.6, 19.7, 20.9))
+    glow = [k.box("slit", -11.85, 9, -5, -11.75, 9.8, 10), k.box("slit", 11.75, 9, -5, 11.85, 9.8, 10)]
+    glow += k.ring8("domeglow", 4.55, 18.6, 19.1, 0.1) + k.faces4("ringglow", 10, 3.0, 3.6, 8.0, 0.1)
+    for cz in (8.3, 10.7):
+        glow += k.rod_x("rearcoil", 19.4, cz, -6.5, -1.5, 1.6) + k.rod_x("rearcoil", 19.4, cz, 1.5, 6.5, 1.6)
+    k.bone("glow_strips", "yaw_pivot", pivot=(0, 12, 0), cubes=glow)
+    k.bone("vent_l", "yaw_pivot", pivot=(-4, 16, 16), cubes=[k.box("vent", -7, 16, 14.5, -1, 16.6, 17.5)])
+    k.bone("vent_r", "yaw_pivot", pivot=(4, 16, 16), cubes=[k.box("vent", 1, 16, 14.5, 7, 16.6, 17.5)])
+    k.bone("sensor", "yaw_pivot", pivot=(-6, 19, -5), cubes=[k.box("scope", -7.4, 18, -6.5, -4.6, 19.9, -3.5)])
+    k.bone("glow_lens", "sensor", pivot=(-6, 18.95, -6.55), cubes=[k.box("lens", -7, 18.4, -6.55, -5, 19.5, -6.5)])
+    # The barrel turns about the mantlet, not the hull's centre, so the long hull never tips into the base.
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(0, P, PC_MANTLET))
+    k.bone("body", "pitch_pivot", pivot=(0, P, PC_MANTLET), cubes=octagon_z(k, "mantlet", 5.2, P, -13.0, -8.0) + [
+        k.box("mantletplate", -6.5, P - 4.5, -12.2, 6.5, P + 4.5, -11.4)])
+    k.bone("barrel_0", "body", pivot=(0, P, -13.0), cubes=octagon_z(k, "core", 2.8, P, -30.0, -13.0)
+           + octagon_z(k, "collar", 4.9, P, -30.6, -29.2) + octagon_z(k, "cap", 5.4, P, PC_TIP, -30.6)
+           + [k.box("spine", -1.0, P + 4.7, -29.0, 1.0, P + 5.6, -13.5)])
+    ribs = []
+    for i in range(9):
+        z = -28.6 + i * 1.7
+        ribs += octagon_z(k, "rib", 4.6, P, z, z + 0.7)
+    k.bone("coils", "barrel_0", pivot=(0, P, -21.0), cubes=ribs)
+    k.bone("glow_coils", "coils", pivot=(0, P, -21.0), cubes=octagon_z(k, "coilglow", 4.1, P, -29.0, -13.6))
+    # One round muzzle (user 06:35: two slots looked odd): a dark octagon in the cap's face, a lip of cap around it.
+    k.bone("bore", "barrel_0", pivot=(0, P, PC_TIP), cubes=octagon_z(k, "bore", 3.0, P, PC_TIP - 0.05, PC_TIP + 0.05))
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, PC_TIP - 0.3))
+    k.write("plasma_cannon_turret", path, bounds=(4, 3), offset=(0, 1, 0))
+
+
 out = sys.argv[1] if len(sys.argv) > 1 else GEO
 gun(f"{out}/gun_turret.geo.json")
 machine_gun(f"{out}/machine_gun_turret.geo.json")
@@ -586,3 +709,6 @@ mortar(f"{out}/mortar_turret.geo.json")
 mortar_shell(f"{out}/entity/turret_mortar_shell.geo.json")
 repulsor(f"{out}/repulsor_turret.geo.json")
 repulsor_dome(f"{out}/repulsor_dome_turret.geo.json")
+ion_rifle(f"{out}/ion_rifle_turret.geo.json")
+plasma_repeater(f"{out}/plasma_repeater_turret.geo.json")
+plasma_cannon(f"{out}/plasma_cannon_turret.geo.json")

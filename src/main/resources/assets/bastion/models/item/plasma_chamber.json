@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        8.5,
+        -8.47,
+        -13.33
+      ],
+      "scale": [
+        1.846,
+        1.846,
+        1.846
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -6.3,
+        5.69
+      ],
+      "scale": [
+        0.874,
+        0.874,
+        0.874
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        10.76,
+        -11.9,
+        0.0
+      ],
+      "scale": [
+        1.651,
+        1.651,
+        1.651
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        -12.61,
+        -11.39
+      ],
+      "scale": [
+        1.749,
+        1.749,
+        1.749
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        5.16,
+        -10.09
+      ],
+      "scale": [
+        1.166,
+        1.166,
+        1.166
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        0.0,
+        5.16,
+        -10.09
+      ],
+      "scale": [
+        1.166,
+        1.166,
+        1.166
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        1.54,
+        -9.81,
+        -8.73
+      ],
+      "scale": [
+        1.36,
+        1.36,
+        1.36
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        -1.54,
+        -9.81,
+        -8.73
+      ],
+      "scale": [
+        1.36,
+        1.36,
+        1.36
+      ]
+    }
+  }
+}

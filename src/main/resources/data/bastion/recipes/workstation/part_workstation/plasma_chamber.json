@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:plasma_repeater_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:glowstone_dust",
+      "count": 2
+    },
+    {
+      "item": "minecraft:blaze_powder",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:plasma_chamber"
+  },
+  "time": 140,
+  "energy": 5000
+}

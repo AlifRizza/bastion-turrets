@@ -1,0 +1,23 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.ion_rifle_turret.deploy": {"animation_length": 0.9, "bones": {
+      "barrel_0": {"position": {"0.0": [0, 0, 6], "0.6": [0, 0, -0.4], "0.9": [0, 0, 0]}},
+      "coils": {"scale": {"0.0": [0.4, 0.4, 1], "0.6": [1.06, 1.06, 1], "0.9": [1, 1, 1]}},
+      "body": {"scale": {"0.0": [0.92, 0.92, 0.92], "0.3": [1.02, 1.02, 1.02], "0.45": [1, 1, 1]}}}},
+    "animation.ion_rifle_turret.idle": {"animation_length": 4, "loop": true, "bones": {
+      "sensor": {"rotation": {"0.0": [0, 0, 0], "1.3": [0, 10, 0], "2.9": [0, -10, 0], "4.0": [0, 0, 0]}},
+      "glow_coils": {"scale": {"0.0": [1, 1, 1], "2.0": [1.06, 1.06, 1], "4.0": [1, 1, 1]}}}},
+    "animation.ion_rifle_turret.held_idle": {"animation_length": 4, "loop": true, "bones": {
+      "glow_coils": {"scale": {"0.0": [1, 1, 1], "2.0": [1.06, 1.06, 1], "4.0": [1, 1, 1]}}}},
+    "animation.ion_rifle_turret.aim": {"animation_length": 0.3, "loop": "hold_on_last_frame", "bones": {
+      "barrel_0": {"position": {"0.0": [0, 0, 0], "0.3": [0, 0, -0.4]}}}},
+    "animation.ion_rifle_turret.fire": {"animation_length": 0.45, "bones": {
+      "barrel_0": {"position": {"0.0": [0, 0, 1.6], "0.12": [0, 0, 0.4], "0.45": [0, 0, 0]}},
+      "glow_coils": {"scale": {"0.0": [1.35, 1.35, 1], "0.2": [0.95, 0.95, 1], "0.45": [1, 1, 1]}},
+      "body": {"position": {"0.0": [0, 0, 0.4], "0.2": [0, 0, 0]}}}},
+    "animation.ion_rifle_turret.no_ammo": {"animation_length": 1.2, "loop": true, "bones": {
+      "sensor": {"rotation": {"0.0": [10, 0, 0], "0.6": [14, 0, 0], "1.2": [10, 0, 0]}},
+      "glow_coils": {"scale": {"0.0": [0.8, 0.8, 1], "0.6": [0.75, 0.75, 1], "1.2": [0.8, 0.8, 1]}}}}
+  }
+}

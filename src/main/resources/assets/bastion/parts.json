@@ -457,5 +457,84 @@
       "body",
       "glow_strips"
     ]
+  },
+  "ion_barrel": {
+    "model": "ion_rifle_turret",
+    "texture": "item/ion_rifle_turret",
+    "bones": [
+      "barrel_0",
+      "coils",
+      "glow_coils",
+      "glow_tip"
+    ]
+  },
+  "ion_capacitor": {
+    "model": "ion_rifle_turret",
+    "texture": "item/ion_rifle_turret",
+    "bones": [
+      "body",
+      "body_frame",
+      "glow_strips"
+    ]
+  },
+  "ion_mount": {
+    "model": "ion_rifle_turret",
+    "texture": "item/ion_rifle_turret",
+    "bones": [
+      "yaw_pivot",
+      "axle"
+    ]
+  },
+  "plasma_barrel": {
+    "model": "plasma_repeater_turret",
+    "texture": "item/plasma_repeater_turret",
+    "bones": [
+      "barrel_0",
+      "bore"
+    ]
+  },
+  "plasma_chamber": {
+    "model": "plasma_repeater_turret",
+    "texture": "item/plasma_repeater_turret",
+    "bones": [
+      "chamber",
+      "glow_chamber"
+    ]
+  },
+  "repeater_mount": {
+    "model": "plasma_repeater_turret",
+    "texture": "item/plasma_repeater_turret",
+    "bones": [
+      "yaw_pivot",
+      "axle"
+    ]
+  },
+  "plasma_cannon_core": {
+    "model": "plasma_cannon_turret",
+    "texture": "item/plasma_cannon_turret",
+    "bones": [
+      "coils",
+      "glow_coils"
+    ]
+  },
+  "plasma_cannon_barrel": {
+    "model": "plasma_cannon_turret",
+    "texture": "item/plasma_cannon_turret",
+    "bones": [
+      "body",
+      "barrel_0",
+      "bore"
+    ]
+  },
+  "plasma_cannon_mount": {
+    "model": "plasma_cannon_turret",
+    "texture": "item/plasma_cannon_turret",
+    "bones": [
+      "yaw_pivot",
+      "hull_plates",
+      "dome",
+      "rivets",
+      "glow_strips"
+    ]
   }
 }

@@ -7,6 +7,7 @@ import dev.bastion.client.vfx.VfxParams;
 import dev.bastion.client.vfx.VfxPresets;
 import dev.bastion.network.BulletImpact;
 import dev.bastion.network.BurnSync;
+import dev.bastion.network.IonField;
 import dev.bastion.network.RackSync;
 import dev.bastion.network.TurretImpactEvent;
 import dev.bastion.network.TurretStateSync;
@@ -24,6 +25,12 @@ import net.minecraft.world.phys.Vec3;
 /** Client-side packet effects; only ever reached through DistExecutor from the packet classes. */
 public final class ClientPacketHandler {
     private ClientPacketHandler() {
+    }
+
+    /** Ion Rifle: the core's beams appear when the bolt's tracer gets there (or at once if it has none). */
+    public static void ionField(IonField field) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) TracerRenderer.onLanding(field.bullet(), () -> IonEffects.field(level, field));
     }
 
     public static void turretState(TurretStateSync message) {

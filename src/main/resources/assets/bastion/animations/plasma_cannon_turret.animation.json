@@ -1,0 +1,262 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.plasma_cannon_turret.deploy": {
+      "animation_length": 1.1,
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              8
+            ],
+            "0.7": [
+              0,
+              0,
+              -0.4
+            ],
+            "1.1": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "scale": {
+            "0.0": [
+              0.6,
+              0.6,
+              0.6
+            ],
+            "0.5": [
+              1.04,
+              1.04,
+              1.04
+            ],
+            "0.8": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "dome": {
+          "position": {
+            "0.0": [
+              0,
+              -1.5,
+              0
+            ],
+            "0.6": [
+              0,
+              0.2,
+              0
+            ],
+            "0.9": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.plasma_cannon_turret.idle": {
+      "animation_length": 4,
+      "loop": true,
+      "bones": {
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.3": [
+              0,
+              12,
+              0
+            ],
+            "2.9": [
+              0,
+              -12,
+              0
+            ],
+            "4.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "glow_coils": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "2.0": [
+              1.04,
+              1.04,
+              1
+            ],
+            "4.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.plasma_cannon_turret.held_idle": {
+      "animation_length": 4,
+      "loop": true,
+      "bones": {
+        "glow_coils": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "2.0": [
+              1.04,
+              1.04,
+              1
+            ],
+            "4.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.plasma_cannon_turret.aim": {
+      "animation_length": 0.4,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.4": [
+              0,
+              0,
+              -0.6
+            ]
+          }
+        }
+      }
+    },
+    "animation.plasma_cannon_turret.fire": {
+      "animation_length": 0.8,
+      "bones": {
+        "barrel_0": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              3.5
+            ],
+            "0.2": [
+              0,
+              0,
+              0.8
+            ],
+            "0.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              1.0
+            ],
+            "0.35": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "glow_coils": {
+          "scale": {
+            "0.0": [
+              1.15,
+              1.15,
+              1
+            ],
+            "0.3": [
+              0.97,
+              0.97,
+              1
+            ],
+            "0.8": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.plasma_cannon_turret.no_ammo": {
+      "animation_length": 1.2,
+      "loop": true,
+      "bones": {
+        "sensor": {
+          "rotation": {
+            "0.0": [
+              10,
+              0,
+              0
+            ],
+            "0.6": [
+              14,
+              0,
+              0
+            ],
+            "1.2": [
+              10,
+              0,
+              0
+            ]
+          }
+        },
+        "glow_coils": {
+          "scale": {
+            "0.0": [
+              0.88,
+              0.88,
+              1
+            ],
+            "0.6": [
+              0.84,
+              0.84,
+              1
+            ],
+            "1.2": [
+              0.88,
+              0.88,
+              1
+            ]
+          }
+        }
+      }
+    }
+  }
+}

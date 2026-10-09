@@ -162,6 +162,15 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Moving targets (also Sniper): the charge keeps going while the turret tracks a running mob; when full it fires as soon as the aim lines up. It only starts over when the target dies or leaves sight.
 - [ ] The aiming laser during the charge comes straight out of the barrel and lands exactly where the beam then goes. Info tab shows Pierce `∞`.
 
+## Ion Rifle, Plasma Repeater, Plasma Cannon
+- [ ] Recipes: Empty Plasma Cell at the Ammo Workstation (2 iron, 1 glass, 1 glowstone dust -> 4); a Plasma Cell at the Charging Station (80 ticks, 4,000 FE). The three modules from 3 parts each (Part Workstation), assembled at the Part Assembler; the Plasma Cannon is a large module.
+- [ ] Ion Rifle (standard base, FE from a Creative Power Source, a cable or a Feed Hub): a thick blue energy bolt with a glowing head (much thicker than Gun/Machine Gun tracers) flies to the target; where it hits, a white-blue flash and ring and straight blue beams to every mob within ~3 blocks for a moment; those mobs take damage too (the one hit takes 8, the others 5). A cow/villager/pet near the impact gets no beam and no damage. A mob behind a thin wall next to the impact is still zapped. No FE: NO_AMMO; 1,200 FE per shot (GUI energy bar).
+- [ ] Plasma Repeater (standard base, Plasma Cells): big teal balls you can see fly with a short trail, 4 a second; each splashes on mobs right next to the one hit. Keep it firing ~6 s: the barrel glow turns teal, then red, it overheats (steam, vent flaps open, a hiss) and stops ~3 s. One cell lasts 10 shots. Coolant Loop helps (Shift tooltip lists it), Penetrator does not.
+- [ ] Plasma Cannon (Large Turret Base, Plasma Cells): locks on, a green ball grows at the muzzle while the chamber glows green (~1 s), then a big slow ball flies out; where it lands a BFG-style explosion: a white flash, a flat green shockwave, a big green cloud ~4 blocks across each way that fades within ~1 s, sparks, a camera shake, a big green scorch on the ground. Every mob within ~4 blocks takes damage (more near the middle), also behind a wall; cows/villagers/pets don't. It never shoots a mob within 4 blocks. One cell per shot.
+- [ ] All three at night: the balls, beams and flashes light up the area. With a Damage Amplifier the beams, splashes and the Cannon's blast hit harder too (the Info tab shows only the main Damage; compare how fast a mob dies with and without it).
+- [ ] Swap the Plasma Cannon for another large module (e.g. Tesla Coil) right after it fires: the ball still lands and explodes, nothing crashes.
+- [ ] Plasma Cannon into a mixed crowd (zombies, spiders, baby zombies): the blast hits all of them, short mobs too.
+
 ## Weapon-specific modules
 - [ ] Choke Module (craft: nuggets, redstone, copper, hopper): goes in a modules slot only while a Shotgun is mounted (refused next to other weapons). Tooltip: "-40% spread", "Only for: Shotgun Turret".
 - [ ] With it, the Shotgun's pellets land in a visibly tighter cone; Info tab Spread drops from 12° to 7.2°.

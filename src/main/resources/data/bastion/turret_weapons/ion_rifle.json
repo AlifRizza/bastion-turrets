@@ -1,0 +1,27 @@
+{
+  "type": "bastion:ion_rifle",
+  "ammo": "bastion:ammo/energy",
+  "energy_color": "#8099FF",
+  "range": 32,
+  "fire_interval": 16,
+  "damage": 8,
+  "spread": 0,
+  "ammo_per_shot": 0,
+  "turn_speed": 8,
+  "aim_tolerance": 1.5,
+  "aim_lock_ticks": 3,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.5375,
+  "params": {
+    "bolt_speed": 4,
+    "lead_accuracy": 0.9,
+    "field_radius": 3,
+    "field_damage": 5,
+    "field_ticks": 6,
+    "energy_per_shot": 1200,
+    "energy_capacity": 40000,
+    "max_input": 1000
+  }
+}

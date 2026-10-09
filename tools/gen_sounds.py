@@ -8,8 +8,10 @@ samples in [-1, 1] at RATE, list it in SOUNDS, then register it in sounds.json a
 Loops (idle hum, spin) crossfade their end into their start so they repeat without a click.
 
     pip install numpy soundfile
-    python3 tools/gen_sounds.py
+    python3 tools/gen_sounds.py           # only writes missing files: sounds replaced with real SFX survive
+    python3 tools/gen_sounds.py --force   # rewrites every placeholder
 """
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -418,6 +420,53 @@ def dome_burst_tail():
     L = 2.4
     return fade_out(norm(onepole_lp(noise(L, 981), 160) * env(L, 0.02, 0.9) + sweep(L, 50, 22) * env(L, 0.01, 0.6)), 0.3)
 
+# --- Ion Rifle and Plasma (PLAN "Ion Rifle, Plasma Repeater & Plasma Cannon") -------------------------
+def ion_fire(v):
+    j = jitter(1100 + v); L = 0.6
+    snap = hp(noise(L, 1101 + v), 2000) * env(L, 0.0003, 0.015)
+    zap = onepole_lp(square(L, 1400 * j, 300), 5000) * env(L, 0.001, 0.06) * 0.3
+    thump = sweep(L, 200 * j, 55) * env(L, 0.002, 0.07) * 0.8
+    whoosh = bp(noise(L, 1102 + v), 1200, 6000) * env(L, 0.004, 0.16) * 0.4
+    return fade_out(norm(snap + zap + thump + whoosh + crackles(L, 1103 + v, 16, 2500, (0.1, 0.5), (0, 0.35))), 0.08)
+def ion_hit(v):
+    j = jitter(1110 + v); L = 0.6
+    burst = hp(noise(L, 1111 + v), 1500) * env(L, 0.0004, 0.03)
+    buzz = onepole_lp(square(L, 140 * j, 90 * j), 2600) * env(L, 0.002, 0.12) * 0.3
+    return fade_out(norm(burst + buzz + crackles(L, 1112 + v, 50, 1800, (0.2, 0.9), (0, 0.5))), 0.08)
+def plasma_repeater_fire(v):
+    j = jitter(1120 + v); L = 0.3
+    thoom = sweep(L, 320 * j, 90) * env(L, 0.002, 0.06)
+    bubble = sweep(L, 900 * j, 300) * env(L, 0.002, 0.04) * (0.6 + 0.4 * np.sin(2 * np.pi * 60 * t(L))) * 0.4
+    hiss = bp(noise(L, 1121 + v), 2000, 8000) * env(L, 0.002, 0.05) * 0.3
+    return fade_out(norm(thoom + bubble + hiss), 0.05)
+def plasma_hit_small(v):
+    j = jitter(1130 + v); L = 0.4
+    pop = sweep(L, 500 * j, 120) * env(L, 0.001, 0.04) * 0.7
+    sizzle = bp(noise(L, 1131 + v), 2500, 9000) * env(L, 0.003, 0.12) * 0.6
+    return fade_out(norm(pop + sizzle), 0.05)
+def plasma_vent():
+    L = 1.5
+    hiss = hp(noise(L, 1140), 2200) * env(L, 0.03, 0.6)
+    hum = sweep(L, 240, 90) * env(L, 0.01, 0.5) * 0.3
+    return fade_out(norm(hiss + hum + crackles(L, 1141, 10, 3000, (0.1, 0.4), (0.4, 1.0)), 0.75), 0.2)
+def plasma_cannon_charge():
+    L = 1.0; ramp = np.linspace(0, 1, n(L)) ** 1.3; tt = t(L)
+    roar = bp(noise(L, 1150), 200, 1800) * ramp * 0.6
+    throb = sweep(L, 60, 140) * (0.6 + 0.4 * np.sin(2 * np.pi * (4 + 14 * ramp) * tt)) * ramp * 0.6
+    return fade_out(norm(roar + throb, 0.8), 0.03)
+def plasma_cannon_fire(v):
+    j = jitter(1160 + v); L = 1.4
+    whumm = sweep(L, 160 * j, 38) * env(L, 0.003, 0.22)
+    roar = bp(noise(L, 1161 + v), 150, 1500) * env(L, 0.005, 0.35) * 0.6
+    pulse = sweep(L, 420 * j, 140) * env(L, 0.004, 0.3) * (0.6 + 0.4 * np.sin(2 * np.pi * 18 * t(L))) * 0.3
+    return fade_out(norm(whumm + roar + pulse), 0.2)
+def plasma_cannon_hit(v):
+    j = jitter(1170 + v); L = 1.6
+    blast = sweep(L, 130 * j, 32) * env(L, 0.002, 0.25)
+    splash = bp(noise(L, 1171 + v), 300, 6000) * env(L, 0.002, 0.3) * 0.7
+    sizzle = bp(noise(L, 1172 + v), 3000, 10000) * env(L, 0.02, 0.6) * 0.3
+    return fade_out(norm(blast + splash + sizzle), 0.25)
+
 
 SOUNDS = {
     "debug/ping.ogg": debug_ping,
@@ -452,11 +501,22 @@ SOUNDS = {
     "repulsor/charge.ogg": repulsor_charge, **{f"repulsor/push_{v}.ogg": (lambda v=v: repulsor_push(v)) for v in range(2)},
     "repulsor/push_tail.ogg": repulsor_push_tail, "repulsor/dome_charge.ogg": dome_charge,
     **{f"repulsor/dome_burst_{v}.ogg": (lambda v=v: dome_burst(v)) for v in range(2)}, "repulsor/dome_burst_tail.ogg": dome_burst_tail,
+    **{f"ion/fire_{v}.ogg": (lambda v=v: ion_fire(v)) for v in range(2)},
+    **{f"ion/hit_{v}.ogg": (lambda v=v: ion_hit(v)) for v in range(2)},
+    **{f"plasma/repeater_fire_{v}.ogg": (lambda v=v: plasma_repeater_fire(v)) for v in range(3)},
+    **{f"plasma/hit_small_{v}.ogg": (lambda v=v: plasma_hit_small(v)) for v in range(2)},
+    "plasma/vent.ogg": plasma_vent, "plasma/cannon_charge.ogg": plasma_cannon_charge,
+    **{f"plasma/cannon_fire_{v}.ogg": (lambda v=v: plasma_cannon_fire(v)) for v in range(2)},
+    **{f"plasma/cannon_hit_{v}.ogg": (lambda v=v: plasma_cannon_hit(v)) for v in range(2)},
 }
 
 if __name__ == "__main__":
+    # Only missing files: a sound already replaced with real SFX (docs/SOUND_SHEET.md) survives a re-run.
+    force = "--force" in sys.argv
     for rel, make in SOUNDS.items():
         path = OUT / rel
+        if path.exists() and not force:
+            continue
         path.parent.mkdir(parents=True, exist_ok=True)
         sf.write(path, make(), RATE, format="OGG", subtype="VORBIS")
         print("wrote", path.relative_to(OUT.parents[5]))

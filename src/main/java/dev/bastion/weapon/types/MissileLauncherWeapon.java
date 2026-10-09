@@ -67,10 +67,7 @@ public class MissileLauncherWeapon extends WeaponType {
     /** Never too close: a missile launched upward needs room to turn back down. */
     @Override
     public boolean canTarget(Entity entity, TurretBaseBlockEntity turret) {
-        WeaponData data = turret.inventory().weaponData();
-        if (data == null) return false;
-        double min = data.param("min_range");
-        return entity.distanceToSqr(turret.pivot(data)) >= min * min;
+        return outsideMinRange(entity, turret);
     }
 
     /** No pitch limits (the missiles climb and dive); only a clear line from above the launcher. */

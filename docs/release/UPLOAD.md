@@ -39,6 +39,15 @@ Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain number
 
 ```
 New
+- Ion Rifle (standard base, FE): a fast ion bolt; where it stops, a beam zaps every valid target within 3 blocks for 5
+  damage, even through thin walls (inspired by Crimsonland's Ion Rifle). 1,200 FE per shot.
+- Plasma Repeater (standard base, Plasma Cells): rapid plasma balls you can watch fly, each splashing 3 damage within
+  1.2 blocks; heats up and vents like the Machine Gun. 10 shots per cell.
+- Plasma Cannon (Large Turret Base, Plasma Cells): charges, then a big slow ball (18 damage) explodes BFG-style where it
+  lands: every enemy within 4 blocks takes 14 at the centre down to 7 at the edge, through walls, no block damage. Never
+  fires within 4 blocks. 1 cell per shot.
+- Plasma Cell: Empty Plasma Cells at the Ammo Workstation (2 iron, 1 glass, 1 glowstone dust -> 4), charged at the
+  Charging Station (4,000 FE each).
 - Upgrade modules come in Mk1, Mk2 and Mk3 (x1.5 / x2 of Mk1, Penetrator +1/+2/+3): upgrade the one you have at the
   Module Workstation (2 diamonds + 4 redstone, then 1 netherite scrap + 2 diamonds + 1 amethyst shard). One of each kind
   per turret, whatever its Mk.

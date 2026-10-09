@@ -1,5 +1,7 @@
 package dev.bastion.gametest;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import dev.bastion.weapon.WeaponModuleItem;
 import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.modifier.ModifierItem;
@@ -266,14 +268,16 @@ public class TurretSystemsTests {
     /** The Shift tooltip of a module lists the turrets it changes something on, not every turret it fits (user 2026-10-07). */
     @GameTest(template = ARENA, batch = "moduleListsTurretsItWorksOn")
     public static void moduleListsTurretsItWorksOn(GameTestHelper helper) {
-        helper.assertTrue(worksOn(BastionItems.COOLANT_LOOP).equals(List.of("machine_gun")), "Coolant Loop: " + worksOn(BastionItems.COOLANT_LOOP));
+        helper.assertTrue(worksOn(BastionItems.COOLANT_LOOP).equals(List.of("machine_gun", "plasma_repeater")), "Coolant Loop: " + worksOn(BastionItems.COOLANT_LOOP));
         helper.assertTrue(worksOn(BastionItems.PENETRATOR).equals(List.of("gun", "machine_gun", "shotgun", "sniper", "railgun")),
                 "Penetrator: " + worksOn(BastionItems.PENETRATOR));
         helper.assertTrue(worksOn(BastionItems.CHOKE_MODULE).equals(List.of("shotgun")), "Choke: " + worksOn(BastionItems.CHOKE_MODULE));
         List<String> amplified = worksOn(BastionItems.DAMAGE_AMPLIFIER), recycled = worksOn(BastionItems.AMMO_RECYCLER);
         helper.assertTrue(!amplified.contains("repulsor") && !amplified.contains("repulsor_dome") && amplified.contains("tesla"), "Damage Amplifier: " + amplified);
         helper.assertTrue(!recycled.contains("tesla") && !recycled.contains("repulsor") && recycled.contains("railgun"), "Ammo Recycler: " + recycled);
-        helper.assertTrue(worksOn(BastionItems.RANGE_MODULE).size() == 13, "Range Module: " + worksOn(BastionItems.RANGE_MODULE));
+        helper.assertTrue(amplified.contains("ion_rifle") && !recycled.contains("ion_rifle"), "Ion Rifle: amplified " + amplified + ", recycled " + recycled);
+        long weapons = BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null).count();
+        helper.assertTrue(worksOn(BastionItems.RANGE_MODULE).size() == weapons, "Range Module: " + worksOn(BastionItems.RANGE_MODULE));
         helper.succeed();
     }
 

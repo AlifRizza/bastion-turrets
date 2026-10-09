@@ -35,10 +35,7 @@ public class RocketLauncherWeapon extends WeaponType {
 
     @Override
     public boolean canTarget(Entity entity, TurretBaseBlockEntity turret) {
-        WeaponData data = turret.inventory().weaponData();
-        if (data == null) return false;
-        double min = data.param("min_range");
-        return entity.distanceToSqr(turret.pivot(data)) >= min * min;
+        return outsideMinRange(entity, turret);
     }
 
     /** Lead: Targeting AI modules (lead_accuracy) close the gap to a perfect intercept. */

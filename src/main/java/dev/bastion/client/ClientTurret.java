@@ -183,7 +183,9 @@ public final class ClientTurret {
                 : level.getBlockEntity(pos) instanceof TurretBaseBlockEntity turret ? turret.alongMount(1.45) : Vec3.atCenterOf(pos);
         if (state == TurretState.OVERHEAT && lastState != TurretState.OVERHEAT) {
             VfxManager.play(VfxPresets.OVERHEAT_STEAM, at, new Vec3(0, 1, 0), VfxParams.of().seed(level.getGameTime()));
-            level.playLocalSound(at.x, at.y, at.z, BastionSounds.MACHINE_GUN_OVERHEAT.get(), SoundSource.HOSTILE, 0.9f, 1f, false);
+            var vent = data != null && data.type().equals(BastionWeaponTypes.PLASMA_REPEATER.getId()) ? BastionSounds.PLASMA_VENT
+                    : BastionSounds.MACHINE_GUN_OVERHEAT;
+            level.playLocalSound(at.x, at.y, at.z, vent.get(), SoundSource.HOSTILE, 0.9f, 1f, false);
         } else if (state == TurretState.OVERHEAT && level.getGameTime() % 5 == 0) {
             VfxManager.play(VfxPresets.HEAT_HAZE, at, new Vec3(0, 1, 0), VfxParams.of().seed(level.getGameTime()));
         } else if (state != TurretState.OVERHEAT && lastState == TurretState.OVERHEAT && weapon != null) {
@@ -196,7 +198,8 @@ public final class ClientTurret {
                     : BastionWeaponTypes.LASER_RIFLE.getId().equals(type) ? BastionSounds.LASER_CHARGE
                     : BastionWeaponTypes.RAILGUN.getId().equals(type) ? BastionSounds.RAILGUN_CHARGE
                     : BastionWeaponTypes.REPULSOR.getId().equals(type) ? BastionSounds.REPULSOR_CHARGE
-                    : BastionWeaponTypes.REPULSOR_DOME.getId().equals(type) ? BastionSounds.DOME_CHARGE : BastionSounds.SNIPER_CHARGE;
+                    : BastionWeaponTypes.REPULSOR_DOME.getId().equals(type) ? BastionSounds.DOME_CHARGE
+                    : BastionWeaponTypes.PLASMA_CANNON.getId().equals(type) ? BastionSounds.PLASMA_CANNON_CHARGE : BastionSounds.SNIPER_CHARGE;
             level.playLocalSound(at.x, at.y, at.z, sound.get(), SoundSource.HOSTILE, sound == BastionSounds.SNIPER_CHARGE ? 0.8f : 1f, 1f, false);
         } else if (state != TurretState.CHARGING) {
             chargeStart = -1;
@@ -241,6 +244,17 @@ public final class ClientTurret {
             weapon.focusSpeed = progress >= 0 ? 0.05f + 0.7f * progress * progress : Math.max(0.02f, weapon.focusSpeed * 0.92f);
             weapon.prevFocusAngle = weapon.focusAngle;
             weapon.focusAngle += weapon.focusSpeed;
+        } else if (data.type().equals(BastionWeaponTypes.PLASMA_CANNON.getId())) {
+            // The ball grows at the muzzle (LaserChargeRenderer) with light streaming in; the chamber glow turns teal, fades after the shot.
+            int charge = Math.round(data.params().getOrDefault("charge_ticks", 1f));
+            float progress = state == TurretState.CHARGING ? chargeProgress(level.getGameTime(), 0, charge) : -1;
+            weapon.chargeColor = color & 0xFFFFFF;
+            weapon.chargeGlow = progress < 0 ? Math.max(0, weapon.chargeGlow - 0.07f) : Math.min(1, 0.3f + progress);
+            if (progress >= 0) LaserEffects.gathering(level, this, progress, color);
+        } else if (data.type().equals(BastionWeaponTypes.PLASMA_REPEATER.getId())) {
+            // The glow turns teal as the barrel heats; above half heat the usual overheat red takes over (glowColor).
+            weapon.chargeColor = color & 0xFFFFFF;
+            weapon.chargeGlow = Math.min(1, weapon.heat * 2) * (1 - Mth.clamp((weapon.heat - 0.5f) / 0.5f, 0, 1));
         } else if (data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && !flaming(level)
                 && state != TurretState.DISABLED && state != TurretState.NO_AMMO) {
             FlameEffects.pilot(level, this);

@@ -62,13 +62,27 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
     public static final WeaponFx REPULSOR_DOME = new WeaponFx(VfxPresets.DOME_BURST, VfxPresets.REPULSOR_HIT, VfxPresets.REPULSOR_HIT,
             0, 1f, 0f, false, false, BastionSounds.DOME_BURST, BastionSounds.DOME_BURST_TAIL);
 
+    /** A blue streak to where the bolt stops, then the ion core's beams (IonEffects). */
+    public static final WeaponFx ION_RIFLE = new WeaponFx(VfxPresets.ION_MUZZLE, VfxPresets.ION_HIT, VfxPresets.ION_HIT,
+            0.4f, 1f, 50f, false, false, BastionSounds.ION_FIRE, BastionSounds.ION_FIRE);
+
+    /** Glowing balls instead of tracers, a splash where each lands (PlasmaEffects). */
+    public static final WeaponFx PLASMA_REPEATER = new WeaponFx(VfxPresets.PLASMA_MUZZLE, VfxPresets.PLASMA_HIT, VfxPresets.PLASMA_HIT,
+            0.28f, 1f, 18f, false, false, BastionSounds.PLASMA_REPEATER_FIRE, BastionSounds.PLASMA_REPEATER_FIRE);
+
+    /** A big slow ball that bursts into a ring of small ones (PlasmaEffects); a heavy kick. */
+    public static final WeaponFx PLASMA_CANNON = new WeaponFx(VfxPresets.PLASMA_CANNON_MUZZLE, VfxPresets.PLASMA_BURST, VfxPresets.PLASMA_BURST,
+            0.6f, 1f, 110f, false, false, BastionSounds.PLASMA_CANNON_FIRE, BastionSounds.PLASMA_CANNON_FIRE);
+
     private static final Map<ResourceLocation, WeaponFx> BY_TYPE = Map.ofEntries(
             Map.entry(Bastion.id("gun"), GUN), Map.entry(Bastion.id("machine_gun"), MACHINE_GUN), Map.entry(Bastion.id("shotgun"), SHOTGUN),
             Map.entry(Bastion.id("sniper"), SNIPER), Map.entry(Bastion.id("rocket_launcher"), ROCKET_LAUNCHER),
             Map.entry(Bastion.id("missile_launcher"), MISSILE_LAUNCHER), Map.entry(Bastion.id("tesla"), TESLA),
             Map.entry(Bastion.id("flamethrower"), FLAMETHROWER), Map.entry(Bastion.id("laser_rifle"), LASER_RIFLE),
             Map.entry(Bastion.id("railgun"), RAILGUN), Map.entry(Bastion.id("mortar"), MORTAR),
-            Map.entry(Bastion.id("repulsor"), REPULSOR), Map.entry(Bastion.id("repulsor_dome"), REPULSOR_DOME));
+            Map.entry(Bastion.id("repulsor"), REPULSOR), Map.entry(Bastion.id("repulsor_dome"), REPULSOR_DOME),
+            Map.entry(Bastion.id("ion_rifle"), ION_RIFLE), Map.entry(Bastion.id("plasma_repeater"), PLASMA_REPEATER),
+            Map.entry(Bastion.id("plasma_cannon"), PLASMA_CANNON));
 
     public static WeaponFx of(ResourceLocation weaponType) {
         return BY_TYPE.getOrDefault(weaponType, GUN);

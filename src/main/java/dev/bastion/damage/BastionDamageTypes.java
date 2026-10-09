@@ -17,6 +17,8 @@ public final class BastionDamageTypes {
     /** Flamethrower hits and the burning they leave; both in minecraft:is_fire, so fire-immune mobs and Fire Resistance ignore them. */
     public static final ResourceKey<DamageType> TURRET_FLAME = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_flame"));
     public static final ResourceKey<DamageType> TURRET_BURN = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_burn"));
+    /** Plasma Repeater and Plasma Cannon; not in is_fire, so fire-immune mobs still take it. */
+    public static final ResourceKey<DamageType> TURRET_PLASMA = ResourceKey.create(Registries.DAMAGE_TYPE, Bastion.id("turret_plasma"));
 
     private BastionDamageTypes() {
     }

@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-08, 16:00 WIB)
+# Bastion Turrets — Session Handoff (2026-10-10, 06:45 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -7,20 +7,66 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
-**State at a glance (2026-10-08 16:00):**
-- Git: `main` at the commit "Module tiers Mk1/Mk2/Mk3; Repulsor Dome reach 9" (user 16:00 "commit"), **3 commits not
-  pushed** (`32ba29a` 0.1.2 work, `d25ce7d` compat + Railgun trail, module tiers + Dome reach); GitHub has `v0.1.1`
-  (`40db2a2`). `mod_version` is still **0.1.1**; 0.1.2 is not released (changelog ready in `docs/release/UPLOAD.md`).
-  Working tree clean except `modlist.html` (the user's file, never commit it).
-- Tests: **113/113** GameTests (`./gradlew runGameTestServer --offline`); with `-PwithCompatMods` (Spore + TaCZ) also 113.
-- Open user decisions: upgrade modules still drop from destroyed turrets (user 14:45 "biarkan dulu"); no new turrets
-  until the placeholder sounds are replaced (23:37); addon "turret pack" support is backlog for ~1.0.0 (PLAN 7.6 end).
-- Deferred minors (offer when relevant): see item 2 (fire-rate display cap, Mortar range vs Range Mk2/3, tooltip x.5%
-  rounding, unused `MODIFIER_TIERS`, long Range recipe tab) and the placement hologram item (clicked cell not red for
-  an entity, hologram where a click opens a GUI / adventure / F1, scene shots).
+**State at a glance (2026-10-10 06:45):**
+- Git: `main` at the commit "Ion Rifle, Plasma Repeater, Plasma Cannon; Plasma Cell; sound sheet" (user 06:41 "commit"),
+  **4 commits not pushed** (`32ba29a` 0.1.2 work, `d25ce7d` compat + Railgun trail, `73fa0df` module tiers + Dome reach,
+  the Ion/Plasma commit); GitHub has `v0.1.1` (`40db2a2`). `mod_version` is still **0.1.1**; 0.1.2 is not released
+  (changelog ready in `docs/release/UPLOAD.md`, now also listing the three new turrets). Working tree clean except
+  `modlist.html` (the user's file, never commit it). Commit only when the user says "commit".
+- Tests: **128/128** GameTests (`./gradlew runGameTestServer --offline`); with `-PwithCompatMods` (Spore + TaCZ) also 128.
+- Open user decisions: upgrade modules still drop from destroyed turrets (user 14:45 "biarkan dulu"); the "no new turrets
+  until the placeholder sounds are replaced" rule (23:37) was lifted by the user 10-09 23:40 (the user is making SFX from
+  `docs/SOUND_SHEET.md`; `tools/gen_sounds.py` only writes missing files now); addon "turret pack" support is backlog for
+  ~1.0.0 (PLAN 7.6 end). Plasma effects are green `#3DFF6E` (user 01:08), the Ion is blue `#8099FF`.
+- The user played the new turrets with TaCZ + Spore (10-10 01:47, 06:23): no errors. The latest Cannon changes (BFG
+  blast 06:15, tank model 06:28, one muzzle 06:35, taller 06:38) were checked in the showcase scenes, not yet in the user's game.
+- Deferred minors (offer when relevant): item 2 below (fire-rate display cap, Mortar range vs Range Mk2/3, tooltip x.5%
+  rounding, unused `MODIFIER_TIERS`, long Range recipe tab), the placement hologram item (clicked cell not red for an
+  entity, hologram where a click opens a GUI / adventure / F1, scene shots) and from the Ion/Plasma review: ion beams can
+  be lost when the bolt lands right at max range with lag; an evicted tracer (512 cap) skips its own impact effect;
+  datapack edge values not clamped (`field_ticks` >127); no Cannon `charge` clip (glow + orb do the job).
 - Scenes run in the scratch world `-PshowcaseWorld=showcase_fx` (a copy of the user's `showcase`); never the default.
 
 **NOW (read first, newest first):**
+0. **Ion Rifle, Plasma Repeater, Plasma Cannon built (user 10-09 23:40 "gas implement", Native execution), uncommitted,
+   not yet tested by the user in game.** Spec PLAN §8, plan `docs/superpowers/plans/2026-10-10-ion-plasma-turrets.md`.
+   Shared: `weapon/Splash` (who a burst reaches: box distance, no line of sight), `Bullets.filtered` (filter without
+   range), `Bullets.create/launch` (bullets from anywhere; launched during the level's bullet step they join after it),
+   damage type `turret_plasma`. Ion: `IonRifleWeapon` (bolt -> `IonField` packet with the zapped ids, capped at 64 beams;
+   client `IonEffects`: streak + core flash/ring + `BeamRenderer` beams, chained to the bolt's tracer landing). Repeater:
+   `PlasmaRepeaterWeapon` (splash via Splash, MG heat; client: teal heat glow, `plasma.vent` sound). Cannon:
+   `PlasmaCannonWeapon` (orb -> **BFG-style blast** since 10-10 06:15, see below; charge orb via LaserChargeRenderer x1.6). Client `TracerRenderer`: orb tracers, trail in blocks, early landings,
+   `onLanding(id, task)`; arrivals now run after its tick loop (the Cannon crashed the client with a CME until then).
+   Protocol 9. Plasma Cell + Empty Plasma Cell (Ammo Workstation / Charging Station), 9 placeholder SFX (gen_sounds.py
+   now only writes missing files, `--force` rewrites all), models/clips/textures/parts/recipes, lang en/id. 19 new
+   GameTests (132). Scenes `-Pshowcase=ion` / `plasma` (EnergyShowcase, clears the stage first) checked day + night:
+   ion streak, core ring, star beams; repeater balls, splashes; cannon charge orb, big ball, blast.
+   Final review (fresh reviewer) fixes, each RED -> GREEN: a Cannon swapped mid-flight crashed the server (canTarget read
+   the new weapon's missing min_range; shared `WeaponType.outsideMinRange` with default 0 now in Rocket/Missile/Railgun/
+   Mortar/Cannon); the ring flew at head height over short mobs (now feet + 0.5); fragments skipped a mob pressed against
+   the struck one (start where each ray leaves the box; `Hitscan.trace` counts a ray starting inside a box as a hit, all
+   weapons). Deferred minors: TracerRenderer late landing / eviction / EARLY cap, datapack edge values (field_ticks >127,
+   fragments >32 or <0), no Cannon charge clip (code-driven glow instead).
+   User 01:08: plasma green `#3DFF6E` (was teal `#3DFFB5`, read cyan).
+   **User 06:01-06:06: Cannon ring -> explosion** (the fragments mostly missed: they flew ahead past the front mob), after Vic's
+   Point Blank BFG 9000 (frames studied from the user's Short): blast radius 4, 14 at the centre -> 7 at the edge, struck
+   target 18 + blast, no LOS/knockback/block damage; charge and shot unchanged. Removed: fragments, `PlasmaBurst`, the
+   `plasma.fragment` sound, TracerRenderer EARLY landings (M3 gone). Visual `VfxPresets.PLASMA_BURST`: white flash, green
+   shockwave, FIREBALL cloud thrown to the edge + glowing lime blobs, sparks, dark specks, light/shake/flash, big scorch (on
+   the ground below when it hit a mob). `VfxParticle.fireRamp`: a cool colour darkens in its own hue (no red/soot); fire
+   colours unchanged. Tests: `cannonBlastHitsEveryoneAround`, `cannonBlastOnAWall` replace the 6 ring tests (128 total).
+   **User 06:28: Cannon model redesigned** after Kromlech "Battle Tank Turret: Plasma Cannon": armoured tank hull (yaw only:
+   stepped glacis, riveted skirts, bustle + vents, dome hatch, glowing coil tubes on the rear deck) and a thick coil barrel
+   that pitches on a front mantlet (model pitch pivot at z -10, the server still aims from the axis: pivot_height 0.71875 since
+   user 06:38 "pipih" -> taller hull on a raised turret ring, muzzle_length 2.14375; one round muzzle since 06:35). Gunmetal + cyan kept (palette rule); `glow_coils` turn green while charging. Parts re-mapped.
+   User 01:00 "tembakan diperbesar, terutama ion": ion = `TracerRenderer.spawnBolt` (thick streak 0.4 + glowing head +
+   deep alpha-blended halo so it reads by day; Gun tracer is 0.075), beams 0.42; plasma balls 0.28 / orb 0.6 / fragments 0.22.
+   Also fixed on the way: flaky `repulsionHeavyMobsGoLess` / `repulsionTravelsAsSet` (pushed at tick 5 while the mobs
+   were still landing; now tick 15); `moduleListsTurretsItWorksOn` no longer hardcodes 13 weapons.
+   **Sound sheet (user 18:18), uncommitted:** `docs/SOUND_SHEET.md`: all 58 events + the 9 planned ones, each with
+   search keywords + an AI prompt, durations/variants/reach read from sounds.json and the files; 8 P1 to replace first;
+   4 events are registered but never played (debug.ping, turret.servo, machine_gun.spin_up/down). Replaced files must
+   not be overwritten: `tools/gen_sounds.py` rewrites every sound file.
 1. **Repulsor Dome reach 7 → 9 (user 14:45, push unchanged at 6), committed 10-08 16:00:** `repulsor_dome.json` range 9; test
    `domeReachesNineBlocks` (husk 8.5 out, RED at 7 → GREEN); dome sphere/dust ring follow the range (scene repulsor
    checked). 113/113. User 14:45: destroyed turrets keep dropping their upgrade modules for now ("biarkan dulu").

@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:gun_turret",
+  "ingredients": [
+    {
+      "item": "bastion:plasma_barrel",
+      "count": 1
+    },
+    {
+      "item": "bastion:plasma_chamber",
+      "count": 1
+    },
+    {
+      "item": "bastion:repeater_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:plasma_repeater_turret"
+  },
+  "time": 200,
+  "energy": 8000
+}

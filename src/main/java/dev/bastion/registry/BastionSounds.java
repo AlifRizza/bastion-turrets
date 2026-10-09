@@ -64,6 +64,15 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> DOME_CHARGE = register("repulsor.dome_charge");
     public static final RegistryObject<SoundEvent> DOME_BURST = register("repulsor.dome_burst");
     public static final RegistryObject<SoundEvent> DOME_BURST_TAIL = register("repulsor.dome_burst_tail");
+    // Ion Rifle and Plasma (PLAN "Ion Rifle, Plasma Repeater & Plasma Cannon"); placeholders until docs/SOUND_SHEET.md is done.
+    public static final RegistryObject<SoundEvent> ION_FIRE = register("ion.fire");
+    public static final RegistryObject<SoundEvent> ION_HIT = register("ion.hit");
+    public static final RegistryObject<SoundEvent> PLASMA_REPEATER_FIRE = register("plasma_repeater.fire");
+    public static final RegistryObject<SoundEvent> PLASMA_HIT_SMALL = register("plasma.hit_small");
+    public static final RegistryObject<SoundEvent> PLASMA_VENT = register("plasma.vent");
+    public static final RegistryObject<SoundEvent> PLASMA_CANNON_CHARGE = register("plasma_cannon.charge");
+    public static final RegistryObject<SoundEvent> PLASMA_CANNON_FIRE = register("plasma_cannon.fire");
+    public static final RegistryObject<SoundEvent> PLASMA_CANNON_HIT = register("plasma_cannon.hit");
 
     public static final RegistryObject<SoundEvent> LASER_CHARGE = register("laser.charge");
     public static final RegistryObject<SoundEvent> LASER_FIRE = register("laser.fire");

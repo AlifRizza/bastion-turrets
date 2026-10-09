@@ -29,6 +29,11 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public class TurretRepulsorTests {
     private static final String RANGE = "range", YARD = "yard";
     private static final float LIFT = 0.35f;
+    /**
+     * When the calibration tests push: mobs spawn a block above the floor and take ~5 ticks to land; pushed at tick 5 they
+     * were sometimes still in the air, slid with air friction and went ~1.5x as far (flaky, 2026-10-10).
+     */
+    private static final int PUSH_AT = 15;
 
     /** How far {@code entity} moved over the ground since {@code start}. */
     private static double moved(LivingEntity entity, Vec3 start) {
@@ -39,13 +44,13 @@ public class TurretRepulsorTests {
      * Calibration: a mob without AI pushed for 3 and for 5 blocks on flat ground lands within half a block of that, and
      * one standing exactly on the push point goes the fallback way.
      */
-    @GameTest(template = RANGE, timeoutTicks = 80, batch = "repulsionTravelsAsSet")
+    @GameTest(template = RANGE, timeoutTicks = 90, batch = "repulsionTravelsAsSet")
     public static void repulsionTravelsAsSet(GameTestHelper helper) {
         LivingEntity three = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(4, 2, 3));
         LivingEntity five = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(4, 2, 6));
         LivingEntity onTop = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(4, 2, 9));
         Vec3[] start = new Vec3[3];
-        helper.runAtTickTime(5, () -> {
+        helper.runAtTickTime(PUSH_AT, () -> { // spawned a block up: on the ground by now, so ground friction applies
             start[0] = three.position();
             start[1] = five.position();
             start[2] = onTop.position();
@@ -53,7 +58,7 @@ public class TurretRepulsorTests {
             Repulsion.push(five, five.position().add(-1, 0, 0), new Vec3(1, 0, 0), 5, LIFT);
             Repulsion.push(onTop, onTop.position(), new Vec3(1, 0, 0), 3, LIFT);
         });
-        helper.runAtTickTime(60, () -> {
+        helper.runAtTickTime(PUSH_AT + 55, () -> {
             double a = moved(three, start[0]), b = moved(five, start[1]);
             Bastion.LOGGER.info("[repulsionTravelsAsSet] pushed 3 -> {} blocks, 5 -> {} blocks", a, b);
             helper.assertTrue(Math.abs(a - 3) <= 0.5 && Math.abs(b - 5) <= 0.5, "pushed 3 -> " + a + " blocks, 5 -> " + b);
@@ -246,18 +251,18 @@ public class TurretRepulsorTests {
     }
 
     /** Heavy mobs (config repulsorHeavyMobs: iron golem, ravager, warden) still move, at 40 % of the push: 5 blocks -> ~2. */
-    @GameTest(template = RANGE, timeoutTicks = 80, batch = "repulsionHeavyMobsGoLess")
+    @GameTest(template = RANGE, timeoutTicks = 90, batch = "repulsionHeavyMobsGoLess")
     public static void repulsionHeavyMobsGoLess(GameTestHelper helper) {
         LivingEntity golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new BlockPos(4, 2, 3));
         LivingEntity ravager = helper.spawnWithNoFreeWill(EntityType.RAVAGER, new BlockPos(4, 2, 8));
         Vec3[] start = new Vec3[2];
-        helper.runAtTickTime(5, () -> {
+        helper.runAtTickTime(PUSH_AT, () -> {
             start[0] = golem.position();
             start[1] = ravager.position();
             Repulsion.push(golem, golem.position().add(-1, 0, 0), new Vec3(1, 0, 0), 5, LIFT);
             Repulsion.push(ravager, ravager.position().add(-1, 0, 0), new Vec3(1, 0, 0), 5, LIFT);
         });
-        helper.runAtTickTime(60, () -> {
+        helper.runAtTickTime(PUSH_AT + 55, () -> {
             double g = moved(golem, start[0]), r = moved(ravager, start[1]);
             helper.assertTrue(Math.abs(g - 2) <= 0.5 && Math.abs(r - 2) <= 0.5, "pushed for 5: iron golem " + g + ", ravager " + r + " (want ~2)");
             helper.succeed();

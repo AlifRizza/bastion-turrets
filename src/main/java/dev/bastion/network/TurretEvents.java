@@ -27,7 +27,8 @@ public record TurretEvents(List<Object> messages) {
             new Kind<>(BulletImpact.class, BulletImpact::encode, BulletImpact::decode, BulletImpact::handle),
             new Kind<>(SpinSync.class, SpinSync::encode, SpinSync::decode, SpinSync::handle),
             new Kind<>(RackSync.class, RackSync::encode, RackSync::decode, RackSync::handle),
-            new Kind<>(TurretImpactEvent.class, TurretImpactEvent::encode, TurretImpactEvent::decode, TurretImpactEvent::handle));
+            new Kind<>(TurretImpactEvent.class, TurretImpactEvent::encode, TurretImpactEvent::decode, TurretImpactEvent::handle),
+            new Kind<>(IonField.class, IonField::encode, IonField::decode, IonField::handle));
 
     @SuppressWarnings("unchecked")
     private static Kind<Object> kind(int index) {

@@ -19,13 +19,16 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Flamethrower Turret | Standard | Sets valid targets in a short cone on fire. Burns through Fuel Canisters. |
 | Laser Rifle Turret | Standard | Charges up and fires one beam through all valid targets in a line. Walls stop it. |
 | Repulsor | Standard | No damage: after a short charge a wave of force throws everything in front of it, up to 5 blocks out, about 4 blocks back, several mobs at once, so they can't hug your guns. Too weak for heavy mobs like iron golems, ravagers and wardens. Runs on FE. |
+| Ion Rifle Turret | Standard | A fast ion bolt. Where it stops, a beam zaps every valid target within 3 blocks for 5 damage, even through thin walls. Runs on FE. |
+| Plasma Repeater Turret | Standard | Rapid plasma balls you can watch fly; each one splashes the targets around where it lands. Heats up and vents like the Machine Gun. 10 shots per Plasma Cell. |
 | Missile Launcher Turret | Large | 12 homing missiles. Fire them as they load, or wait for a full salvo spread over everything in range. |
 | Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits up to five targets at once. |
 | Railgun Turret | Large | Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target. |
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
 | Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE. |
+| Plasma Cannon Turret | Large | Charges, then fires a big slow plasma ball that explodes like a BFG: every enemy within 4 blocks of the impact takes heavy damage, more near the middle. One Plasma Cell per shot. |
 
-The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
+The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire real shots with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
 <!-- screenshot: 03_tesla_coil.png -->
 <!-- screenshot: 12_railgun_charge.png -->
@@ -34,7 +37,7 @@ The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Tur
 
 ## Turret bases
 
-The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar and Repulsor Dome) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
+The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar, Repulsor Dome and Plasma Cannon) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
 
 Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, modded ones too (Fungal Infection: Spore works out of the box), and bullets from gun mods like TaCZ hit them as well: a turret's lights turn yellow below half HP and blink red when it's about to go, and a Repair Kit puts back 40% HP. Let one get destroyed and the weapon and its ammo are gone for good: only the modules drop, plus a Damaged Turret Base that the Part Assembler restores with a Repair Kit, at the tier it had. Mining a base works like breaking a shulker box, so tier and contents stay with the item.
 
@@ -67,7 +70,7 @@ Every module comes in Mk1, Mk2 and Mk3 (one and a half and twice the Mk1 effect)
 
 ## Ammo and automation
 
-Ammo comes in nine kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs and Mortar Shells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
+Ammo comes in ten kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells and Plasma Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
 
 <!-- screenshot: 08_create_automation.png -->
 
@@ -78,7 +81,7 @@ Survival players make all turret gear in five machines that run on FE. Each one 
 - Part Workstation (2x1x2) machines the parts for each base and weapon.
 - Part Assembler (2x2x2) builds bases and weapons out of those parts and restores damaged bases.
 - Module Workstation and Ammo Workstation (1x1x2) craft instantly from your inventory, or run by themselves when automation feeds them.
-- Charging Station (1x1x1) fills Empty Laser Cells with FE.
+- Charging Station (1x1x1) fills Empty Laser Cells and Empty Plasma Cells with FE.
 
 The crafting table only makes the stations. A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.
 
@@ -101,7 +104,7 @@ Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/
 
 - Minecraft 1.20.1 with Forge 47.2 or newer
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
-- Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun and the Repulsors
+- Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle and the Repulsors
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
 
 Install it on both client and server.

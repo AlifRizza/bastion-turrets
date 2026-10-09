@@ -158,6 +158,15 @@ MODEL_MATERIALS = {
                         "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter"},
     "repulsor_dome_turret": {"yaw_pivot": "armor", "body": "hex", "glow_strips": "emitter", "pylons": "steel", "dome_ring": "frame",
                              "glow_orb": "emitter", "sensor": "steel", "glow_lens": "emitter"},
+    "ion_rifle_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "frame", "glow_strips": "emitter",
+                         "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "barrel_0": "frame",
+                         "coils": "steel", "glow_coils": "emitter", "glow_tip": "emitter"},
+    "plasma_repeater_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "body_frame": "frame", "chamber": "hex",
+                               "glow_chamber": "emitter", "glow_strips": "emitter", "barrel_0": "steel", "bore": "bore",
+                               "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter"},
+    "plasma_cannon_turret": {"yaw_pivot": "armor", "hull_plates": "hex", "rivets": "steel", "dome": "steel", "glow_strips": "emitter",
+                             "vent_l": "vent", "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "body": "armor",
+                             "barrel_0": "steel", "coils": "frame", "glow_coils": "emitter", "bore": "bore"},
     "tesla_turret": {"yaw_pivot": "armor", "body": "hex", "body_frame": "frame", "glow_strips": "emitter", "column": "steel",
                      "coil": "frame", "glow_coil": "emitter", "crown": "armor", "glow_crown": "emitter", "terminal": "steel",
                      "glow_terminal": "emitter", "electrodes": "steel", "glow_electrodes": "emitter", "sensor": "steel",
@@ -734,6 +743,26 @@ def empty_laser_cell():
     return outline(img, OUTLINE)
 
 
+PLASMA_CELL = Sprite(LASER_CELL.rows, {**LASER_CELL.palette, "R": rgb("3DFF6E"), "r": rgb("1FBF4C"), "q": rgb("0F6B29"), "Y": rgb("C9FFD6")})
+EMPTY_PLASMA = Sprite(LASER_CELL.rows, {**LASER_CELL.palette, "R": rgb("2E5A3A"), "r": rgb("24452D"), "q": rgb("17301E"), "Y": rgb("3F7550")})
+
+
+def plasma_cell():
+    """Plasma Cannon / Repeater ammo: the Laser Cell's casing with a green core."""
+    img = np.zeros((16, 16, 4))
+    for x, y in ((1, 3), (7, 1)):
+        stamp(img, PLASMA_CELL, x, y)
+    return outline(img, OUTLINE)
+
+
+def empty_plasma_cell():
+    """A Plasma Cell with a dark green, uncharged core (darker than the Empty Laser Cell, so the two are told apart)."""
+    img = np.zeros((16, 16, 4))
+    for x, y in ((1, 3), (7, 1)):
+        stamp(img, EMPTY_PLASMA, x, y)
+    return outline(img, OUTLINE)
+
+
 def panel(img, w, h):
     """Screen background w x h in the top-left of img: shaded body, edge line, inner highlight, chamfered corners."""
     yy, _ = np.mgrid[0:h, 0:w]
@@ -1238,6 +1267,7 @@ TEXTURES = {
     "item/fuel_canister.png": fuel_canister,
     "item/laser_cell.png": laser_cell,
     "item/empty_laser_cell.png": empty_laser_cell,
+    "item/plasma_cell.png": plasma_cell, "item/empty_plasma_cell.png": empty_plasma_cell,
     "block/creative_power_source.png": creative_power_source,
     "gui/workstation.png": workstation_gui,
     **{f"block/{n}.png": (lambda n=n: paint_model(n)[0]) for n in ("part_workstation", "part_assembler", "module_workstation", "ammo_workstation", "charging_station")},
@@ -1255,6 +1285,8 @@ TEXTURES = {
     "vfx/dome.png": lambda: dome_shell(),
     "entity/turret_mortar_shell.png": lambda: paint_model("entity/turret_mortar_shell")[0],
     "entity/turret_mortar_shell_e.png": lambda: paint_model("entity/turret_mortar_shell")[1],
+    **{f"item/{name}{suffix}.png": (lambda name=name, i=i: paint_model(name)[i])
+       for name in ("ion_rifle_turret", "plasma_repeater_turret", "plasma_cannon_turret") for i, suffix in ((0, ""), (1, "_e"))},
     "item/railgun_turret.png": lambda: paint_model("railgun_turret")[0],
     "item/railgun_turret_e.png": lambda: paint_model("railgun_turret")[1],
     "item/damaged_large_turret_base.png": damaged_large_base,

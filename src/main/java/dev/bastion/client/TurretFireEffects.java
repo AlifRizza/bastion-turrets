@@ -91,6 +91,15 @@ public final class TurretFireEffects {
             RepulsorEffects.dome(level, event, muzzle, data == null ? 6 : (float) data.range(), color);
             return;
         }
+        if (fx == WeaponFx.ION_RIFLE) { // a streak, then the core's beams (IonEffects, IonField)
+            IonEffects.fire(level, event, fx, muzzle, direction, color);
+            return;
+        }
+        if (fx == WeaponFx.PLASMA_REPEATER || fx == WeaponFx.PLASMA_CANNON) { // glowing balls, splashes, the Cannon's burst (PlasmaEffects)
+            float blast = fx == WeaponFx.PLASMA_CANNON ? (data == null ? 4 : data.params().getOrDefault("blast_radius", 4f)) : 0;
+            PlasmaEffects.fire(level, event, fx, muzzle, direction, color, blast);
+            return;
+        }
         VfxManager.play(fx.muzzle(), muzzle, direction, VfxParams.of().color(color).seed(event.seed()));
         if (client.streak >= 3) {
             VfxManager.play(VfxPresets.HEAT_HAZE, muzzle, direction, VfxParams.of().seed(event.seed() + 1));
@@ -154,7 +163,7 @@ public final class TurretFireEffects {
     }
 
     /** Near players hear the shot; past 32 blocks they hear the muffled tail instead (PLAN 5.7). */
-    private static void playShot(ClientLevel level, TurretFireEvent event, Vec3 muzzle, WeaponFx fx, RandomSource random) {
+    static void playShot(ClientLevel level, TurretFireEvent event, Vec3 muzzle, WeaponFx fx, RandomSource random) {
         var player = Minecraft.getInstance().player;
         if (player == null) return;
         boolean far = player.position().distanceTo(muzzle) > FAR_SOUND_DISTANCE;

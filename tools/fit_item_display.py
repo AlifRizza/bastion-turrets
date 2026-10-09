@@ -22,6 +22,7 @@ MODELS = {"turret_base": "turret_base", "gun_turret": "gun_turret", "machine_gun
           "missile_launcher_turret": "missile_launcher_turret", "flamethrower_turret": "flamethrower_turret",
           "tesla_turret": "tesla_turret", "laser_rifle_turret": "laser_rifle_turret", "railgun_turret": "railgun_turret", "mortar_turret": "mortar_turret",
           "repulsor_turret": "repulsor_turret", "repulsor_dome_turret": "repulsor_dome_turret",
+          "ion_rifle_turret": "ion_rifle_turret", "plasma_repeater_turret": "plasma_repeater_turret", "plasma_cannon_turret": "plasma_cannon_turret",
           "part_workstation": "part_workstation", "part_assembler": "part_assembler",
           "module_workstation": "module_workstation", "ammo_workstation": "ammo_workstation", "charging_station": "charging_station"}
 # Parts (PLAN Fase 9) show some bones of a weapon or base model: fit each to just those bones.

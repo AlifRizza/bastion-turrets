@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Laser Rifle charging: light gathers at the emitter (muzzle_0) as an orb that grows from a spark to full size over the
+ * Laser Rifle and Plasma Cannon charging (the Cannon's orb 1.6x): light gathers at the emitter (muzzle_0) as an orb that grows from a spark to full size over the
  * charge and pulses faster as it fills, with a lens-flare streak across it in the last stretch. Particles streaming into
  * it come from LaserEffects. Halo alpha-blended (reads by day), glow and core additive.
  */
@@ -33,7 +33,7 @@ public final class LaserChargeRenderer {
     private LaserChargeRenderer() {
     }
 
-    private record Orb(Vec3 at, float progress, int argb) {
+    private record Orb(Vec3 at, float progress, int argb, float scale) {
     }
 
     public static void render(PoseStack poseStack, MultiBufferSource buffers, Camera camera, float partialTick, ClientLevel level) {
@@ -42,9 +42,11 @@ public final class LaserChargeRenderer {
             if (client.muzzles[0] == null || client.chargeStart < 0) continue;
             if (!(level.getBlockEntity(client.pos) instanceof TurretBaseBlockEntity turret) || turret.clientState() != TurretState.CHARGING) continue;
             WeaponData data = turret.inventory().weaponData();
-            if (data == null || !data.type().equals(BastionWeaponTypes.LASER_RIFLE.getId())) continue;
+            boolean laser = data != null && data.type().equals(BastionWeaponTypes.LASER_RIFLE.getId());
+            boolean plasma = data != null && data.type().equals(BastionWeaponTypes.PLASMA_CANNON.getId());
+            if (!laser && !plasma) continue;
             int charge = Math.round(data.params().getOrDefault("charge_ticks", 1f));
-            orbs.add(new Orb(client.muzzles[0], client.chargeProgress(level.getGameTime(), partialTick, charge), data.energyColor()));
+            orbs.add(new Orb(client.muzzles[0], client.chargeProgress(level.getGameTime(), partialTick, charge), data.energyColor(), plasma ? 1.6f : 1f));
         }
         if (orbs.isEmpty()) return;
         float time = level.getGameTime() + partialTick;
@@ -68,10 +70,10 @@ public final class LaserChargeRenderer {
     /** Half-size from {@code small} at the start of the charge to {@code full} at its end, with a pulse that quickens. */
     private static float size(Orb o, float time, float small, float full) {
         float eased = o.progress * o.progress;
-        return Mth.lerp(eased, small, full) * (1 + 0.12f * Mth.sin(time * (0.5f + 2.5f * o.progress)));
+        return o.scale * Mth.lerp(eased, small, full) * (1 + 0.12f * Mth.sin(time * (0.5f + 2.5f * o.progress)));
     }
 
-    private static void billboard(VertexConsumer buffer, Matrix4f pose, Vec3 cam, Quaternionf facing, Vec3 at, float halfW, float halfH,
+    static void billboard(VertexConsumer buffer, Matrix4f pose, Vec3 cam, Quaternionf facing, Vec3 at, float halfW, float halfH,
                                   int rgb, float alpha) {
         Vec3 c = at.subtract(cam);
         float[][] corners = {{-1, -1, 0, 1}, {-1, 1, 0, 0}, {1, 1, 1, 0}, {1, -1, 1, 1}};

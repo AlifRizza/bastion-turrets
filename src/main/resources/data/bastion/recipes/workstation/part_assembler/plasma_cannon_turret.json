@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:plasma_cannon_core",
+      "count": 1
+    },
+    {
+      "item": "bastion:plasma_cannon_barrel",
+      "count": 1
+    },
+    {
+      "item": "bastion:plasma_cannon_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:plasma_cannon_turret"
+  },
+  "time": 300,
+  "energy": 15000
+}

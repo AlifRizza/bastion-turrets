@@ -1,0 +1,142 @@
+{
+  "parent": "builtin/entity",
+  "gui_light": "side",
+  "display": {
+    "gui": {
+      "rotation": [
+        25,
+        135,
+        0
+      ],
+      "translation": [
+        -0.81,
+        -6.33,
+        -2.05
+      ],
+      "scale": [
+        0.885,
+        0.885,
+        0.885
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -3.13,
+        -0.54
+      ],
+      "scale": [
+        0.419,
+        0.419,
+        0.419
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        -1.03,
+        -5.91,
+        -0.0
+      ],
+      "scale": [
+        0.792,
+        0.792,
+        0.792
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -6.25,
+        1.09
+      ],
+      "scale": [
+        0.838,
+        0.838,
+        0.838
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -1.78,
+        -3.84
+      ],
+      "scale": [
+        0.559,
+        0.559,
+        0.559
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        180,
+        0
+      ],
+      "translation": [
+        -0.0,
+        -1.78,
+        -3.84
+      ],
+      "scale": [
+        0.559,
+        0.559,
+        0.559
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        170,
+        0
+      ],
+      "translation": [
+        -0.15,
+        -4.86,
+        0.83
+      ],
+      "scale": [
+        0.652,
+        0.652,
+        0.652
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        190,
+        0
+      ],
+      "translation": [
+        0.15,
+        -4.86,
+        0.83
+      ],
+      "scale": [
+        0.652,
+        0.652,
+        0.652
+      ]
+    }
+  }
+}

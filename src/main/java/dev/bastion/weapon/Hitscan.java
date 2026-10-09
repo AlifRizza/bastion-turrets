@@ -39,7 +39,10 @@ public final class Hitscan {
 
         List<EntityHitResult> hits = new ArrayList<>();
         for (Entity entity : level.getEntities((Entity) null, new AABB(from, blockEnd).inflate(1), canHit)) {
-            Optional<Vec3> hit = entity.getBoundingBox().inflate(0.1).clip(from, blockEnd);
+            AABB box = entity.getBoundingBox().inflate(0.1);
+            // A ray that starts inside a box hits it there (AABB.clip only counts entering it), as vanilla projectiles do:
+            // a mob hugging the muzzle, a Plasma Cannon fragment starting against the next mob in a crowd.
+            Optional<Vec3> hit = box.contains(from) ? Optional.of(from) : box.clip(from, blockEnd);
             hit.ifPresent(point -> hits.add(new EntityHitResult(entity, point)));
         }
         hits.sort(Comparator.comparingDouble(h -> from.distanceToSqr(h.getLocation())));

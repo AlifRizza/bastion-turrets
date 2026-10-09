@@ -21,6 +21,18 @@ public abstract class WeaponType {
         return 0;
     }
 
+    /**
+     * True when {@code entity} is at least the mounted weapon's min_range from its pivot (the Rocket, Missile, Railgun, Mortar
+     * and Plasma Cannon filters). Read live, so a shot still flying after its module was swapped out sees the new weapon:
+     * one without min_range counts as 0, never an exception inside the level tick (review 2026-10-10).
+     */
+    protected static boolean outsideMinRange(Entity entity, TurretBaseBlockEntity turret) {
+        WeaponData data = turret.inventory().weaponData();
+        if (data == null) return false;
+        double min = data.params().getOrDefault("min_range", 0f);
+        return entity.distanceToSqr(turret.pivot(data)) >= min * min;
+    }
+
     /** Extra per-weapon target filter on top of the GUI filter. */
     public boolean canTarget(Entity entity, TurretBaseBlockEntity turret) {
         return true;

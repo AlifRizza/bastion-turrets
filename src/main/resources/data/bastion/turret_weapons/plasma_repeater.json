@@ -1,0 +1,27 @@
+{
+  "type": "bastion:plasma_repeater",
+  "ammo": "bastion:ammo/plasma",
+  "energy_color": "#3DFF6E",
+  "range": 24,
+  "fire_interval": 5,
+  "damage": 5,
+  "spread": 0.8,
+  "ammo_per_shot": 0.1,
+  "turn_speed": 10,
+  "aim_tolerance": 2,
+  "aim_lock_ticks": 2,
+  "min_pitch": -35,
+  "max_pitch": 90,
+  "heat_per_shot": 8,
+  "heat_dissipation_per_second": 15,
+  "max_heat": 100,
+  "overheat_ticks": 60,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.05,
+  "params": {
+    "bolt_speed": 1.5,
+    "lead_accuracy": 0.9,
+    "splash_damage": 3,
+    "splash_radius": 1.2
+  }
+}

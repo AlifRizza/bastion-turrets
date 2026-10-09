@@ -50,10 +50,7 @@ public class MortarWeapon extends WeaponType {
 
     @Override
     public boolean canTarget(Entity entity, TurretBaseBlockEntity turret) {
-        WeaponData data = turret.inventory().weaponData();
-        if (data == null || !grounded(entity)) return false;
-        double min = data.param("min_range");
-        return entity.distanceToSqr(turret.pivot(data)) >= min * min;
+        return grounded(entity) && outsideMinRange(entity, turret);
     }
 
     /** Walking, swimming or between two steps; never a flyer, which a shell falling from above cannot catch. */

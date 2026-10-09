@@ -58,6 +58,12 @@ public final class BastionItems {
     /** Pushes mobs away from the turrets, no damage; runs on FE. */
     public static final RegistryObject<WeaponModuleItem> REPULSOR_TURRET = REGISTER.register("repulsor_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("repulsor")));
+    /** A fast ion bolt; where it stops, every target within 3 blocks is zapped too; runs on FE. */
+    public static final RegistryObject<WeaponModuleItem> ION_RIFLE_TURRET = REGISTER.register("ion_rifle_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("ion_rifle")));
+    /** Rapid plasma balls that splash; heats up and vents like the Machine Gun; Plasma Cells. */
+    public static final RegistryObject<WeaponModuleItem> PLASMA_REPEATER_TURRET = REGISTER.register("plasma_repeater_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("plasma_repeater")));
     // Big modules: Large Turret Base only.
     public static final RegistryObject<WeaponModuleItem> MISSILE_LAUNCHER_TURRET = REGISTER.register("missile_launcher_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("missile_launcher"), true));
@@ -73,6 +79,9 @@ public final class BastionItems {
     /** Throws every mob around it away from the turrets, no damage; runs on FE. */
     public static final RegistryObject<WeaponModuleItem> REPULSOR_DOME_TURRET = REGISTER.register("repulsor_dome_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("repulsor_dome"), true));
+    /** A big slow plasma ball that bursts into a ring of twelve small ones; Plasma Cells. */
+    public static final RegistryObject<WeaponModuleItem> PLASMA_CANNON_TURRET = REGISTER.register("plasma_cannon_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("plasma_cannon"), true));
 
     // Ammo, PLAN 7.4; tagged bastion:ammo/kinetic and bastion:ammo/scatter.
     public static final RegistryObject<Item> KINETIC_ROUNDS = REGISTER.register("kinetic_rounds", () -> new Item(new Item.Properties()));
@@ -84,6 +93,10 @@ public final class BastionItems {
     public static final RegistryObject<Item> LASER_CELL = REGISTER.register("laser_cell", () -> new Item(new Item.Properties().stacksTo(16)));
     /** Charged into a Laser Cell with FE at the Charging Station. */
     public static final RegistryObject<Item> EMPTY_LASER_CELL = REGISTER.register("empty_laser_cell", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** Ammo of the Plasma Repeater (10 shots) and the Plasma Cannon (1 shot): an Empty Plasma Cell charged at the Charging Station. */
+    public static final RegistryObject<Item> PLASMA_CELL = REGISTER.register("plasma_cell", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** Charged into a Plasma Cell with FE at the Charging Station. */
+    public static final RegistryObject<Item> EMPTY_PLASMA_CELL = REGISTER.register("empty_plasma_cell", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> FUEL_CANISTER = REGISTER.register("fuel_canister", () -> new Item(new Item.Properties().stacksTo(16)));
     /** One Railgun shot (plus FE from the base). */
     public static final RegistryObject<Item> RAIL_SLUGS = REGISTER.register("rail_slugs", () -> new Item(new Item.Properties().stacksTo(16)));
@@ -154,7 +167,10 @@ public final class BastionItems {
             "railgun_rails", "railgun_receiver", "railgun_mount",
             "mortar_barrel", "mortar_housing", "mortar_ring",
             "repulsor_emitter", "repulsor_coil", "repulsor_mount",
-            "dome_core", "dome_pylons", "dome_mount"
+            "dome_core", "dome_pylons", "dome_mount",
+            "ion_barrel", "ion_capacitor", "ion_mount",
+            "plasma_barrel", "plasma_chamber", "repeater_mount",
+            "plasma_cannon_core", "plasma_cannon_barrel", "plasma_cannon_mount"
     ).map(id -> REGISTER.register(id, () -> new PartItem(new Item.Properties().stacksTo(16)))).toList();
 
     private static RegistryObject<WorkstationItem> workstation(RegistryObject<WorkstationBlock> block) {
@@ -195,11 +211,11 @@ public final class BastionItems {
     // right tab by themselves. Tools (repair and upgrade kits, configurator, damaged bases) sit with the bases.
     public static final RegistryObject<CreativeModeTab> TAB = tab("bastion", TURRET_BASE, null,
             item -> !(item instanceof WeaponModuleItem) && !(item instanceof ModifierItem) && !isAmmo(item) && !workshop(item)
-                    && !(item instanceof PartItem) && item != EMPTY_LASER_CELL.get());
+                    && !(item instanceof PartItem) && item != EMPTY_LASER_CELL.get() && item != EMPTY_PLASMA_CELL.get());
     public static final RegistryObject<CreativeModeTab> WEAPONS_TAB = tab("bastion_weapons", GUN_TURRET, "bastion",
             item -> item instanceof WeaponModuleItem);
     public static final RegistryObject<CreativeModeTab> AMMO_TAB = tab("bastion_ammo", KINETIC_ROUNDS, "bastion_weapons",
-            item -> isAmmo(item) || item == EMPTY_LASER_CELL.get());
+            item -> isAmmo(item) || item == EMPTY_LASER_CELL.get() || item == EMPTY_PLASMA_CELL.get());
     public static final RegistryObject<CreativeModeTab> MODULES_TAB = tab("bastion_modules", RANGE_MODULE, "bastion_ammo",
             item -> item instanceof ModifierItem);
     /** The five stations and the creative power source (PLAN Fase 9). */

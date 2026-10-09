@@ -158,6 +158,36 @@ public class TurretWorkstationTests {
                 && station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).is(BastionItems.LASER_CELL.get()), "cells not charged yet"));
     }
 
+    /** Empty Plasma Cells: four from 2 iron, 1 glass and 1 glowstone dust at the Ammo Workstation. */
+    @GameTest(template = ARENA, timeoutTicks = 40, batch = "ammoWorkstationMakesEmptyPlasmaCells")
+    public static void ammoWorkstationMakesEmptyPlasmaCells(GameTestHelper helper) {
+        WorkstationBlockEntity station = station(helper, BastionBlocks.AMMO_WORKSTATION, true);
+        helper.runAtTickTime(5, () -> {
+            select(station, "ammo_workstation", "empty_plasma_cell");
+            FakePlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+            player.getInventory().clearContent();
+            player.getInventory().add(new ItemStack(Items.IRON_INGOT, 2));
+            player.getInventory().add(new ItemStack(Items.GLASS));
+            player.getInventory().add(new ItemStack(Items.GLOWSTONE_DUST));
+            station.instantCraft(player, 1);
+            helper.assertTrue(player.getInventory().countItem(BastionItems.EMPTY_PLASMA_CELL.get()) == 4, "expected 4 Empty Plasma Cells");
+            player.getInventory().clearContent();
+            helper.succeed();
+        });
+    }
+
+    /** Plasma Cells: an Empty Plasma Cell charged at the Charging Station, 80 ticks each. */
+    @GameTest(template = ARENA, timeoutTicks = 260, batch = "chargingStationChargesPlasmaCells")
+    public static void chargingStationChargesPlasmaCells(GameTestHelper helper) {
+        WorkstationBlockEntity station = station(helper, BastionBlocks.CHARGING_STATION, true);
+        select(station, "charging_station", "plasma_cell");
+        ItemHandlerHelper.insertItem(items(helper, CORE), new ItemStack(BastionItems.EMPTY_PLASMA_CELL.get(), 2), false);
+        helper.runAtTickTime(100, () -> helper.assertTrue(station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).getCount() < 2,
+                "two cells charged in 100 ticks: faster than 80 each"));
+        helper.succeedWhen(() -> helper.assertTrue(station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).getCount() == 2
+                && station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).is(BastionItems.PLASMA_CELL.get()), "cells not charged yet"));
+    }
+
     /** Survival: the crafting table makes the workstations, nothing else of the mod. */
     @GameTest(template = ARENA, batch = "craftingTableOnlyMakesWorkstations")
     public static void craftingTableOnlyMakesWorkstations(GameTestHelper helper) {

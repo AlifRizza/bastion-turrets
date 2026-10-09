@@ -214,9 +214,15 @@ public class VfxParticle extends TextureSheetParticle {
         }
     }
 
-    /** Bright yellow -> options colour (t 0.22) -> deep red (0.55) -> soot (1): the soot phase reads as smoke. */
+    /**
+     * Bright yellow -> options colour (t 0.22) -> deep red (0.55) -> soot (1): the soot phase reads as smoke. A cool options
+     * colour (energy, not fire: the Plasma Cannon's green blast) darkens in its own hue instead of turning red and sooty.
+     */
     private float[] fireRamp(float t) {
-        float[][] stops = {{1f, 0.86f, 0.42f}, {red, green, blue}, {0.45f, 0.1f, 0.03f}, {0.09f, 0.07f, 0.06f}};
+        boolean warm = red >= green && red >= blue;
+        float[] deep = warm ? new float[]{0.45f, 0.1f, 0.03f} : new float[]{red * 0.8f, green * 0.8f, blue * 0.8f};
+        float[] soot = warm ? new float[]{0.09f, 0.07f, 0.06f} : new float[]{red * 0.4f, green * 0.4f, blue * 0.4f};
+        float[][] stops = {{1f, 0.86f, 0.42f}, {red, green, blue}, deep, soot};
         float[] at = {0f, 0.22f, 0.55f, 1f};
         int i = t < at[1] ? 0 : t < at[2] ? 1 : 2;
         float k = Mth.clamp((t - at[i]) / (at[i + 1] - at[i]), 0, 1);

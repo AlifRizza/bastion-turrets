@@ -3,7 +3,10 @@ package dev.bastion.registry;
 import dev.bastion.Bastion;
 import dev.bastion.weapon.WeaponType;
 import dev.bastion.weapon.types.GunWeapon;
+import dev.bastion.weapon.types.IonRifleWeapon;
 import dev.bastion.weapon.types.MachineGunWeapon;
+import dev.bastion.weapon.types.PlasmaCannonWeapon;
+import dev.bastion.weapon.types.PlasmaRepeaterWeapon;
 import dev.bastion.weapon.types.FlamethrowerWeapon;
 import dev.bastion.weapon.types.LaserRifleWeapon;
 import dev.bastion.weapon.types.MissileLauncherWeapon;
@@ -40,4 +43,7 @@ public final class BastionWeaponTypes {
     public static final RegistryObject<WeaponType> MORTAR = REGISTER.register("mortar", MortarWeapon::new);
     public static final RegistryObject<WeaponType> REPULSOR = REGISTER.register("repulsor", RepulsorWeapon::new);
     public static final RegistryObject<WeaponType> REPULSOR_DOME = REGISTER.register("repulsor_dome", RepulsorDomeWeapon::new);
+    public static final RegistryObject<WeaponType> ION_RIFLE = REGISTER.register("ion_rifle", IonRifleWeapon::new);
+    public static final RegistryObject<WeaponType> PLASMA_REPEATER = REGISTER.register("plasma_repeater", PlasmaRepeaterWeapon::new);
+    public static final RegistryObject<WeaponType> PLASMA_CANNON = REGISTER.register("plasma_cannon", PlasmaCannonWeapon::new);
 }

@@ -57,6 +57,16 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <td>No damage: after a short charge a wave of force throws everything in front of it, up to 5 blocks out, about 4 blocks back, several mobs at once, so they can't hug your guns. Too weak for heavy mobs like iron golems, ravagers and wardens. Runs on FE.</td>
 </tr>
 <tr>
+<td>Ion Rifle Turret</td>
+<td>Standard</td>
+<td>A fast ion bolt. Where it stops, a beam zaps every valid target within 3 blocks for 5 damage, even through thin walls. Runs on FE.</td>
+</tr>
+<tr>
+<td>Plasma Repeater Turret</td>
+<td>Standard</td>
+<td>Rapid plasma balls you can watch fly; each one splashes the targets around where it lands. Heats up and vents like the Machine Gun. 10 shots per Plasma Cell.</td>
+</tr>
+<tr>
 <td>Missile Launcher Turret</td>
 <td>Large</td>
 <td>12 homing missiles. Fire them as they load, or wait for a full salvo spread over everything in range.</td>
@@ -81,16 +91,21 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <td>Large</td>
 <td>No damage: a dome of force bursts out and throws every enemy within 9 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE.</td>
 </tr>
+<tr>
+<td>Plasma Cannon Turret</td>
+<td>Large</td>
+<td>Charges, then fires a big slow plasma ball that explodes like a BFG: every enemy within 4 blocks of the impact takes heavy damage, more near the middle. One Plasma Cell per shot.</td>
+</tr>
 </tbody>
 </table>
-<p>The Gun, Machine Gun, Shotgun and Sniper fire real bullets with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.</p>
+<p>The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire real shots with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.</p>
 <p>[IMAGE: screenshots-840/03_tesla_coil.jpg]</p>
 <p>[IMAGE: screenshots-840/12_railgun_charge.jpg]</p>
 <p>[IMAGE: screenshots-840/11_repulsor_dome.jpg]</p>
 <p>[IMAGE: screenshots-840/05_missile_salvo.jpg]</p>
 
 <h2>Turret bases</h2>
-<p>The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar and Repulsor Dome) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.</p>
+<p>The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar, Repulsor Dome and Plasma Cannon) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.</p>
 <p>Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, modded ones too (Fungal Infection: Spore works out of the box), and bullets from gun mods like TaCZ hit them as well: a turret's lights turn yellow below half HP and blink red when it's about to go, and a Repair Kit puts back 40% HP. Let one get destroyed and the weapon and its ammo are gone for good: only the modules drop, plus a Damaged Turret Base that the Part Assembler restores with a Repair Kit, at the tier it had. Mining a base works like breaking a shulker box, so tier and contents stay with the item.</p>
 <p>[IMAGE: screenshots-840/07_floor_wall_ceiling.jpg]</p>
 
@@ -155,7 +170,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 </table>
 <p>Every module comes in Mk1, Mk2 and Mk3 (one and a half and twice the Mk1 effect): upgrade the one you have at the Module Workstation with diamonds, then netherite scrap. Each kind of module fits once per base, whatever its Mk. Different modules add up, and a T3 base has four module slots.</p>
 <h2>Ammo and automation</h2>
-<p>Ammo comes in nine kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs and Mortar Shells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.</p>
+<p>Ammo comes in ten kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells and Plasma Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.</p>
 <p>[IMAGE: screenshots-840/08_create_automation.jpg]</p>
 
 <h2>Workstations</h2>
@@ -164,7 +179,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <li>Part Workstation (2x1x2) machines the parts for each base and weapon.</li>
 <li>Part Assembler (2x2x2) builds bases and weapons out of those parts and restores damaged bases.</li>
 <li>Module Workstation and Ammo Workstation (1x1x2) craft instantly from your inventory, or run by themselves when automation feeds them.</li>
-<li>Charging Station (1x1x1) fills Empty Laser Cells with FE.</li>
+<li>Charging Station (1x1x1) fills Empty Laser Cells and Empty Plasma Cells with FE.</li>
 </ul>
 <p>The crafting table only makes the stations. A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.</p>
 <blockquote>
@@ -182,7 +197,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <ul>
 <li>Minecraft 1.20.1 with Forge 47.2 or newer</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/geckolib">GeckoLib</a> 4.8 or newer (required)</li>
-<li>Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun and the Repulsors</li>
+<li>Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle and the Repulsors</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a> 6.0 or newer if you want Mechanical Arm support (optional)</li>
 </ul>
 <p>Install it on both client and server.</p>

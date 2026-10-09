@@ -9,6 +9,7 @@
     "#bastion:ammo/fuel",
     "#bastion:ammo/laser",
     "#bastion:ammo/rail",
-    "#bastion:ammo/mortar"
+    "#bastion:ammo/mortar",
+    "#bastion:ammo/plasma"
   ]
 }
