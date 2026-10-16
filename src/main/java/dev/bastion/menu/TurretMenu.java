@@ -1,5 +1,6 @@
 package dev.bastion.menu;
 
+import dev.bastion.hub.HubInterfaceBlockEntity;
 import dev.bastion.registry.BastionMenus;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
@@ -19,6 +20,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Turret container, PLAN 4.7. Menu slot i is TurretInventory slot i for the first SIZE slots. Live numbers
@@ -29,6 +31,7 @@ public class TurretMenu extends AbstractContainerMenu {
     public static final int WEAPON_X = 18, WEAPON_Y = 44;
     public static final int AMMO_X = 67, AMMO_Y = 37;
     public static final int MODIFIER_X = 151, MODIFIER_Y = 37;
+    public static final int CONNECTOR_X = 128, CONNECTOR_Y = 55; // between the ammo grid and the modules
     public static final int PLAYER_INV_X = 28, PLAYER_INV_Y = 115;
 
     // Indices into data; HP and heat are sent x10 and energy in hundreds of FE, because data slots carry 16-bit integers.
@@ -42,6 +45,9 @@ public class TurretMenu extends AbstractContainerMenu {
     private final BlockPos pos;
     private final TurretInventory turret;
     private final ContainerData data;
+    /** The Control Hub this GUI was opened through (null: opened at the turret). */
+    @Nullable
+    private final BlockPos hub;
     // Settings as opened; the screen edits these copies and sends them back whole.
     public final TargetFilter filter;
     public boolean enabled, redstoneInverted, salvo;
@@ -49,6 +55,10 @@ public class TurretMenu extends AbstractContainerMenu {
     public boolean slotsVisible = true;
 
     public static void writeOpenData(FriendlyByteBuf buf, TurretBaseBlockEntity base) {
+        writeOpenData(buf, base, null);
+    }
+
+    public static void writeOpenData(FriendlyByteBuf buf, TurretBaseBlockEntity base, @Nullable BlockPos hub) {
         buf.writeBlockPos(base.getBlockPos());
         buf.writeEnum(base.tier());
         buf.writeBoolean(base.large());
@@ -56,6 +66,7 @@ public class TurretMenu extends AbstractContainerMenu {
         buf.writeBoolean(base.enabled());
         buf.writeBoolean(base.redstoneInverted());
         buf.writeBoolean(base.salvo());
+        buf.writeNullable(hub, FriendlyByteBuf::writeBlockPos);
     }
 
     /** Client side; slot contents and data arrive through the normal menu sync. */
@@ -64,18 +75,24 @@ public class TurretMenu extends AbstractContainerMenu {
     }
 
     public TurretMenu(int id, Inventory playerInventory, TurretBaseBlockEntity base) {
+        this(id, playerInventory, base, null);
+    }
+
+    /** Server side; {@code hub}: the Control Hub it is opened through, or null at the turret itself. */
+    public TurretMenu(int id, Inventory playerInventory, TurretBaseBlockEntity base, @Nullable BlockPos hub) {
         this(id, playerInventory, base.inventory(), base.getBlockPos(), base.tier(), base.filter().copy(), base.enabled(),
-                base.redstoneInverted(), base.salvo(), serverData(base));
+                base.redstoneInverted(), base.salvo(), serverData(base), hub);
     }
 
     private TurretMenu(int id, Inventory playerInventory, BlockPos pos, TurretTier tier, boolean large, FriendlyByteBuf buf) {
         this(id, playerInventory, new TurretInventory(() -> tier, () -> large, slot -> {}), pos, tier, TargetFilter.read(buf),
-                buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), new SimpleContainerData(DATA_COUNT));
+                buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), new SimpleContainerData(DATA_COUNT), buf.readNullable(FriendlyByteBuf::readBlockPos));
     }
 
     private TurretMenu(int id, Inventory playerInventory, TurretInventory turret, BlockPos pos, TurretTier tier, TargetFilter filter,
-                       boolean enabled, boolean redstoneInverted, boolean salvo, ContainerData data) {
+                       boolean enabled, boolean redstoneInverted, boolean salvo, ContainerData data, @Nullable BlockPos hub) {
         super(BastionMenus.TURRET.get(), id);
+        this.hub = hub;
         this.access = ContainerLevelAccess.create(playerInventory.player.level(), pos);
         this.block = playerInventory.player.level().getBlockState(pos).getBlock();
         this.salvo = salvo;
@@ -95,6 +112,7 @@ public class TurretMenu extends AbstractContainerMenu {
         for (int i = 0; i < TurretTier.MAX_MODIFIER_SLOTS; i++) {
             addSlot(new TurretSlot(turret, TurretInventory.MODIFIER_START + i, MODIFIER_X + i % 2 * 18, MODIFIER_Y + i / 2 * 18));
         }
+        addSlot(new TurretSlot(turret, TurretInventory.CONNECTOR, CONNECTOR_X, CONNECTOR_Y));
 
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -195,9 +213,16 @@ public class TurretMenu extends AbstractContainerMenu {
         return original;
     }
 
+    @Nullable
+    public BlockPos hub() {
+        return hub;
+    }
+
+    /** At the turret: within 8 blocks of it. Through a hub: the hub still reaches it for this player (PLAN "Aturan server"). */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, block);
+        if (hub == null) return stillValid(access, player, block);
+        return player.level().getBlockEntity(hub) instanceof HubInterfaceBlockEntity interfaceEntity && interfaceEntity.reachable(player, pos) != null;
     }
 
     private class PlayerSlot extends Slot {

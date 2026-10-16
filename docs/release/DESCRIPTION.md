@@ -3,7 +3,7 @@
 Futuristic, modular turrets for Forge 1.20.1. Place a base, mount a weapon, feed it ammo and tune it with modules.
 The muzzle flashes, beams, lightning arcs and explosions were all made for this mod. You won't find a single vanilla particle in there.
 
-> This is a beta. Numbers will move between versions and the sounds are still placeholders, so back up your world before you update.
+> This is a beta. Numbers will move between versions, so back up your world before you update.
 
 <!-- screenshot: 01_laser_rifle_beam.png -->
 
@@ -15,7 +15,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Machine Gun Turret | Standard | Spins up into a stream of bullets. Builds heat, slows what it hits and overheats if you push it. |
 | Shotgun Turret | Standard | 8 pellets of 5 damage each, falling off with distance, and heavy knockback. |
 | Sniper Turret | Standard | Charges behind a laser sight, then sends one heavy round through 2 targets. 64 block range. |
-| Rocket Launcher Turret | Standard | Leads moving targets. The blast only hurts what the turret is allowed to shoot. |
+| Rocket Launcher Turret | Standard | Leads moving targets. Fires one rocket at a time, or all four tubes at once in Salvo mode. The blast only hurts what the turret is allowed to shoot. |
 | Flamethrower Turret | Standard | Sets valid targets in a short cone on fire. Burns through Fuel Canisters. |
 | Laser Rifle Turret | Standard | Charges up and fires one beam through all valid targets in a line. Walls stop it. |
 | Repulsor | Standard | No damage: after a short charge a wave of force throws everything in front of it, up to 5 blocks out, about 4 blocks back, several mobs at once, so they can't hug your guns. Too weak for heavy mobs like iron golems, ravagers and wardens. Runs on FE. |
@@ -50,6 +50,10 @@ Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn
 - Only you and players you trust can open or change your turrets.
 - Redstone turns a turret on or off, and a comparator reads its ammo (or energy) level.
 - The Turret Configurator copies one turret's targeting so you can paste it onto others.
+
+## Turret Control Hub
+
+Build a 3x3x3 cube: a Hub Interface in the middle of one side at eye level, Hub Casings with at least one Hub Power Port, and a Satellite Uplink on top. Right-click an unfinished Interface and a hologram shows what is missing. Link Hub Connectors to the hub and put one in each turret you want on it: once the hub has FE, its screen shows those turrets within 1, 3x3 or 7x7 chunks (Satellite Uplink T1, T2, T3) on a map and a list, coloured by health, with their ammo and state. Click one to open its own screen from the hub: swap modules, top up ammo or change its targeting without walking over. Or select many and change their categories, priority, mob rules, trusted players or on/off all at once.
 
 ## Modules
 
@@ -92,19 +96,19 @@ The crafting table only makes the stations. A station accepts nothing but the in
 
 ## Effects
 
-Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.
+Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Every turret has its own sounds too: shots, charge-ups, reloads, rocket flight and blasts, with a muffled version when you hear them from far away. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.
 
 ## For modpack makers
 
 Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.
 
-Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations and Feed Hubs hold and take in, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
+Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
 
 ## Requirements
 
 - Minecraft 1.20.1 with Forge 47.2 or newer
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
-- Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle and the Repulsors
+- Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle, the Repulsors and the Turret Control Hub
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
 
 Install it on both client and server.
@@ -115,7 +119,7 @@ English and Bahasa Indonesia.
 
 ## Known limits of this beta
 
-Sounds are placeholders, and there's no JEI or Jade support yet (each station's GUI lists its own recipes).
+There's no JEI or Jade support yet (each station's GUI lists its own recipes).
 
 Works with Embeddium and Oculus. With a shader pack on, the cyan glow on the models turns white and holograms turn green. Everything else looks as intended.
 

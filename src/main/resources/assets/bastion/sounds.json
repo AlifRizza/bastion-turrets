@@ -23,14 +23,6 @@
       "bastion:turret/servo_loop"
     ]
   },
-  "impact.kinetic": {
-    "subtitle": "subtitles.bastion.impact.kinetic",
-    "sounds": [
-      "bastion:impact/kinetic_0",
-      "bastion:impact/kinetic_1",
-      "bastion:impact/kinetic_2"
-    ]
-  },
   "gun.fire": {
     "subtitle": "subtitles.bastion.gun.fire",
     "sounds": [
@@ -63,16 +55,8 @@
   "machine_gun.fire_tail": {
     "subtitle": "subtitles.bastion.machine_gun.fire",
     "sounds": [
-      {
-        "name": "bastion:gun/fire_tail_0",
-        "pitch": 1.35,
-        "volume": 0.7
-      },
-      {
-        "name": "bastion:gun/fire_tail_1",
-        "pitch": 1.35,
-        "volume": 0.7
-      }
+      "bastion:machine_gun/fire_tail_0",
+      "bastion:machine_gun/fire_tail_1"
     ]
   },
   "machine_gun.spin_up": {
@@ -110,14 +94,8 @@
   "shotgun.fire_tail": {
     "subtitle": "subtitles.bastion.shotgun.fire",
     "sounds": [
-      {
-        "name": "bastion:gun/fire_tail_0",
-        "pitch": 0.72
-      },
-      {
-        "name": "bastion:gun/fire_tail_1",
-        "pitch": 0.72
-      }
+      "bastion:shotgun/fire_tail_0",
+      "bastion:shotgun/fire_tail_1"
     ]
   },
   "shotgun.pump": {
@@ -137,6 +115,12 @@
     "subtitle": "subtitles.bastion.turret.destroyed",
     "sounds": [
       "bastion:turret/destroyed"
+    ]
+  },
+  "turret.destroyed_large": {
+    "subtitle": "subtitles.bastion.turret.destroyed",
+    "sounds": [
+      "bastion:turret/destroyed_large"
     ]
   },
   "turret.tier_up": {
@@ -209,7 +193,7 @@
     "sounds": [
       {
         "name": "bastion:rocket/fly",
-        "attenuation_distance": 32
+        "attenuation_distance": 64
       }
     ]
   },
@@ -224,6 +208,12 @@
         "name": "bastion:rocket/explode_1",
         "attenuation_distance": 32
       }
+    ]
+  },
+  "rocket.reload": {
+    "subtitle": "subtitles.bastion.rocket.reload",
+    "sounds": [
+      "bastion:rocket/reload"
     ]
   },
   "missile.launch": {
@@ -306,7 +296,11 @@
     "subtitle": "subtitles.bastion.flamethrower.ignite",
     "sounds": [
       {
-        "name": "bastion:flamethrower/ignite",
+        "name": "bastion:flamethrower/ignite_0",
+        "attenuation_distance": 24
+      },
+      {
+        "name": "bastion:flamethrower/ignite_1",
         "attenuation_distance": 24
       }
     ]
@@ -462,15 +456,6 @@
       }
     ]
   },
-  "mortar.whistle": {
-    "subtitle": "subtitles.bastion.mortar.whistle",
-    "sounds": [
-      {
-        "name": "bastion:mortar/whistle",
-        "attenuation_distance": 40
-      }
-    ]
-  },
   "repulsor.charge": {
     "subtitle": "subtitles.bastion.repulsor.charge",
     "sounds": [
@@ -546,19 +531,6 @@
       }
     ]
   },
-  "ion.hit": {
-    "subtitle": "subtitles.bastion.ion.hit",
-    "sounds": [
-      {
-        "name": "bastion:ion/hit_0",
-        "attenuation_distance": 32
-      },
-      {
-        "name": "bastion:ion/hit_1",
-        "attenuation_distance": 32
-      }
-    ]
-  },
   "plasma_repeater.fire": {
     "subtitle": "subtitles.bastion.plasma_repeater.fire",
     "sounds": [
@@ -574,13 +546,6 @@
         "name": "bastion:plasma/repeater_fire_2",
         "attenuation_distance": 32
       }
-    ]
-  },
-  "plasma.hit_small": {
-    "subtitle": "subtitles.bastion.plasma.hit_small",
-    "sounds": [
-      "bastion:plasma/hit_small_0",
-      "bastion:plasma/hit_small_1"
     ]
   },
   "plasma.vent": {
@@ -622,6 +587,38 @@
         "name": "bastion:plasma/cannon_hit_1",
         "attenuation_distance": 48
       }
+    ]
+  },
+  "control_hub.online": {
+    "subtitle": "subtitles.bastion.control_hub.online",
+    "sounds": [
+      {
+        "name": "bastion:control_hub/online",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "control_hub.offline": {
+    "subtitle": "subtitles.bastion.control_hub.offline",
+    "sounds": [
+      {
+        "name": "bastion:control_hub/offline",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "control_hub.dish_loop": {
+    "subtitle": "subtitles.bastion.control_hub.dish_loop",
+    "sounds": [
+      {
+        "name": "bastion:control_hub/dish_loop",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "control_hub.ui_select": {
+    "sounds": [
+      "bastion:control_hub/ui_select"
     ]
   }
 }

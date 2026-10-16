@@ -4,6 +4,7 @@ import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.menu.TurretMenu;
 import dev.bastion.network.BastionNetwork;
+import dev.bastion.network.HubAction;
 import dev.bastion.network.TurretConfigUpdate;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionWeaponTypes;
@@ -23,17 +24,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,6 +44,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
     private static final ResourceLocation PLAIN = Bastion.id("textures/gui/turret_plain.png");
     // Sprite positions inside TEXTURE, see tools/gen_textures.py turret_gui().
     private static final int SLOT_U = 216, LOCKED_SLOT_U = 234, TAB_U = 216, TAB_V = 18, TAB_ACTIVE_V = 42;
+    private static final int CONNECTOR_ICON_U = 216, CONNECTOR_ICON_V = 66;
     private static final int TEXT = 0xD8E2EC, MUTED = 0x7F8C9A, ACCENT = 0x9FC4E8, GREEN = 0x7CFF8A, RED = 0xFF5A4F, AMBER = 0xFFB347;
     private static final int GROUP_LABEL_Y = 25;
     // Status tab gauges sit between the weapon bay and the ammo grid.
@@ -59,8 +57,6 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
     private static final int TAB_SIZE = 24, TAB_X = -23, TAB_Y = 8, TAB_GAP = 26;
 
     private enum Tab {STATUS, TARGETING, INFO}
-
-    private static List<EntityType<?>> livingTypes;
 
     private Tab tab = Tab.STATUS;
     @Nullable
@@ -90,6 +86,12 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                     menu.enabled = !menu.enabled;
                     sendConfig();
                 }, () -> menu.enabled));
+        if (menu.hub() != null) { // opened through a Control Hub: back to its screen
+            addRenderableWidget(new FlatButton(leftPos + imageWidth - 74, topPos + 5, 34, 11, () -> Component.translatable("gui.bastion.turret.back"), () -> {
+                HubSelection.returning = true;
+                BastionNetwork.CHANNEL.sendToServer(HubAction.back());
+            }));
+        }
         if (tab == Tab.STATUS) {
             // Fire mode, under the module slots; only for weapons that can salvo (Missile Launcher).
             fireModeButton = addRenderableWidget(new FlatButton(leftPos + TurretMenu.MODIFIER_X - 1, topPos + 79, 56, 13,
@@ -215,6 +217,8 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                     graphics.fill(leftPos + slot.x, topPos + slot.y, leftPos + slot.x + 16, topPos + slot.y + 16, 0x60FF3030);
                 }
             }
+            Slot connector = menu.slots.get(TurretInventory.CONNECTOR);
+            if (!connector.hasItem()) graphics.blit(TEXTURE, leftPos + connector.x, topPos + connector.y, CONNECTOR_ICON_U, CONNECTOR_ICON_V, 16, 16);
             float hp = menu.maxHealth() > 0 ? menu.health() / menu.maxHealth() : 1;
             gauge(graphics, HP_BAR_X, hp, hp < 0.3f ? 0xFFFF5A4F : 0xFF7CFF8A);
             if (menu.maxEnergy() > 0) { // energy weapons (Tesla Coil) have no heat: the second gauge is their capacitor
@@ -265,7 +269,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         Component tier = Component.translatable("gui.bastion.turret.tier", menu.tier().ordinal() + 1);
-        int tierX = imageWidth - 42 - font.width(tier);
+        int tierX = (menu.hub() != null ? imageWidth - 78 : imageWidth - 42) - font.width(tier);
         fit(graphics, title, titleLabelX, titleLabelY, tierX - 4 - titleLabelX, TEXT);
         graphics.drawString(font, tier, tierX, titleLabelY, ACCENT, false);
         switch (tab) {
@@ -326,7 +330,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
         graphics.pose().popPose();
     }
 
-    private static int stateColour(TurretState state) {
+    static int stateColour(TurretState state) {
         return switch (state) {
             case DISABLED -> MUTED;
             case IDLE -> GREEN;
@@ -337,6 +341,11 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
     }
 
     private void renderStatusTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+        Slot connector = menu.slots.get(TurretInventory.CONNECTOR);
+        if (!connector.hasItem() && isHovering(connector.x, connector.y, 16, 16, mouseX, mouseY)) {
+            graphics.renderTooltip(font, Component.translatable("gui.bastion.turret.connector"), mouseX, mouseY);
+            return;
+        }
         int x = mouseX - leftPos, y = mouseY - topPos;
         if (x >= LAMP_X - 3 && x < LAMP_X + LAMP_SIZE + 3 && y >= LAMP_Y - 3 && y < LAMP_Y + LAMP_SIZE + 3) {
             graphics.renderTooltip(font, Component.translatable("gui.bastion.state." + key(menu.state())), mouseX, mouseY);
@@ -379,7 +388,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
             Rule rule = menu.filter.rules.get(id);
             int light = rule == Rule.ALWAYS ? 0xFF7CFF8A : rule == Rule.NEVER ? 0xFFFF5A4F : 0xFF3C4550;
             graphics.fill(RIGHT_X + 3, y + 3, RIGHT_X + 8, y + 8, light);
-            graphics.drawString(font, font.plainSubstrByWidth(entityName(id).getString(), COLUMN_W - 14), RIGHT_X + 11, y + 2,
+            graphics.drawString(font, font.plainSubstrByWidth(MobList.name(id).getString(), COLUMN_W - 14), RIGHT_X + 11, y + 2,
                     inRow(mouseX, mouseY, y) ? ACCENT : TEXT, false);
         }
         if (rules.isEmpty()) {
@@ -400,49 +409,16 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
             ResourceLocation id = rules.get(row + ruleScroll);
             Rule rule = menu.filter.rules.get(id);
             Component state = rule == null
-                    ? Component.translatable("gui.bastion.rule.default", Component.translatable("gui.bastion.category." + key(categoryOf(id))))
+                    ? Component.translatable("gui.bastion.rule.default", Component.translatable("gui.bastion.category." + key(MobList.category(id))))
                     : Component.translatable("gui.bastion.rule." + key(rule));
-            graphics.renderComponentTooltip(font, List.of(entityName(id), state.copy().withStyle(ChatFormatting.GRAY),
+            graphics.renderComponentTooltip(font, List.of(MobList.name(id), state.copy().withStyle(ChatFormatting.GRAY),
                     Component.translatable("gui.bastion.rule.click").withStyle(ChatFormatting.DARK_GRAY)), mouseX, mouseY);
         }
     }
 
     /** The current search's matches, or the existing rules while the search box is empty. */
     private List<ResourceLocation> ruleRows() {
-        if (search.isBlank()) return new ArrayList<>(menu.filter.rules.keySet());
-        String query = search.trim().toLowerCase(Locale.ROOT);
-        List<ResourceLocation> rows = new ArrayList<>();
-        for (EntityType<?> type : livingTypes()) {
-            ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(type);
-            if (id != null && (id.toString().contains(query) || type.getDescription().getString().toLowerCase(Locale.ROOT).contains(query))) {
-                rows.add(id);
-            }
-        }
-        return rows;
-    }
-
-    /** Every registered mob: living entity types are exactly the ones with default attributes. */
-    private static List<EntityType<?>> livingTypes() {
-        if (livingTypes == null) {
-            livingTypes = ForgeRegistries.ENTITY_TYPES.getValues().stream()
-                    .filter(type -> type != EntityType.PLAYER && DefaultAttributes.hasSupplier(type))
-                    .sorted(Comparator.comparing(type -> type.getDescription().getString()))
-                    .toList();
-        }
-        return livingTypes;
-    }
-
-    private static Component entityName(ResourceLocation id) {
-        return ForgeRegistries.ENTITY_TYPES.containsKey(id) ? ForgeRegistries.ENTITY_TYPES.getValue(id).getDescription() : Component.literal(id.toString());
-    }
-
-    /**
-     * Category a mob type falls under without a rule. ponytail: approximated from its spawn group, since the
-     * real check needs an entity instance; bosses and neutral mobs show as hostile/passive here.
-     */
-    private static Category categoryOf(ResourceLocation id) {
-        if (!ForgeRegistries.ENTITY_TYPES.containsKey(id)) return Category.PASSIVE;
-        return ForgeRegistries.ENTITY_TYPES.getValue(id).getCategory().isFriendly() ? Category.PASSIVE : Category.HOSTILE;
+        return search.isBlank() ? new ArrayList<>(menu.filter.rules.keySet()) : MobList.matching(search);
     }
 
     // --- info tab -----------------------------------------------------------------------------

@@ -1,0 +1,116 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "x": "alone"
+      },
+      "apply": {
+        "model": "bastion:block/hub_casing"
+      }
+    },
+    {
+      "when": {
+        "x": "low|middle|high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_panel"
+      }
+    },
+    {
+      "when": {
+        "y": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_down"
+      }
+    },
+    {
+      "when": {
+        "y": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_up"
+      }
+    },
+    {
+      "when": {
+        "z": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_north"
+      }
+    },
+    {
+      "when": {
+        "z": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_south"
+      }
+    },
+    {
+      "when": {
+        "x": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_west"
+      }
+    },
+    {
+      "when": {
+        "x": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_frame_east"
+      }
+    },
+    {
+      "when": {
+        "y": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_down"
+      }
+    },
+    {
+      "when": {
+        "y": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_up"
+      }
+    },
+    {
+      "when": {
+        "z": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_north"
+      }
+    },
+    {
+      "when": {
+        "z": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_south"
+      }
+    },
+    {
+      "when": {
+        "x": "low"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_west"
+      }
+    },
+    {
+      "when": {
+        "x": "high"
+      },
+      "apply": {
+        "model": "bastion:block/feed_hub_glow_east"
+      }
+    }
+  ]
+}

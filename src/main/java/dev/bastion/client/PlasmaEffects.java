@@ -44,8 +44,6 @@ public final class PlasmaEffects {
         VfxParams params = VfxParams.of().color(color).normal(normal).blockColor(blockColor(level, end, hit, blockState)).seed(end.hashCode());
         VfxManager.play(VfxPresets.PLASMA_HIT, end, normal.reverse(), params);
         if (hit == TurretFireEvent.BLOCK) VfxManager.play(VfxPresets.PLASMA_SCORCH, end, normal.reverse(), params);
-        level.playLocalSound(end.x, end.y, end.z, BastionSounds.PLASMA_HIT_SMALL.get(), SoundSource.HOSTILE, 0.6f,
-                0.92f + level.random.nextFloat() * 0.16f, false);
     }
 
     /**

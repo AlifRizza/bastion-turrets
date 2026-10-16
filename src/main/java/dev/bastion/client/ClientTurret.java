@@ -58,7 +58,10 @@ public final class ClientTurret {
     public long chargeStart = -1;
     private TurretState lastState = TurretState.DISABLED;
     @Nullable
-    private TurretLoopSound hum, spinLoop, flameLoop;
+    private TurretLoopSound hum, flameLoop, spinLoop;
+    /** Machine Gun: the spin fraction last tick, and whether its spin-down already played for this slowdown. */
+    private float lastSpin;
+    private boolean spinningDown;
     private final List<Delayed> delayed = new ArrayList<>();
 
     private ClientTurret(BlockPos pos) {
@@ -154,7 +157,14 @@ public final class ClientTurret {
         }
         onStateChange(level, state, data);
         if (weapon != null) {
-            weapon.tickTubes(state != TurretState.NO_AMMO);
+            // Rocket Launcher: each rocket clanks as it seats in its tube (after every reload, and as it deploys). The
+            // tubes tick for every weapon (a fresh mount empties them all), so only the launcher plays it. For it, the
+            // synced tube mask is its spent tubes (the Missile Launcher's is its loaded ones).
+            boolean rockets = data != null && data.type().equals(BastionWeaponTypes.ROCKET_LAUNCHER.getId());
+            if (weapon.tickTubes(state != TurretState.NO_AMMO, rockets ? turret.clientTubes() : 0) && rockets) {
+                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, BastionSounds.ROCKET_RELOAD.get(),
+                        SoundSource.HOSTILE, 0.5f, 0.9f + level.random.nextFloat() * 0.2f, false);
+            }
             weapon.missiles = turret.clientTubes();
         }
         if (turret.clientDamaged() && level.random.nextInt(turret.clientCritical() ? 8 : 40) == 0) {
@@ -266,7 +276,8 @@ public final class ClientTurret {
         return level.getGameTime() - lastShotTick <= 4;
     }
 
-    /** Idle hum while armed; Machine Gun spin whine whose pitch follows the barrels (PLAN 5.7, 7.2); the Flamethrower's roar. */
+
+    /** Idle hum while armed; the Machine Gun's spin-up, fire roar and spin-down (PLAN 5.7, 7.2); the Flamethrower's roar. */
     private void loopSounds(ClientLevel level, @Nullable WeaponData data) {
         var sounds = Minecraft.getInstance().getSoundManager();
         if (weapon != null && (hum == null || hum.finished())) {
@@ -274,16 +285,31 @@ public final class ClientTurret {
                     () -> weapon == null ? 0 : (lastState == TurretState.DISABLED ? 0 : 0.18), () -> 1.0);
             sounds.play(hum);
         }
-        if (spinTarget > 0.05f && (spinLoop == null || spinLoop.finished())) {
-            spinLoop = new TurretLoopSound(BastionSounds.MACHINE_GUN_SPIN_LOOP.get(), this,
-                    () -> weapon == null ? 0 : Math.min(1, weapon.spinSpeed / MAX_SPIN_SPEED) * 0.7,
-                    () -> weapon == null ? 0.5 : 0.5 + Math.min(1, weapon.spinSpeed / MAX_SPIN_SPEED) * 0.9);
-            sounds.play(spinLoop);
-        }
         if (data != null && data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && flaming(level)
                 && (flameLoop == null || flameLoop.finished())) {
             flameLoop = new TurretLoopSound(BastionSounds.FLAMETHROWER_LOOP.get(), this, () -> flaming(level) ? 0.9 : 0, () -> 1.0);
             sounds.play(flameLoop);
+        }
+        boolean machineGun = data != null && data.type().equals(BastionWeaponTypes.MACHINE_GUN.getId());
+        // Machine Gun (user 10-11): the barrels' whir underneath, the shots (TurretFireEffects) on top. The whir: its
+        // spin-up as the barrels start (the server's spin leaves 0), a loop that fades in over the last quarter of the
+        // spin-up and out as they slow, its spin-down once they slow (once per slowdown, from a third of full spin).
+        if (machineGun && spinTarget > 0.7f && (spinLoop == null || spinLoop.finished())) {
+            spinLoop = new TurretLoopSound(BastionSounds.MACHINE_GUN_SPIN_LOOP.get(), this,
+                    () -> weapon == null ? 0 : Mth.clamp((weapon.spinSpeed / MAX_SPIN_SPEED - 0.75f) / 0.25f, 0f, 1f) * 0.9, () -> 1.0);
+            sounds.play(spinLoop);
+        }
+        if (machineGun) {
+            Vec3 at = muzzles[0] != null ? muzzles[0] : Vec3.atCenterOf(pos);
+            if (spinTarget > 0.05f && lastSpin <= 0.05f) {
+                level.playLocalSound(at.x, at.y, at.z, BastionSounds.MACHINE_GUN_SPIN_UP.get(), SoundSource.HOSTILE, 0.9f, 1f, false);
+            }
+            if (spinTarget < lastSpin && lastSpin > 0.33f && !spinningDown) {
+                level.playLocalSound(at.x, at.y, at.z, BastionSounds.MACHINE_GUN_SPIN_DOWN.get(), SoundSource.HOSTILE, 0.9f, 1f, false);
+                spinningDown = true;
+            }
+            if (spinTarget > lastSpin) spinningDown = false;
+            lastSpin = spinTarget;
         }
     }
 

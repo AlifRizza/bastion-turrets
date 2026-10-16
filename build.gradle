@@ -62,6 +62,9 @@ minecraft {
                 def scene = project.findProperty('showcase')
                 property 'bastion.showcase', scene ? scene : 'scene'
                 if (project.hasProperty('stressCount')) property 'bastion.stressCount', project.findProperty('stressCount')
+                if (project.hasProperty('stressMobs')) property 'bastion.stressMobs', project.findProperty('stressMobs')
+                if (project.hasProperty('stressWeapon')) property 'bastion.stressWeapon', project.findProperty('stressWeapon')
+                if (project.hasProperty('stressMob')) property 'bastion.stressMob', project.findProperty('stressMob')
                 // -Pjfr=<file>: Java Flight Recorder profile of the whole run (inspect with `jfr print`)
                 if (project.hasProperty('jfr')) jvmArg "-XX:StartFlightRecording=filename=${project.findProperty('jfr')},settings=profile"
                 // -PshowcaseWorld=<save folder> picks another world; run/saves/showcase holds the user's hand-built test rig
@@ -189,6 +192,13 @@ tasks.named('jar', Jar).configure {
         ])
     }
     finalizedBy 'reobfJar'
+    // A test build for another PC: `./gradlew build -PwithDevCommands` adds /bastiondev (src/dev DevCommands and the
+    // Create rig it builds) as bastion-...-dev.jar. Never for the stores: the release jar is the plain build.
+    if (project.hasProperty('withDevCommands')) {
+        dependsOn 'devClasses'
+        archiveClassifier = 'dev'
+        from(sourceSets.dev.output) { include 'dev/bastion/dev/DevCommands*', 'dev/bastion/dev/AutomationRig*' }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:hub_interface",
+  "ingredients": [
+    {
+      "item": "bastion:satellite_uplink_t1",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "minecraft:gold_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:ender_eye",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:satellite_uplink_t2"
+  },
+  "time": 140,
+  "energy": 6000
+}

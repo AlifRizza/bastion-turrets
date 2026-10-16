@@ -147,7 +147,7 @@ public final class MissileShowcase {
         refill(server);
     }
 
-    private static void place(ServerLevel level, BlockPos min, TurretTier tier, boolean salvo) {
+    static void place(ServerLevel level, BlockPos min, TurretTier tier, boolean salvo) {
         LargeTurretBaseBlock.placeAt(level, min, BastionBlocks.LARGE_TURRET_BASE.get());
         TurretBaseBlockEntity t = (TurretBaseBlockEntity) level.getBlockEntity(min);
         for (TurretTier step : TurretTier.values()) if (step.ordinal() > 0 && step.ordinal() <= tier.ordinal()) t.upgradeTo(step);

@@ -88,10 +88,14 @@ public final class PlacementPreview {
         };
     }
 
-    private static void box(PoseStack pose, MultiBufferSource buffers, BlockPos pos, int rgb) {
+    /** A block's hologram box: translucent fill and an outline just outside its faces (no z-fighting with what is there). */
+    static void box(PoseStack pose, MultiBufferSource buffers, BlockPos pos, int rgb) {
+        box(pose, buffers, new AABB(pos).inflate(0.002), rgb, FILL, EDGE);
+    }
+
+    static void box(PoseStack pose, MultiBufferSource buffers, AABB box, int rgb, float fillAlpha, float edgeAlpha) {
         float r = (rgb >> 16 & 255) / 255f, g = (rgb >> 8 & 255) / 255f, b = (rgb & 255) / 255f;
-        AABB box = new AABB(pos).inflate(0.002); // just outside the block faces: no z-fighting with what is there
-        LevelRenderer.renderLineBox(pose, buffers.getBuffer(RenderType.lines()), box, r, g, b, EDGE);
+        LevelRenderer.renderLineBox(pose, buffers.getBuffer(RenderType.lines()), box, r, g, b, edgeAlpha);
         VertexConsumer fill = buffers.getBuffer(BastionRenderTypes.ghostBox());
         Matrix4f m = pose.last().pose();
         float x0 = (float) box.minX, y0 = (float) box.minY, z0 = (float) box.minZ, x1 = (float) box.maxX, y1 = (float) box.maxY, z1 = (float) box.maxZ;
@@ -100,7 +104,7 @@ public final class PlacementPreview {
                 {x0, y0, z0, x0, y1, z0, x1, y1, z0, x1, y0, z0}, {x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1},
                 {x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0}, {x1, y0, z0, x1, y1, z0, x1, y1, z1, x1, y0, z1}};
         for (float[] q : quads) {
-            for (int i = 0; i < 12; i += 3) fill.vertex(m, q[i], q[i + 1], q[i + 2]).color(r, g, b, FILL).endVertex();
+            for (int i = 0; i < 12; i += 3) fill.vertex(m, q[i], q[i + 1], q[i + 2]).color(r, g, b, fillAlpha).endVertex();
         }
     }
 }

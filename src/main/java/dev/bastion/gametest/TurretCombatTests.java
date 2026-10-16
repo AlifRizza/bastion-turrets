@@ -17,18 +17,27 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.PlayLevelSoundEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Fase 2 acceptance checks (PLAN 8): targeting, line of sight, ammo, state machine. Run with runGameTestServer.
@@ -186,6 +195,39 @@ public class TurretCombatTests {
             helper.assertTrue(husk.getHealth() < husk.getMaxHealth(), "husk not hit, turret state " + turret.state());
             helper.assertTrue(villager.getHealth() == villager.getMaxHealth(), "the villager in the line was hit");
             disarm(turret);
+        });
+    }
+
+    /**
+     * Turret hits clear a mob's damage cooldown (fast weapons would lose most hits), so every bullet was a fresh hit and a
+     * fresh groan: twelve a second from one Machine Gun (user 10-10, "zombie hit sound too loud"). Hurt sounds from turret
+     * damage now come once per mob per turretHurtSoundInterval (10 ticks); the damage itself and the death sound stay.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 40)
+    public static void turretHitsGroanOncePerInterval(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
+        List<SoundEvent> heard = new ArrayList<>();
+        Consumer<PlayLevelSoundEvent.AtPosition> listener = event -> {
+            if (event.getSound() != null && Vec3.atLowerCornerOf(BlockPos.containing(event.getPosition())).distanceTo(zombie.position()) < 3) {
+                heard.add(event.getSound().value());
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, PlayLevelSoundEvent.AtPosition.class, listener);
+        float before = zombie.getHealth();
+        for (int i = 0; i < 5; i++) Hitscan.damage(zombie, level, 1);
+        long burst = heard.stream().filter(sound -> sound == SoundEvents.ZOMBIE_HURT).count();
+        boolean hurtFive = before - zombie.getHealth() > 4.5f; // each hit landed (2 armour points take 6% off each)
+        helper.runAtTickTime(12, () -> Hitscan.damage(zombie, level, 1));
+        helper.runAtTickTime(14, () -> {
+            Hitscan.damage(zombie, level, 1000);
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            long hurt = heard.stream().filter(sound -> sound == SoundEvents.ZOMBIE_HURT).count();
+            helper.assertTrue(hurtFive, "five turret hits in one tick did not all deal damage");
+            helper.assertTrue(burst == 1, "five turret hits in one tick groaned " + burst + " times");
+            helper.assertTrue(hurt == 2, "a hit 12 ticks later should groan again: " + hurt + " hurt sounds in all");
+            helper.assertTrue(heard.contains(SoundEvents.ZOMBIE_DEATH), "the death sound went missing");
+            helper.succeed();
         });
     }
 }

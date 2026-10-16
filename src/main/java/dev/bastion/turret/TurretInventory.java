@@ -1,6 +1,7 @@
 package dev.bastion.turret;
 
 import dev.bastion.Bastion;
+import dev.bastion.hub.HubConnectorItem;
 import dev.bastion.modifier.ModifierEffect;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionItems;
@@ -19,7 +20,7 @@ import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
 /**
- * Weapon / ammo / modifier slots of a base, PLAN 4.2. Always sized for T3; slots above the
+ * Weapon / ammo / modifier slots of a base (PLAN 4.2) plus its Hub Connector slot. Always sized for T3; slots above the
  * current tier are locked, so upgrading a tier never has to move or resize anything.
  */
 public class TurretInventory extends ItemStackHandler {
@@ -29,7 +30,9 @@ public class TurretInventory extends ItemStackHandler {
     public static final int WEAPON = 0;
     public static final int AMMO_START = 1;
     public static final int MODIFIER_START = AMMO_START + TurretTier.MAX_AMMO_SLOTS;
-    public static final int SIZE = MODIFIER_START + TurretTier.MAX_MODIFIER_SLOTS;
+    /** The Hub Connector (PLAN "Hub Connector"): links the turret to a Turret Control Hub; every tier has it. */
+    public static final int CONNECTOR = MODIFIER_START + TurretTier.MAX_MODIFIER_SLOTS;
+    public static final int SIZE = CONNECTOR + 1;
 
     private final Supplier<TurretTier> tier;
     /** True on a large (2x2) base: only big weapon modules fit, and only big ones fit there. */
@@ -74,8 +77,9 @@ public class TurretInventory extends ItemStackHandler {
         return -1;
     }
 
-    /** Whether the current tier unlocks this slot. */
+    /** Whether the current tier unlocks this slot (the Connector slot is always open). */
     public boolean isActive(int slot) {
+        if (slot == CONNECTOR) return true;
         if (slot < AMMO_START) return true;
         if (slot < MODIFIER_START) return slot - AMMO_START < tier.get().ammoSlots;
         return slot - MODIFIER_START < tier.get().modifierSlots;
@@ -84,6 +88,7 @@ public class TurretInventory extends ItemStackHandler {
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
         if (!isActive(slot)) return false;
+        if (slot == CONNECTOR) return stack.getItem() instanceof HubConnectorItem;
         if (slot == WEAPON) return stack.getItem() instanceof WeaponModuleItem module && module.large() == large.getAsBoolean();
         if (slot < MODIFIER_START) return isAmmo(stack);
         return stack.getItem() instanceof ModifierItem modifier && !hasModifierElsewhere(stack.getItem(), slot)
@@ -99,7 +104,7 @@ public class TurretInventory extends ItemStackHandler {
     /** Each modifier kind counts once per base, whatever its Mk (PLAN 4.6). */
     private boolean hasModifierElsewhere(Item item, int slot) {
         if (!(item instanceof ModifierItem modifier)) return false;
-        for (int i = MODIFIER_START; i < SIZE; i++) {
+        for (int i = MODIFIER_START; i < CONNECTOR; i++) {
             if (i != slot && getStackInSlot(i).getItem() instanceof ModifierItem other && other.family().equals(modifier.family())) return true;
         }
         return false;
@@ -120,6 +125,12 @@ public class TurretInventory extends ItemStackHandler {
     /** A module in this slot that does nothing with the weapon now mounted (left in after a weapon swap). */
     public boolean inactiveModifier(int slot) {
         return getStackInSlot(slot).getItem() instanceof ModifierItem modifier && !modifier.effect().fits(weaponId());
+    }
+
+    /** Saves from before the Connector slot hold 14 slots: loading one must not shrink the handler below SIZE. */
+    @Override
+    public void setSize(int size) {
+        super.setSize(Math.max(size, SIZE));
     }
 
     @Override

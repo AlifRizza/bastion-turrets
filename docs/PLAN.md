@@ -792,8 +792,258 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 
 **Di luar cakupan**: sebaran Ion bentuk pohon/rantai dan perk Shock Chain, varian Ion Minigun/Ion Cannon, debuff Melt, cincin pecahan (diganti ledakan 2026-10-10), ledakan di udara saat bola habis range, awan plasma yang tertinggal, merusak block, efek status (stun, slow), cell kosong yang dikembalikan turret, Plasma Cell untuk Laser Rifle.
 
+### Turret Control Hub (permintaan user 2026-10-10 11:25, desain disetujui 11:43)
+
+**Status**: versi pertama (lapisan 3x3) selesai 2026-10-10 14:45 (plan `docs/superpowers/plans/2026-10-10-turret-control-hub.md`, 147 GameTest lolos), belum dites user di game. **Revisi user 15:01 (kubus 3x3x3 + Hub Connector) selesai 2026-10-10 (plan `docs/superpowers/plans/2026-10-10-control-hub-cube-connector.md`): 152 GameTest lolos (juga dengan `-PwithCompatMods`), scene `-Pshowcase=hub` dicek; belum dites user di game.**
+Setelah dites user (16:56): GUI hub hampir memenuhi layar (ukuran panel dari ukuran layar, minimal 256x200; peta, Daftar dan Atur massal ikut membesar) dan semua teks satu ukuran (tidak ada baris yang dikecilkan sendiri-sendiri). Diubah saat implementasi revisi: tidak ada angka yang berubah; tooltip Hub Interface/Casing/Power Port/Satellite Uplink dan pesan "butuh Uplink Satelit" yang masih menyebut 3x3 ikut diganti ke kubus.
+Diubah saat implementasi: model Hub Interface jadi satu kubus penuh dengan tekstur depan berlubang (garis glow tepi tidak z-fight lagi); petunjuk di tab Peta memakai huruf kecil (0,75) agar muat 4 baris; dari review akhir: hub OFFLINE baru ONLINE lagi setelah menyimpan `controlHubRestartTicks` (100) tick upkeep, karena dengan pemasukan FE di bawah upkeep hub berkedip ON/OFF tiap tick (5 detik dikonfirmasi user 15:10).
+
+**Latar belakang**: user ingin mengawasi dan mengatur semua turret di base dari satu tempat. Hub dirakit manual dari beberapa jenis blok seperti smeltery Tinkers' Construct: tiap blok punya peran, struktur baru aktif saat semua blok ada di posisi yang benar, dan controller (di sini Interface) menunjukkan bagian yang kurang. Keputusan user:
+- Jangkauan satelit T1 1 chunk, T2 3x3 chunk, T3 **7x7 = 49 chunk** (hub tepat di tengah; 6x6 = 36 tidak bisa di tengah) (11:30).
+- Turret yang tampil: **yang boleh dibuka pemain itu** (aturan GUI turret, 4.7) (11:30).
+- **Pakai FE**, lewat blok Power Port (11:30).
+- Atur massal: **isi tab Targeting + nyala/mati** (11:30).
+- Satellite Uplink **berdiri di atas blok tengah**: tiang 2 blok dengan dish yang berputar (11:39); sejak revisi: di atas blok tengah lapisan paling atas (15:05).
+- Pendekatan A: GUI turret yang sudah ada dibuka dari jauh, bukan panel turret di dalam GUI hub (11:43).
+- **Revisi 15:01**: struktur jadi **kubus 3x3x3**, Interface di **lapisan tengah** (sejajar mata pemain), satelit paling atas di tengah; turret baru terhubung ke hub bila dipasangi **Hub Connector** yang sudah di-link ke hub itu, di **slot baru** tiap turret.
+- Satelit berdiri di atas kubus, tinggi total 5 blok (15:05). Jangkauan tier satelit **tetap berlaku** untuk turret ber-connector (15:05).
+- Resep Hub Casing jadi 8 per craft; Hub Connector seperti dijelaskan di bawah (15:08). Restart setelah OFFLINE: 5 detik upkeep (15:10).
+
+**Blok dan item** (7 item; tab kreatif utama "Bastion"; resep di Module Workstation)
+
+| Blok | Ukuran | Peran |
+|---|---|---|
+| Hub Interface | 1x1 | Controller: memeriksa struktur, menyimpan FE, klik kanan membuka GUI hub. Saat dipasang menghadap pemain. |
+| Hub Casing | 1x1 | Rangka kubus 3x3x3. |
+| Hub Power Port | 1x1 | Seperti Hub Casing, plus menerima FE dari kabel di sisi mana pun dan meneruskannya ke Interface. |
+| Satellite Uplink T1 / T2 / T3 | 1x1x2 | Tiang + dish berputar; tier menentukan jangkauan. Item terpisah per tier (`satellite_uplink_t1`, `_t2`, `_t3`). Dipasang seperti Module Workstation (`Multiblock.footprint`, hologram penempatan). |
+| Hub Connector | item, tumpuk 16 | Di-link ke satu hub, dipasang di slot Connector turret; turret hanya tampil di hub yang di-link connector-nya. |
+
+**Struktur**
+```
+Tampak samping (depan)              Tampak atas lapisan tengah
+        ◠    dish berputar             [C][C][C]
+        ┃    Satellite Uplink          [C][C][C]   (tengah = blok inti: Casing/Port)
+    [C][C][C]  lapisan atas            [C][I][C]
+    [C][I][C]  lapisan tengah              ↑ pemain
+    [C][C][C]  lapisan bawah
+```
+- Kubus 3x3x3: Interface (I) di tengah salah satu sisi **lapisan tengah**, menghadap keluar, sejajar mata pemain yang berdiri di tanah; 26 posisi lain (C, termasuk blok inti di tengah kubus) diisi Hub Casing atau Hub Power Port, **minimal 1 Power Port**. Power Port hanya bisa diberi kabel di sisi luar kubus (port di blok inti tidak terjangkau kabel).
+- Satellite Uplink berdiri di atas blok tengah lapisan atas dan mengisi 2 blok ke atas. Tinggi total struktur 5 blok.
+- Letak kubus dibaca dari Interface: Interface di tengah sisi depan lapisan tengah, kubus memanjang 2 blok ke belakang, 1 blok ke bawah dan 1 blok ke atas (berlawanan dengan arah hadap Interface). Tidak dicari ke arah lain.
+- Struktur diperiksa ulang 1 tick setelah blok di dalam kubus atau satelit di atasnya dipasang/dibongkar, dan saat chunk Interface dimuat. Bagian di chunk yang tidak termuat = belum lengkap (pemeriksaan tidak pernah memuat chunk).
+- Satu blok hanya milik satu hub: blok yang sudah jadi bagian hub lain dihitung salah di hub kedua.
+- Jadi (formed): Casing dan Power Port menyimpan letaknya di kubus di blockstate (`x`, `y`, `z`: `alone`/`low`/`middle`/`high`, pola Feed Hub 3x3x3; `alone` = belum jadi), dipakai model tepi dan untuk tahu hub pemiliknya; satelit `status`; Interface `status` = `unformed`/`online`/`offline`.
+- Satu bagian dibongkar → hub tidak jadi; GUI hub dan GUI turret yang dibuka lewat hub tertutup. Blok drop sebagai item biasa; hub tidak punya inventory.
+
+**Belum jadi: petunjuk ala Tinkers**
+- Klik kanan Interface yang belum jadi (tidak membuka GUI): pesan action bar dengan masalah pertama dan jumlah masalah ("Struktur belum lengkap (3): butuh Hub Casing"), lalu **hologram cetak biru** 10 detik, hanya untuk pemain itu, hilang lebih cepat bila struktur jadi:
+  - posisi kosong: kotak hologram cyan + ikon item blok yang dibutuhkan (Hub Casing; untuk satelit Satellite Uplink T1, 2 kotak) berputar di tengah kotak;
+  - blok salah (blok lain, bagian hub lain): kotak merah;
+  - tidak ada Power Port: kotak kuning di setiap Hub Casing (salah satunya harus diganti).
+- Urutan masalah: satelit, lalu posisi C dari lapisan bawah ke atas; di tiap lapisan dari baris depan ke belakang dan kiri ke kanan (dilihat dari depan Interface), lalu Power Port.
+- Kotak memakai gaya hologram penempatan (`PlacementPreview`: isi 15 %, tepi 60 %, fullbright, tidak tembus dinding).
+
+**Jangkauan**
+- Dihitung dari chunk kolom tengah (tempat satelit). T1: chunk itu saja; T2: 3x3 chunk; T3: 7x7 chunk; chunk satelit selalu di tengah. Semua ketinggian, hanya dimensi yang sama.
+- Turret di chunk yang tidak termuat di server tidak tampil (hub tidak pernah memuat chunk). Pemain yang berdiri di hub biasanya memuat seluruh area T3 (radius 3 chunk).
+
+**Turret yang tampil**
+- Setiap turret (base standar dan Large Turret Base; satu entri per turret, di blok intinya) yang **punya Hub Connector yang di-link ke hub ini** di slot Connector-nya, di chunk jangkauan yang termuat, yang boleh dibuka pemain itu (`canConfigure`: owner, trusted, op, atau semua bila `ownerProtection` mati). Tanpa connector, connector belum di-link, atau di-link ke hub lain: tidak tampil.
+- Maksimal 256 turret, terdekat ke satelit dulu; bila lebih, header menulis "256+".
+
+**Hub Connector**
+- Item `hub_connector` (Hub Connector / Konektor Hub), tumpuk 16, tab kreatif Bastion.
+- Link: klik kanan Hub Interface (jadi atau belum) sambil memegang connector → **seluruh tumpukan di tangan** di-link ke hub itu (posisi Interface + dimensi disimpan di item); pesan action bar "Terhubung ke hub di x, y, z". Klik kanan Interface dengan connector tidak membuka GUI. Shift+klik kanan di udara menghapus link.
+- Tooltip: hub tujuan (koordinat) atau "Belum terhubung: klik kanan Hub Interface". Ikon: chip gunmetal dengan steker; yang sudah di-link lampunya cyan (item property `linked`).
+- Slot: tiap turret base (standar dan Large, semua tier) punya 1 slot **Connector** baru di tab Status GUI turret, di dekat slot modul; hanya menerima Hub Connector (yang belum di-link juga boleh masuk, tapi tidak menghubungkan apa pun). Hopper/pipa tidak bisa memasukkan atau mengambilnya (otomasi hanya melihat slot amunisi).
+- Turret dihancurkan → connector drop seperti modul; turret ditambang → connector tetap di dalam seperti isi lainnya. Turret Configurator tidak menyalin connector (hanya targeting).
+- Link menyimpan posisi Interface: hub yang dibangun ulang di tempat yang sama tetap terhubung; Interface di tempat lain = link ulang.
+- Save lama: turret yang sudah ada otomatis mendapat slot Connector kosong.
+- Mengambil connector lewat GUI turret yang dibuka dari hub memutus turret itu dari hub: GUI-nya tertutup (cek `stillValid`).
+
+**Energi**
+- Interface menyimpan FE: `controlHubEnergyCapacity` 200.000.
+- Tiap Power Port menerima dari kabel sampai `controlHubPortMaxInput` 2.000 FE/tick dan meneruskannya ke Interface. Power Port yang belum jadi bagian hub menolak FE. Hub tidak mengeluarkan FE.
+- Selama jadi, hub membayar `controlHubUpkeep` [20, 60, 150] FE/tick (T1, T2, T3) dari buffer. Buffer kurang dari biaya tick itu → **OFFLINE**; kembali **ONLINE** setelah buffer berisi `controlHubRestartTicks` (100) tick upkeep: 2.000 / 6.000 / 15.000 FE (tanpa jeda ini hub berkedip ON/OFF tiap tick bila pemasukan FE di bawah upkeep).
+- Interface dibongkar → FE-nya hilang (seperti blok Feed Hub); bagian lain dibongkar → FE tetap.
+- Semua angka di config server, termasuk `controlHubRange` [1, 3, 7] (sisi area dalam chunk per tier, bilangan ganjil) dan `controlHubRestartTicks` 100.
+
+**Aturan server**
+- GUI hub terbuka bila hub jadi (ONLINE atau OFFLINE) dan pemain dalam 8 blok dari Interface (jarak yang sama dengan GUI turret). Data turret dan semua aksi (buka turret, atur massal) hanya saat ONLINE.
+- GUI turret yang dibuka lewat hub dicek tiap tick (`stillValid`): hub jadi + ONLINE + pemain dalam 8 blok dari Interface + turret di dalam jangkauan + chunk-nya termuat + **connector turret di-link ke hub ini** + `canConfigure`. Gagal → tertutup.
+- Setiap packet dari GUI hub dicek ulang dengan syarat yang sama per turret; turret yang gagal dilewati.
+- `TurretConfigUpdate` diterima bila pemain sedang membuka GUI turret itu dan GUI itu masih valid (dari dekat atau lewat hub), menggantikan cek jarak 8 blok saja. Dari dekat hasilnya sama dengan sekarang.
+
+**GUI hub** (tekstur dari `tools/gen_textures.py`, tab samping dan `FlatButton` seperti GUI turret, semua teks lewat `fit()`)
+- Header: nama hub, "Satelit T2 · 9 chunk · 14 turret", bar FE (hover: angka FE dan biaya per tick).
+- OFFLINE: hanya header + pesan "OFFLINE: FE habis"; tab tidak bisa dipakai.
+- Belum ada turret terhubung: Peta dan Daftar menulis "Belum ada turret terhubung: link Hub Connector ke hub ini, lalu pasang di turret".
+- **Peta**
+  - Peta tampak atas area jangkauan, digambar client dari chunk yang dimuat client: warna `MapColor` blok teratas (heightmap `WORLD_SURFACE`) dengan bayangan tinggi seperti peta vanilla; area yang tidak dimuat client gelap. Digambar ulang tiap 5 detik selama terbuka.
+  - Utara di atas, garis tipis di tiap batas chunk, ikon hub di posisi satelit.
+  - Titik turret: hijau HP ≥ 50 %, kuning 25–50 %, merah berkedip < 25 % (ambang lampu HP base, 4.1); abu-abu = mati (switch/redstone) atau tanpa senjata; tanda "!" oranye berkedip = NO_AMMO (amunisi atau FE habis); cincin putih = terpilih.
+  - Hover: tooltip setiap turret di bawah kursor: nama senjata, koordinat, HP, amunisi (jumlah) atau FE (%), status.
+  - Klik: buka GUI turret (yang paling tinggi bila bertumpuk). Shift+klik: pilih/lepas. Shift+seret: kotak pilih. Scroll atau tombol + / − di pojok peta: zoom 1x/2x/4x (satu tingkat per putaran roda atau per usapan touchpad). Seret (kiri atau kanan): geser saat zoom (user 10-10: touchpad MacBook).
+- **Daftar**
+  - Satu baris per turret: ikon senjata, nama, koordinat, bar HP, amunisi/FE, lampu status. Bisa di-scroll.
+  - Urutan (tombol): jarak / HP terendah / amunisi terendah (persen isi: item amunisi terhadap kapasitas slot amunisi yang terbuka, atau FE terhadap kapasitor).
+  - Klik baris: buka GUI turret. Kotak centang: pilih. Tombol "Pilih semua" dan "Kosongkan".
+- **Atur massal**
+  - "N turret terpilih"; tanpa pilihan, semua kontrol nonaktif.
+  - Kontrol tab Targeting: kategori (5), mode pemain, prioritas, trusted (tambah/hapus), aturan per mob (cari mob → Selalu/Jangan/hapus), plus tombol Nyala dan Mati.
+  - Nilai yang beda antar turret terpilih tampil "Campur"; daftar trusted dan aturan menampilkan gabungan semua turret terpilih, yang tidak dimiliki semua ditandai "sebagian".
+  - Tiap klik dikirim sebagai satu perubahan ("prioritas = HP terendah", "zombie = Jangan", "hapus trusted steve", "nyala") dan diterapkan ke setiap turret terpilih yang lolos cek. Pengaturan lain tiap turret tidak berubah.
+  - Mode redstone dan mode tembak (salvo) tidak ada di sini; tetap diatur per turret.
+- Pilihan, tab, zoom dan posisi peta bertahan selama pemain bolak-balik ke GUI turret; hilang saat GUI hub ditutup.
+
+**GUI turret dari jauh**
+- Sama persis dengan GUI turret biasa (Status: slot senjata, amunisi, modul, connector, HP, heat, nyala/mati; Targeting; Info). Modul, amunisi dan senjata dipindah dari dan ke inventory pemain seperti biasa.
+- Tambahan tombol "◀ Peta" di header untuk kembali ke GUI hub. Esc menutup semuanya seperti biasa.
+
+**Tampilan** (palet gunmetal + glow cyan; efek lewat framework VFX, tanpa partikel vanilla)
+- Hub Casing: panel gunmetal dengan alur dan baut. Jadi: panel polos dengan rangka + garis glow cyan di tepi luar kubus 3x3x3, seperti struktur Feed Hub 3x3x3 (model multipart dari blockstate, digenerate `tools/gen_control_hub_models.py`).
+- Hub Power Port: panel Casing + soket daya bundar di tiap sisi (cincin cyan, ikon petir). Jadi: soket menyala, plus garis tepi seperti Casing.
+- Hub Interface: konsol dengan layar miring menghadap depan. Belum jadi: layar gelap. Online: radar menyapu (tekstur animasi fullbright). Offline: layar berkedip merah "NO POWER". Letaknya di tengah sisi kubus, jadi tidak kena garis tepi.
+- Satellite Uplink (GeckoLib, `tools/blockout/design_control_hub.py`, satu model dengan bagian per tier): tiang bersambungan dengan kotak servo di atasnya, kepala berputar membawa dish + feed horn. T1 dish kecil; T2 dish lebih besar + antena samping; T3 dish besar + feed horn menyala + 2 lampu suar.
+  - Animasi: `folded` (belum jadi: dish terlipat menunduk, diam), `deploy` (sekali saat jadi: dish membuka dan tegak), `spin` (online: kepala berputar sekitar 1 putaran per 10 detik, dish sesekali mengangguk, lampu suar berkedip), `offline` (berhenti, lampu merah).
+- Saat jadi: bidang scan cyan setinggi kubus menyapu dari depan ke belakang + kilatan kecil di dish.
+
+**Suara** (placeholder dari `tools/gen_sounds.py`, dicatat di `docs/SOUND_SHEET.md`): `control_hub.online`, `control_hub.offline`, `control_hub.dish_loop` (dengung + servo pelan, loop di dekat satelit saat online), `control_hub.ui_select` (pilih/klik di GUI hub).
+
+**Resep** (Module Workstation; angka di `tools/gen_recipes.py`, bisa diubah)
+
+| Hasil | Bahan | Waktu, FE |
+|---|---|---|
+| 8 Hub Casing | 4 iron ingot, 2 copper ingot, 1 redstone | 60 t, 1.000 |
+| Hub Power Port | 1 Hub Casing, 1 redstone block, 2 copper ingot | 60 t, 1.500 |
+| Hub Interface | 1 Hub Casing, 1 diamond, 3 glass pane, 2 redstone, 1 comparator | 100 t, 3.000 |
+| Satellite Uplink T1 | 3 iron ingot, 2 copper ingot, 1 ender pearl, 1 redstone | 100 t, 3.000 |
+| Satellite Uplink T2 | 1 Satellite Uplink T1, 2 diamond, 2 gold ingot, 1 ender eye | 140 t, 6.000 |
+| Satellite Uplink T3 | 1 Satellite Uplink T2, 1 netherite scrap, 2 diamond, 2 ender eye | 180 t, 10.000 |
+| 4 Hub Connector | 2 copper ingot, 1 redstone, 1 ender pearl | 60 t, 1.000 |
+
+**Teknis** (ringkas; detail di rencana implementasi)
+- `ControlHubStructure`: satu fungsi cek untuk kubus 3x3x3 (26 posisi + satelit), dipakai server untuk membentuk dan client untuk hologram cetak biru. Hasil: jadi/tidak + daftar masalah (posisi, jenis, item yang dibutuhkan). Casing/Port: blockstate `x`, `y`, `z`.
+- `TurretInventory`: slot baru `CONNECTOR` setelah slot modul (ukuran 14 → 15); save lama berukuran 14 dimuat lalu diperbesar tanpa memindah isi. `HubConnectorItem`: NBT posisi Interface + dimensi; link lewat `onItemUseFirst` di Interface. `HubInterfaceBlockEntity.visibleTurrets` dan `reachable` mensyaratkan connector ke hub ini.
+- `HubInterfaceBlockEntity`: FE, status, tier satelit, hasil cek terakhir; tick server membayar upkeep dan memperbarui status.
+- Satellite Uplink: blok 1x1x2 dengan properti `part` (pola `WorkstationBlock`); blok bawah memegang block entity dan renderer GeckoLib.
+- `TurretMenu` mendapat tautan hub opsional (posisi Interface) di open data; `stillValid` memakai cek hub bila tertaut. Tombol "◀ Peta" hanya tampil bila tertaut.
+- Packet baru: `HubRoster` (S→C, tiap 10 tick selama GUI hub terbuka: posisi, senjata, HP, status, amunisi/FE, nyala/mati; filter lengkap tiap turret hanya saat GUI dibuka dan saat berubah) dan `HubAction` (C→S: buka turret, kembali ke hub, satu perubahan atur massal untuk daftar posisi). Protokol jaringan naik ke 10.
+- Peta: `DynamicTexture` 1 px per blok (T3 = 112x112), digambar ulang tiap 100 tick.
+
+**Tahap implementasi** (tiap tahap: `./gradlew build` dan semua GameTest lolos, bisa dites di game)
+1. Blok, struktur, hologram cetak biru, FE (ONLINE/OFFLINE), model + suara dasar.
+2. GUI hub Peta + Daftar, sinkron turret, GUI turret dari jauh + "◀ Peta".
+3. Pilih banyak + Atur massal; polish: VFX scan, animasi satelit, scene showcase, docs.
+
+**Selesai jika**
+- GameTest struktur (kubus 3x3x3): Interface + 25 Casing + 1 Power Port + satelit T1 di atas kubus → jadi (blockstate bagian `x/y/z` dan status Interface berubah). Tanpa satelit, satelit tidak di atas tengah, blok asing di posisi C (juga di lapisan bawah/atas dan blok inti), tanpa Power Port, blok milik hub lain → tidak jadi, dengan masalah pertama yang benar. Membongkar satu bagian → tidak jadi 1 tick kemudian.
+- GameTest connector: klik kanan Interface me-link seluruh tumpukan (posisi tersimpan); slot Connector hanya menerima Hub Connector dan tidak bisa diisi/diambil otomasi; hub hanya menampilkan turret dengan connector ke hub itu (tanpa connector, belum di-link, atau ke hub lain → tidak tampil); buka turret dan atur massal ditolak tanpa connector; save lama (14 slot) dimuat dengan slot Connector kosong dan isi lain di tempatnya; connector drop saat turret hancur.
+- GameTest jangkauan: untuk T1, T2 dan T3, turret di chunk terluar yang masih dalam jangkauan tampil, turret satu chunk di luarnya tidak.
+- GameTest akses: turret milik pemain lain tidak tampil dan tampil setelah pemain dijadikan trusted. Buka turret lewat hub diizinkan bila ONLINE + dalam jangkauan + pemain ≤ 8 blok dari Interface, ditolak bila OFFLINE, di luar jangkauan, atau pemain terlalu jauh. GUI turret yang dibuka lewat hub tertutup saat satu bagian hub dibongkar. `TurretConfigUpdate` untuk turret jauh tanpa GUI yang valid ditolak.
+- GameTest energi: upkeep 20/60/150 FE per tick; buffer habis → OFFLINE, diisi sampai 100 tick upkeep → ONLINE (1 FE kurang dari itu → tetap OFFLINE); diberi FE di bawah upkeep → tetap OFFLINE tanpa berkedip; Power Port yang belum jadi bagian hub menolak FE; 2.000 FE/tick per port.
+- GameTest atur massal: "prioritas = HP terendah" ke 3 turret → ketiganya berubah, aturan mob dan trusted masing-masing tetap; satu aturan mob ditambah lalu dihapus di semua; turret di luar jangkauan dalam packet dilewati; nyala/mati massal.
+- Semua GameTest lama tetap lolos (juga dengan `-PwithCompatMods`), yang struktur 3x3 diubah ke kubus; `./gradlew build` lolos.
+- Scene `-Pshowcase=hub` di `-PshowcaseWorld=showcase_fx`: kubus belum jadi + hologram cetak biru; kubus jadi siang dan malam (dish berputar, garis glow, Interface sejajar mata); T1/T2/T3 berdampingan; turret dengan connector (dan satu tanpa connector yang tidak tampil); GUI turret dengan slot Connector; GUI Peta (turret hijau/kuning/merah dan "!"), Daftar, Atur massal dengan "Campur", GUI turret dengan "◀ Peta"; OFFLINE.
+- `docs/TESTING.md`, deskripsi store (+ HTML CurseForge), changelog 0.2.0 di `docs/release/UPLOAD.md`, `docs/HANDOFF.md`.
+
+**Di luar cakupan**: tablet/remote portabel, mob atau pemain di peta, notifikasi saat turret diserang atau hancur, grup turret bernama, chunk loading, dimensi lain, comparator dari hub, struktur lebih besar dari 3x3x3, link connector massal dari hub, isi amunisi atau modul ke banyak turret sekaligus, mode redstone dan salvo massal, peta 3D atau hologram peta di atas hub.
+
 
 ---
+
+### Turret early game (permintaan user 2026-10-14 23:13, desain disetujui malam itu per bagian) — **untuk nanti, versi belum diputuskan**
+
+**Status**: desain saja, belum ada plan atau kode. Versi: belum diputuskan oleh user (masuk 0.2.0 atau sesudahnya;
+rekomendasi: 0.3.0, karena 0.2.0 sudah besar dan lini ini butuh 5 model, tekstur dan suara baru).
+
+**Latar belakang**: user ingin empat turret early game yang dibuat di crafting table tanpa workstation, memakai peluru
+yang gampang didapat, di base terpisah, dengan desain yang tidak terlalu futuristik.
+
+**Keputusan user** (2026-10-14): base terpisah dan **terkunci**; Arrow Launcher menerima **semua panah dan efeknya
+ikut**; **semua resep butuh besi**; arsitektur **A** (block base baru di atas block entity turret yang sama); angka di
+bawah disetujui apa adanya.
+
+**Pengecualian aturan bagian 1** (keputusan user, hanya untuk lini ini)
+- Arrow Launcher memakai entity panah vanilla dan renderer panah vanilla (NO-VANILLA tetap berlaku untuk semua yang lain:
+  partikel, jejak, suara, model, tekstur).
+- Proyektil early tidak wajib bercahaya (batu atau kentang yang glow terasa salah); tetap sprite dan jejak custom.
+  Tanpa cahaya dinamis.
+
+**Makeshift Turret Base** (nama sementara)
+- 1 block; block entity turret yang sama dengan jenis base `MAKESHIFT` (perluasan `large` di `TurretInventory` /
+  `WeaponModuleItem` menjadi tiga jenis: standar, large, makeshift).
+- Mati: tier (Tier Upgrade Kit tidak bekerja), slot modul, FE, slot Connector (tidak muncul di Control Hub). Layar
+  turret yang sama, slot-slot itu disembunyikan.
+- Tetap: targeting, filter target (+ Turret Configurator), ON/OFF dan redstone, HP dan hancur, otomasi hopper (slot
+  ammo), comparator, save/load, sync.
+- HP 50 (T1 standar 100), di config.
+- Penguncian: hanya 4 modul early muat di base ini; modul early tidak muat di base standar atau large.
+
+**Peluru** (item tag, modpack bisa menambah): `bastion:ammo/pebble` = cobblestone, cobbled deepslate;
+`bastion:ammo/snow` = snowball; `bastion:ammo/potato` = potato, poisonous potato (racunnya tidak ikut);
+`bastion:ammo/arrow` = `#minecraft:arrows`.
+
+**Senjata** (semua angka di `data/bastion/turret_weapons/*.json`; modul kecil, base makeshift)
+
+| | Cobblestone Turret | Snowball Repeater | Potato Shotgun | Arrow Launcher |
+|---|---|---|---|---|
+| Damage | 3 | 1,5 | 2 per butir, 5 butir | 3 per panah, 6 panah |
+| Laju | 15 tick | 4 tick (5/dtk) | 30 tick | 50 tick per volley |
+| Jangkauan | 16 | 14 | 10 | 32, min 6 |
+| Sebaran | 1,5° | 3° | 10° | ring ~1,5 blok di sekitar titik bidik |
+| Peluru | 1 cobble per tembakan | 1 snowball = 4 tembakan (`ammo_per_shot` 0,25) | 1 potato per tembakan | 1 panah = 1 volley (seperti Multishot) |
+| Lintasan | lurus (sistem `Bullets`), terlihat terbang | lurus | lurus, menyebar | lengkung tinggi (solver Mortar), lewat atas tembok |
+
+- Cobblestone, Snowball, Potato: peluru data (`Bullets`, tanpa entity), lead seperti Gun; berhenti di target sah
+  pertama atau block; menembus non-target (aturan peluru bagian 7).
+- Arrow Launcher: 6 panah per volley sebagai entity sendiri turunan `Arrow` vanilla (renderer panah vanilla, jadi
+  tampilannya panah biasa) supaya hanya mengenai target sah; jenis panah dari item (biasa, spectral, tipped; efeknya
+  ikut), `pickup` DISALLOWED, damage diset supaya ~3 per panah apa pun kecepatannya; solver lengkung Mortar (catatan: panah
+  vanilla punya hambatan udara 0,99/tick, solver Mortar tidak; perlu dikompensasi atau disimulasi). Tidak menembak mob
+  terbang (seperti Mortar).
+- Putaran lebih lambat dari turret modern (mekanik kayu): `turn_speed` 6 untuk keempatnya (Gun 9, Shotgun 10).
+
+**Resep** (crafting table, semua butuh besi; bentuk pola diputuskan saat plan, bahan ini usulan yang disetujui arahnya)
+- Makeshift Turret Base: 3 iron ingot, 2 log, 4 cobblestone.
+- Cobblestone Turret: 2 iron ingot, 3 cobblestone, 2 planks, 1 string.
+- Snowball Repeater: 3 iron ingot, 3 planks, 2 stick, 1 snow block.
+- Potato Shotgun: 4 iron ingot, 2 planks, 1 leather, 1 potato.
+- Arrow Launcher: 3 iron ingot, 3 planks, 1 crossbow.
+
+**Tampilan** (rustik: kayu, batu, pita besi, paku keling, tali, kulit; pegas, engkol, roda gigi; tanpa glow atau ring
+energi; tekstur original)
+- Base: kerusakan terlihat dari retakan tekstur dan serpihan kayu custom (bukan health lights).
+- Cobblestone: meriam pegas pendek-lebar di pivot kayu; tembak = pegas tertekan, laras mundur.
+- Snowball: drum 4 laras yang diputar engkol, corong salju di atas; drum berputar selama menembak.
+- Potato: pipa besi gemuk, tabung tekanan, pompa tangan (spud gun); pompa naik-turun tiap tembakan.
+- Arrow: rak balista 6 panah (2x3) menghadap ke atas, busur dan tali; tali menyentak, rak terisi ulang.
+- Proyektil: Cobblestone = sprite batu kasar abu-abu berputar + debu tipis, kena = serpihan batu dan debu;
+  Snowball = gumpalan putih lembut + jejak beku samar, kena = ledakan salju dan serpihan; Potato = potongan kentang
+  berguling, kena = cipratan dan potongan kecil; Arrow = panah vanilla + garis angin pucat mengikuti tiap panah,
+  menancap seperti vanilla + debu kecil.
+- Moncong: semburan udara/debu (Snowball: uap beku, Arrow: garis sentakan tali), tanpa api.
+
+**Suara** (event baru; placeholder `gen_sounds.py`, yang asli nanti dari Omni/SFX generator): tembakan tiap turret, base
+deploy (derit kayu) dan hancur (kayu remuk). Tanpa hum idle. Tanpa suara proyektil kena (keputusan user sebelumnya).
+
+**Test** (GameTest dulu, gagal dulu)
+- Penguncian: modul early hanya di base makeshift; modul modern ditolak di sana; modul early ditolak di base standar dan
+  large; Tier Upgrade Kit, slot modul, FE dan Connector tidak bekerja.
+- Resep: base dan 4 turret ada di crafting table, semuanya memakai besi.
+- Damage per kena 3 / 1,5 / 2; Potato 5 butir per tembakan; laju Snowball ~5/dtk; 1 snowball = 4 tembakan; 1 panah = 6
+  panah.
+- Arrow Launcher: panah tidak bisa dipungut; efek tipped kena target; menembak lewat atas tembok; tidak menembak mob
+  terbang atau target dalam 6 blok.
+- Base makeshift tersimpan setelah save/load; dedicated server.
+- Visual: scene `-Pshowcase=early` (base + 4 turret, siang dan malam, proyektil, impact); checklist di `TESTING.md`.
+
+**Di luar cakupan**: modul atau tier untuk base makeshift, jalur upgrade ke base modern, snow block sebagai peluru, efek
+racun kentang beracun, suara proyektil kena.
+
+---
+
 ## 9. Aturan Kerja untuk Claude Code
 
 ### Umum

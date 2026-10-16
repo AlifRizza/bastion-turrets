@@ -85,6 +85,10 @@ public class TurretBaseBlock extends BaseEntityBlock {
     /** The turret behind any block of a base, small or large, or null. */
     @Nullable
     public static TurretBaseBlockEntity core(BlockGetter level, BlockPos pos) {
+        // The light engine asks shapes from its own thread (getShape -> here). Read through a ServerLevel there, the world
+        // waits for the server thread, which can be waiting for that light work while chunks load: the world load hangs.
+        // Off the server thread there is no core (vanilla gives no block entities there either): the plain block shape.
+        if (level instanceof ServerLevel server && !server.getServer().isSameThread()) return null;
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof TurretBaseBlock block)) return null;
         return level.getBlockEntity(block.corePos(state, level, pos)) instanceof TurretBaseBlockEntity base ? base : null;

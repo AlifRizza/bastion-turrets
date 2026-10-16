@@ -73,12 +73,6 @@ def gun_fire_tail(v):
     body = onepole_lp(noise(L, 110 + v), 700) * env(L, 0.01, 0.35)
     thump = sweep(L, 90, 40) * env(L, 0.005, 0.18)
     return fade_out(norm(body + 0.6 * thump, 0.7))
-def kinetic_impact(v):
-    L = 0.35
-    click = hp(noise(L, 120 + v), 2500) * env(L, 0.0005, 0.012)
-    crackle = bp(noise(L, 121 + v), 1500, 6000) * env(L, 0.003, 0.06) * (np.random.default_rng(122 + v).random(n(L)) > 0.7)
-    ping = sweep(L, 3200 * jitter(123 + v), 2400) * env(L, 0.001, 0.04) * 0.3
-    return fade_out(norm(click + crackle + ping, 0.8))
 def gun_lock():
     L = 0.3
     beep = lambda start: pad(np.zeros(n(start)), start).tolist() + (np.sin(2 * np.pi * 1760 * t(0.06)) * env(0.06, 0.003, 0.03)).tolist()
@@ -346,12 +340,6 @@ def mortar_fire(v):
 def mortar_fire_tail():
     L = 1.8
     return fade_out(norm(onepole_lp(noise(L, 960), 200) * env(L, 0.01, 0.6) + sweep(L, 70, 30) * env(L, 0.005, 0.4), 0.6), 0.25)
-def mortar_whistle():
-    L = 1.6; tt = t(L)
-    pitch = np.cumsum(np.linspace(1900, 850, n(L)) * (1 + 0.012 * np.sin(2 * np.pi * 7 * tt))) / RATE
-    tone = np.sin(2 * np.pi * pitch) * np.linspace(0.35, 1, n(L))
-    air = bp(noise(L, 970), 800, 3000) * np.linspace(0.1, 0.35, n(L))
-    return fade_out(norm(tone * 0.8 + air, 0.6), 0.05)
 
 # --- Workstations (PLAN Fase 9) --------------------------------------------------------------------
 def ws_loop():
@@ -428,22 +416,12 @@ def ion_fire(v):
     thump = sweep(L, 200 * j, 55) * env(L, 0.002, 0.07) * 0.8
     whoosh = bp(noise(L, 1102 + v), 1200, 6000) * env(L, 0.004, 0.16) * 0.4
     return fade_out(norm(snap + zap + thump + whoosh + crackles(L, 1103 + v, 16, 2500, (0.1, 0.5), (0, 0.35))), 0.08)
-def ion_hit(v):
-    j = jitter(1110 + v); L = 0.6
-    burst = hp(noise(L, 1111 + v), 1500) * env(L, 0.0004, 0.03)
-    buzz = onepole_lp(square(L, 140 * j, 90 * j), 2600) * env(L, 0.002, 0.12) * 0.3
-    return fade_out(norm(burst + buzz + crackles(L, 1112 + v, 50, 1800, (0.2, 0.9), (0, 0.5))), 0.08)
 def plasma_repeater_fire(v):
     j = jitter(1120 + v); L = 0.3
     thoom = sweep(L, 320 * j, 90) * env(L, 0.002, 0.06)
     bubble = sweep(L, 900 * j, 300) * env(L, 0.002, 0.04) * (0.6 + 0.4 * np.sin(2 * np.pi * 60 * t(L))) * 0.4
     hiss = bp(noise(L, 1121 + v), 2000, 8000) * env(L, 0.002, 0.05) * 0.3
     return fade_out(norm(thoom + bubble + hiss), 0.05)
-def plasma_hit_small(v):
-    j = jitter(1130 + v); L = 0.4
-    pop = sweep(L, 500 * j, 120) * env(L, 0.001, 0.04) * 0.7
-    sizzle = bp(noise(L, 1131 + v), 2500, 9000) * env(L, 0.003, 0.12) * 0.6
-    return fade_out(norm(pop + sizzle), 0.05)
 def plasma_vent():
     L = 1.5
     hiss = hp(noise(L, 1140), 2200) * env(L, 0.03, 0.6)
@@ -468,11 +446,41 @@ def plasma_cannon_hit(v):
     return fade_out(norm(blast + splash + sizzle), 0.25)
 
 
+
+def hub_online():
+    """Control Hub online: a short servo whirr under two rising chime tones."""
+    L = 1.2
+    whirr = bp(noise(L, 401), 300, 1400) * env(L, 0.05, 0.35) * 0.35
+    c1 = np.sin(2 * np.pi * 784 * t(L)) * env(L, 0.005, 0.18)
+    c2 = pad(np.concatenate([np.zeros(n(0.18)), np.sin(2 * np.pi * 1175 * t(L - 0.18)) * env(L - 0.18, 0.005, 0.3)]), L)
+    return fade_out(norm(whirr + 0.5 * c1 + 0.6 * c2))
+
+
+def hub_offline():
+    """Control Hub offline: a falling power-down tone over a soft relay click."""
+    L = 1.0
+    tone = sweep(L, 900, 180) * env(L, 0.005, 0.35)
+    click = onepole_lp(noise(L, 402), 2500) * env(L, 0.001, 0.01)
+    return fade_out(norm(tone + 0.5 * click))
+
+
+def hub_dish_loop():
+    """Satellite dish while online: a low 120 Hz hum and a slow servo whirr, loopable."""
+    L = 3.0
+    hum = np.sin(2 * np.pi * 120 * t(L)) * 0.5 + np.sin(2 * np.pi * 240 * t(L)) * 0.2
+    whirr = bp(noise(L, 403), 500, 1800) * (0.5 + 0.5 * np.sin(2 * np.pi * (1 / L) * t(L))) * 0.25
+    return norm(loopable(hum + whirr), 0.6)
+
+
+def hub_ui_select():
+    """Hub screen pick: a tiny beep."""
+    L = 0.12
+    return fade_out(norm(np.sin(2 * np.pi * 1320 * t(L)) * env(L, 0.002, 0.03), 0.7))
+
 SOUNDS = {
     "debug/ping.ogg": debug_ping,
     **{f"gun/fire_{v}.ogg": (lambda v=v: gun_fire(v)) for v in range(3)},
     **{f"gun/fire_tail_{v}.ogg": (lambda v=v: gun_fire_tail(v)) for v in range(2)},
-    **{f"impact/kinetic_{v}.ogg": (lambda v=v: kinetic_impact(v)) for v in range(3)},
     "gun/lock.ogg": gun_lock, "turret/deploy.ogg": deploy, "turret/idle_hum.ogg": idle_hum, "turret/servo_loop.ogg": servo_loop,
     **{f"machine_gun/fire_{v}.ogg": (lambda v=v: mg_fire(v)) for v in range(3)},
     "machine_gun/spin_up.ogg": lambda: mg_spin("up"), "machine_gun/spin_down.ogg": lambda: mg_spin("down"),
@@ -494,20 +502,20 @@ SOUNDS = {
     "railgun/charge.ogg": railgun_charge, **{f"railgun/fire_{v}.ogg": (lambda v=v: railgun_fire(v)) for v in range(2)},
     "railgun/fire_tail.ogg": railgun_fire_tail,
     **{f"mortar/fire_{v}.ogg": (lambda v=v: mortar_fire(v)) for v in range(2)}, "mortar/fire_tail.ogg": mortar_fire_tail,
-    "mortar/whistle.ogg": mortar_whistle, **{f"railgun/impact_{v}.ogg": (lambda v=v: railgun_impact(v)) for v in range(2)},
+    **{f"railgun/impact_{v}.ogg": (lambda v=v: railgun_impact(v)) for v in range(2)},
     "workstation/loop.ogg": ws_loop, "workstation/weld.ogg": ws_weld, "workstation/press.ogg": ws_press, "workstation/done.ogg": ws_done,
-    "flamethrower/ignite.ogg": flame_ignite, "flamethrower/loop.ogg": flame_loop, "flamethrower/burning.ogg": burning,
+    **{f"flamethrower/ignite_{v}.ogg": flame_ignite for v in range(2)}, "flamethrower/loop.ogg": flame_loop, "flamethrower/burning.ogg": burning,
     "shotgun/pump.ogg": sg_pump, **{f"shotgun/shell_{v}.ogg": (lambda v=v: shell_drop(v)) for v in range(2)},
     "repulsor/charge.ogg": repulsor_charge, **{f"repulsor/push_{v}.ogg": (lambda v=v: repulsor_push(v)) for v in range(2)},
     "repulsor/push_tail.ogg": repulsor_push_tail, "repulsor/dome_charge.ogg": dome_charge,
     **{f"repulsor/dome_burst_{v}.ogg": (lambda v=v: dome_burst(v)) for v in range(2)}, "repulsor/dome_burst_tail.ogg": dome_burst_tail,
     **{f"ion/fire_{v}.ogg": (lambda v=v: ion_fire(v)) for v in range(2)},
-    **{f"ion/hit_{v}.ogg": (lambda v=v: ion_hit(v)) for v in range(2)},
     **{f"plasma/repeater_fire_{v}.ogg": (lambda v=v: plasma_repeater_fire(v)) for v in range(3)},
-    **{f"plasma/hit_small_{v}.ogg": (lambda v=v: plasma_hit_small(v)) for v in range(2)},
     "plasma/vent.ogg": plasma_vent, "plasma/cannon_charge.ogg": plasma_cannon_charge,
     **{f"plasma/cannon_fire_{v}.ogg": (lambda v=v: plasma_cannon_fire(v)) for v in range(2)},
     **{f"plasma/cannon_hit_{v}.ogg": (lambda v=v: plasma_cannon_hit(v)) for v in range(2)},
+    "control_hub/online.ogg": hub_online, "control_hub/offline.ogg": hub_offline,
+    "control_hub/dish_loop.ogg": hub_dish_loop, "control_hub/ui_select.ogg": hub_ui_select,
 }
 
 if __name__ == "__main__":

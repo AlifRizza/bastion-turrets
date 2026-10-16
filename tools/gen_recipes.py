@@ -103,6 +103,15 @@ TOOLS = {"repair_kit": ({"iron_ingot": 2, "copper_ingot": 1, "redstone": 1}, 60,
          "tier_upgrade_kit_t3": ({"diamond": 4, "netherite_scrap": 4, B + "tier_upgrade_kit_t2": 1}, 240, 12000, 1),
          "turret_configurator": ({"iron_ingot": 6, "redstone": 1, "glass_pane": 1, "comparator": 1}, 80, 1500, 1),
          "feed_hub": ({"iron_block": 1, "hopper": 2, "copper_ingot": 4, "redstone": 2}, 100, 3000, 1)}
+
+# Turret Control Hub (PLAN "Turret Control Hub"): its own tab at the Module Workstation. result: (ingredients, time, energy, count)
+HUB = {"hub_casing": ({"iron_ingot": 4, "copper_ingot": 2, "redstone": 1}, 60, 1000, 8),
+       "hub_power_port": ({B + "hub_casing": 1, "redstone_block": 1, "copper_ingot": 2}, 60, 1500, 1),
+       "hub_interface": ({B + "hub_casing": 1, "diamond": 1, "glass_pane": 3, "redstone": 2, "comparator": 1}, 100, 3000, 1),
+       "satellite_uplink_t1": ({"iron_ingot": 3, "copper_ingot": 2, "ender_pearl": 1, "redstone": 1}, 100, 3000, 1),
+       "satellite_uplink_t2": ({B + "satellite_uplink_t1": 1, "diamond": 2, "gold_ingot": 2, "ender_eye": 1}, 140, 6000, 1),
+       "satellite_uplink_t3": ({B + "satellite_uplink_t2": 1, "netherite_scrap": 1, "diamond": 2, "ender_eye": 2}, 180, 10000, 1),
+       "hub_connector": ({"copper_ingot": 2, "redstone": 1, "ender_pearl": 1}, 60, 1000, 4)}
 AMMO = {  # result: (ingredients, time, energy, count, tab)
     "kinetic_rounds": ({"copper_ingot": 1, "gunpowder": 1, "iron_nugget": 1}, 40, 400, 16, "kinetic_rounds"),
     "scatter_shells": ({"paper": 1, "gunpowder": 1, "copper_ingot": 1}, 40, 400, 8, "kinetic_rounds"),
@@ -175,6 +184,9 @@ def main():
         n += 2
     for tool, (ingredients, time, energy, count) in TOOLS.items():
         write(out / "module_workstation" / f"{tool}.json", recipe("module_workstation", B + "repair_kit", B + tool, ingredients, time, energy, count))
+    for part, (ingredients, time, energy, count) in HUB.items():
+        write(out / "module_workstation" / f"{part}.json", recipe("module_workstation", B + "hub_interface", B + part, ingredients, time, energy, count))
+    n += len(HUB)
     for ammo, (ingredients, time, energy, count, tab) in AMMO.items():
         write(out / "ammo_workstation" / f"{ammo}.json", recipe("ammo_workstation", B + tab, B + ammo, ingredients, time, energy, count))
     for cell, (ingredients, time, energy, count) in CHARGE.items():

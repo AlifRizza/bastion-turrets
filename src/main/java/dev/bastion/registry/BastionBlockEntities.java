@@ -1,6 +1,9 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.hub.HubInterfaceBlockEntity;
+import dev.bastion.hub.HubPowerPortBlockEntity;
+import dev.bastion.hub.SatelliteUplinkBlockEntity;
 import dev.bastion.turret.FeedHubBlockEntity;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretPartBlockEntity;
@@ -36,6 +39,18 @@ public final class BastionBlockEntities {
     @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<FeedHubBlockEntity>> FEED_HUB = REGISTER.register("feed_hub",
             () -> BlockEntityType.Builder.of(FeedHubBlockEntity::new, BastionBlocks.FEED_HUB.get()).build(null));
+    @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<HubInterfaceBlockEntity>> HUB_INTERFACE = REGISTER.register("hub_interface",
+            () -> BlockEntityType.Builder.of(HubInterfaceBlockEntity::new, BastionBlocks.HUB_INTERFACE.get()).build(null));
+    /** A Hub Power Port: cables on any side feed its hub's Interface. */
+    @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<HubPowerPortBlockEntity>> HUB_POWER_PORT = REGISTER.register("hub_power_port",
+            () -> BlockEntityType.Builder.of(HubPowerPortBlockEntity::new, BastionBlocks.HUB_POWER_PORT.get()).build(null));
+    /** The bottom block of every Satellite Uplink, all three tiers: it draws the mast and dish. */
+    @SuppressWarnings("DataFlowIssue")
+    public static final RegistryObject<BlockEntityType<SatelliteUplinkBlockEntity>> SATELLITE_UPLINK = REGISTER.register("satellite_uplink",
+            () -> BlockEntityType.Builder.of(SatelliteUplinkBlockEntity::new, BastionBlocks.SATELLITE_UPLINK_T1.get(),
+                    BastionBlocks.SATELLITE_UPLINK_T2.get(), BastionBlocks.SATELLITE_UPLINK_T3.get()).build(null));
     public static final RegistryObject<BlockEntityType<CreativePowerSourceBlock.Source>> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> BlockEntityType.Builder.of(CreativePowerSourceBlock.Source::new, BastionBlocks.CREATIVE_POWER_SOURCE.get()).build(null));
 

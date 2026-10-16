@@ -1,6 +1,8 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.hub.HubConnectorItem;
+import dev.bastion.hub.SatelliteUplinkItem;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretConfiguratorItem;
@@ -145,6 +147,22 @@ public final class BastionItems {
             tooltip.add(Component.translatable("tooltip.bastion.feed_hub").withStyle(ChatFormatting.GRAY));
         }
     });
+    // Turret Control Hub parts (PLAN "Turret Control Hub"); their tooltips come from the blocks.
+    public static final RegistryObject<BlockItem> HUB_INTERFACE = REGISTER.register("hub_interface",
+            () -> new BlockItem(BastionBlocks.HUB_INTERFACE.get(), new Item.Properties()));
+    public static final RegistryObject<BlockItem> HUB_CASING = REGISTER.register("hub_casing",
+            () -> new BlockItem(BastionBlocks.HUB_CASING.get(), new Item.Properties()));
+    public static final RegistryObject<BlockItem> HUB_POWER_PORT = REGISTER.register("hub_power_port",
+            () -> new BlockItem(BastionBlocks.HUB_POWER_PORT.get(), new Item.Properties()));
+    public static final RegistryObject<SatelliteUplinkItem> SATELLITE_UPLINK_T1 = REGISTER.register("satellite_uplink_t1",
+            () -> new SatelliteUplinkItem(BastionBlocks.SATELLITE_UPLINK_T1.get(), new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<SatelliteUplinkItem> SATELLITE_UPLINK_T2 = REGISTER.register("satellite_uplink_t2",
+            () -> new SatelliteUplinkItem(BastionBlocks.SATELLITE_UPLINK_T2.get(), new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<SatelliteUplinkItem> SATELLITE_UPLINK_T3 = REGISTER.register("satellite_uplink_t3",
+            () -> new SatelliteUplinkItem(BastionBlocks.SATELLITE_UPLINK_T3.get(), new Item.Properties().stacksTo(16)));
+    /** Links a turret to a Turret Control Hub (PLAN "Hub Connector"); goes in the turret's Connector slot. */
+    public static final RegistryObject<HubConnectorItem> HUB_CONNECTOR = REGISTER.register("hub_connector",
+            () -> new HubConnectorItem(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<BlockItem> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> new BlockItem(BastionBlocks.CREATIVE_POWER_SOURCE.get(), new Item.Properties().rarity(Rarity.EPIC)));
 

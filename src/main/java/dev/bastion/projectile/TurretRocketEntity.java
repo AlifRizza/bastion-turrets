@@ -8,6 +8,7 @@ import dev.bastion.registry.BastionEntities;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.weapon.FirePatches;
+import dev.bastion.weapon.Hitscan;
 import dev.bastion.weapon.LeadSolver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -220,8 +221,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private void explode(Vec3 at, @Nullable Entity direct, Vec3 normal) {
         if (!(level() instanceof ServerLevel server)) return;
         if (direct != null && damage > 0) {
-            direct.invulnerableTime = 0;
-            direct.hurt(BastionDamageTypes.turretShot(server), damage);
+            Hitscan.damage(direct, BastionDamageTypes.turretShot(server), damage);
         }
         BastionExplosion.detonate(server, at, splashRadius, splashDamage, knockback, this::affects, this);
         BastionNetwork.sendNear(server, BlockPos.containing(at), new TurretImpactEvent(at, blastKind, splashRadius / 3.5f, normal, getId()));

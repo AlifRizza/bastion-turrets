@@ -4,6 +4,7 @@ import dev.bastion.Bastion;
 import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.BurnSync;
+import dev.bastion.weapon.Hitscan;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -77,8 +78,7 @@ public final class TurretBurn {
             burn.synced--;
             if (--burn.timer <= 0) {
                 burn.timer = DAMAGE_INTERVAL;
-                entity.invulnerableTime = 0;
-                entity.hurt(BastionDamageTypes.of(entity.level(), BastionDamageTypes.TURRET_BURN), burn.damagePerSecond);
+                Hitscan.damage(entity, BastionDamageTypes.of(entity.level(), BastionDamageTypes.TURRET_BURN), burn.damagePerSecond);
             }
         }
     }

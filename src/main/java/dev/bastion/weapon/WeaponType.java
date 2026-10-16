@@ -11,6 +11,19 @@ import java.util.Comparator;
 
 /** Per-weapon fire logic, entries of registry bastion:weapon_type (PLAN 4.3). Server side only. */
 public abstract class WeaponType {
+    /**
+     * World position of a point on the weapon model, in model pixels around the pitch pivot (y up, -z forward), as the
+     * turret aims now: launcher tube mouths. Model +X renders on the weapon's left (GeckoLib mirrors X), so the
+     * right-hand offset is -x.
+     */
+    public static Vec3 modelPoint(TurretBaseBlockEntity turret, WeaponData data, Vec3 px) {
+        Vec3 forward = Vec3.directionFromRotation(turret.pitch(), turret.yaw());
+        Vec3 up = Vec3.directionFromRotation(turret.pitch() - 90, turret.yaw());
+        Vec3 right = forward.cross(up);
+        Vec3 local = right.scale(-px.x / 16).add(up.scale(px.y / 16)).add(forward.scale(-px.z / 16));
+        return turret.pivot(data).add(turret.toWorld(local));
+    }
+
     public abstract FireProfile fireProfile();
 
     /** Performs one shot: raycast(s), damage, and the TurretFireEvent for clients. */

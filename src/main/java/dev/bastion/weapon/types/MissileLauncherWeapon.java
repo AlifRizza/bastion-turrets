@@ -51,17 +51,9 @@ public class MissileLauncherWeapon extends WeaponType {
         return new Vec3(x, (1 - row) * ROW, -MOUTH);
     }
 
-    /**
-     * World position of a tube's mouth. Model +X renders on the weapon's left (GeckoLib mirrors X), so the right-hand
-     * offset is -x.
-     */
+    /** World position of a tube's mouth. */
     public static Vec3 mouth(TurretBaseBlockEntity turret, WeaponData data, int tube) {
-        Vec3 px = tubeOffsetPx(tube);
-        Vec3 forward = Vec3.directionFromRotation(turret.pitch(), turret.yaw());
-        Vec3 up = Vec3.directionFromRotation(turret.pitch() - 90, turret.yaw());
-        Vec3 right = forward.cross(up);
-        Vec3 local = right.scale(-px.x / 16).add(up.scale(px.y / 16)).add(forward.scale(-px.z / 16));
-        return turret.pivot(data).add(turret.toWorld(local));
+        return modelPoint(turret, data, tubeOffsetPx(tube));
     }
 
     /** Never too close: a missile launched upward needs room to turn back down. */

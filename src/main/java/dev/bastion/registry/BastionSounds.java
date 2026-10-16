@@ -18,8 +18,8 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> TURRET_DEPLOY = register("turret.deploy");
     public static final RegistryObject<SoundEvent> TURRET_IDLE_HUM = register("turret.idle_hum");
     public static final RegistryObject<SoundEvent> TURRET_SERVO = register("turret.servo");
-    public static final RegistryObject<SoundEvent> IMPACT_KINETIC = register("impact.kinetic");
     public static final RegistryObject<SoundEvent> TURRET_DESTROYED = register("turret.destroyed");
+    public static final RegistryObject<SoundEvent> TURRET_DESTROYED_LARGE = register("turret.destroyed_large");
     public static final RegistryObject<SoundEvent> TURRET_TIER_UP = register("turret.tier_up");
     public static final RegistryObject<SoundEvent> TURRET_REPAIR = register("turret.repair");
 
@@ -42,6 +42,8 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> ROCKET_LAUNCH_TAIL = register("rocket.launch_tail");
     public static final RegistryObject<SoundEvent> ROCKET_FLY = register("rocket.fly");
     public static final RegistryObject<SoundEvent> ROCKET_EXPLODE = register("rocket.explode");
+    /** A rocket sliding into an emptied tube (client side, with the tube animation). */
+    public static final RegistryObject<SoundEvent> ROCKET_RELOAD = register("rocket.reload");
 
     public static final RegistryObject<SoundEvent> MISSILE_LAUNCH = register("missile.launch");
     public static final RegistryObject<SoundEvent> MISSILE_RELOAD = register("missile.reload");
@@ -57,7 +59,6 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> RAILGUN_IMPACT = register("railgun.impact");
     public static final RegistryObject<SoundEvent> MORTAR_FIRE = register("mortar.fire");
     public static final RegistryObject<SoundEvent> MORTAR_FIRE_TAIL = register("mortar.fire_tail");
-    public static final RegistryObject<SoundEvent> MORTAR_WHISTLE = register("mortar.whistle");
     public static final RegistryObject<SoundEvent> REPULSOR_CHARGE = register("repulsor.charge");
     public static final RegistryObject<SoundEvent> REPULSOR_PUSH = register("repulsor.push");
     public static final RegistryObject<SoundEvent> REPULSOR_PUSH_TAIL = register("repulsor.push_tail");
@@ -66,13 +67,16 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> DOME_BURST_TAIL = register("repulsor.dome_burst_tail");
     // Ion Rifle and Plasma (PLAN "Ion Rifle, Plasma Repeater & Plasma Cannon"); placeholders until docs/SOUND_SHEET.md is done.
     public static final RegistryObject<SoundEvent> ION_FIRE = register("ion.fire");
-    public static final RegistryObject<SoundEvent> ION_HIT = register("ion.hit");
     public static final RegistryObject<SoundEvent> PLASMA_REPEATER_FIRE = register("plasma_repeater.fire");
-    public static final RegistryObject<SoundEvent> PLASMA_HIT_SMALL = register("plasma.hit_small");
     public static final RegistryObject<SoundEvent> PLASMA_VENT = register("plasma.vent");
     public static final RegistryObject<SoundEvent> PLASMA_CANNON_CHARGE = register("plasma_cannon.charge");
     public static final RegistryObject<SoundEvent> PLASMA_CANNON_FIRE = register("plasma_cannon.fire");
     public static final RegistryObject<SoundEvent> PLASMA_CANNON_HIT = register("plasma_cannon.hit");
+    // Turret Control Hub (PLAN "Turret Control Hub"); placeholders until docs/SOUND_SHEET.md is done.
+    public static final RegistryObject<SoundEvent> CONTROL_HUB_ONLINE = register("control_hub.online");
+    public static final RegistryObject<SoundEvent> CONTROL_HUB_OFFLINE = register("control_hub.offline");
+    public static final RegistryObject<SoundEvent> CONTROL_HUB_DISH_LOOP = register("control_hub.dish_loop");
+    public static final RegistryObject<SoundEvent> CONTROL_HUB_UI_SELECT = register("control_hub.ui_select");
 
     public static final RegistryObject<SoundEvent> LASER_CHARGE = register("laser.charge");
     public static final RegistryObject<SoundEvent> LASER_FIRE = register("laser.fire");

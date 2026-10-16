@@ -4,6 +4,7 @@ import dev.bastion.Bastion;
 import dev.bastion.menu.TurretMenu;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretTier;
@@ -12,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,6 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
@@ -30,7 +33,11 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /** Fase 1 acceptance checks (PLAN 8). Run with {@code ./gradlew runGameTestServer}. */
 @GameTestHolder(Bastion.MOD_ID)
@@ -140,6 +147,42 @@ public class TurretBaseTests {
 
         helper.assertTrue(merged == 64 && savedIn, "merging in: " + merged + " rounds, marked to save " + savedIn);
         helper.assertTrue(left == 54 && savedOut, "taking part out: " + left + " left, marked to save " + savedOut);
+        helper.succeed();
+    }
+
+    /**
+     * The light engine asks a block's light and shape from its own thread while chunks load. A turret base that answered by
+     * reading the world through the ServerLevel made that thread wait for the server thread, which can be waiting for that
+     * very light work: the world load hung (a PC with six large bases, 2026-10-10). Asked off the server thread, both
+     * bases must answer without the server thread.
+     */
+    @GameTest(template = EMPTY)
+    public static void baseShapeNeverWaitsForTheServerThread(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos small = helper.absolutePos(new BlockPos(0, 1, 0)), large = helper.absolutePos(new BlockPos(1, 1, 1));
+        level.setBlock(small, BastionBlocks.TURRET_BASE.get().defaultBlockState(), 3);
+        LargeTurretBaseBlock.placeAt(level, large, BastionBlocks.LARGE_TURRET_BASE.get());
+        List<BlockPos> blocks = new ArrayList<>(List.of(small));
+        blocks.addAll(LargeTurretBaseBlock.footprint(large));
+        List<BlockState> states = blocks.stream().map(level::getBlockState).toList();
+        CompletableFuture<Void> lightThread = CompletableFuture.runAsync(() -> { // as LightEngine.getOpacity does
+            for (int i = 0; i < blocks.size(); i++) {
+                states.get(i).getLightBlock(level, blocks.get(i));
+                states.get(i).getShape(level, blocks.get(i));
+            }
+        });
+        boolean answered;
+        try {
+            lightThread.get(2, TimeUnit.SECONDS); // the server thread is busy right here, as when it waits for light
+            answered = true;
+        } catch (TimeoutException e) {
+            answered = false;
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        level.removeBlock(small, false);
+        level.removeBlock(large, false);
+        helper.assertTrue(answered, "a turret base's light/shape asked off the server thread waited for the server thread");
         helper.succeed();
     }
 }

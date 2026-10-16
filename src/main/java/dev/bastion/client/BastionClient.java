@@ -5,16 +5,21 @@ import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.particle.VfxParticle.Behavior;
 import dev.bastion.client.render.BakedTurretBaseModel;
 import dev.bastion.client.render.RocketRenderer;
+import dev.bastion.client.render.SatelliteUplinkRenderer;
 import dev.bastion.client.render.TurretBaseRenderer;
 import dev.bastion.client.render.WorkstationRenderer;
+import dev.bastion.client.screen.ControlHubScreen;
 import dev.bastion.client.screen.FeedHubScreen;
 import dev.bastion.client.screen.TurretScreen;
 import dev.bastion.client.screen.WorkstationScreen;
+import dev.bastion.hub.HubConnectorItem;
 import dev.bastion.registry.BastionBlockEntities;
 import dev.bastion.registry.BastionEntities;
+import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionParticles;
 import dev.bastion.registry.BastionMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -26,7 +31,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
 
-/** Client-only wiring: renderers, particle providers and screens. Never loaded on a dedicated server. */
+/** Client-only wiring: renderers, particle providers, screens and item properties. Never loaded on a dedicated server. */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BastionClient {
     @SubscribeEvent
@@ -35,6 +40,10 @@ public final class BastionClient {
             MenuScreens.register(BastionMenus.TURRET.get(), TurretScreen::new);
             MenuScreens.register(BastionMenus.WORKSTATION.get(), WorkstationScreen::new);
             MenuScreens.register(BastionMenus.FEED_HUB.get(), FeedHubScreen::new);
+            MenuScreens.register(BastionMenus.CONTROL_HUB.get(), ControlHubScreen::new);
+            // A linked connector shows its lamp lit (models/item/hub_connector.json override).
+            ItemProperties.register(BastionItems.HUB_CONNECTOR.get(), Bastion.id("linked"),
+                    (stack, level, entity, seed) -> HubConnectorItem.isLinked(stack) ? 1 : 0);
         });
     }
 
@@ -47,6 +56,7 @@ public final class BastionClient {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BastionBlockEntities.TURRET_BASE.get(), context -> new TurretBaseRenderer());
         event.registerBlockEntityRenderer(BastionBlockEntities.WORKSTATION.get(), context -> new WorkstationRenderer());
+        event.registerBlockEntityRenderer(BastionBlockEntities.SATELLITE_UPLINK.get(), context -> new SatelliteUplinkRenderer());
         event.registerEntityRenderer(BastionEntities.TURRET_HITBOX.get(), NoopRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_ROCKET.get(), RocketRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer(context, "turret_missile"));

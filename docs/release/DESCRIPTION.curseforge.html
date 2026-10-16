@@ -2,7 +2,7 @@
 <p>Futuristic, modular turrets for Forge 1.20.1. Place a base, mount a weapon, feed it ammo and tune it with modules.
 The muzzle flashes, beams, lightning arcs and explosions were all made for this mod. You won't find a single vanilla particle in there.</p>
 <blockquote>
-<p>This is a beta. Numbers will move between versions and the sounds are still placeholders, so back up your world before you update.</p>
+<p>This is a beta. Numbers will move between versions, so back up your world before you update.</p>
 </blockquote>
 <p>[IMAGE: screenshots-840/01_laser_rifle_beam.jpg]</p>
 
@@ -39,7 +39,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <tr>
 <td>Rocket Launcher Turret</td>
 <td>Standard</td>
-<td>Leads moving targets. The blast only hurts what the turret is allowed to shoot.</td>
+<td>Leads moving targets. Fires one rocket at a time, or all four tubes at once in Salvo mode. The blast only hurts what the turret is allowed to shoot.</td>
 </tr>
 <tr>
 <td>Flamethrower Turret</td>
@@ -117,6 +117,8 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <li>Redstone turns a turret on or off, and a comparator reads its ammo (or energy) level.</li>
 <li>The Turret Configurator copies one turret's targeting so you can paste it onto others.</li>
 </ul>
+<h2>Turret Control Hub</h2>
+<p>Build a 3x3x3 cube: a Hub Interface in the middle of one side at eye level, Hub Casings with at least one Hub Power Port, and a Satellite Uplink on top. Right-click an unfinished Interface and a hologram shows what is missing. Link Hub Connectors to the hub and put one in each turret you want on it: once the hub has FE, its screen shows those turrets within 1, 3x3 or 7x7 chunks (Satellite Uplink T1, T2, T3) on a map and a list, coloured by health, with their ammo and state. Click one to open its own screen from the hub: swap modules, top up ammo or change its targeting without walking over. Or select many and change their categories, priority, mob rules, trusted players or on/off all at once.</p>
 <h2>Modules</h2>
 <table border="1" cellpadding="6">
 <thead>
@@ -189,21 +191,21 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <p>[IMAGE: screenshots-840/10_part_assembler_gui.jpg]</p>
 
 <h2>Effects</h2>
-<p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
+<p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Every turret has its own sounds too: shots, charge-ups, reloads, rocket flight and blasts, with a muffled version when you hear them from far away. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
 <h2>For modpack makers</h2>
 <p>Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.</p>
-<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations and Feed Hubs hold and take in, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).</p>
+<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).</p>
 <h2>Requirements</h2>
 <ul>
 <li>Minecraft 1.20.1 with Forge 47.2 or newer</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/geckolib">GeckoLib</a> 4.8 or newer (required)</li>
-<li>Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle and the Repulsors</li>
+<li>Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle, the Repulsors and the Turret Control Hub</li>
 <li><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a> 6.0 or newer if you want Mechanical Arm support (optional)</li>
 </ul>
 <p>Install it on both client and server.</p>
 <h2>Languages</h2>
 <p>English and Bahasa Indonesia.</p>
 <h2>Known limits of this beta</h2>
-<p>Sounds are placeholders, and there's no JEI or Jade support yet (each station's GUI lists its own recipes).</p>
+<p>There's no JEI or Jade support yet (each station's GUI lists its own recipes).</p>
 <p>Works with Embeddium and Oculus. With a shader pack on, the cyan glow on the models turns white and holograms turn green. Everything else looks as intended.</p>
 <p>Found a bug? Report it at https://github.com/AlifRizza/bastion-turrets/issues</p>

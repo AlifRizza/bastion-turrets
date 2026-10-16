@@ -1,5 +1,8 @@
 package dev.bastion.damage;
 
+import dev.bastion.Bastion;
+import dev.bastion.turret.TurretHitboxEntity;
+import dev.bastion.weapon.Hitscan;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -13,9 +16,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
-
-import dev.bastion.Bastion;
-import dev.bastion.turret.TurretHitboxEntity;
 
 /**
  * Bastion's own explosion (PLAN 1, NO-VANILLA): damage and knockback computed here, no block damage and no
@@ -47,8 +47,7 @@ public final class BastionExplosion {
             if (distance > radius) continue;
             float falloff = (float) (1 - distance / radius);
             if (damage > 0) { // 0 = a push only (Railgun shockwave)
-                entity.invulnerableTime = 0; // a direct rocket hit a moment ago must not swallow the splash
-                entity.hurt(source, damage * falloff);
+                Hitscan.damage(entity, source, damage * falloff); // clears the cooldown: a direct rocket hit a moment ago must not swallow the splash
             }
             if (entity instanceof LivingEntity living && distance > 1e-3) {
                 living.knockback(knockback * falloff, -offset.x / distance, -offset.z / distance);

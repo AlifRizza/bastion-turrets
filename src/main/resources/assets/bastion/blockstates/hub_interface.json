@@ -1,0 +1,124 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "status": "unformed"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_unformed",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "status": "online"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_online",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "status": "offline"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_offline",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "status": "unformed"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_unformed",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "status": "online"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_online",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "status": "offline"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_offline",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "unformed"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_unformed",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "online"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_online",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "status": "offline"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_offline",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "unformed"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_unformed",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "online"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_online",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "status": "offline"
+      },
+      "apply": {
+        "model": "bastion:block/hub_interface_offline",
+        "y": 270
+      }
+    }
+  ]
+}

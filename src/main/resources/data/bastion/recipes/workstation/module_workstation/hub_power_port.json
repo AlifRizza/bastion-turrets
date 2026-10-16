@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:hub_interface",
+  "ingredients": [
+    {
+      "item": "bastion:hub_casing",
+      "count": 1
+    },
+    {
+      "item": "minecraft:redstone_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:hub_power_port"
+  },
+  "time": 60,
+  "energy": 1500
+}

@@ -1,4 +1,4 @@
-# Upload sheet: 0.1.1
+# Upload sheet: 0.2.0
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -8,56 +8,92 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 ## Project fields
 
-| Field | Value |
-|---|---|
-| Name | Bastion Turrets |
-| Slug | bastion-turrets |
-| Summary | Futuristic modular turrets with tiered bases, automatable ammo, FE workstations and fully custom effects. |
-| License | All Rights Reserved (`mod_license` in gradle.properties) |
-| Source / Issues | https://github.com/AlifRizza/bastion-turrets (repo must be public for players to open issues) |
-| CurseForge categories | Technology; Armor, Tools, and Weapons |
-| Modrinth categories | Technology, Equipment |
-| Modrinth environment | Client: required, Server: required |
+
+| Field                 | Value                                                                                                                                         |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                  | Bastion Turrets                                                                                                                               |
+| Slug                  | bastion-turrets                                                                                                                               |
+| Summary               | Futuristic modular turrets with tiered bases, automatable ammo, FE workstations and fully custom effects.                                     |
+| License               | All Rights Reserved (`mod_license` in gradle.properties)                                                                                      |
+| Source / Issues       | [https://github.com/AlifRizza/bastion-turrets](https://github.com/AlifRizza/bastion-turrets) (repo must be public for players to open issues) |
+| CurseForge categories | Technology; Armor, Tools, and Weapons                                                                                                         |
+| Modrinth categories   | Technology, Equipment                                                                                                                         |
+| Modrinth environment  | Client: required, Server: required                                                                                                            |
+
 
 ## Version fields
 
-| Field | Value |
-|---|---|
-| File | `build/libs/bastion-1.20.1-0.1.1.jar` (`./gradlew build`) |
-| Version number | 0.1.1 |
-| Version name | Bastion Turrets 0.1.1 |
-| Release channel / type | Beta |
-| Loader | Forge |
-| Game version | 1.20.1 |
-| Java | 17 |
-| Dependencies | GeckoLib: required. Create: optional. |
+
+| Field                  | Value                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| File                   | `build/libs/bastion-1.20.1-0.2.0.jar` (`./gradlew build`) |
+| Version number         | 0.2.0                                                     |
+| Version name           | Bastion Turrets 0.2.0                                     |
+| Release channel / type | Beta                                                      |
+| Loader                 | Forge                                                     |
+| Game version           | 1.20.1                                                    |
+| Java                   | 17                                                        |
+| Dependencies           | GeckoLib: required. Create: optional.                     |
+
 
 Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain numbers on the Beta channel: `0.1.1`, `0.1.2`,
 ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
+The next one is **0.2.0**, not 0.1.2 (user 2026-10-14: too many changes for a patch number; still Beta). Big
+updates bump the middle number, fixes the last.
 
-## Changelog: 0.1.2 (not released yet, `mod_version` still 0.1.1)
+## Changelog: 0.2.0
 
 ```
+New turrets
+- Ion Rifle (standard base, FE): fires a fast blue ion bolt. Where it stops, an ion core zaps every valid target
+  within 3 blocks with a beam for 5 damage, even through thin walls. 1,200 FE per shot.
+- Plasma Repeater (standard base): rapid plasma balls you can watch fly, each splashing the targets around where it
+  lands. Heats up and vents like the Machine Gun. 10 shots per Plasma Cell.
+- Plasma Cannon (Large Turret Base): charges for a second, then fires a big slow plasma ball that explodes like a
+  BFG: every enemy within 4 blocks takes up to 14 damage (half at the edge), the one it hits 18 on top. One Plasma
+  Cell per shot.
+- Plasma Cell: made at the Ammo Workstation; empty cells refill at the Charging Station.
+
+New: Turret Control Hub
+- Build a 3x3x3 cube (all parts made at the Module Workstation): a Hub Interface in the middle of one side at eye
+  level, Hub Casings (8 per craft) with at least one Hub Power Port, and a Satellite Uplink on top. Right-click an
+  unfinished Interface and a hologram shows what is missing.
+- Hub Connector (4 per craft): right-click the Interface to link a stack, then put one in a turret's new Connector
+  slot. Only turrets holding a connector linked to that hub show up in it.
+- The hub screen shows those turrets within 1, 3x3 or 7x7 chunks (Satellite Uplink T1/T2/T3) on a map and in a list,
+  coloured by health, with ammo and state. Click one to open its own screen from the hub (swap modules, top up ammo,
+  change targeting), or select many and change categories, priority, mob rules, trusted players or on/off at once.
+- Runs on FE: 20 / 60 / 150 FE per tick (T1/T2/T3) from a 200,000 FE buffer filled through the Power Ports (up to
+  2,000 FE/t each). Out of FE it goes OFFLINE and comes back once it holds 5 seconds of upkeep.
+
+New sounds
+- Every turret has real sound effects now instead of placeholders: shots, charge-ups, reloads, rocket and missile
+  flight, blasts, plus muffled versions you hear from far away. The Machine Gun spins up, fires one solid barrage and
+  winds down; Rocket and Missile Launchers clank as each round slides in; the Large Turret Base has its own
+  destruction sound.
+- Mobs hit by turrets groan at most twice a second and quieter (server config turretHurtSoundInterval and
+  turretHurtSoundVolume): before, every single bullet played a hurt sound. Death sounds are unchanged.
+- Removed for now: bullet impact sounds, and the Mortar shell's falling whistle (shells now fall silently).
+
 New
-- Ion Rifle (standard base, FE): a fast ion bolt; where it stops, a beam zaps every valid target within 3 blocks for 5
-  damage, even through thin walls (inspired by Crimsonland's Ion Rifle). 1,200 FE per shot.
-- Plasma Repeater (standard base, Plasma Cells): rapid plasma balls you can watch fly, each splashing 3 damage within
-  1.2 blocks; heats up and vents like the Machine Gun. 10 shots per cell.
-- Plasma Cannon (Large Turret Base, Plasma Cells): charges, then a big slow ball (18 damage) explodes BFG-style where it
-  lands: every enemy within 4 blocks takes 14 at the centre down to 7 at the edge, through walls, no block damage. Never
-  fires within 4 blocks. 1 cell per shot.
-- Plasma Cell: Empty Plasma Cells at the Ammo Workstation (2 iron, 1 glass, 1 glowstone dust -> 4), charged at the
-  Charging Station (4,000 FE each).
 - Upgrade modules come in Mk1, Mk2 and Mk3 (x1.5 / x2 of Mk1, Penetrator +1/+2/+3): upgrade the one you have at the
-  Module Workstation (2 diamonds + 4 redstone, then 1 netherite scrap + 2 diamonds + 1 amethyst shard). One of each kind
-  per turret, whatever its Mk.
-- Placement hologram: holding a Large Turret Base or a multi-block workstation shows a see-through model and a box per
-  block where it will go, red where something is in the way.
+  Module Workstation (2 diamonds + 4 redstone, then 1 netherite scrap + 2 diamonds + 1 amethyst shard). One of each
+  kind per turret, whatever its Mk.
+- Rocket Launcher: Salvo mode (fire-mode button in the turret screen, like the Missile Launcher). It waits for all 4
+  tubes, fires all four together, side by side, at its target, then reloads one tube at a time: same damage per
+  second as Single, all in one burst.
+- Placement hologram: holding a Large Turret Base or a multi-block workstation shows a see-through model and a box
+  per block where it will go, red where something is in the way.
 - Health lights: a turret base's lights turn yellow below half HP and blink red below a quarter, with sparks (the
   weapon keeps its glow); before, it only blinked red under 30%. The base lights are bigger: tall window slits and a
   thicker energy ring (the Large Base ring no longer spins, its straight bars cut through the body as they turned).
 - Creative tab: Turret Base and Large Turret Base also come ready-made at T2 and T3.
 - Modules: hold Shift on a module to see which turrets it actually does something on (e.g. Coolant Loop: Machine Gun).
+
+Compatibility
+- Guns from other mods (tested: TaCZ) now hit turrets: their bullets used to fly through. Owner protection still
+  applies, so only turrets that are not yours (or hostile mobs) can break them.
+- Fungal Infection: Spore: its mobs are shot by turrets and attack them like any other hostile mob.
 
 Changes
 - Repulsor Dome reaches 9 blocks (was 7); it still throws them about 6 blocks.
@@ -70,14 +106,15 @@ Changes
   shakes from several turrets no longer add up (many turrets firing at once shake like the strongest one).
 
 Fixes
+- Leaving and rejoining a world with several Large Turret Bases could hang the world load forever.
+- Turrets now hit a mob pressed right against the muzzle (the shot started inside it and passed through).
 - Railgun: the ion trail no longer flashes through and past the target for a moment before the hit shows; it stops
   where the slug lands from the first frame.
-- Guns from other mods (tested: TaCZ) now hit turrets: their bullets used to fly through. Owner protection still
-  applies, so only turrets that are not yours (or hostile mobs) can break them.
 - Railgun: ignored mobs on the ground a few blocks away when it stood on a raised base (it could only dip 10°, now
   30°), and its slugs vanished when fired downward near the bottom of the world (superflat worlds). The second fix
   covers every bullet weapon.
-- Workstations: placing one no longer builds its upper/back blocks around a mob or pet standing there (it suffocated).
+- Workstations: placing one no longer builds its upper/back blocks around a mob or pet standing there (it
+  suffocated).
 - Feed Hub: an ammo item a turret refused at the last moment could vanish; it now stays in the hub.
 - Textures: a few small faces showed the wrong strip of their texture (Machine Gun fan blades and barrel rings,
   Flamethrower fuel pipe, Part Workstation bottom drawer and one wrench on its tool board).
@@ -170,20 +207,22 @@ First public beta.
 
 ## Gallery captions
 
-| File | Title | Description |
-|---|---|---|
-| 01_laser_rifle_beam | Laser Rifle | One beam through every valid target in line. |
-| 02_laser_rifle_charge | Charging up | Light gathers at the emitter before the shot. |
-| 03_tesla_coil | Tesla Coil | Lightning into up to five targets at once, powered by FE. |
-| 04_night_defense | Night defense | Flamethrower and Tesla Coil holding a line. |
-| 05_missile_salvo | Missile salvo | 12 homing missiles spread over every target in range. |
-| 06_rocket_explosion | Rocket Launcher | Custom explosions that only hurt valid targets. |
-| 07_floor_wall_ceiling | Any surface | Turrets mount on floors, walls and ceilings. |
-| 08_create_automation | Automation | Create belts and Mechanical Arms keep turrets loaded. |
-| 09_workstations | Workstations | Five FE-powered machines make every part, weapon and round. |
-| 10_part_assembler_gui | Part Assembler | Recipe list, 3D preview, have/need, energy and progress. |
-| 11_repulsor_dome | Repulsor Dome | A dome of force throws every mob within 9 blocks away from your turrets. |
-| 12_railgun_charge | Railgun charging | The coils light up, then electricity crawls over the barrel before the shot. |
+
+| File                  | Title            | Description                                                                  |
+| --------------------- | ---------------- | ---------------------------------------------------------------------------- |
+| 01_laser_rifle_beam   | Laser Rifle      | One beam through every valid target in line.                                 |
+| 02_laser_rifle_charge | Charging up      | Light gathers at the emitter before the shot.                                |
+| 03_tesla_coil         | Tesla Coil       | Lightning into up to five targets at once, powered by FE.                    |
+| 04_night_defense      | Night defense    | Flamethrower and Tesla Coil holding a line.                                  |
+| 05_missile_salvo      | Missile salvo    | 12 homing missiles spread over every target in range.                        |
+| 06_rocket_explosion   | Rocket Launcher  | Custom explosions that only hurt valid targets.                              |
+| 07_floor_wall_ceiling | Any surface      | Turrets mount on floors, walls and ceilings.                                 |
+| 08_create_automation  | Automation       | Create belts and Mechanical Arms keep turrets loaded.                        |
+| 09_workstations       | Workstations     | Five FE-powered machines make every part, weapon and round.                  |
+| 10_part_assembler_gui | Part Assembler   | Recipe list, 3D preview, have/need, energy and progress.                     |
+| 11_repulsor_dome      | Repulsor Dome    | A dome of force throws every mob within 9 blocks away from your turrets.     |
+| 12_railgun_charge     | Railgun charging | The coils light up, then electricity crawls over the barrel before the shot. |
+
 
 Featured image: `01_laser_rifle_beam` (or the generated banner below).
 
@@ -192,13 +231,15 @@ Featured image: `01_laser_rifle_beam` (or the generated banner below).
 Reference images (in-game, cropped from the screenshots) are in [reference/](reference/). Always attach them so the
 generated turrets match the mod's models:
 
-| File | Shows |
-|---|---|
-| `ref_all_turrets.png` | all six on one sheet: use this when the tool takes a single image |
-| `ref_gun_turret.png` | Gun Turret on the standard base (best match for the icon) |
-| `ref_rocket_launcher.png`, `ref_flamethrower.png` | other standard-base weapons |
-| `ref_tesla_coil.png`, `ref_missile_launcher.png` | the large 2x2 base weapons |
-| `ref_laser_rifle.png` | Laser Rifle barrel close-up with its focus rings |
+
+| File                                              | Shows                                                             |
+| ------------------------------------------------- | ----------------------------------------------------------------- |
+| `ref_all_turrets.png`                             | all six on one sheet: use this when the tool takes a single image |
+| `ref_gun_turret.png`                              | Gun Turret on the standard base (best match for the icon)         |
+| `ref_rocket_launcher.png`, `ref_flamethrower.png` | other standard-base weapons                                       |
+| `ref_tesla_coil.png`, `ref_missile_launcher.png`  | the large 2x2 base weapons                                        |
+| `ref_laser_rifle.png`                             | Laser Rifle barrel close-up with its focus rings                  |
+
 
 Put any title text on afterwards in an editor: generated lettering is unreliable.
 
@@ -232,6 +273,8 @@ single reference instead of the sheet.
 ## Before you press publish
 
 - [ ] Test the built jar outside the dev environment: a clean CurseForge or Modrinth app instance with Forge 1.20.1,
-      GeckoLib and one FE mod. Craft a station, power it, make a turret in survival.
+
+  GeckoLib and one FE mod. Craft a station, power it, make a turret in survival.
 - [ ] Join that instance's world from a dedicated server (`./gradlew runServer` or a real server) with the same jar.
 - [ ] Repo public (or remove the issues link from DESCRIPTION.md).
+

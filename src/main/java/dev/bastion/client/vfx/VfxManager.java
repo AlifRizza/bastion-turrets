@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.bastion.Bastion;
 import dev.bastion.client.BurnEffects;
 import dev.bastion.client.ClientTurret;
+import dev.bastion.client.ControlHubEffects;
 import dev.bastion.client.MortarEffects;
 import dev.bastion.client.RepulsorEffects;
 import dev.bastion.client.TeslaEffects;
@@ -134,6 +135,7 @@ public final class VfxManager {
     public static void onLevelUnload(LevelEvent.Unload event) {
         if (!event.getLevel().isClientSide()) return;
         ClientTurret.clear();
+        ControlHubEffects.clear();
         TracerRenderer.clear();
         SmokeTrailRenderer.clear();
         ArcRenderer.clear();

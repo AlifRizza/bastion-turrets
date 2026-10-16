@@ -1,5 +1,6 @@
 package dev.bastion.client.anim;
 
+import dev.bastion.weapon.types.RocketLauncherWeapon;
 import dev.bastion.Bastion;
 import dev.bastion.weapon.WeaponModuleItem;
 import software.bernie.geckolib.cache.GeckoLibCache;
@@ -43,7 +44,8 @@ public class WeaponAnimatable implements GeoAnimatable {
     public float heat;
     /**
      * Rocket Launcher tubes, muzzle order: 1 = a rocket sits in the tube, 0 = empty. A tube empties when it fires and a
-     * new rocket slides in after RELOAD_DELAY ticks, over RELOAD_TICKS; with no ammo left the tubes run dry.
+     * new rocket slides in, over RELOAD_TICKS, once the server has reloaded it (no sooner than RELOAD_DELAY ticks); with
+     * no ammo left the tubes run dry.
      */
     public final float[] tubeLoad = {1, 1, 1, 1};
     /** Laser Rifle focus rings: angle (radians, this and last tick) and speed; they spin up while it charges. */
@@ -57,7 +59,7 @@ public class WeaponAnimatable implements GeoAnimatable {
     public float coilFill = -1, chargeGlow;
     public int chargeColor;
     private final int[] tubeDelay = new int[4];
-    private static final int RELOAD_DELAY = 8, RELOAD_TICKS = 14;
+    private static final int RELOAD_DELAY = 8, RELOAD_TICKS = RocketLauncherWeapon.SLIDE_TICKS;
 
     /** @param deploy play the deploy animation first: true when mounted just now, false when loaded with the chunk. */
     public WeaponAnimatable(WeaponModuleItem item, boolean deploy) {
@@ -79,17 +81,27 @@ public class WeaponAnimatable implements GeoAnimatable {
         tubeDelay[i] = RELOAD_DELAY;
     }
 
-    /** Once per client tick: refill empty tubes, or unload them all while the turret has no ammo. */
-    public void tickTubes(boolean hasAmmo) {
+    /**
+     * Once per client tick: refill empty tubes the server has reloaded ({@code spent}: bit i = tube i still empty), or
+     * unload them all while the turret has no ammo. True when a rocket seats in its tube this tick (the reload clank:
+     * the take's hit is at its start, so it lands as the rocket shows at the mouth).
+     */
+    public boolean tickTubes(boolean hasAmmo, int spent) {
+        boolean seated = false;
         for (int i = 0; i < 4; i++) {
             if (!hasAmmo) {
                 tubeLoad[i] = Math.max(0, tubeLoad[i] - 1f / RELOAD_TICKS);
             } else if (tubeDelay[i] > 0) {
                 tubeDelay[i]--;
-            } else {
-                tubeLoad[i] = Math.min(1, tubeLoad[i] + 1f / RELOAD_TICKS);
+            } else if ((spent >> i & 1) == 0 && tubeLoad[i] < 1) {
+                tubeLoad[i] += 1f / RELOAD_TICKS;
+                if (tubeLoad[i] > 0.999f) { // float steps: 14 x 1/14 can land a hair under 1
+                    tubeLoad[i] = 1;
+                    seated = true;
+                }
             }
         }
+        return seated;
     }
 
     public WeaponModuleItem item() {

@@ -14,6 +14,8 @@ import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
 import dev.bastion.turret.TurretTier;
+import dev.bastion.weapon.types.RocketLauncherWeapon;
+import dev.bastion.projectile.TurretRocketEntity;
 import dev.bastion.turret.targeting.TargetFilter.Rule;
 import dev.bastion.weapon.StatSheet;
 import net.minecraft.core.BlockPos;
@@ -22,6 +24,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -34,6 +37,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -200,6 +204,99 @@ public class TurretSystemsTests {
             disarm(turret);
             helper.succeed();
         });
+    }
+
+    /**
+     * Salvo (user 10-14): all four tubes in the same tick, side by side, at one target; then a full reload at the
+     * single-mode rate, and the next salvo only once the last rocket has slid into its tube (user: it used to launch
+     * before the rocket showed).
+     */
+    @GameTest(template = ARENA, timeoutTicks = 300, batch = "rocketSalvo")
+    public static void rocketSalvoFiresFourTogetherThenReloadsAll(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = turret(helper, BastionItems.ROCKET_LAUNCHER_TURRET.get(), BastionItems.ROCKETS.get(), 16);
+        turret.setSalvo(true);
+        tanky(helper, FAR);
+        List<Long> shots = shots(helper, turret, 16);
+        long[] lastOneOut = {-1}; // before the second salvo: the last tick a single tube was still empty
+        double[] closest = {-1};
+        helper.onEachTick(() -> {
+            if (shots.size() < 5 && Integer.bitCount(turret.weaponState().spentTubes) == 1) lastOneOut[0] = helper.getTick();
+            if (closest[0] < 0 && shots.size() >= 4) closest[0] = closestPair(helper);
+        });
+        helper.runAtTickTime(280, () -> {
+            long interval = Math.round(StatSheet.of(turret.inventory().weaponData(), TurretTier.T1).fireInterval());
+            helper.assertTrue(shots.size() >= 5, "expected a second salvo by tick 280, shots at " + shots);
+            helper.assertTrue(shots.get(3).equals(shots.get(0)), "the four should leave in the same tick: " + shots);
+            helper.assertTrue(closest[0] > 0.2, "the four should leave side by side, one per tube; closest pair " + closest[0]);
+            long gap = shots.get(4) - shots.get(3);
+            helper.assertTrue(Math.abs(gap - 4 * interval) <= 3, "the next salvo should come four fire intervals ("
+                    + 4 * interval + " ticks) later, came after " + gap + ": " + shots);
+            long sinceLastReload = shots.get(4) - lastOneOut[0];
+            helper.assertTrue(sinceLastReload > RocketLauncherWeapon.SLIDE_TICKS, "the second salvo left " + sinceLastReload
+                    + " ticks after the last tube reloaded, before its rocket had slid in (" + RocketLauncherWeapon.SLIDE_TICKS + ")");
+            disarm(turret);
+            helper.succeed();
+        });
+    }
+
+    /** Smallest distance between two rockets in flight in the test area, -1 with fewer than two. */
+    private static double closestPair(GameTestHelper helper) {
+        List<TurretRocketEntity> rockets = helper.getLevel().getEntitiesOfClass(TurretRocketEntity.class,
+                new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(32));
+        double closest = -1;
+        for (int i = 0; i < rockets.size(); i++) {
+            for (int j = i + 1; j < rockets.size(); j++) {
+                double d = rockets.get(i).position().distanceTo(rockets.get(j).position());
+                if (closest < 0 || d < closest) closest = d;
+            }
+        }
+        return rockets.size() < 4 ? -1 : closest;
+    }
+
+    /** Single mode as before (one rocket per fire interval), and a spent tube reloads right after its shot. */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "rocketSingle")
+    public static void rocketSingleFiresEveryIntervalAndReloadsAtOnce(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = turret(helper, BastionItems.ROCKET_LAUNCHER_TURRET.get(), BastionItems.ROCKETS.get(), 16);
+        tanky(helper, FAR);
+        List<Long> shots = shots(helper, turret, 16);
+        long[] spentSince = {-1}, longestSpent = {-1};
+        helper.onEachTick(() -> {
+            if (turret.weaponState().spentTubes == 0) {
+                spentSince[0] = -1;
+            } else {
+                if (spentSince[0] < 0) spentSince[0] = helper.getTick();
+                longestSpent[0] = Math.max(longestSpent[0], helper.getTick() - spentSince[0]);
+            }
+        });
+        helper.runAtTickTime(160, () -> {
+            long interval = Math.round(StatSheet.of(turret.inventory().weaponData(), TurretTier.T1).fireInterval());
+            helper.assertTrue(shots.size() >= 3, "expected three rockets by tick 160, shots at " + shots);
+            for (int i = 1; i < shots.size(); i++) {
+                helper.assertTrue(Math.abs(shots.get(i) - shots.get(i - 1) - interval) <= 1, "single mode should fire every " + interval + " ticks: " + shots);
+            }
+            helper.assertTrue(longestSpent[0] >= 0, "no tube was ever spent");
+            helper.assertTrue(longestSpent[0] <= 10, "a tube stayed empty " + longestSpent[0] + " ticks (single mode reloads it 8 after the shot)");
+            disarm(turret);
+            helper.succeed();
+        });
+    }
+
+    /** A husk the rockets can keep hitting for the whole test. */
+    private static void tanky(GameTestHelper helper, BlockPos pos) {
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, pos);
+        husk.getAttribute(Attributes.MAX_HEALTH).setBaseValue(2000);
+        husk.setHealth(2000);
+    }
+
+    /** The tick of every launch, read off the ammo: one Rockets item per rocket. */
+    private static List<Long> shots(GameTestHelper helper, TurretBaseBlockEntity turret, int count) {
+        List<Long> shots = new ArrayList<>();
+        int[] left = {count};
+        helper.onEachTick(() -> {
+            int now = turret.inventory().getStackInSlot(TurretInventory.AMMO_START).getCount();
+            for (; left[0] > now; left[0]--) shots.add(helper.getTick());
+        });
+        return shots;
     }
 
     // --- modifiers ----------------------------------------------------------------------------

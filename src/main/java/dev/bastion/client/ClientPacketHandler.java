@@ -5,8 +5,10 @@ import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
 import dev.bastion.client.vfx.VfxPresets;
+import dev.bastion.menu.ControlHubMenu;
 import dev.bastion.network.BulletImpact;
 import dev.bastion.network.BurnSync;
+import dev.bastion.network.HubRoster;
 import dev.bastion.network.IonField;
 import dev.bastion.network.RackSync;
 import dev.bastion.network.TurretImpactEvent;
@@ -111,7 +113,14 @@ public final class ClientPacketHandler {
         boolean destroyed = event.kind() == TurretImpactEvent.DESTROYED;
         VfxManager.play(destroyed ? VfxPresets.TURRET_DESTROYED : VfxPresets.TIER_UP, at, new Vec3(0, 1, 0),
                 VfxParams.of().scale(event.scale()).color(destroyed ? VfxPresets.AMBER : VfxPresets.CYAN).seed(at.hashCode()));
-        level.playLocalSound(at.x, at.y, at.z, destroyed ? BastionSounds.TURRET_DESTROYED.get() : BastionSounds.TURRET_TIER_UP.get(),
+        var sound = !destroyed ? BastionSounds.TURRET_TIER_UP : event.scale() > 1.2f ? BastionSounds.TURRET_DESTROYED_LARGE : BastionSounds.TURRET_DESTROYED;
+        level.playLocalSound(at.x, at.y, at.z, sound.get(),
                 SoundSource.BLOCKS, destroyed ? 1.6f : 1f, 1f, false);
+    }
+
+    /** The Control Hub screen's data, for the hub menu it was sent to. */
+    public static void hubRoster(HubRoster roster) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.containerMenu instanceof ControlHubMenu menu && menu.containerId == roster.containerId()) menu.apply(roster);
     }
 }

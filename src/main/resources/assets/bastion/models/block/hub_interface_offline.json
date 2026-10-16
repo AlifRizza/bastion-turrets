@@ -1,0 +1,167 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "bastion:block/hub_casing",
+    "c": "bastion:block/hub_casing",
+    "f": "bastion:block/hub_interface_front",
+    "r": "bastion:block/hub_interface_recess",
+    "s": "bastion:block/hub_screen_alert"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#c",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#c",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#f",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#c",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#c",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#c",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        4,
+        3
+      ],
+      "to": [
+        14,
+        12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        12,
+        0
+      ],
+      "to": [
+        14,
+        12,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        4,
+        0
+      ],
+      "to": [
+        14,
+        4,
+        3
+      ],
+      "faces": {
+        "up": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        4,
+        0
+      ],
+      "to": [
+        2,
+        12,
+        3
+      ],
+      "faces": {
+        "east": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        4,
+        0
+      ],
+      "to": [
+        14,
+        12,
+        3
+      ],
+      "faces": {
+        "west": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        4.5,
+        1.5
+      ],
+      "to": [
+        13.5,
+        12.5,
+        2.5
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          4.5,
+          2.5
+        ]
+      },
+      "faces": {
+        "north": {
+          "texture": "#s"
+        }
+      },
+      "forge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      },
+      "shade": false
+    }
+  ]
+}

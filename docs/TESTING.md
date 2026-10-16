@@ -19,17 +19,17 @@ so a 7-damage shot lands as ~6.9.
 - [ ] `/bastion vfx <preset>` plays every preset (tab-complete lists them, incl. `turret_destroyed`, `tier_up`, `damaged_spark`).
 - [ ] VFX quality LOW / MEDIUM / HIGH (client config) all look right.
 
-## Model textures (0.1.2 UV fix)
+## Model textures (0.2.0 UV fix)
 - [ ] Machine Gun from behind: both fan blades (the cross) have the same shading, no odd light/dark pixel at the centre; the two cyan barrel rings glow evenly all round.
 - [ ] Flamethrower: the small fuel pipe on top (between the tanks and the tube) looks like plain metal, no stray stripe.
 - [ ] Part Workstation: all three drawers have a dark bottom edge (the bottom drawer too); the two wrenches on the tool board look alike.
 
-## Camera shake (0.1.2)
+## Camera shake (0.2.0)
 - [ ] Stand 2-3 blocks from 3-4 Rocket Launchers firing at a crowd: the camera shakes only a little and no harder than with one launcher; the explosions still feel like a thump.
 - [ ] Same next to 2 Repulsor Domes: each burst gives a short light shake, never a long strong wobble.
 - [ ] Railgun, Mortar and Shotgun still shake as before when fired alone.
 
-## Module tiers (0.1.2)
+## Module tiers (0.2.0)
 - [ ] Creative Modules tab: each module three times (Mk1, Mk2 cyan frame, Mk3 gold frame), tooltip first line "Mk1/Mk2/Mk3", names "... Mk2/Mk3" (also in Indonesian).
 - [ ] Module Workstation, Range Module tab: "Range Module Mk2" needs the Mk1 + 2 diamonds + 4 redstone, "Mk3" needs the Mk2 + netherite scrap + 2 diamonds + amethyst shard; Choke Module tab has the Choke and Autoloader upgrades. The recipe list still scrolls.
 - [ ] Turret with Range Module (Mk1): a Range Mk3 is refused (click and shift-click); a Damage Amplifier Mk2 goes in. (Automation never puts modules into turrets: their item port takes ammo only.)
@@ -37,7 +37,7 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Info tab with Range Module Mk3: range +50%; Overclock Mk3: turret HP -30%; Penetrator Mk3: a Gun Turret bullet hits 4 mobs in a line (pierces 3).
 - [ ] Choke Mk3 (Shotgun) tightens the spread a lot but still spreads a little; Autoloader Mk3 refills rockets/missiles clearly faster.
 
-## Mod compatibility (0.1.2): `-PwithCompatMods` (Fungal Infection: Spore 2.2.0j, TaCZ 1.1.8-hotfix2)
+## Mod compatibility (0.2.0): `-PwithCompatMods` (Fungal Infection: Spore 2.2.0j, TaCZ 1.1.8-hotfix2)
 Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `CompatModTests` with the mods (without them those 3 tests pass at once).
 - [ ] Spore: `/summon spore:inf_human` (or any infected) near a turret: the turret shoots it; an unarmed turret gets walked up to and hit (lights go yellow/red).
 - [ ] TaCZ: shoot a turret that is not yours (or run `/bastiondev owndamage true` first to test on your own): it takes damage and breaks at 0 HP (weapon + ammo lost, Damaged Base drops). Afterwards `/bastiondev owndamage false`.
@@ -45,7 +45,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Crosshair still goes through the turret to its base block: right-click opens the GUI, mining works, you still cannot punch it.
 - [ ] Flyers: `/bastiondev busser [hp] [count] [variant]` (Spore's flying Busser; variant default/kidnapper/kamikaze/noxious/transporter, only **noxious** shoots stingers, the rest fight in melee; without a variant it is default). Every turret that can aim up shoots it without hitting the ground or itself; the Mortar should ignore it (ground only); its stingers hit and damage turrets.
 
-## Placement hologram (0.1.2)
+## Placement hologram (0.2.0)
 - [ ] Hold each of Large Turret Base, Part Workstation, Part Assembler, Module Workstation, Ammo Workstation and aim at the floor: a see-through cyan model plus a cyan box per block it will fill; workstations show their front toward you. Click: it lands exactly there.
 - [ ] Put a solid block in one of the cells: that cell's box and the whole model turn red; clicking does nothing. Tall grass or a snow layer there stays cyan (it gets replaced).
 - [ ] A T3 Large Turret Base from creative shows its corner posts in the hologram; a T1 one does not. Placed T3 bases nearby keep their armour/posts.
@@ -53,12 +53,12 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Main hand another block, off hand a workstation: no hologram (the main-hand block is what gets placed). Open a GUI: the hologram goes away.
 - [ ] A mob, pet or you standing in one of the cells: that cell turns red and the click fails (no more stations built around a dog). Only the clicked cell itself is not marked red for an entity (vanilla refuses that click anyway). Dev scene: `-Pshowcase=placement -PshowcaseWorld=showcase_fx`.
 
-## Health lights, creative bases, module tooltip (0.1.2)
+## Health lights, creative bases, module tooltip (0.2.0)
 - [ ] Damage a turret (`/bastiondev zombie`, or arrows): above half HP the base glows cyan; below half its tall window slits, energy ring (and T3 fin/post caps) turn steady yellow and the odd spark flies; below a quarter they blink red fast and spark often. The weapon module keeps its cyan glow throughout. No cyan showing through the yellow/red. Repair Kit: back to yellow/cyan. Dev scene: `-Pshowcase=health -PshowcaseWorld=showcase_fx`.
 - [ ] Creative tab Turret Bases: Turret Base and Large Turret Base each appear three times (T1, tooltip Tier 2, Tier 3); a placed T3 shows armour + fins at once and full T3 HP.
 - [ ] Module tooltip: "Hold Shift: ..." line; with Shift: Range Module "Works on every turret", Coolant Loop "Works on: Machine Gun Turret", Penetrator lists Gun, Machine Gun, Shotgun, Sniper, Railgun; Damage Amplifier "every turret except" the two Repulsors; Ammo Recycler skips Tesla and both Repulsors. In Indonesian too.
 
-## Balance 0.1.2
+## Balance 0.2.0
 - [ ] Mortar: one shell kills a plain zombie or husk standing where it lands; tankier mobs survive the blast and burn in the patch.
 - [ ] Burn (Flamethrower and Mortar patch): one hit per second of ~3 (ToroHealth shows ~2.9 on a zombie); a zombie that leaves the Flamethrower cone after one touch keeps losing ~3 a second for 4 s (~12 HP).
 
@@ -69,7 +69,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Shotgun knockback still throws a close zombie back; Sniper bullet still goes through 2 mobs in a line.
 
 ## Big bases (performance)
-- [ ] Bases look exactly as before (they are now part of the world mesh): tier armour (T2) and fins (T3) appear right after a Tier Upgrade Kit, the energy ring still turns on the standard base (the Large Base ring stands still since 0.1.2), the glow still breathes and turns yellow/red when damaged.
+- [ ] Bases look exactly as before (they are now part of the world mesh): tier armour (T2) and fins (T3) appear right after a Tier Upgrade Kit, the energy ring still turns on the standard base (the Large Base ring stands still since 0.2.0), the glow still breathes and turns yellow/red when damaged.
 - [ ] 50+ turrets in view: FPS stays playable; sounds don't cut out (only a few nearby shot sounds per tick play, near ones first); casings only fly from turrets within ~32 blocks.
 - [ ] Dev load test (dev runs only): `./gradlew runClient -Pshowcase=stress -PstressCount=200 -PshowcaseWorld=<scratch copy>` logs `[stress]` MSPT and FPS for empty / idle / combat.
 
@@ -119,8 +119,8 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 ## Mortar
 - [ ] Mortar fits only the Large Turret Base. Squat armoured housing on a turning ring, short fat barrel that always points steeply up (45-86°), also when idle or out of ammo.
 - [ ] Mortar Shells in an ammo slot (or Creative Ammo). It shoots every 3 s at mobs on the ground 8 to 40 blocks away, also behind a wall (it lobs over it); never at flying mobs (phantoms, ghasts, blazes, bees, bats) or anything closer than 8 blocks.
-- [ ] Shot: the barrel slams down, a flash and a smoke ring blown up, a shell with a glowing fuse and a smoke trail climbing ~20 blocks; it whistles on the way down. No lead, no homing: it lands where the target stood when it fired, so a mob that keeps walking can get away (it is meant for crowds).
-- [ ] Impact: a blast (20 damage close by since 0.1.2: kills a zombie outright, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
+- [ ] Shot: the barrel slams down, a flash and a smoke ring blown up, a shell with a glowing fuse and a smoke trail climbing ~20 blocks; it falls silently (no whistle since 10-17). No lead, no homing: it lands where the target stood when it fired, so a mob that keeps walking can get away (it is meant for crowds).
+- [ ] Impact: a blast (20 damage close by since 0.2.0: kills a zombie outright, valid targets only), then the whole 3x3 burns for 5 s: glowing embers across the square and flames on every block (also on stone), light, crackle, a scorch left behind. Everyone standing in it burns, you, your pets and passive mobs too, and keeps burning ~3 s after stepping out. Fire-immune mobs don't burn; water and rain put it out.
 - [ ] Burnable blocks in the patch (wood, leaves, wool, grass) catch real fire, which then spreads like vanilla fire. Server config `mortarBlockFire = false`: no block fire, mobs still burn.
 
 ## Feed Hub
@@ -144,11 +144,53 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Creative Power Source + an energy pipe from another mod (dev: Pipez, set the pipe end at the source to extract): the pipe attaches and carries FE into a Feed Hub or workstation.
 - [ ] Turret GUI fix: shift-click rounds onto an ammo stack already in a turret, and shift-click part of a stack out with a nearly full inventory; save, quit, reload: the counts stay as they were (no lost or doubled rounds).
 
+## Turret Control Hub
+- [ ] Recipes at the Module Workstation, own tab: 8 Hub Casings, Hub Power Port, Hub Interface, Satellite Uplink T1 (T2 from a T1, T3 from a T2), 4 Hub Connectors.
+- [ ] Build the 3x3x3 cube: the Hub Interface facing you in the middle of the front side of the middle layer (eye level when you stand on the ground), Hub Casings everywhere else with at least one Hub Power Port on the outside, then a Satellite Uplink on the top middle block (its hologram shows both blocks). Before it is done, right-click the Interface with an empty hand: the action bar names the first problem; a hologram shows cyan boxes with the missing block turning inside (bottom layer first), red over a wrong block, amber on every casing while there is no port; boxes go as you place parts, all of it when the hub forms (10 s at most).
+- [ ] Forming: a cyan sheet sweeps through the cube, a flash at the dish, the dish unfolds and turns (about one turn per 10 s) with a soft hum, the Interface screen shows a radar, cyan lines along every outer edge of the cube (none around the Interface), a chime. Without FE it is OFFLINE: red blinking screen, dish stopped and drooping, red glow, a power-down sound.
+- [ ] FE: a cable or Creative Power Source on a Power Port (up to 2,000 FE/t per port; a port in no hub takes nothing). Upkeep: T1 20, T2 60, T3 150 FE/t (hover the FE bar). Run it dry: OFFLINE, and it stays OFFLINE without flickering even while a trickle of FE comes in; it comes back ONLINE once it holds 5 s of upkeep (T1 2,000, T2 6,000, T3 15,000 FE).
+- [ ] Hub Connectors: right-click the Interface with a stack of connectors: the whole stack is linked (action bar, tooltip "Linked to the hub at x, y, z", the icon's lamp lit), and the hub screen does not open; shift + right-click in the air clears the link (shift + right-click on a block, e.g. a turret, keeps it). Put one in a turret's Connector slot (Status tab, between the ammo and the modules; hover the empty slot for its name; hoppers never touch it).
+- [ ] Only turrets with a connector linked to this hub show on the Map and List (header "N turrets"), within the satellite's reach: T1 its chunk, T2 3x3, T3 7x7 chunks (F3 + G). A turret without a connector, with an unlinked one, or linked to another hub does not show; with none: "No connected turrets..." on both tabs. Another player's connected turrets show only once they trust you; an op sees all.
+- [ ] Click a dot or a List row: that turret's own GUI opens from the hub; weapon, ammo and modules go in from your inventory, Targeting and Info work; "◀ Map" brings back the hub screen with the same tab, zoom and selection. Walk more than 8 blocks from the Interface, or take the connector out: it closes.
+- [ ] The hub screen nearly fills the screen (also in fullscreen and after resizing the window): a bigger map, more List rows, wider Batch columns; every text on it is one size (legend lines, names, buttons), nothing squeezed.
+- [ ] Map controls, also on a MacBook trackpad: the + / - buttons in the map's corner zoom 1x / 2x / 4x; one wheel notch or one two-finger swipe = one zoom step; a left-drag (or right-drag) moves the map; a click without moving opens the turret.
+- [ ] List tab: icon, name, coordinates, HP bar, ammo or FE %, state lamp per row; sort by distance / HP / ammo; the checkbox selects; the wheel scrolls.
+- [ ] Batch settings: select turrets (Shift+click, Shift+drag a box, checkboxes, Select all), then change a category, the player mode, the priority, add or remove a trusted player, cycle a mob rule (none -> always -> never -> none), Turn on / Turn off: only that setting changes on every selected turret. Values that differ show "Mixed", names and rules only some have show "(some)".
+- [ ] Break any part (bottom, middle or top layer, or the satellite): the hub stops (lines off, dish folds), open hub and turret screens close; only the broken block drops. Breaking the Interface loses its FE. A destroyed turret drops its connector with its modules; a mined turret keeps it inside.
+- [ ] A world from before this update: every turret opens with an empty Connector slot, nothing else moved.
+- [ ] Dedicated server (`runServer` + a client) and a second, untrusted player: they see none of your turrets on your hub. Save and reload: the hub is formed again, FE and connectors kept. Server config: `controlHubEnergyCapacity`, `controlHubPortMaxInput`, `controlHubUpkeep`, `controlHubRestartTicks`, `controlHubRange`.
+
+## Rocket Launcher Salvo (2026-10-14)
+- [ ] Turret screen of a Rocket Launcher: the Mode: Single / Mode: Salvo button is there (as on the Missile Launcher).
+- [ ] Single: one rocket every ~1.8 s as before; each tube shows its rocket sliding back in shortly after the shot, and the clank lands as the rocket reaches the tube mouth.
+- [ ] Salvo: the 4 rockets leave in the same instant, side by side (one flash per tube, one launch sound, one kick), at one target; the tubes then fill one by one (~1.8 s each, a clank as each seats); the next salvo goes a moment after the 4th rocket has slid in and clanked (~7 s cycle), never before.
+- [ ] Switching Salvo -> Single mid-reload: it fires from the loaded tubes at once, no stuck turret.
+- [ ] Missiles: the flight roar follows each missile all the way to a far target (30+ blocks) without an audible repeating pattern; a 12-missile salvo is not a wall of noise (3 roars at most). A rocket salvo's 4 roars sound like 4 motors, not one doubled.
+
+## Sounds (real SFX, 2026-10-10)
+- [ ] Gun, Shotgun: new shot, distant tail (stand 40+ blocks away), Gun lock beep, Shotgun pump (two quick strokes) and one shell bounce.
+- [ ] Sniper (Omni, 10-16): the charge starts with a hiss as the green sight appears, then a buzz that grows brighter and runs straight into the shot (no gap); a sharp crack with a deep boom and a ~2 s metallic ring-out and echo; the two shots sound a little different; the ring-out doesn't drown the next charge. From 40+ blocks a muffled thump.
+- [ ] Machine Gun: the barrels whir up, a few single shots while it spins up, then one solid barrage (no gaps, no clicks between shots) with the whir quietly underneath; after the last shot the burst decays and the whir winds down. Far away (40+ blocks): a distant crackle.
+- [ ] Rocket Launcher (Omni audio, 10-14): a heavy clunk-and-roar launch, a big boom with a long rumble where it lands (the Mortar's blast uses it too, a little higher); Missile Launcher (Omni, 10-14): a pop-and-ignition launch, a smooth motor roar that follows each rocket or missile however far it flies (no pulsing, no clicks), a heavy blast; from 40+ blocks a muffled launch. Reloads: the Rocket Launcher clanks each time a rocket slides into a tube (8 ticks after each shot, and four in a row as it deploys); the Missile Launcher gives a short slide-and-clunk per missile loaded, with no hiss after it.
+- [ ] Laser Rifle (Omni, 10-15): a rising electric hum for the whole 2.5 s charge that ends right as the beam fires (no gap, no overlap), then a heavy pulsing discharge with a ~1 s ring-out; the two shots sound a little different; from 40+ blocks a muffled thump.
+- [ ] Flamethrower (Omni, 10-15): a short flare as the jet lights, then a steady deep roar with a gas rush on top that never pulses or repeats audibly over a long burst; burning mobs crackle quietly. When the burst ends the roar stops at once (no shut-off sound yet). Mortar fire patch: the same ignition, a little lower, and the crackle.
+- [ ] Tesla Coil (Omni, 10-15): a crackling electric buzz builds for the 0.6 s charge and runs straight into a sharp crack-and-sizzle strike (two variants); back-to-back discharges don't pile up into noise. Idle coil: faint spark crackles now and then; from 40+ blocks a muffled thump. The same crackle on the Railgun's charge and on Workstations.
+- [ ] Railgun (Omni, 10-16): a crackling power-up then a hum that grows brighter for the whole 3 s charge, with Tesla-style crackles on top once the arcs crawl over the barrel; it runs straight into a huge crack with an electric sizzle (two variants). Where the slug lands: a heavy crack-and-boom (two variants), also on a block. From 40+ blocks a muffled thump.
+- [ ] Plasma Cannon (Omni, 10-16): a 1 s rising energy charge that runs straight into a deep plasma thoom with a sizzle (two variants); where the ball lands a big boom with a crackle and a rushing wash (two variants). Fast firing doesn't turn into noise.
+- [ ] Repulsor (Omni, 10-16): a short rising suck-in during the 0.5 s charge, then a deep whoosh of air that swells and fades (two variants), no gap between them; from 40+ blocks a muffled whoosh.
+- [ ] Repulsor Dome (Omni, 10-16): a rising suck-in during the charge, then a huge gust of wind rushing out that fades over ~3 s (two variants), no crack or bang; from 40+ blocks a muffled rush.
+- [ ] Ion Rifle (Omni, 10-16): a sharp electric zap-crack with a sizzle, two variants alternating; steady fire every 0.8 s stays clear, no clicks.
+- [ ] Mortar (Omni, 10-16): a deep hollow thoomp with a short ring as the shell leaves (two variants, one a little lower); from 40+ blocks a muffled thump. The shell falls silently (no whistle since 10-17).
+- [ ] Plasma Repeater: three slightly different shots; Turret base: deploy, idle hum (loops without a click), repair, destroyed (a Large Turret Base sounds bigger).
+- [ ] Volume: the new sounds sit about as loud as the turrets still on placeholders (Rocket, Tesla, ...).
+- [ ] Zombies hit by turrets groan at most twice a second each and quieter than before (config `turretHurtSoundInterval` 10 ticks, `turretHurtSoundVolume` 0.5); their death sound is unchanged. No sound when a bullet, plasma ball or ion bolt lands (removed for now).
+- [ ] `/bastiondev turrets [t1|t2|t3]` (dev runs and the `-dev` jar): one armed base per weapon (Large Turret Base for the big ones) with Creative Ammo; place one and it fires.
+
 ## Repulsor & Repulsor Dome
 - [ ] Repulsor on a standard base (floor, wall, ceiling) with FE (Creative Power Source, cable, or a Feed Hub): turns to a mob even right at its feet, the three rings in its horn light up one by one while it charges, then a wave (rings + a sweeping air cone) throws every mob in front of it, up to 5 blocks out, ~4 blocks back in one push; dust at their feet. No damage.
 - [ ] Put it behind a Gun Turret and let zombies hug the gun: the Repulsor pushes them off so the gun can shoot again.
 - [ ] A mob behind a wall is not pushed by the Repulsor. You, pets and villagers in its cone are never pushed.
-- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 9 blocks (was 7 before 0.1.2) with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
+- [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 9 blocks (was 7 before 0.2.0) with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
 - [ ] Without FE both sit in NO_AMMO and push nothing; 500 FE per Repulsor push, 2,000 per Dome pulse (GUI energy bar).
 - [ ] Range Module / Rapid Cycler work; the Info tab shows damage 0. Recipes: 3 parts each at the Part Workstation, assembled at the Part Assembler.
 - [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~2.4 blocks). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.
@@ -191,7 +233,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Arrows, explosions and hostile mobs lower HP (Status tab, left bar); a sword swing mines the block instead. Below 30%: glow blinks red, sparks.
 - [ ] Zombies walk up to a turret and hit it from the side (never stand on an armed one); a nearby survival player is still chased first. Off with `mobsAttackTurrets=false` in `config/bastion-common.toml`.
 - [ ] Repair Kit restores 40% HP.
-- [ ] At 0 HP (0.1.2): custom blast (no vanilla explosion); the weapon module and the ammo are gone, only the modules drop, plus a Damaged Turret Base whose tooltip shows the tier it had (T3 turret: "Tier 3").
+- [ ] At 0 HP (0.2.0): custom blast (no vanilla explosion); the weapon module and the ammo are gone, only the modules drop, plus a Damaged Turret Base whose tooltip shows the tier it had (T3 turret: "Tier 3").
 - [ ] Damaged Turret Base + Repair Kit at the Part Assembler gives a Turret Base of that tier back (T3 stays T3, armour and fins on when placed). Same for a Damaged Large Turret Base (two kits).
 - [ ] Mining your own base with a pickaxe still keeps everything (weapon, ammo, modules, tier).
 

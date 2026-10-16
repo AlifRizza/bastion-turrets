@@ -1,0 +1,25 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:hub_interface",
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 1
+    },
+    {
+      "item": "minecraft:ender_pearl",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:hub_connector",
+    "count": 4
+  },
+  "time": 60,
+  "energy": 1000
+}

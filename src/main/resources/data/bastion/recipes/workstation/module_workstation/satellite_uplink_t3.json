@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:hub_interface",
+  "ingredients": [
+    {
+      "item": "bastion:satellite_uplink_t2",
+      "count": 1
+    },
+    {
+      "item": "minecraft:netherite_scrap",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "minecraft:ender_eye",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:satellite_uplink_t3"
+  },
+  "time": 180,
+  "energy": 10000
+}

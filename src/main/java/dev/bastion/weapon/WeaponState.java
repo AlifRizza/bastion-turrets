@@ -34,6 +34,12 @@ public final class WeaponState {
     /** Whether the turret still holds ammo to load more tubes (a salvo fires a partial load once it runs out). */
     public boolean ammoLeft;
 
+    // Rocket Launcher: its four tubes, spent ones tracked (not saved: a fresh or reloaded launcher starts full).
+    /** Spent tubes, bit i = tube i; synced to clients through RackSync as they change. */
+    public int spentTubes;
+    /** Ticks until the last reloaded rocket has slid home and clanked (a salvo waits for it). */
+    public int seatTimer;
+
     // Mortar: whether the shell's arc to a target is clear of blocks, re-checked every few ticks (it is ~30 ray casts).
     public int arcTarget = -1;
     public long arcCheckedAt;

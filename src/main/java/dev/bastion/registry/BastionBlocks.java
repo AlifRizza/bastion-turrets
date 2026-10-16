@@ -1,6 +1,10 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.hub.HubCasingBlock;
+import dev.bastion.hub.HubInterfaceBlock;
+import dev.bastion.hub.HubPowerPortBlock;
+import dev.bastion.hub.SatelliteUplinkBlock;
 import dev.bastion.turret.FeedHubBlock;
 import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
@@ -37,8 +41,24 @@ public final class BastionBlocks {
     /** Turret bases mount on its faces; it hands piped-in ammo out to them (FeedHubBlockEntity). */
     public static final RegistryObject<FeedHubBlock> FEED_HUB = REGISTER.register("feed_hub", () -> new FeedHubBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6f).sound(SoundType.METAL)));
+    // Turret Control Hub (PLAN "Turret Control Hub"): parts placed one by one into a 3x3 with a satellite on the middle; pistons cannot move them.
+    public static final RegistryObject<HubCasingBlock> HUB_CASING = REGISTER.register("hub_casing", () -> new HubCasingBlock(hubPart()));
+    public static final RegistryObject<HubPowerPortBlock> HUB_POWER_PORT = REGISTER.register("hub_power_port", () -> new HubPowerPortBlock(hubPart()));
+    public static final RegistryObject<HubInterfaceBlock> HUB_INTERFACE = REGISTER.register("hub_interface",
+            () -> new HubInterfaceBlock(hubPart().noOcclusion()));
+    public static final RegistryObject<SatelliteUplinkBlock> SATELLITE_UPLINK_T1 = satellite(1);
+    public static final RegistryObject<SatelliteUplinkBlock> SATELLITE_UPLINK_T2 = satellite(2);
+    public static final RegistryObject<SatelliteUplinkBlock> SATELLITE_UPLINK_T3 = satellite(3);
     public static final RegistryObject<CreativePowerSourceBlock> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> new CreativePowerSourceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1f, 3600000f).sound(SoundType.METAL)));
+
+    private static BlockBehaviour.Properties hubPart() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6f).sound(SoundType.METAL).pushReaction(PushReaction.BLOCK);
+    }
+
+    private static RegistryObject<SatelliteUplinkBlock> satellite(int tier) {
+        return REGISTER.register("satellite_uplink_t" + tier, () -> new SatelliteUplinkBlock(tier, hubPart().noOcclusion()));
+    }
 
     private static RegistryObject<WorkstationBlock> workstation(WorkstationType type) {
         return REGISTER.register(type.id(), () -> new WorkstationBlock(type, BlockBehaviour.Properties.of().mapColor(MapColor.METAL)

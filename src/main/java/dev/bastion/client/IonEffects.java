@@ -8,9 +8,7 @@ import dev.bastion.client.vfx.VfxPresets;
 import dev.bastion.client.vfx.WeaponFx;
 import dev.bastion.network.IonField;
 import dev.bastion.network.TurretFireEvent;
-import dev.bastion.registry.BastionSounds;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -47,7 +45,5 @@ public final class IonEffects {
             BeamRenderer.spawn(core, at, color, BEAM_WIDTH, field.ticks());
             VfxManager.play(VfxPresets.ION_ZAP, at, back.reverse(), VfxParams.of().color(color).normal(back).seed(id));
         }
-        level.playLocalSound(core.x, core.y, core.z, BastionSounds.ION_HIT.get(), SoundSource.HOSTILE, 1f,
-                0.94f + level.random.nextFloat() * 0.12f, false);
     }
 }

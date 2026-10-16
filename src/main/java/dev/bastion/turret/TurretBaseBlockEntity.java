@@ -120,7 +120,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private float clientYaw, clientPitch, clientHeat;
     private float clientHealth = 1;
     private int clientTargetId = -1;
-    /** Loaded launcher tubes as a bit mask (Missile Launcher), from RackSync and the update tag. */
+    /** Launcher tubes as a bit mask, from RackSync and the update tag: loaded ones (Missile Launcher), spent ones (Rocket Launcher). */
     private int clientTubes;
     // Client render smoothing (PLAN 6.4): exponential follow + idle scan sweep
     private float renderYaw, renderPitch, prevRenderYaw, prevRenderPitch, scanCenterYaw;
@@ -347,7 +347,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private void destroy(ServerLevel server) {
         Vec3 center = alongMount(0.6);
         BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f);
-        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED, 1f));
+        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED, large() ? 1.6f : 1f));
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (i >= TurretInventory.MODIFIER_START) Containers.dropItemStack(server, center.x, center.y, center.z, inventory.getStackInSlot(i));
             inventory.setStackInSlot(i, ItemStack.EMPTY);

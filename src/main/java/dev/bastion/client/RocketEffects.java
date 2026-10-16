@@ -25,13 +25,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Per-tick client effects of every rocket, missile and mortar shell in flight: exhaust trail, a moving light, the
- * rocket's flight roar and the shell's whistle once it starts to fall.
+ * Per-tick client effects of every rocket, missile and mortar shell in flight: exhaust trail, a moving light and the
+ * rockets' and missiles' flight roar. Shells fall silently (user 10-16: no whistle).
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID, value = Dist.CLIENT)
 public final class RocketEffects {
     private static final int EXHAUST = 0xFFFF7A2E;
     private static final Set<Integer> ROARING = new HashSet<>();
+    /** Missiles roar too, but no more than this many at once: a twelve-missile salvo would drown everything. */
+    private static final int MAX_MISSILE_ROARS = 3;
 
     private RocketEffects() {
     }
@@ -54,26 +56,38 @@ public final class RocketEffects {
             VfxManager.play(shell ? VfxPresets.MORTAR_TRAIL : missile ? VfxPresets.MISSILE_TRAIL : VfxPresets.ROCKET_TRAIL, tail, back, params);
             SmokeTrailRenderer.add(rocket.getId(), tail, missile || shell, level.getGameTime());
             DynamicLightManager.add(rocket, tail, shell ? 8 : missile ? 9 : 12, 2);
-            // Twelve roars at once would drown everything: missiles are heard at launch and impact only. A shell
-            // whistles on the way down.
-            if (shell ? velocity.y < 0 && ROARING.add(rocket.getId()) : !missile && ROARING.add(rocket.getId())) {
-                Minecraft.getInstance().getSoundManager().play(new Roar(rocket, shell));
+            // Missiles roar quieter than rockets, and only MAX_MISSILE_ROARS at a time (one waiting its turn starts
+            // mid-flight); before 10-14 they had none, so their flight went silent right after the launch.
+            boolean roar = !shell && (!missile || missileRoars(level) < MAX_MISSILE_ROARS);
+            if (roar && ROARING.add(rocket.getId())) {
+                Minecraft.getInstance().getSoundManager().play(new Roar(rocket, missile ? 0.6f : 0.9f));
             }
         }
         ROARING.retainAll(alive);
     }
 
-    /** Motor roar (or a shell's falling whistle) that rides along with it and stops when it explodes. */
+    private static int missileRoars(ClientLevel level) {
+        int roaring = 0;
+        for (int id : ROARING) {
+            if (level.getEntity(id) instanceof TurretRocketEntity r && r.getType() == BastionEntities.TURRET_MISSILE.get()) roaring++;
+        }
+        return roaring;
+    }
+
+    /** Motor roar that rides along with it and stops when it explodes. */
     private static final class Roar extends AbstractTickableSoundInstance {
         private final TurretRocketEntity rocket;
         private int fading;
 
-        Roar(TurretRocketEntity rocket, boolean whistle) {
-            super((whistle ? BastionSounds.MORTAR_WHISTLE : BastionSounds.ROCKET_FLY).get(), SoundSource.HOSTILE, RandomSource.create());
+        Roar(TurretRocketEntity rocket, float volume) {
+            super(BastionSounds.ROCKET_FLY.get(), SoundSource.HOSTILE, RandomSource.create());
             this.rocket = rocket;
-            this.looping = !whistle;
+            this.looping = true;
             this.delay = 0;
-            this.volume = 0.9f;
+            this.volume = volume;
+            // Each roar a little off the others: four rockets of a salvo, started in the same tick, would otherwise
+            // play the very same samples on top of each other.
+            this.pitch = 0.95f + this.random.nextFloat() * 0.1f;
             this.x = rocket.getX();
             this.y = rocket.getY();
             this.z = rocket.getZ();

@@ -4,10 +4,16 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
+import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.TurretBaseItem;
+import dev.bastion.turret.TurretInventory;
+import dev.bastion.turret.TurretTier;
+import dev.bastion.weapon.WeaponModuleItem;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -15,14 +21,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
@@ -32,18 +40,23 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Dev-only test helpers (src/dev, never in the jar). {@code /bastiondev zombie|skeleton|ravager [health] [count]} spawns
+ * Dev-only test helpers (src/dev; in the release jar never, in the -PwithDevCommands test jar yes). {@code /bastiondev zombie|skeleton|ravager [health] [count]} spawns
  * tanky, sunlight-proof mobs where you look (up to 200, up to 5,000 HP), to watch turret damage numbers. With Spore in the
  * run (-PwithCompatMods) also {@code busser}, its flying ranged mob. {@code /bastiondev automation} builds the
  * Create belt/arm/funnel test rig next to you, {@code /bastiondev automation report} shows what reached each turret.
+ * {@code /bastiondev turrets [t1|t2|t3]} gives every weapon on its base with Creative Ammo, ready to place (T3 by default).
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class DevCommands {
@@ -53,12 +66,12 @@ public final class DevCommands {
     /** Spore's BusserVariants in order (setVariant takes the index): only noxious (TOXIC) shoots stingers. */
     private static final List<String> BUSSER_VARIANTS = List.of("default", "kidnapper", "kamikaze", "noxious", "transporter");
 
-    static { // vanilla caps max_health at 1,024; dev runs only (this class is never in the jar)
+    static { // vanilla caps max_health at 1,024; dev runs and the -PwithDevCommands test jar only
         try {
-            Field max = RangedAttribute.class.getDeclaredField("maxValue");
-            max.setAccessible(true);
+            // By its SRG name (maxValue), so the field is found in a dev run and in a reobfuscated jar alike.
+            Field max = ObfuscationReflectionHelper.findField(RangedAttribute.class, "f_22308_");
             max.setDouble(Attributes.MAX_HEALTH, Math.max(max.getDouble(Attributes.MAX_HEALTH), MAX_HEALTH));
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | ObfuscationReflectionHelper.UnableToFindFieldException e) {
             throw new IllegalStateException("could not raise the max_health cap", e);
         }
     }
@@ -72,20 +85,23 @@ public final class DevCommands {
         // Compat mobs, only when their mod is in the run (-PwithCompatMods): Spore's flying Busser shoots stingers.
         EntityType<? extends Mob> busser = modMob("spore", "busser");
         if (busser != null) root.then(mob("busser", busser, BUSSER_VARIANTS));
+        // The rig is built from Create's classes: without Create (the test jar on another PC) the command would crash the game.
+        if (ModList.get().isLoaded("create")) {
+            root.then(Commands.literal("automation")
+                    .executes(c -> {
+                        BlockPos origin = BlockPos.containing(c.getSource().getPosition()).east(3);
+                        int lanes = AutomationRig.build(c.getSource().getLevel(), origin);
+                        c.getSource().sendSuccess(() -> Component.literal("Built " + lanes + " Create automation lanes east of you. "
+                                + "Check with /bastiondev automation report"), true);
+                        return lanes;
+                    })
+                    .then(Commands.literal("report").executes(c -> {
+                        List<String> lines = AutomationRig.report(c.getSource().getLevel());
+                        lines.forEach(line -> c.getSource().sendSuccess(() -> Component.literal(line), false));
+                        return lines.size();
+                    })));
+        }
         event.getDispatcher().register(root.requires(source -> source.hasPermission(2))
-                .then(Commands.literal("automation")
-                        .executes(c -> {
-                            BlockPos origin = BlockPos.containing(c.getSource().getPosition()).east(3);
-                            int lanes = AutomationRig.build(c.getSource().getLevel(), origin);
-                            c.getSource().sendSuccess(() -> Component.literal("Built " + lanes + " Create automation lanes east of you. "
-                                    + "Check with /bastiondev automation report"), true);
-                            return lanes;
-                        })
-                        .then(Commands.literal("report").executes(c -> {
-                            List<String> lines = AutomationRig.report(c.getSource().getLevel());
-                            lines.forEach(line -> c.getSource().sendSuccess(() -> Component.literal(line), false));
-                            return lines.size();
-                        })))
                 .then(Commands.literal("owndamage") // testing only: owners and trusted players can hurt their own turrets
                         .then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
                             boolean on = BoolArgumentType.getBool(c, "on");
@@ -94,9 +110,37 @@ public final class DevCommands {
                                     + " be damaged by their owner and trusted players (server config trustedCanDamage = " + on + ")"), true);
                             return 1;
                         })))
+                .then(Commands.literal("turrets") // every weapon, ready to place: no assembling for tests (user 10-10)
+                        .executes(c -> giveTurrets(c.getSource(), TurretTier.T3))
+                        .then(Commands.argument("tier", StringArgumentType.word())
+                                .suggests((c, builder) -> SharedSuggestionProvider.suggest(List.of("t1", "t2", "t3"), builder))
+                                .executes(c -> giveTurrets(c.getSource(), TurretTier.byName(StringArgumentType.getString(c, "tier").toUpperCase(Locale.ROOT))))))
                 .then(mob("zombie", EntityType.ZOMBIE, null))
                 .then(mob("skeleton", EntityType.SKELETON, null))
                 .then(mob("ravager", EntityType.RAVAGER, null)));
+    }
+
+    /**
+     * One base per weapon module (a Large Turret Base for the big ones) at {@code tier}, holding the weapon and Creative
+     * Ammo (which also pays energy weapons' shots), into the player's inventory: placed, it fires.
+     */
+    private static int giveTurrets(CommandSourceStack source, TurretTier tier) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        int given = 0;
+        for (RegistryObject<Item> entry : BastionItems.REGISTER.getEntries()) {
+            if (!(entry.get() instanceof WeaponModuleItem module)) continue;
+            ItemStack base = TurretBaseItem.withTier((module.large() ? BastionItems.LARGE_TURRET_BASE : BastionItems.TURRET_BASE).get(), tier);
+            TurretInventory inventory = new TurretInventory(() -> tier, module::large, slot -> {});
+            inventory.setStackInSlot(TurretInventory.WEAPON, new ItemStack(module));
+            inventory.setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+            base.getOrCreateTagElement("BlockEntityTag").put("Inventory", inventory.serializeNBT());
+            base.setHoverName(Component.empty().append(module.getDescription()).append(" " + tier.name()));
+            if (!player.getInventory().add(base)) player.drop(base, false);
+            given++;
+        }
+        int count = given;
+        source.sendSuccess(() -> Component.literal("Gave " + count + " armed " + tier.name() + " turrets (Creative Ammo inside)"), true);
+        return count;
     }
 
     /** Another mod's mob type, or null when that mod is not loaded. */

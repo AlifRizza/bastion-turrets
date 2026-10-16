@@ -171,6 +171,10 @@ MODEL_MATERIALS = {
                      "coil": "frame", "glow_coil": "emitter", "crown": "armor", "glow_crown": "emitter", "terminal": "steel",
                      "glow_terminal": "emitter", "electrodes": "steel", "glow_electrodes": "emitter", "sensor": "steel",
                      "glow_lens": "emitter"},
+    **{f"satellite_uplink_t{tier}": {"base": "hex", "mast": "steel", "collars": "frame", "servo": "armor", "glow_servo": "emitter",
+                                     "head": "frame", "dish": "armor", "dish_rim": "frame", "feed": "steel", "glow_beacon": "emitter",
+                                     **({"antenna": "steel"} if tier >= 2 else {}), **({"glow_beacons": "emitter"} if tier == 3 else {})}
+       for tier in (1, 2, 3)},
 }
 
 
@@ -652,6 +656,7 @@ def damaged_base():
 # longer translations never run into the next group.
 GUI_W, GUI_H = 216, 200
 SLOT, LOCKED_SLOT = (216, 0), (234, 0)  # sprite positions
+CONNECTOR_ICON = (216, 66)  # 16x16 faint plug drawn in the empty Connector slot
 TAB, TAB_ACTIVE = (216, 18), (216, 42)  # 24x24 side tabs, left of the panel
 WEAPON_SLOT = (17, 43)  # slot frame; the item sits 1px inside
 PLAYER_INV = (27, 114)  # top-left slot frame of the 3x9 grid; hotbar 58px lower
@@ -807,6 +812,10 @@ def turret_gui(plain=False):
     slot(img, *LOCKED_SLOT, locked=True)
     tab(img, *TAB, active=False)
     tab(img, *TAB_ACTIVE, active=True)
+    icon = hub_connector()
+    icon[..., :3] *= 0.45  # a faint hint on the dark slot
+    x, y = CONNECTOR_ICON
+    img[y:y + 16, x:x + 16] = icon
     return img
 
 
@@ -834,6 +843,22 @@ def feed_hub_gui(plain=False):
     slot(img, 192, 0, locked=True)
     tab(img, 192, 18, active=False)
     tab(img, 192, 42, active=True)
+    return img
+
+
+def control_hub_gui():
+    """Control Hub screen (PLAN "Turret Control Hub"), a 256 x 200 panel; sprites under it: side tab (0, 200), active tab
+    (24, 200), checkbox (48, 200) and ticked checkbox (56, 200), 8 x 8. ControlHubScreen draws the map, rows and bars."""
+    img = np.zeros((256, 256, 4))
+    panel(img, 256, 200)
+    rect(img, 8, 16, 240, 1, UI_ACCENT * 0.55)  # under the title
+    tab(img, 0, 200, active=False)
+    tab(img, 24, 200, active=True)
+    for x, ticked in ((48, False), (56, True)):
+        rect(img, x, 200, 8, 8, UI_LIGHT)
+        rect(img, x + 1, 201, 6, 6, UI_SLOT)
+        if ticked:
+            rect(img, x + 2, 202, 4, 4, UI_ACCENT)
     return img
 
 
@@ -885,6 +910,120 @@ def feed_hub_edge_glow():
     """Fullbright cyan line on a merged Feed Hub's outer edge (forge_data block_light 15)."""
     img = np.zeros((16, 16, 4))
     rect(img, 0, 0, 16, 1, rgb("4FD8FF"))
+    return img
+
+
+# --- Turret Control Hub (PLAN "Turret Control Hub") -------------------------------------------------
+
+def hub_casing():
+    """Hub Casing: gunmetal plate, dark rim with a bevel, a recessed cross groove and four corner bolts."""
+    img = np.zeros((16, 16, 4))
+    img[..., :3], img[..., 3] = GUNMETAL * 1.05 * noise((16, 16), 0.04, seed=611)[..., None], 1
+    img[0, :, :3] = img[15, :, :3] = img[:, 0, :3] = img[:, 15, :3] = DARKSTEEL
+    img[1, 1:15, :3] = img[1:15, 1, :3] = GUNMETAL * 1.35
+    img[14, 1:15, :3] = img[1:15, 14, :3] = GUNMETAL * 0.7
+    rect(img, 7, 3, 2, 10, DARKSTEEL)
+    rect(img, 3, 7, 10, 2, DARKSTEEL)
+    for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
+        img[y, x, :3] = STEEL * 1.2
+    return img
+
+
+def hub_power_port():
+    """Hub Power Port: the casing plate with a round socket (steel collar, dark bore) and a small lightning glyph."""
+    img = hub_casing()
+    yy, xx = np.mgrid[0:16, 0:16]
+    d = np.hypot(xx - 7.5, yy - 7.5)
+    img[(d >= 3.5) & (d < 5.5), :3] = STEEL * 0.9
+    img[d < 3.5, :3] = BORE
+    for x, y in ((8, 5), (7, 6), (6, 7), (7, 7), (8, 7), (9, 7), (8, 8), (7, 9), (6, 10)):
+        img[y, x, :3] = STEEL * 1.3
+    return img
+
+
+def hub_power_port_glow():
+    """Fullbright cyan ring round the Power Port socket (formed hub only)."""
+    img = np.zeros((16, 16, 4))
+    yy, xx = np.mgrid[0:16, 0:16]
+    ring = (np.hypot(xx - 7.5, yy - 7.5) >= 4.6) & (np.hypot(xx - 7.5, yy - 7.5) < 5.6)
+    img[ring, :3], img[ring, 3] = rgb("4FD8FF"), 1
+    return img
+
+
+def hub_interface_front():
+    """Hub Interface front: the casing plate with the screen recess cut out (rows 4-11, columns 2-13 see-through); the
+    frame overlay covers the 4 rows above it."""
+    img = hub_casing()
+    img[4:12, 2:14, 3] = 0
+    return img
+
+
+def hub_interface_recess():
+    """Back plate in the Interface's screen recess: dark steel with a faint grid."""
+    img = np.zeros((16, 16, 4))
+    img[..., :3], img[..., 3] = DARKSTEEL * noise((16, 16), 0.05, seed=612)[..., None], 1
+    img[::4, :, :3] *= 1.25
+    img[:, ::4, :3] *= 1.25
+    return img
+
+
+def hub_screen_off():
+    """Interface screen, hub not formed: dark glass with a soft diagonal reflection."""
+    img = np.zeros((16, 16, 4))
+    yy, xx = np.mgrid[0:16, 0:16]
+    shine = np.clip(1 - np.abs(xx - yy - 3) / 3, 0, 1) * 0.12
+    img[..., :3], img[..., 3] = BORE + shine[..., None], 1
+    return img
+
+
+def hub_screen_radar():
+    """Interface screen online: 8 frames (16x128) of a radar sweep, rings, a turning beam with a fading trail, two blips."""
+    frames = []
+    yy, xx = np.mgrid[0:16, 0:16]
+    d = np.hypot(xx - 7.5, yy - 7.5)
+    ang = (np.degrees(np.arctan2(yy - 7.5, xx - 7.5)) + 360) % 360
+    for f in range(8):
+        img = np.zeros((16, 16, 4))
+        img[..., :3], img[..., 3] = rgb("061A1F"), 1
+        sweep = f * 45
+        trail = np.clip(1 - ((sweep - ang) % 360) / 120, 0, 1) * (d < 7.2)
+        img[..., :3] += rgb("4FD8FF") * (0.75 * trail)[..., None]
+        for r in (3.5, 6.5):
+            ring = np.abs(d - r) < 0.5
+            img[ring, :3] = np.maximum(img[ring, :3], rgb("1F6F80"))
+        img[7:9, 7:9, :3] = rgb("BFF4FF")
+        for bx, by, at in ((11, 5, 300), (5, 11, 135)):  # blips light up as the beam passes
+            lit = np.clip(1 - ((sweep - at) % 360) / 180, 0, 1)
+            img[by, bx, :3] = np.maximum(img[by, bx, :3], rgb("7CFF8A") * (0.3 + 0.7 * lit))
+        frames.append(np.clip(img, 0, 1))
+    return np.concatenate(frames, axis=0)
+
+
+def hub_screen_alert():
+    """Interface screen offline: 2 frames (16x32), a red power glyph blinking on dark glass."""
+    glyph = [(7, 3), (8, 3), (7, 4), (8, 4), (7, 5), (8, 5), (7, 6), (8, 6), (4, 6), (11, 6), (3, 7), (12, 7), (3, 8), (12, 8),
+             (3, 9), (12, 9), (4, 10), (11, 10), (5, 11), (10, 11), (6, 12), (7, 12), (8, 12), (9, 12)]
+    frames = []
+    for bright in (1.0, 0.35):
+        img = hub_screen_off()
+        for x, y in glyph:
+            img[y, x, :3] = rgb("FF3A30") * bright
+        frames.append(img)
+    return np.concatenate(frames, axis=0)
+
+
+def hub_connector(linked=False):
+    """Hub Connector item: a gunmetal plug with two steel prongs and a cable; its lamp turns cyan once linked to a hub."""
+    img = np.zeros((16, 16, 4))
+    for x in (5, 9):  # prongs
+        rect(img, x, 1, 2, 5, OUTLINE)
+        rect(img, x, 1, 2, 4, STEEL * 1.15)
+    rect(img, 3, 5, 10, 8, OUTLINE)  # body
+    rect(img, 4, 6, 8, 6, GUNMETAL * 1.1)
+    rect(img, 4, 6, 8, 1, GUNMETAL * 1.45)  # top bevel
+    rect(img, 7, 13, 2, 3, OUTLINE)  # cable
+    rect(img, 7, 13, 2, 2, DARKSTEEL * 1.4)
+    rect(img, 7, 8, 2, 2, rgb("4FD8FF") if linked else BORE)  # lamp
     return img
 
 # --- VFX sprites (PLAN 5.2-5.4) -----------------------------------------------------------------
@@ -1300,11 +1439,19 @@ TEXTURES = {
     "item/damaged_turret_base.png": damaged_base,
     "gui/turret.png": turret_gui,
     "gui/turret_plain.png": lambda: turret_gui(plain=True),
+    "gui/control_hub.png": control_hub_gui,
     "gui/feed_hub.png": feed_hub_gui, "gui/feed_hub_plain.png": lambda: feed_hub_gui(plain=True), "block/feed_hub.png": feed_hub, "block/feed_hub_glow.png": feed_hub_glow,
     "block/feed_hub_panel.png": feed_hub_panel, "block/feed_hub_edge.png": feed_hub_edge,
     "block/feed_hub_edge_glow.png": feed_hub_edge_glow,
+    "block/hub_casing.png": hub_casing, "block/hub_power_port.png": hub_power_port, "block/hub_power_port_glow.png": hub_power_port_glow,
+    "block/hub_interface_front.png": hub_interface_front, "block/hub_interface_recess.png": hub_interface_recess, "block/hub_screen_off.png": hub_screen_off,
+    "block/hub_screen_radar.png": hub_screen_radar, "block/hub_screen_alert.png": hub_screen_alert,
+    "item/hub_connector.png": hub_connector, "item/hub_connector_linked.png": lambda: hub_connector(linked=True),
+    **{f"block/satellite_uplink_t{tier}{suffix}.png": (lambda tier=tier, i=i: paint_model(f"satellite_uplink_t{tier}")[i])
+       for tier in (1, 2, 3) for i, suffix in ((0, ""), (1, "_e"))},
     **VFX_SPRITES,
 }
+MCMETA = {"block/hub_screen_radar.png": {"animation": {"frametime": 3}}, "block/hub_screen_alert.png": {"animation": {"frametime": 10}}}
 
 if __name__ == "__main__":
     for rel, make in TEXTURES.items():
@@ -1313,3 +1460,5 @@ if __name__ == "__main__":
         pixels = (np.clip(make(), 0, 1) * 255).round().astype(np.uint8)
         Image.fromarray(pixels, "RGBA").save(path)
         print("wrote", path.relative_to(OUT.parents[5]))
+    for rel, meta in MCMETA.items():
+        (OUT / (rel + ".mcmeta")).write_text(json.dumps(meta) + "\n")

@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
@@ -25,6 +27,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -41,6 +44,15 @@ public final class StressShowcase {
     private static final Logger LOG = LogUtils.getLogger();
     private static final boolean ON = "stress".equals(System.getProperty("bastion.showcase"));
     private static final int COUNT = Integer.getInteger("bastion.stressCount", 100);
+    /**
+     * -PstressMobs=N (user 10-10, PC test "60 Machine Gun turrets, 400 zombies"): N zombies packed in one spiral as
+     * /bastiondev spawns them, measured alone first ("mobs only"), then with the turrets; -PstressWeapon=machine_gun_turret
+     * arms every turret alike. Without them: the ring of husks after the turrets, as before.
+     */
+    private static final int MOBS = Integer.getInteger("bastion.stressMobs", 0);
+    private static final String WEAPON = System.getProperty("bastion.stressWeapon", "");
+    /** -PstressMob=spore:inf_human: which mob the packed spiral is made of (with -PwithCompatMods for Spore's). */
+    private static final String MOB = System.getProperty("bastion.stressMob", "minecraft:zombie");
     /** Above the world spawn, in the always-loaded spawn chunks, so no terrain generates while measuring. */
     private static volatile BlockPos origin = BlockPos.ZERO;
     private static final int SPACING = 3;
@@ -78,9 +90,15 @@ public final class StressShowcase {
                 Showcase.camera(server, centre.add(0, 18 + half * 0.6, -(half + 22)), centre);
             }
             case 300 -> report(server, "empty");
-            case 302 -> Showcase.server(server, s -> placeTurrets(s, side));
-            case 500 -> report(server, "turrets idle");
-            case 502 -> Showcase.server(server, s -> spawnHusks(s, half));
+            case 302 -> Showcase.server(server, s -> {
+                if (MOBS > 0) spawnZombies(s, half);
+                else placeTurrets(s, side);
+            });
+            case 500 -> report(server, MOBS > 0 ? "mobs only" : "turrets idle");
+            case 502 -> Showcase.server(server, s -> {
+                if (MOBS > 0) placeTurrets(s, side);
+                else spawnHusks(s, half);
+            });
             case 620 -> Showcase.shot(Minecraft.getInstance(), "stress_" + COUNT);
             case 800 -> report(server, "combat");
             case 802 -> {
@@ -110,6 +128,12 @@ public final class StressShowcase {
         level.setDayTime(6000);
         ServerPlayer player = server.getPlayerList().getPlayers().get(0);
         player.setGameMode(GameType.CREATIVE);
+        // The scratch world keeps what earlier runs left (persistent stress mobs): start from no entities but the player.
+        List<Entity> leftovers = new ArrayList<>();
+        level.getAllEntities().forEach(entity -> {
+            if (entity != player) leftovers.add(entity);
+        });
+        leftovers.forEach(Entity::discard);
         int side = (int) Math.ceil(Math.sqrt(COUNT));
         int from = -24, to = (side - 1) * SPACING + 24;
         for (int x = from; x <= to; x++) {
@@ -124,9 +148,27 @@ public final class StressShowcase {
         ServerLevel level = server.overworld();
         Item[] weapons = {BastionItems.GUN_TURRET.get(), BastionItems.MACHINE_GUN_TURRET.get(), BastionItems.SHOTGUN_TURRET.get(),
                 BastionItems.SNIPER_TURRET.get()};
+        Item only = WEAPON.isEmpty() ? null : ForgeRegistries.ITEMS.getValue(Bastion.id(WEAPON));
         for (int i = 0; i < COUNT; i++) {
             BlockPos pos = origin.offset(i % side * SPACING, 0, i / side * SPACING);
-            Showcase.place(level, pos, Direction.UP, weapons[i % weapons.length], TurretTier.T3);
+            Showcase.place(level, pos, Direction.UP, only != null ? only : weapons[i % weapons.length], TurretTier.T3);
+        }
+    }
+
+    /** MOBS high-HP mobs (MOB, zombies by default) in one sunflower spiral 12 blocks off the grid's edge, packed like /bastiondev. */
+    private static void spawnZombies(MinecraftServer server, double half) {
+        ServerLevel level = server.overworld();
+        Vec3 at = Vec3.atBottomCenterOf(origin).add(half, 0, -12);
+        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(MOB));
+        LOG.info("[stress] {} x {}", MOBS, ForgeRegistries.ENTITY_TYPES.getKey(type));
+        for (int i = 0; i < MOBS; i++) {
+            if (!(type.create(level) instanceof Mob zombie)) return;
+            double angle = i * 2.4, radius = zombie.getBbWidth() * 1.1 * Math.sqrt(i);
+            zombie.moveTo(at.x + Math.cos(angle) * radius, at.y, at.z + Math.sin(angle) * radius, level.random.nextFloat() * 360, 0);
+            zombie.setPersistenceRequired();
+            zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(100_000);
+            zombie.setHealth(100_000);
+            level.addFreshEntity(zombie);
         }
     }
 

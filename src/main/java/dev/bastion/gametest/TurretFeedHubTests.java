@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Feed Hub: ammo goes to the turrets mounted on it whose weapon takes it, evenly; what does not fit waits in the buffer. */
 @GameTestHolder(Bastion.MOD_ID)
@@ -235,11 +236,11 @@ public class TurretFeedHubTests {
     @GameTest(template = ARENA, timeoutTicks = 60, batch = "feedHubDropsOwnShare")
     public static void feedHubDropsOwnShare(GameTestHelper helper) {
         BlockPos min = new BlockPos(4, 2, 2);
-        // Counts loose drops: items an earlier test left at this arena spot (a turret broken when this arena was
-        // placed spilled 10 rounds here once) must not count.
-        helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(min)).inflate(3)).forEach(ItemEntity::discard);
         hubs(helper, min, 2, 1);
         helper.runAtTickTime(3, () -> {
+            // Counts loose drops: what an earlier run left here must not count, and placing the hubs over a hub left at
+            // this spot spills that hub's buffer (10 rounds once): so clear right before the break, not at the start.
+            helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(min)).inflate(3)).forEach(ItemEntity::discard);
             ((FeedHubBlockEntity) helper.getBlockEntity(min)).buffer().setStackInSlot(0, new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 10));
             ((FeedHubBlockEntity) helper.getBlockEntity(min.offset(1, 0, 1))).buffer().setStackInSlot(0, new ItemStack(BastionItems.SCATTER_SHELLS.get(), 3));
             helper.destroyBlock(min.offset(1, 0, 1));
@@ -408,8 +409,10 @@ public class TurretFeedHubTests {
     }
 
     /**
-     * Idle cost: a full 3x3x3 (243 stacks) with 27 full guns, 200 distribution ticks. Every stack is ammo nobody has room
-     * for, so a tick should cost one check per kind of ammo, not one per stack and turret.
+     * Idle cost: a full 3x3x3 (243 stacks) with 27 full guns. Every stack is ammo nobody has room for, so a tick should
+     * cost one check per kind of ammo, not one per stack and turret: 243 such stacks cost a few times one stack (x2-4),
+     * not a hundred times (x122 without the per-tick memory). Timed as that ratio on the same thread, best of 5 rounds
+     * each: the server thread's speed varies from run to run (fast and slow CPU cores), so a fixed limit in ms failed at random.
      */
     @GameTest(template = ARENA, timeoutTicks = 40, batch = "feedHubIdleIsCheap")
     public static void feedHubIdleIsCheap(GameTestHelper helper) {
@@ -431,14 +434,25 @@ public class TurretFeedHubTests {
                 }
             }
             FeedHubBlockEntity hub = (FeedHubBlockEntity) helper.getBlockEntity(min);
-            for (int i = 0; i < hub.storage().getSlots(); i++) hub.storage().setStackInSlot(i, new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 64));
             helper.assertTrue(hub.storage().getSlots() == 243 && hub.feeds().size() == 27, "setup: " + hub.storage().getSlots() + " slots, " + hub.feeds().size() + " turrets");
-            long start = System.nanoTime();
-            for (int i = 0; i < 200; i++) FeedHubBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(min), hub.getBlockState(), hub);
-            long ms = (System.nanoTime() - start) / 1_000_000;
-            Bastion.LOGGER.info("[feedHubIdleIsCheap] 200 full ticks took {} ms", ms);
-            helper.assertTrue(ms < 40, "200 idle ticks of a full 3x3x3 with 27 full turrets took " + ms + " ms");
+            long one = Long.MAX_VALUE, full = Long.MAX_VALUE;
+            for (int round = 0; round < 5; round++) {
+                for (int i = 0; i < hub.storage().getSlots(); i++) hub.storage().setStackInSlot(i, i == 0 ? new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 64) : ItemStack.EMPTY);
+                one = Math.min(one, idleTicks(helper, hub, min));
+                for (int i = 0; i < hub.storage().getSlots(); i++) hub.storage().setStackInSlot(i, new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 64));
+                full = Math.min(full, idleTicks(helper, hub, min));
+            }
+            String ratio = String.format(Locale.ROOT, "%.1f", full / (double) one);
+            Bastion.LOGGER.info("[feedHubIdleIsCheap] 200 idle ticks: one stack {} us, 243 stacks {} us (x{})", one / 1000, full / 1000, ratio);
+            helper.assertTrue(full < 20 * one, "243 stacks nobody has room for cost x" + ratio + " one stack (" + full / 1000 + " vs " + one / 1000 + " us per 200 ticks)");
             helper.succeed();
         });
+    }
+
+    /** Nanoseconds for 200 distribution ticks of the structure whose lowest block is at {@code min}. */
+    private static long idleTicks(GameTestHelper helper, FeedHubBlockEntity hub, BlockPos min) {
+        long start = System.nanoTime();
+        for (int i = 0; i < 200; i++) FeedHubBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(min), hub.getBlockState(), hub);
+        return System.nanoTime() - start;
     }
 }

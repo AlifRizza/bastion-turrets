@@ -56,13 +56,16 @@ public final class TurretFireEffects {
         Vec3 direction = firstEnd == null ? turret.toWorld(Vec3.directionFromRotation(turret.renderPitch(1), turret.renderYaw(1)))
                 : firstEnd.subtract(muzzle).normalize();
 
+        long now = level.getGameTime();
+        // A Rocket Launcher salvo is four events in one tick (one per tube): each flashes at its own tube, but the
+        // turret kicks and sounds once.
+        boolean salvoMate = client.lastShotTick == now;
         WeaponAnimatable weapon = client.weapon();
         if (weapon != null) {
             weapon.emptyTube(event.muzzle()); // Rocket Launcher: the rocket left this tube
             weapon.trigger("fire");
-            weapon.recoil.impulse(fx.recoilKick());
+            if (!salvoMate) weapon.recoil.impulse(fx.recoilKick());
         }
-        long now = level.getGameTime();
         client.streak = now - client.lastShotTick <= 20 ? client.streak + 1 : 1;
         client.lastShotTick = now;
         // Weapons with their own delivery: lightning bolts and a flame stream instead of tracers.
@@ -127,7 +130,7 @@ public final class TurretFireEffects {
             TracerRenderer.spawn(muzzle, shot.end(), color, fx.tracerWidth(), ticks, shot.hit() == TurretFireEvent.MISS ? null
                     : () -> impact(level, fx, event.precisionLock(), shot, color, event.seed()));
         }
-        playShot(level, event, muzzle, fx, random);
+        if (!salvoMate) playShot(level, event, muzzle, fx, random);
     }
 
     /** Shotgun: the pump racks after the recoil settles and throws the spent shell mid-stroke (PLAN 7.3). */
@@ -156,10 +159,6 @@ public final class TurretFireEffects {
         }
         VfxParams params = VfxParams.of().color(color).normal(shot.normal()).seed(seed).blockColor(blockColor);
         VfxManager.play(lock ? fx.lockImpact() : fx.impact(), shot.end(), shot.normal().reverse(), params);
-        if (shot.hit() == TurretFireEvent.BLOCK) {
-            level.playLocalSound(shot.end().x, shot.end().y, shot.end().z, BastionSounds.IMPACT_KINETIC.get(), SoundSource.HOSTILE,
-                    0.5f, 0.92f + level.random.nextFloat() * 0.16f, false);
-        }
     }
 
     /** Near players hear the shot; past 32 blocks they hear the muffled tail instead (PLAN 5.7). */

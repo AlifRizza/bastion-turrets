@@ -1,6 +1,7 @@
 package dev.bastion.weapon;
 
 import dev.bastion.damage.BastionDamageTypes;
+import dev.bastion.damage.TurretHurtSounds;
 import dev.bastion.turret.TurretHitboxEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -71,8 +72,9 @@ public final class Hitscan {
     }
 
     /**
-     * Applies turret damage. Invulnerability frames are cleared first: hitscan weapons fire faster than
-     * the vanilla 10-tick window and would otherwise lose most hits.
+     * Applies turret damage (every turret weapon, rocket, blast and burn comes through here). Invulnerability frames are
+     * cleared first: hitscan weapons fire faster than the vanilla 10-tick window and would otherwise lose most hits; so
+     * every hit is a fresh one, and TurretHurtSounds keeps the hurt sounds that come with it in check.
      */
     public static boolean damage(Entity target, Level level, float amount) {
         return damage(target, BastionDamageTypes.turretShot(level), amount);
@@ -80,7 +82,7 @@ public final class Hitscan {
 
     public static boolean damage(Entity target, DamageSource source, float amount) {
         target.invulnerableTime = 0;
-        return target.hurt(source, amount);
+        return TurretHurtSounds.hurt(target, source, amount);
     }
 
     /** Turret hitboxes are skipped: turrets never shoot each other, a turret in the line of fire is not a shield. */

@@ -1,18 +1,29 @@
 package dev.bastion.dev;
 
 import dev.bastion.Bastion;
+import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.TurretBaseItem;
+import dev.bastion.turret.TurretInventory;
+import dev.bastion.turret.TurretTier;
+import dev.bastion.weapon.WeaponModuleItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.registries.RegistryObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Dev-only: /bastiondev spawns its test mobs with the HP asked for, past vanilla's 1,024 cap. */
@@ -61,6 +72,40 @@ public class DevCommandTests {
             }
         }
         bussers.forEach(Mob::discard);
+        helper.succeed();
+    }
+
+    /**
+     * /bastiondev turrets t2 (user 10-10: "too lazy to assemble it myself"): one base per weapon module, a Large Turret Base
+     * for the big ones, at the tier asked for, each holding its weapon and Creative Ammo as placing it will load them.
+     */
+    @GameTest(template = "arena", batch = "devCommandGivesArmedTurrets")
+    public static void devCommandGivesArmedTurrets(GameTestHelper helper) {
+        FakePlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+        player.getInventory().clearContent();
+        var source = helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()).withEntity(player).withSuppressedOutput();
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(source, "bastiondev turrets t2");
+        List<ItemStack> given = new ArrayList<>();
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (!player.getInventory().getItem(i).isEmpty()) given.add(player.getInventory().getItem(i).copy());
+        }
+        player.getInventory().clearContent(); // the fake player is shared with later tests
+        List<WeaponModuleItem> modules = BastionItems.REGISTER.getEntries().stream().map(RegistryObject::get)
+                .filter(item -> item instanceof WeaponModuleItem).map(item -> (WeaponModuleItem) item).toList();
+        helper.assertTrue(!modules.isEmpty() && given.size() == modules.size(), given.size() + " stacks given for " + modules.size() + " weapon modules");
+        for (WeaponModuleItem module : modules) {
+            ItemStack base = given.stream().filter(stack -> {
+                CompoundTag data = stack.getTagElement("BlockEntityTag");
+                return data != null && ItemStack.of(data.getCompound("Inventory").getList("Items", 10).getCompound(0)).is(module);
+            }).findFirst().orElse(null);
+            helper.assertTrue(base != null, "no base holds " + module);
+            helper.assertTrue(base.is(module.large() ? BastionItems.LARGE_TURRET_BASE.get() : BastionItems.TURRET_BASE.get()), module + " on the wrong base");
+            helper.assertTrue(TurretBaseItem.tier(base) == TurretTier.T2, module + " base is " + TurretBaseItem.tier(base));
+            TurretInventory inventory = new TurretInventory(() -> TurretTier.T2, module::large, slot -> {});
+            inventory.deserializeNBT(base.getTagElement("BlockEntityTag").getCompound("Inventory"));
+            helper.assertTrue(inventory.getStackInSlot(TurretInventory.WEAPON).is(module)
+                    && inventory.getStackInSlot(TurretInventory.AMMO_START).is(BastionItems.CREATIVE_AMMO.get()), module + " base contents");
+        }
         helper.succeed();
     }
 }

@@ -24,11 +24,13 @@ MODELS = {"turret_base": "turret_base", "gun_turret": "gun_turret", "machine_gun
           "repulsor_turret": "repulsor_turret", "repulsor_dome_turret": "repulsor_dome_turret",
           "ion_rifle_turret": "ion_rifle_turret", "plasma_repeater_turret": "plasma_repeater_turret", "plasma_cannon_turret": "plasma_cannon_turret",
           "part_workstation": "part_workstation", "part_assembler": "part_assembler",
-          "module_workstation": "module_workstation", "ammo_workstation": "ammo_workstation", "charging_station": "charging_station"}
+          "module_workstation": "module_workstation", "ammo_workstation": "ammo_workstation", "charging_station": "charging_station",
+          "satellite_uplink_t1": "satellite_uplink_t1", "satellite_uplink_t2": "satellite_uplink_t2", "satellite_uplink_t3": "satellite_uplink_t3"}
 # Parts (PLAN Fase 9) show some bones of a weapon or base model: fit each to just those bones.
 PARTS = json.loads((ASSETS / "parts.json").read_text())  # item model -> geo
 SIZE_FACTOR = {"turret_base": 0.68, "large_turret_base": 0.8, "part_workstation": 0.8, "part_assembler": 0.8,
-               "module_workstation": 0.75, "ammo_workstation": 0.75, "charging_station": 0.68}  # a block-sized model reads right a bit smaller, like vanilla's 0.625 blocks
+               "module_workstation": 0.75, "ammo_workstation": 0.75, "charging_station": 0.68,
+               "satellite_uplink_t1": 0.8, "satellite_uplink_t2": 0.8, "satellite_uplink_t3": 0.8}  # a block-sized model reads right a bit smaller, like vanilla's 0.625 blocks
 
 
 def bounds(geo, only=None, rotated=False):
@@ -78,7 +80,7 @@ def display(geo, factor=1.0, only=None):
 if __name__ == "__main__":
     for item, geo in MODELS.items():
         path = ASSETS / f"models/item/{item}.json"
-        model = json.loads(path.read_text())
+        model = json.loads(path.read_text()) if path.exists() else {"parent": "builtin/entity", "gui_light": "side"}  # a new model
         model["display"] = display(geo, SIZE_FACTOR.get(item, 1.0))
         path.write_text(json.dumps(model, indent=2) + "\n")
         print(item, model["display"]["gui"])

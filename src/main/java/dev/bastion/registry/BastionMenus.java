@@ -1,6 +1,7 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.menu.ControlHubMenu;
 import dev.bastion.menu.FeedHubMenu;
 import dev.bastion.menu.TurretMenu;
 import dev.bastion.workstation.WorkstationMenu;
@@ -17,4 +18,5 @@ public final class BastionMenus {
     public static final RegistryObject<MenuType<WorkstationMenu>> WORKSTATION = REGISTER.register("workstation",
             () -> IForgeMenuType.create(WorkstationMenu::new));
     public static final RegistryObject<MenuType<FeedHubMenu>> FEED_HUB = REGISTER.register("feed_hub", () -> IForgeMenuType.create(FeedHubMenu::new));
+    public static final RegistryObject<MenuType<ControlHubMenu>> CONTROL_HUB = REGISTER.register("control_hub", () -> IForgeMenuType.create(ControlHubMenu::new));
 }
