@@ -191,9 +191,10 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Put it behind a Gun Turret and let zombies hug the gun: the Repulsor pushes them off so the gun can shoot again.
 - [ ] A mob behind a wall is not pushed by the Repulsor. You, pets and villagers in its cone are never pushed.
 - [ ] Repulsor Dome on a Large Turret Base with FE: its ring spins up while it charges, then a white sphere of force grows out to 9 blocks (was 7 before 0.2.0) with a sand ring rolling on the ground, the screen shakes lightly (within ~10 blocks); every hostile within 7 blocks flies ~6 blocks away, also behind walls. No damage.
+- [ ] Dome push by distance: a zombie right next to the dome flies ~12 blocks, one 8 blocks out ~7; anything in between lands in between (one more block per block closer).
 - [ ] Without FE both sit in NO_AMMO and push nothing; 500 FE per Repulsor push, 2,000 per Dome pulse (GUI energy bar).
 - [ ] Range Module / Rapid Cycler work; the Info tab shows damage 0. Recipes: 3 parts each at the Part Workstation, assembled at the Part Assembler.
-- [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~2.4 blocks). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.
+- [ ] Heavy mobs (Iron Golem, Ravager, Warden): the Repulsor ignores them (does not fire, no FE spent, they stay put); the Dome throws them ~60 % less far (~4 blocks from 4.5 blocks out). Add a modded mob id to `repulsorHeavyMobs` in `config/bastion-common.toml`: after a restart it is treated as heavy too; `repulsorHeavyMobPush` changes the 40 %.
 - [ ] Put the Repulsor one block behind a Gun Turret: mobs in front of the gun (~4-5 blocks from the Repulsor) are pushed.
 
 ## Laser Rifle
@@ -265,3 +266,13 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Leave and rejoin: tier, HP, filter, trusted list, ON/OFF, redstone mode, inventory all kept.
 - [ ] Mine a T2 base with stuff inside: the item keeps tier + contents (tooltip), placing it restores them.
 - [ ] `runServer` + separate client: everything above works on a dedicated server, no errors in either log.
+
+## Turret stats config (bastion-turrets.toml)
+Put every value back to its "Mod default" number when done (or delete the file): the GameTests use the same `run/config` file (`runConfigLeavesEveryValueAtDefault` names any number left there).
+- [ ] Start the game once: `config/bastion-turrets.toml` appears next to `bastion-common.toml`, with the explanation at the top, one section per turret (`[gun]` first, `[plasma_cannon]` last) and every value written as the mod's own number (`damage = 24` under `[sniper]`, no `.0`), with "Mod default" and "Range" in its comment.
+- [ ] With a world open, set `[sniper] damage = 100` and save the file: within a few seconds (up to about 10 on macOS), a Sniper's Info tab shows 100 and it kills a Witch (26 HP) in one shot, not two. Type 24 back and save: 24 again. No restart.
+- [ ] Set `[railgun] charge_ticks = 10` and save: the Railgun charges for half a second.
+- [ ] Set `[gun] damage = -5` (or `"abc"`) and `[ion_rifle] ammo_per_shot = 1`, then restart: the log warns for both, the file shows the mod's numbers again (7 and 0) and both turrets still fire.
+- [ ] Set `[ion_rifle] energy_capacity = 5000` on a full Ion Rifle: its energy bar shows 5,000 at most and it still fires (4 shots of 1,200 FE per full bar).
+- [ ] Set `[plasma_cannon] damage = 0`: mobs still take the blast damage (only the direct hit's own damage is gone) and still die normally.
+- [ ] LAN / dedicated server: change the server's file; a second player sees the new numbers in the Info tab. Changing the client's own file changes nothing on that server.

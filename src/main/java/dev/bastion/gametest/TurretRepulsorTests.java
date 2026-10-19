@@ -1,5 +1,6 @@
 package dev.bastion.gametest;
 
+import dev.bastion.weapon.types.RepulsorDomeWeapon;
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
@@ -155,8 +156,8 @@ public class TurretRepulsorTests {
     }
 
     /**
-     * Husks two to three blocks out on all four sides (the north one behind a stone wall) fly ~5 blocks outward; a cow at
-     * the same distance stays; nobody takes damage.
+     * Husks two to three blocks out on all four sides (the north one behind a stone wall) fly far outward (~11 blocks, out
+     * to the yard's edge); a cow at the same distance stays; nobody takes damage.
      */
     @GameTest(template = YARD, timeoutTicks = 160, batch = "domePushesEveryWay")
     public static void domePushesEveryWay(GameTestHelper helper) {
@@ -285,16 +286,17 @@ public class TurretRepulsorTests {
         });
     }
 
-    /** The Dome throws a ravager (heavy) at 40 % of its push: ~2.4 of 6 blocks. */
+    /** The Dome throws a ravager (heavy) at 40 % of its push: ~4.95 from the orb its push is ~10, so ~4 blocks. */
     @GameTest(template = YARD, timeoutTicks = 160, batch = "domePushesHeavyMobsLess")
     public static void domePushesHeavyMobsLess(GameTestHelper helper) {
         dome(helper, true);
         BlockPos at = new BlockPos(19, 2, 15);
         LivingEntity ravager = helper.spawnWithNoFreeWill(EntityType.RAVAGER, at);
         Vec3 start = spot(helper, at);
-        helper.succeedWhen(() -> {
+        helper.runAtTickTime(70, () -> { // the first pulse landed; the ravager is still in reach, so a second pulse follows at ~95
             double m = moved(ravager, start);
-            helper.assertTrue(m >= 1.8 && m <= 3.0, "the ravager moved " + m + " (want ~2.4)");
+            helper.assertTrue(m >= 3.2 && m <= 5.0, "the ravager moved " + m + " (want ~4)");
+            helper.succeed();
         });
     }
 
@@ -307,7 +309,7 @@ public class TurretRepulsorTests {
         helper.succeedWhen(() -> helper.assertTrue(moved(husk, start) >= 3, "a husk 4 blocks out moved " + moved(husk, start)));
     }
 
-    /** The Dome reaches 9 blocks (user 2026-10-08, was 7): a husk 8.5 blocks out (~8.7 from the orb) is thrown, the push unchanged. */
+    /** The Dome reaches 9 blocks (user 2026-10-08, was 7): a husk 8.5 blocks out (~8.75 from the orb) is thrown ~6.25 blocks. */
     @GameTest(template = YARD, timeoutTicks = 160, batch = "domeReachesNineBlocks")
     public static void domeReachesNineBlocks(GameTestHelper helper) {
         dome(helper, true);
@@ -315,5 +317,30 @@ public class TurretRepulsorTests {
         LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, at);
         Vec3 start = spot(helper, at);
         helper.succeedWhen(() -> helper.assertTrue(moved(husk, start) >= 4.5, "a husk 8.5 blocks out moved " + moved(husk, start)));
+    }
+
+    /** The Dome's push (user 2026-10-18): knockback at the edge of its reach, +1 block per block closer, knockback + range at its middle. */
+    @GameTest(template = YARD, batch = "domePushGrowsOneBlockPerBlockCloser")
+    public static void domePushGrowsOneBlockPerBlockCloser(GameTestHelper helper) {
+        helper.assertTrue(RepulsorDomeWeapon.push(6, 9, 9) == 6 && RepulsorDomeWeapon.push(6, 9, 8) == 7 && RepulsorDomeWeapon.push(6, 9, 0) == 15,
+                "edge / 1 closer / middle: " + RepulsorDomeWeapon.push(6, 9, 9) + " / " + RepulsorDomeWeapon.push(6, 9, 8) + " / " + RepulsorDomeWeapon.push(6, 9, 0));
+        helper.assertTrue(RepulsorDomeWeapon.push(6, 9, 9.4) == 6, "just past the reach the push drops below knockback: " + RepulsorDomeWeapon.push(6, 9, 9.4));
+        helper.assertTrue(RepulsorDomeWeapon.push(6, 10, 0) == 16, "a longer reach (range module) does not raise the push in the middle");
+        helper.succeed();
+    }
+
+    /** One pulse throws a husk next to the dome ~12 blocks (~2.9 from the orb) and one at the edge of its reach ~6.25 (~8.75). */
+    @GameTest(template = YARD, timeoutTicks = 160, batch = "domePushesHarderUpClose")
+    public static void domePushesHarderUpClose(GameTestHelper helper) {
+        dome(helper, true);
+        BlockPos nearAt = new BlockPos(16, 2, 16), farAt = new BlockPos(8, 2, 9); // diagonal: room to fly in the 30x30 yard
+        LivingEntity near = helper.spawnWithNoFreeWill(EntityType.HUSK, nearAt), far = helper.spawnWithNoFreeWill(EntityType.HUSK, farAt);
+        Vec3 nearStart = spot(helper, nearAt), farStart = spot(helper, farAt);
+        helper.runAtTickTime(90, () -> { // pulse at ~15, landed well before; both end out of reach, so no second pulse
+            double n = moved(near, nearStart), f = moved(far, farStart);
+            helper.assertTrue(n >= 10.5 && n <= 13.5, "the husk next to the dome moved " + n + " (want ~12)");
+            helper.assertTrue(f >= 5 && f <= 7.5, "the husk at the edge moved " + f + " (want ~6.25)");
+            helper.succeed();
+        });
     }
 }

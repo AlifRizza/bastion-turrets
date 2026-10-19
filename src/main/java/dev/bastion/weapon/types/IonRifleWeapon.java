@@ -57,7 +57,7 @@ public class IonRifleWeapon extends WeaponType {
         StatSheet stats = context.stats();
         WeaponData data = stats.data();
         // Damage modules scale the field like the bolt.
-        Field field = new Field(data.param("field_radius"), data.param("field_damage") * stats.damage() / data.damage(), data.energyColor(),
+        Field field = new Field(data.param("field_radius"), data.param("field_damage") * stats.damageScale(), data.energyColor(),
                 Math.round(data.param("field_ticks")));
         Bullets.fire(context, this, 0, List.of(context.direction()), data.param("bolt_speed"), 0, Bullets.validTargets(context, this),
                 bolt(context.level(), stats.damage(), field, Bullets.filtered(context, this),

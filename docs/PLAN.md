@@ -684,7 +684,7 @@ Blok **Feed Hub**: turret base standar 1x1 dipasang di sisi-sisinya (punggung ba
 
 **Repulsor Dome** (modul besar, Large Turret Base 2x2)
 - Tidak berputar (seperti Tesla). Aktif bila ada target sah dalam `range` **7** blok dari tengah base (user 19:45, dulu 6).
-- Charge 10 tick, lalu kubah: **semua** target sah dalam **9** blok (user 2026-10-08, dulu 7) terdorong `knockback` **6** blok keluar dari tengah base (dulu 5). **Menembus dinding** (medan, tanpa line of sight).
+- Charge 10 tick, lalu kubah: **semua** target sah dalam **9** blok (user 2026-10-08, dulu 7) terdorong keluar dari tengah base: `knockback` **6** blok di tepi jangkauan, **+1 blok tiap blok lebih dekat** (user 2026-10-18 12:13, rumus "+1 per blok" dipilih 12:15): `knockback + (range − jarak)`, jarak 3D dari bola kubah (titik yang sama dengan jangkauan), jadi 15 tepat di tengah dan ~12,5 untuk mob yang menempel base 2x2. Modul range ikut menaikkan maksimumnya. (Dulu rata 6, sebelumnya 5.) **Menembus dinding** (medan, tanpa line of sight).
 - 2.000 FE per dorongan, `fire_interval` 80 tick. Kapasitor 40.000 FE, input 2.000 FE/t.
 
 **Model** (`tools/blockout/design_weapons.py`, gunmetal + satu glow cyan, konvensi bone bagian 6.2)
@@ -1041,6 +1041,77 @@ deploy (derit kayu) dan hancur (kayu remuk). Tanpa hum idle. Tanpa suara proyekt
 
 **Di luar cakupan**: modul atau tier untuk base makeshift, jalur upgrade ke base modern, snow block sebagai peluru, efek
 racun kentang beracun, suara proyektil kena.
+
+### Config stat turret (permintaan user 2026-10-17 12:35, desain disetujui 12:50–12:51)
+
+**Status**: dibuat 2026-10-17 (plan `docs/superpowers/plans/2026-10-17-turret-stats-config.md`, 175 GameTest lolos; final review diperbaiki: guard damage NaN/0, `ammo_per_shot` 0~1 (0~0 untuk senjata FE + Missile Launcher), `energy_capacity` ≤ 3.000.000, `max_heat` ≤ 3000; 2026-10-18: file ditulis dengan angka default mod, bukan `"default"`, 177 GameTest lolos), dites user di game 2026-10-18 (angka Shotgun, reload saat game jalan), rilis di 0.2.1 (commit 2026-10-19).
+
+**Tujuan**: pemain dan admin server mengatur angka tiap turret lewat file config, tanpa membuat datapack. Jadi ada dua
+file config gameplay: `bastion-common.toml` (yang sudah ada: tier base, proteksi, FE hub, dll.) dan file baru
+`config/bastion-turrets.toml`. (Plus `bastion-client.toml` untuk tampilan, tidak berubah.)
+
+**Keputusan user**:
+- Cakupan: **senjata saja** (16 turret bawaan). Efek modul Mk1–Mk3 tetap lewat datapack (12:43).
+- Isi awal tiap angka: ~~`"default"` + komentar~~ (12:45) → **angka default mod + komentar** (user 2026-10-18 11:55:
+  "defaultnya jangan ditulis "default", tapi tulis saja angka defaultnya"). Angka yang sama dengan nilai mod = bukan
+  override, jadi datapack tetap berlaku untuk key yang tidak diubah. Rebalance di update mod tidak sampai ke file yang
+  sudah ada (angka lama tertulis di file dan dihitung sebagai override bila nilai mod berubah).
+- Pendekatan A: **lapisan override saat data senjata dibangun** (12:50).
+
+**File** (`ModConfig.Type.COMMON`, nama file `bastion-turrets.toml`, global untuk semua world):
+- Komentar paling atas (Inggris): tiap nilai mulai dari angka mod; dibiarkan di angka itu = senjata seperti buatan mod
+  atau datapack; angka lain menimpa; 20 tick = 1 detik; berlaku begitu file disimpan; stat yang tidak dipakai suatu senjata (mis.
+  `spread` di Tesla Coil) tidak berpengaruh.
+- Satu section per senjata, nama = id file JSON-nya (`[gun]`, `[machine_gun]`, ..., `[plasma_cannon]`), urutan seperti
+  tabel senjata di deskripsi.
+- Tiap section berisi **15 stat umum** (`range`, `fire_interval`, `damage`, `spread`, `ammo_per_shot`, `turn_speed`,
+  `aim_tolerance`, `aim_lock_ticks`, `min_pitch`, `max_pitch`, `sweep_tolerance`, `heat_per_shot`,
+  `heat_dissipation_per_second`, `max_heat`, `overheat_ticks`) **plus semua `params` di JSON senjata itu** (mis.
+  `charge_ticks`, `energy_per_shot`, `blast_radius`), langsung di section (tanpa sub-tabel `params`; tidak ada nama
+  yang bentrok).
+- Tidak masuk config: `type`, `ammo`, `energy_color`, `pivot_height`, `muzzle_length` (identitas, warna, geometri
+  model).
+- Nilai tiap key: angka dalam batasnya, awalnya angka mod (bulat ditulis tanpa `.0`). Komentar per key: penjelasan satu baris (Inggris) +
+  satuan + `Mod default: <nilai JSON bawaan>` + `Range: <min> ~ <max>`.
+- Batas per key: tabel di kode, aturan umum per jenis (tick 0–12000, damage 0–10000, jarak/radius 0–256, sudut 0–180,
+  pitch −90–90, rasio/akurasi 0–1, FE 0–10.000.000, jumlah ≥ 1) dengan pengecualian eksplisit (mis. `fire_interval`
+  minimal 0,5 tick; `ammo_per_shot` 0–1, 0–0 untuk senjata tanpa item; FE kapasitas ≤ 3.000.000 dan `max_heat` ≤ 3000
+  karena bar GUI 16-bit). Field int (`aim_lock_ticks`, `overheat_ticks`) dibulatkan.
+- Nilai salah (teks, di luar batas): validator Forge mengembalikannya ke angka mod dan menulis
+  peringatan di log (perilaku bawaan ForgeConfigSpec).
+
+**Isi spec saat start**: dibangun di konstruksi mod dari JSON bawaan **di dalam jar** (`/data/bastion/turret_weapons/
+<id>.json` lewat classloader): itu sumber daftar key, nilai `Mod default` dan nilai stat umum yang tidak tertulis di JSON
+(default codec, mis. `heat_per_shot` 0). Daftar 16 id senjata tetap di kode; GameTest memastikan daftar itu sama dengan
+file di folder `turret_weapons` bawaan.
+
+**Penggabungan** (`WeaponDataLoader`):
+- Saat datapack dimuat: JSON diparse seperti sekarang → disimpan sebagai **data mentah**; **data efektif** = data mentah
+  dengan setiap key config yang angkanya beda dari nilai mod ditimpa. `get()`/`all()` mengembalikan data efektif, jadi semua
+  pemakai (fire cycle, `StatSheet`, `param()`, GUI Info, tooltip, efek client) ikut tanpa diubah.
+- `min_pitch` > `max_pitch` setelah override: dua override itu diabaikan untuk senjata itu + peringatan log.
+- Senjata yang tidak ada di data mentah (dihapus datapack): override-nya diabaikan.
+- Senjata dari namespace lain (datapack mod lain) tidak ada di config dan tidak tersentuh.
+
+**Sinkron & reload**:
+- Client menerima data efektif lewat `WeaponDataSync` seperti sekarang (saat login dan `/reload`). File config milik
+  client diabaikan untuk gameplay di server dedicated; di singleplayer server dan client memakai file yang sama.
+- `ModConfigEvent.Reloading` untuk spec ini (Forge memantau file): di thread server, data efektif dibangun ulang dari
+  data mentah lalu `WeaponDataSync` dikirim ke semua pemain online. Tidak perlu restart; turret memakai angka baru
+  mulai tembakan/tick berikutnya.
+
+**Acceptance**:
+- GameTest: (1) tiap senjata bawaan punya section dengan tepat 15 stat umum + semua `params` JSON-nya (tidak kurang,
+  tidak lebih) dan daftar id = isi folder; (2) override `damage` Sniper muncul di data efektif, kembali ke angka mod
+  memulihkan angka JSON; (3) override `charge_ticks` Railgun dipakai saat charge (`chargeTicks`); (4) nilai di luar
+  batas ditolak validator; (5) event reload membangun ulang data efektif.
+- Manual: ubah satu angka saat game jalan → tab Info turret dan perilakunya berubah tanpa restart; server dedicated
+  (LAN) memakai angka server. Checklist di `docs/TESTING.md`.
+- `./gradlew build` lolos, semua GameTest lama lolos (juga `-PwithCompatMods`).
+- Dokumen: paragraf "For modpack makers" di deskripsi (config untuk stat turret), `HANDOFF.md`.
+
+**Di luar cakupan**: efek modul, tier base (sudah di `bastion-common.toml`), geometri/warna/ammo/type senjata, config per
+world (`serverconfig`), editor config di dalam game, senjata dari namespace lain.
 
 ---
 

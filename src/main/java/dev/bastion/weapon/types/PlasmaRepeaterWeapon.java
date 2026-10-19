@@ -45,7 +45,7 @@ public class PlasmaRepeaterWeapon extends WeaponType {
         WeaponData data = stats.data();
         Vec3 direction = Hitscan.spread(context.direction(), stats.spread(), RandomSource.create(context.seed()));
         Bullets.fire(context, this, 0, List.of(direction), data.param("bolt_speed"), 0, Bullets.validTargets(context, this),
-                bolt(context.level(), stats.damage(), data.param("splash_damage") * stats.damage() / data.damage(), data.param("splash_radius"),
+                bolt(context.level(), stats.damage(), data.param("splash_damage") * stats.damageScale(), data.param("splash_radius"),
                         Bullets.filtered(context, this), BastionDamageTypes.of(context.level(), BastionDamageTypes.TURRET_PLASMA)));
     }
 

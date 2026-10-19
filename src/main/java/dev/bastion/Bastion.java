@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import dev.bastion.compat.create.CreateCompat;
 import dev.bastion.config.BastionClientConfig;
 import dev.bastion.config.BastionConfig;
+import dev.bastion.config.TurretStatsConfig;
 import dev.bastion.modifier.ModifierDataLoader;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.WeaponDataSync;
@@ -57,6 +58,8 @@ public final class Bastion {
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BastionConfig.SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BastionClientConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TurretStatsConfig.SPEC, TurretStatsConfig.FILE);
+        modBus.addListener(TurretStatsConfig::onReloading);
 
         BastionNetwork.register();
         MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> {
@@ -69,7 +72,7 @@ public final class Bastion {
 
     /** Clients get the weapon and modifier JSON on login and after every /reload. */
     private static void syncWeaponData(OnDatapackSyncEvent event) {
-        WeaponDataSync message = new WeaponDataSync(WeaponDataLoader.all(), ModifierDataLoader.all());
+        WeaponDataSync message = WeaponDataSync.current();
         if (event.getPlayer() != null) {
             BastionNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(event::getPlayer), message);
         } else {

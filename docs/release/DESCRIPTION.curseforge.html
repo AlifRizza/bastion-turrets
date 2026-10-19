@@ -89,7 +89,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <tr>
 <td>Repulsor Dome</td>
 <td>Large</td>
-<td>No damage: a dome of force bursts out and throws every enemy within 9 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE.</td>
+<td>No damage: a dome of force bursts out and throws every enemy within 9 blocks away, through walls: 6 blocks from the edge of its reach, one more per block closer (heavy mobs 60% less). Runs on FE.</td>
 </tr>
 <tr>
 <td>Plasma Cannon Turret</td>
@@ -194,7 +194,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 <p>Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera shake, custom explosions with smoke, lightning arcs, laser beams, railgun ion trails, flame jets, mortar fire patches and scorch marks that grow on walls. Every turret has its own sounds too: shots, charge-ups, reloads, rocket flight and blasts, with a muffled version when you hear them from far away. Too much for your PC (or your stomach)? The client config has VFX presets LOW, MEDIUM and HIGH plus switches for camera shake and screen flash.</p>
 <h2>For modpack makers</h2>
 <p>Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.</p>
-<p>Weapon stats live in <code>data/bastion/turret_weapons</code> and modules in <code>data/bastion/turret_modifiers</code>. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).</p>
+<p>Every turret's stats and weapon-specific numbers are also in <code>config/bastion-turrets.toml</code>: each value starts at the mod's own number; type another and it applies as soon as you save. Weapon stats come from <code>data/bastion/turret_weapons</code> and modules from <code>data/bastion/turret_modifiers</code>, plain datapack JSON like the workstation recipes; a changed number in the config wins over a datapack. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).</p>
 <h2>Requirements</h2>
 <ul>
 <li>Minecraft 1.20.1 with Forge 47.2 or newer</li>

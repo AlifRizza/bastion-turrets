@@ -74,13 +74,15 @@ public final class Hitscan {
     /**
      * Applies turret damage (every turret weapon, rocket, blast and burn comes through here). Invulnerability frames are
      * cleared first: hitscan weapons fire faster than the vanilla 10-tick window and would otherwise lose most hits; so
-     * every hit is a fresh one, and TurretHurtSounds keeps the hurt sounds that come with it in check.
+     * every hit is a fresh one, and TurretHurtSounds keeps the hurt sounds that come with it in check. A hit of 0 or NaN
+     * (a 0/0 from numbers set in bastion-turrets.toml) does nothing: NaN health would be saved with the world.
      */
     public static boolean damage(Entity target, Level level, float amount) {
         return damage(target, BastionDamageTypes.turretShot(level), amount);
     }
 
     public static boolean damage(Entity target, DamageSource source, float amount) {
+        if (!(amount > 0)) return false;
         target.invulnerableTime = 0;
         return TurretHurtSounds.hurt(target, source, amount);
     }

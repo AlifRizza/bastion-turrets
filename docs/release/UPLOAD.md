@@ -1,4 +1,4 @@
-# Upload sheet: 0.2.0
+# Upload sheet: 0.2.1
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -26,9 +26,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.2.0.jar` (`./gradlew build`) |
-| Version number         | 0.2.0                                                     |
-| Version name           | Bastion Turrets 0.2.0                                     |
+| File                   | `build/libs/bastion-1.20.1-0.2.1.jar` (`./gradlew build`) |
+| Version number         | 0.2.1                                                     |
+| Version name           | Bastion Turrets 0.2.1                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -39,7 +39,25 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain numbers on the Beta channel: `0.1.1`, `0.1.2`,
 ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
 The next one is **0.2.0**, not 0.1.2 (user 2026-10-14: too many changes for a patch number; still Beta). Big
-updates bump the middle number, fixes the last.
+updates bump the middle number, fixes the last. 0.2.1 (user 2026-10-19): the config file and the Dome push, after
+0.2.0 was uploaded.
+
+## Changelog: 0.2.1
+
+```
+New
+- Turret stats config: config/bastion-turrets.toml holds every turret's stats (damage, range, fire rate, ammo or FE
+  per shot, turn speed, heat, ...) and its own numbers (charge time, blast radius, knockback, ...). Each value starts
+  at the mod's own number; type another to change it (left at the mod's number, a datapack's value still counts).
+  Saving the file applies it at once, no restart; on a server, the server's file counts.
+
+Changes
+- Repulsor Dome: the closer a mob is, the harder it is thrown: 6 blocks at the edge of its 9-block reach, one more
+  per block closer (a mob right against the dome flies about 12).
+
+Fixes
+- A turret weapon set to 0 damage or a 0 blast radius (by a datapack) no longer breaks the health of the mobs it hits.
+```
 
 ## Changelog: 0.2.0
 

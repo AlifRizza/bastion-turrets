@@ -48,4 +48,9 @@ public record StatSheet(
                 Math.max(0.1f, 1 + m.maxHealth()),
                 reloadRate);
     }
+
+    /** What damage modules multiply a weapon's other damage by (splash, blast, ion field); 1 for a weapon set to damage 0. */
+    public float damageScale() {
+        return data.damage() > 0 ? damage / data.damage() : 1;
+    }
 }

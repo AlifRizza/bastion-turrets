@@ -7,10 +7,25 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-19: 0.2.1 committed, tagged `v0.2.1` and pushed** (with the 0.2.0 commit; 0.2.0 was uploaded by the user,
+never tagged). 0.2.1 = the turret stats config and the Dome push below; changelog in `docs/release/UPLOAD.md`, store
+text changes in `docs/release/DESCRIPTION_UPDATE_0.2.1.md`. The user uploads the jar.
+
+**2026-10-18: Repulsor Dome push by distance (in 0.2.1).** `RepulsorDomeWeapon.push(knockback, range, distance)` =
+knockback + (range - distance from the orb), so 6 at the edge of its 9 blocks, +1 per block closer, 15 in the middle
+(~12.5 against the 2x2 base). Config `knockback` for the Dome now means the push at the edge. 179/179 GameTests.
+
+**2026-10-17: turret stats config (in 0.2.1; tested by the user in game 10-18, live reload works).** `config/bastion-turrets.toml`
+(`config/TurretStatsConfig`, spec PLAN §8 "Config stat turret", plan `docs/superpowers/plans/2026-10-17-turret-stats-config.md`):
+16 weapons x (15 common stats + their JSON params), written with the mod's numbers (user 10-18; a number equal to the
+mod's value is no override, so datapacks still count); `WeaponDataLoader` keeps raw JSON and
+serves raw + overrides (`WeaponData.withOverrides`, `merge`, `rebuild`); `ModConfigEvent.Reloading` -> server thread
+`TurretStatsConfig.reloaded()` -> rebuild + `WeaponDataSync` to all. 175/175 GameTests (also with compat mods). Final-review fixes: `Hitscan.damage` ignores 0/NaN, `StatSheet.damageScale()` for splash/blast/field, ammo_per_shot 0~1 (0~0 on no-item weapons), energy_capacity <= 3,000,000 and max_heat <= 3000 (GUI 16-bit bars). GameTests restore the previous config value; `runConfigLeavesEveryValueAtDefault` names numbers left in run/config.
+
 **2026-10-17 00:15: 0.2.0 committed** (`mod_version` 0.2.0; changelog and store text in `docs/release/UPLOAD.md` /
 DESCRIPTION.*): Control Hub cube + Hub Connector, Ion/Plasma turrets, every turret's sounds from Gemini Omni takes
-(`tools/cut_sfx.py`, video scenes in src/dev VideoShowcase), Mortar whistle removed, hang + groan fixes. Not pushed,
-not tagged: the user uploads. Not committed on purpose: `sfx/` (sound sources, the user decides), `modlist.html`.
+(`tools/cut_sfx.py`, video scenes in src/dev VideoShowcase), Mortar whistle removed, hang + groan fixes. Uploaded by
+the user; pushed with 0.2.1 on 10-19. Not committed on purpose: `sfx/` (sound sources, the user decides), `modlist.html`.
 Remaining placeholders: machine_gun.overheat (user supplies), Workstation, Control Hub, turret.tier_up. The notes
 below are the history that led here.
 

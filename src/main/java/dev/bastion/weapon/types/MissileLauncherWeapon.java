@@ -157,7 +157,7 @@ public class MissileLauncherWeapon extends WeaponType {
         WeaponData data = context.stats().data();
         float damage = context.stats().damage();
         TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), context.level(),
-                context.turret().getBlockPos(), damage, data.param("splash_damage") * damage / data.damage(),
+                context.turret().getBlockPos(), damage, data.param("splash_damage") * context.stats().damageScale(),
                 data.param("splash_radius"), data.param("knockback"), Math.round(data.param("fuel_ticks")))
                 .homing(target, data.param("turn_rate"), data.param("cruise_speed"), data.param("acceleration"),
                         Math.round(data.param("homing_delay")));

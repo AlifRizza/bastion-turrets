@@ -3,11 +3,13 @@ package dev.bastion.weapon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.bastion.Bastion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -87,5 +89,42 @@ public record WeaponData(
         Float value = params.get(key);
         if (value == null) throw new IllegalStateException("turret weapon JSON is missing params." + key);
         return value;
+    }
+
+    /**
+     * This data with {@code overrides} (bastion-turrets.toml, PLAN 8 "Config stat turret") laid over it: each key replaces the
+     * stat or param of that name; a param this weapon lacks is ignored, and type, ammo, colour and geometry are never touched.
+     * aim_lock_ticks and overheat_ticks round to whole ticks. Overrides that would put min_pitch above max_pitch are both
+     * dropped (logged), so a typo can't leave a turret that never aims.
+     */
+    public WeaponData withOverrides(Map<String, Double> overrides) {
+        if (overrides.isEmpty()) return this;
+        float minPitch = number(overrides, "min_pitch", aim.minPitch()), maxPitch = number(overrides, "max_pitch", aim.maxPitch());
+        if (minPitch > maxPitch) {
+            Bastion.LOGGER.warn("bastion-turrets.toml: min_pitch {} is above max_pitch {} for {}; both ignored", minPitch, maxPitch, type);
+            minPitch = aim.minPitch();
+            maxPitch = aim.maxPitch();
+        }
+        Aim newAim = new Aim(number(overrides, "turn_speed", aim.turnSpeed()), number(overrides, "aim_tolerance", aim.tolerance()),
+                ticks(overrides, "aim_lock_ticks", aim.lockTicks()), minPitch, maxPitch, aim.pivotHeight(), aim.muzzleLength(),
+                number(overrides, "sweep_tolerance", aim.sweepTolerance()));
+        Heat newHeat = new Heat(number(overrides, "heat_per_shot", heat.perShot()),
+                number(overrides, "heat_dissipation_per_second", heat.dissipationPerSecond()), number(overrides, "max_heat", heat.max()),
+                ticks(overrides, "overheat_ticks", heat.overheatTicks()));
+        Map<String, Float> newParams = new HashMap<>(params);
+        params.forEach((key, value) -> newParams.put(key, number(overrides, key, value)));
+        return new WeaponData(type, ammo, energyColor, number(overrides, "range", range), number(overrides, "fire_interval", fireInterval),
+                number(overrides, "damage", damage), number(overrides, "spread", spread), number(overrides, "ammo_per_shot", ammoPerShot),
+                newAim, newHeat, Map.copyOf(newParams));
+    }
+
+    private static float number(Map<String, Double> overrides, String key, float fallback) {
+        Double value = overrides.get(key);
+        return value == null ? fallback : value.floatValue();
+    }
+
+    private static int ticks(Map<String, Double> overrides, String key, int fallback) {
+        Double value = overrides.get(key);
+        return value == null ? fallback : (int) Math.round(value);
     }
 }

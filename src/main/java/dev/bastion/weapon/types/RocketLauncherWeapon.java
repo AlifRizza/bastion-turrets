@@ -114,7 +114,7 @@ public class RocketLauncherWeapon extends WeaponType {
     private void launch(FireContext context, int tube) {
         WeaponData data = context.stats().data();
         TurretRocketEntity rocket = new TurretRocketEntity(context.level(), context.turret().getBlockPos(), context.stats().damage(),
-                data.param("splash_damage") * context.stats().damage() / data.damage(), data.param("splash_radius"), data.param("knockback"),
+                data.param("splash_damage") * context.stats().damageScale(), data.param("splash_radius"), data.param("knockback"),
                 Math.round(context.stats().range() / data.param("rocket_speed")) + 10);
         rocket.setPos(modelPoint(context.turret(), data, TUBE_MOUTHS[tube]));
         rocket.launch(context.direction().scale(data.param("rocket_speed")));

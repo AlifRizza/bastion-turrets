@@ -359,7 +359,7 @@
   "item.bastion.repulsor_turret": "Repulsor",
   "tooltip.bastion.weapon.repulsor_turret.ability": "Mengisi daya, lalu gelombang mendorong semua target di depannya dalam 5 blok sekitar 4 blok. Tidak kuat untuk mob berat (iron golem, ravager, warden). Tanpa damage. Memakai FE (500 per dorongan)",
   "item.bastion.repulsor_dome_turret": "Kubah Repulsor",
-  "tooltip.bastion.weapon.repulsor_dome_turret.ability": "Mengisi daya, lalu kubah meledak keluar dan melempar semua target dalam 9 blok sekitar 6 blok, menembus dinding; mob berat 60 % lebih pendek. Tanpa damage. Memakai FE (2.000 per dorongan)",
+  "tooltip.bastion.weapon.repulsor_dome_turret.ability": "Mengisi daya, lalu kubah meledak keluar dan melempar semua target dalam 9 blok, menembus dinding: 6 blok dari tepi jangkauan, tambah 1 blok tiap blok lebih dekat; mob berat 60 % lebih pendek. Tanpa damage. Memakai FE (2.000 per dorongan)",
   "item.bastion.repulsor_emitter": "Emitor Repulsor",
   "item.bastion.repulsor_coil": "Kumparan Medan",
   "item.bastion.repulsor_mount": "Dudukan Repulsor",

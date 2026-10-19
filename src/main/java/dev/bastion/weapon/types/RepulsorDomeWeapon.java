@@ -11,6 +11,7 @@ import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponState;
 import dev.bastion.weapon.WeaponType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -19,8 +20,9 @@ import java.util.List;
 
 /**
  * Repulsor Dome (PLAN "Repulsor & Repulsor Dome", Large Turret Base): no damage, never turns. With a valid target
- * within range it charges, then a dome pushes every valid target within range knockback blocks out from its middle.
- * A field: walls do not stop it. Runs on FE like the Tesla Coil.
+ * within range it charges, then a dome pushes every valid target within range out from its middle: knockback blocks at
+ * the edge of its reach, one more per block closer (user 2026-10-18). A field: walls do not stop it. Runs on FE like the
+ * Tesla Coil.
  */
 public class RepulsorDomeWeapon extends WeaponType {
     @Override
@@ -44,6 +46,11 @@ public class RepulsorDomeWeapon extends WeaponType {
         return target.getBoundingBox().getCenter();
     }
 
+    /** Blocks a target {@code distance} from the dome's middle is thrown: 6 at 9 blocks, 7 at 8, ..., 15 in the middle. */
+    public static float push(float knockback, float range, double distance) {
+        return knockback + (float) Mth.clamp(range - distance, 0, range);
+    }
+
     @Override
     public void onFire(FireContext context) {
         TurretBaseBlockEntity turret = context.turret();
@@ -53,7 +60,8 @@ public class RepulsorDomeWeapon extends WeaponType {
         Vec3 middle = turret.pivot(data);
         List<TurretFireEvent.Shot> pushed = new ArrayList<>();
         for (LivingEntity target : TargetSelector.findAll(turret, stats, this, Math.round(data.param("max_targets")))) {
-            if (Repulsion.push(target, middle, new Vec3(1, 0, 0), data.param("knockback"), data.param("lift"))) {
+            float blocks = push(data.param("knockback"), stats.range(), target.position().distanceTo(middle));
+            if (Repulsion.push(target, middle, new Vec3(1, 0, 0), blocks, data.param("lift"))) {
                 Vec3 center = target.getBoundingBox().getCenter();
                 pushed.add(new TurretFireEvent.Shot(center, middle.subtract(center).normalize(), TurretFireEvent.ENTITY, target.getId()));
             }

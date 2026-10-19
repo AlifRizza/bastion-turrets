@@ -58,7 +58,7 @@ public class PlasmaCannonWeapon extends WeaponType {
         StatSheet stats = context.stats();
         WeaponData data = stats.data();
         // Damage modules scale the blast like the hit.
-        Blast blast = new Blast(data.param("blast_radius"), data.param("blast_damage") * stats.damage() / data.damage());
+        Blast blast = new Blast(data.param("blast_radius"), data.param("blast_damage") * stats.damageScale());
         Bullets.fire(context, this, 0, List.of(context.direction()), data.param("orb_speed"), 0, Bullets.validTargets(context, this),
                 orb(context.level(), stats.damage(), blast, Bullets.filtered(context, this),
                         BastionDamageTypes.of(context.level(), BastionDamageTypes.TURRET_PLASMA)));

@@ -25,7 +25,7 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Tesla Coil Turret | Large | Runs on FE instead of ammo. Its lightning hits up to five targets at once. |
 | Railgun Turret | Large | Anti-boss gun. Each shot takes a Rail Slug and FE: the barrel lights up, crackles, then fires a slug that ignores armor, hits bosses twice as hard and throws mobs around the impact away. Always aims at the biggest target. |
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
-| Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks about 6 blocks away, through walls (heavy mobs 60% less). Runs on FE. |
+| Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks away, through walls: 6 blocks from the edge of its reach, one more per block closer (heavy mobs 60% less). Runs on FE. |
 | Plasma Cannon Turret | Large | Charges, then fires a big slow plasma ball that explodes like a BFG: every enemy within 4 blocks of the impact takes heavy damage, more near the middle. One Plasma Cell per shot. |
 
 The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire real shots with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
@@ -102,7 +102,7 @@ Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera 
 
 Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.
 
-Weapon stats live in `data/bastion/turret_weapons` and modules in `data/bastion/turret_modifiers`. Both are plain datapack JSON, same as the workstation recipes. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
+Every turret's stats and weapon-specific numbers are also in `config/bastion-turrets.toml`: each value starts at the mod's own number; type another and it applies as soon as you save. Weapon stats come from `data/bastion/turret_weapons` and modules from `data/bastion/turret_modifiers`, plain datapack JSON like the workstation recipes; a changed number in the config wins over a datapack. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
 
 ## Requirements
 

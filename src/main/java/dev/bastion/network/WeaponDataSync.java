@@ -13,6 +13,11 @@ import java.util.function.Supplier;
 
 /** S->C copy of every turret weapon and modifier JSON, sent on login and after /reload. */
 public record WeaponDataSync(Map<ResourceLocation, WeaponData> weapons, Map<ResourceLocation, ModifierEffect> modifiers) {
+    /** Everything clients need right now: the effective weapons and the modifiers. */
+    public static WeaponDataSync current() {
+        return new WeaponDataSync(WeaponDataLoader.all(), ModifierDataLoader.all());
+    }
+
     public void encode(FriendlyByteBuf buf) {
         buf.writeMap(weapons, FriendlyByteBuf::writeResourceLocation, (b, data) -> b.writeJsonWithCodec(WeaponData.CODEC, data));
         buf.writeMap(modifiers, FriendlyByteBuf::writeResourceLocation, (b, effect) -> b.writeJsonWithCodec(ModifierEffect.CODEC, effect));

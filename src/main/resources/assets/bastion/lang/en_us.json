@@ -359,7 +359,7 @@
   "item.bastion.repulsor_turret": "Repulsor",
   "tooltip.bastion.weapon.repulsor_turret.ability": "Charges, then a wave pushes every target in front of it within 5 blocks about 4 blocks away. Too weak for heavy mobs (iron golems, ravagers, wardens). No damage. Runs on FE (500 per push)",
   "item.bastion.repulsor_dome_turret": "Repulsor Dome",
-  "tooltip.bastion.weapon.repulsor_dome_turret.ability": "Charges, then a dome bursts out and throws every target within 9 blocks about 6 blocks away, through walls; heavy mobs 60 % less. No damage. Runs on FE (2,000 per pulse)",
+  "tooltip.bastion.weapon.repulsor_dome_turret.ability": "Charges, then a dome bursts out and throws every target within 9 blocks away, through walls: 6 blocks from the edge of its reach, one more per block closer; heavy mobs 60 % less. No damage. Runs on FE (2,000 per pulse)",
   "item.bastion.repulsor_emitter": "Repulsor Emitter",
   "item.bastion.repulsor_coil": "Field Coil",
   "item.bastion.repulsor_mount": "Repulsor Mount",
