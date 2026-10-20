@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.Nullable;
@@ -52,6 +53,15 @@ public class WeaponModuleItem extends Item implements GeoItem {
     @Nullable
     public WeaponData data() {
         return WeaponDataLoader.get(weaponId);
+    }
+
+    /**
+     * What this weapon fires (JEI's weapon page): its ammo tag, or nothing for weapons that only run on FE or have no data
+     * yet. An empty tag counts as nothing: Forge would show it as a barrier named "Empty Tag".
+     */
+    public Ingredient ammo() {
+        WeaponData data = data();
+        return data == null || !BuiltInRegistries.ITEM.getTagOrEmpty(data.ammo()).iterator().hasNext() ? Ingredient.EMPTY : Ingredient.of(data.ammo());
     }
 
     /** Model, texture and animation file name: the item id path, e.g. gun_turret. */

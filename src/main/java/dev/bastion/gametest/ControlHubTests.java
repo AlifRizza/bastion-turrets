@@ -290,22 +290,29 @@ public class ControlHubTests {
         return level.getBlockEntity(pos).getCapability(ForgeCapabilities.ENERGY, Direction.UP).orElseThrow(IllegalStateException::new);
     }
 
-    /** A formed hub pays its tier's upkeep every tick: 20, 60, 150 FE (config defaults). */
+    /**
+     * A formed hub pays its tier's upkeep every tick: 20, 60, 150 FE (config defaults). Counted over 20 ticks from when all
+     * three are online: a hub across a chunk that loads late forms at its 20-tick re-check, not a tick after placing.
+     */
     @GameTest(template = YARD, timeoutTicks = 80, batch = "hubPaysUpkeepPerTier")
     public static void hubPaysUpkeepPerTier(GameTestHelper helper) {
         HubInterfaceBlockEntity[] hubs = {hub(helper, new BlockPos(5, 2, 3), 1), hub(helper, new BlockPos(12, 2, 3), 2), hub(helper, new BlockPos(19, 2, 3), 3)};
         for (HubInterfaceBlockEntity hub : hubs) hub.setEnergy(100_000);
         int[] start = new int[3];
-        helper.runAtTickTime(10, () -> {
-            for (int i = 0; i < 3; i++) start[i] = hubs[i].energy();
-        });
-        helper.runAtTickTime(30, () -> {
-            int[] cost = {20, 60, 150};
-            for (int i = 0; i < 3; i++) {
-                int used = start[i] - hubs[i].energy();
-                helper.assertTrue(hubs[i].online() && used == 20 * cost[i], "T" + (i + 1) + " used " + used + " FE in 20 ticks, expected " + 20 * cost[i]);
+        long[] from = {-1};
+        helper.onEachTick(() -> {
+            if (from[0] < 0) {
+                if (!hubs[0].online() || !hubs[1].online() || !hubs[2].online()) return;
+                for (int i = 0; i < 3; i++) start[i] = hubs[i].energy();
+                from[0] = helper.getTick();
+            } else if (helper.getTick() == from[0] + 20) {
+                int[] cost = {20, 60, 150};
+                for (int i = 0; i < 3; i++) {
+                    int used = start[i] - hubs[i].energy();
+                    helper.assertTrue(hubs[i].online() && used == 20 * cost[i], "T" + (i + 1) + " used " + used + " FE in 20 ticks, expected " + 20 * cost[i]);
+                }
+                helper.succeed();
             }
-            helper.succeed();
         });
     }
 
@@ -751,6 +758,7 @@ public class ControlHubTests {
             long tick = helper.getTick();
             if (tick < 5 || tick >= 45) return;
             port.receiveEnergy(10, false); // T1 upkeep is 20
+            if (hub.status() == Status.UNFORMED) return; // forming late (a chunk loaded later) is not a flip
             if (last[0] != null && hub.status() != last[0]) flips[0]++;
             last[0] = hub.status();
         });

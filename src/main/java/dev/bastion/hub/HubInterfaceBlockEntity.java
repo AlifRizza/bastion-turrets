@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * The Control Hub's state (PLAN "Turret Control Hub"): its FE, the satellite's tier, and the status kept in its block
@@ -46,6 +47,9 @@ public class HubInterfaceBlockEntity extends BlockEntity implements MenuProvider
     /** The satellite's tier (1-3) when it last formed. */
     private int tier = 1;
     private int recheckTimer;
+    /** connectedCount() as last counted, and the game time it was counted at (-1: never). */
+    private int connectedCount;
+    private long countedAt = -1;
     /** Client: the status one tick ago (null before the first tick). */
     @Nullable
     private Status seen;
@@ -145,6 +149,24 @@ public class HubInterfaceBlockEntity extends BlockEntity implements MenuProvider
      */
     public List<TurretBaseBlockEntity> visibleTurrets(Player player) {
         if (!online() || level == null) return List.of();
+        List<TurretBaseBlockEntity> found = connectedTurrets(turret -> turret.canConfigure(player));
+        BlockPos center = center();
+        found.sort(Comparator.comparingDouble(turret -> turret.getBlockPos().distSqr(center)));
+        return found;
+    }
+
+    /** Turrets connected to this hub in its reach (loaded chunks), counted at most once a second: Jade asks several times a second. */
+    public int connectedCount() {
+        if (level == null || !formed()) return 0;
+        long now = level.getGameTime();
+        if (countedAt < 0 || now - countedAt >= 20) {
+            connectedCount = connectedTurrets(turret -> true).size();
+            countedAt = now;
+        }
+        return connectedCount;
+    }
+
+    private List<TurretBaseBlockEntity> connectedTurrets(Predicate<TurretBaseBlockEntity> filter) {
         BlockPos center = center();
         int r = side() / 2, cx = center.getX() >> 4, cz = center.getZ() >> 4;
         List<TurretBaseBlockEntity> found = new ArrayList<>();
@@ -153,11 +175,10 @@ public class HubInterfaceBlockEntity extends BlockEntity implements MenuProvider
                 LevelChunk chunk = level.getChunkSource().getChunkNow(x, z);
                 if (chunk == null) continue;
                 for (BlockEntity entity : chunk.getBlockEntities().values()) {
-                    if (entity instanceof TurretBaseBlockEntity turret && !turret.isRemoved() && connected(turret) && turret.canConfigure(player)) found.add(turret);
+                    if (entity instanceof TurretBaseBlockEntity turret && !turret.isRemoved() && connected(turret) && filter.test(turret)) found.add(turret);
                 }
             }
         }
-        found.sort(Comparator.comparingDouble(turret -> turret.getBlockPos().distSqr(center)));
         return found;
     }
 

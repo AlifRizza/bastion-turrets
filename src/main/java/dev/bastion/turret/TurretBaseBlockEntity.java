@@ -12,6 +12,7 @@ import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.turret.targeting.TargetSelector;
+import dev.bastion.modifier.ModifierEffect;
 import dev.bastion.weapon.FireContext;
 import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
@@ -304,9 +305,14 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
 
     // --- health (PLAN 4.1) -------------------------------------------------------------------
 
+    /** HP of a base of this tier and size with these modules (the Info tab, JEI's weapon pages). */
+    public static float maxHealth(TurretTier tier, boolean large, ModifierEffect effect) {
+        float size = large ? BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue() : 1;
+        return BastionConfig.maxHealth(tier) * size * Math.max(0.1f, 1 + effect.maxHealth());
+    }
+
     public float maxHealth() {
-        float size = large() ? BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue() : 1;
-        return BastionConfig.maxHealth(tier) * size * Math.max(0.1f, 1 + inventory.modifierEffect().maxHealth());
+        return maxHealth(tier, large(), inventory.modifierEffect());
     }
 
     public float health() {

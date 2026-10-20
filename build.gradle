@@ -145,6 +145,13 @@ dependencies {
     runtimeOnly fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
     runtimeOnly fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
     runtimeOnly "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
+    // Optional JEI and Jade compat (dev.bastion.client.compat.jei, dev.bastion.compat.jade): compiled against, loaded only
+    // when the player has them; in runClient, dropped with -PnoDevMods. Modrinth version ids: JEI 15.20.0.134 (the 15.20
+    // line most 1.20.1 packs use), Jade 11.13.3+forge.
+    compileOnly fg.deobf("maven.modrinth:jei:ujE6Mlsq")
+    compileOnly fg.deobf("maven.modrinth:jade:xJQHCmWJ")
+    clientDevMods fg.deobf("maven.modrinth:jei:ujE6Mlsq")
+    clientDevMods fg.deobf("maven.modrinth:jade:xJQHCmWJ")
     // Dev-only: Pipez (Modrinth version id, forge-1.20.1-1.2.26) to test item + FE piping into turrets and Feed Hubs.
     runtimeOnly fg.deobf("maven.modrinth:pipez:Mtjt7u5h")
     // Dev-only, runClient only: floating damage numbers + target health bar for testing turret damage.

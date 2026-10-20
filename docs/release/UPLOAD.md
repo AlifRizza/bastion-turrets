@@ -1,4 +1,4 @@
-# Upload sheet: 0.2.1
+# Upload sheet: 0.2.2
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -26,21 +26,37 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.2.1.jar` (`./gradlew build`) |
-| Version number         | 0.2.1                                                     |
-| Version name           | Bastion Turrets 0.2.1                                     |
+| File                   | `build/libs/bastion-1.20.1-0.2.2.jar` (`./gradlew build`) |
+| Version number         | 0.2.2                                                     |
+| Version name           | Bastion Turrets 0.2.2                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
 | Java                   | 17                                                        |
-| Dependencies           | GeckoLib: required. Create: optional.                     |
+| Dependencies           | GeckoLib: required. Create, JEI, Jade: optional.          |
 
 
 Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain numbers on the Beta channel: `0.1.1`, `0.1.2`,
 ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
 The next one is **0.2.0**, not 0.1.2 (user 2026-10-14: too many changes for a patch number; still Beta). Big
 updates bump the middle number, fixes the last. 0.2.1 (user 2026-10-19): the config file and the Dome push, after
-0.2.0 was uploaded.
+0.2.0 was uploaded. 0.2.2 (user 2026-10-20): JEI and Jade support, a patch number like 0.2.1.
+
+## Changelog: 0.2.2
+
+```
+New
+- JEI support: a recipe page for each of the 5 workstations (ingredients with counts, time, FE), a "Turret Weapons"
+  page per weapon (its base, ammo and stats; press U on an ammo to see which turrets fire it), information pages for
+  bases, kits, hubs and the Creative Power Source, and the + button that moves a recipe's ingredients into an open
+  station.
+- Jade support: look at a turret for its weapon, tier, HP and state (Shift: owner, modules, heat, target); at a
+  workstation for what it makes and its progress; at a Feed Hub or Control Hub for what it feeds or reaches. Any block
+  of a big machine shows the whole machine.
+
+Note
+- Clients need this version to join a server running it (new network packet).
+```
 
 ## Changelog: 0.2.1
 

@@ -110,6 +110,7 @@ Every turret's stats and weapon-specific numbers are also in `config/bastion-tur
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
 - Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle, the Repulsors and the Turret Control Hub
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
+- Optional: [JEI](https://modrinth.com/mod/jei) 15.20+ (recipe pages for the workstations and weapons, the + button) and [Jade](https://modrinth.com/mod/jade) 11.13+ (turret, workstation and hub info when you look at them)
 
 Install it on both client and server.
 
@@ -118,8 +119,6 @@ Install it on both client and server.
 English and Bahasa Indonesia.
 
 ## Known limits of this beta
-
-There's no JEI or Jade support yet (each station's GUI lists its own recipes).
 
 Works with Embeddium and Oculus. With a shader pack on, the cyan glow on the models turns white and holograms turn green. Everything else looks as intended.
 

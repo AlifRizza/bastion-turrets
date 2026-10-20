@@ -1113,6 +1113,80 @@ file di folder `turret_weapons` bawaan.
 **Di luar cakupan**: efek modul, tier base (sudah di `bastion-common.toml`), geometri/warna/ammo/type senjata, config per
 world (`serverconfig`), editor config di dalam game, senjata dari namespace lain.
 
+### Compat JEI & Jade (permintaan user 2026-10-20 12:50, desain disetujui 12:57, spec disetujui 12:59)
+
+**Status**: plan `docs/superpowers/plans/2026-10-20-jei-jade-compat.md` (dibuat 2026-10-20, 195 GameTest lolos, review akhir diperbaiki; user tes di game 2026-10-20: halaman JEI station/weapon/info
+  dan Jade turret oke, sisanya (tombol +, Jade station/hub, tanpa JEI/Jade) belum; rilis di 0.2.2, commit 2026-10-20).
+
+**Tujuan**: menghapus "no JEI or Jade support yet" dari Known limits. Di JEI pemain bisa mencari resep dan kegunaan
+item Bastion; dengan Jade, cukup melihat blok Bastion untuk tahu isinya.
+
+**Keputusan user**:
+- Cakupan ronde ini: **JEI + Jade**. The One Probe **nanti** (ronde terpisah). EMI ikut dapat resep lewat dukungan plugin
+  JEI-nya (selama JEI terpasang); plugin EMI/REI native tidak dibuat.
+- JEI: 5 kategori station **plus** halaman info item, tombol + (transfer resep), dan kategori stat weapon.
+- Jade: **ringkas, detail saat Shift** (`showDetails` Jade).
+- Pendekatan: **isi baris ditentukan kode Bastion**, adapter Jade tipis; TOP nanti cukup adapter baru.
+
+**Build**:
+- JEI 15.x dan Jade 11.13.x (Forge 1.20.1) dari Modrinth maven yang sudah ada di `build.gradle`; version id dikunci ke rilis
+  berumur ≥ 2 minggu: JEI **15.20.0.134** (`ujE6Mlsq`, cabang 15.20 yang dipakai kebanyakan modpack) dan Jade
+  **11.13.3+forge** (`xJQHCmWJ`). `compileOnly` untuk kompilasi; ikut `runClient` dev lewat `clientDevMods` (jadi `-PnoDevMods` dan
+  scene stress tetap tanpa JEI/Jade). GameTest tidak memuatnya.
+- `mods.toml`: `jei` (`[15.20,)`, side CLIENT) dan `jade` (`[11.13,)`) `mandatory=false` (seperti `create`).
+- Kode di `dev.bastion.client.compat.jei` (`@JeiPlugin`; client saja, jadi di package `client` sesuai §9.5) dan
+  `dev.bastion.compat.jade` (`@WailaPlugin`). Keduanya
+  hanya dimuat oleh mod itu sendiri lewat anotasi; tanpa JEI/Jade tidak ada class compat yang tersentuh, juga di server
+  dedicated.
+- Jar JEI/Jade belum ada di cache Gradle: butuh **satu kali run Gradle online** khusus mengunduh dependency, setelah
+  itu `--offline` seperti biasa.
+
+**JEI**:
+- **5 kategori**, satu per station (ikon & catalyst = item station): sampai 6 bahan dengan jumlahnya, hasil, waktu (detik),
+  total FE + FE/t, tanda "instan" untuk Module dan Ammo Workstation. Isi = semua resep `bastion:workstation` (termasuk dari
+  datapack). Resep crafting table untuk station tampil otomatis (resep vanilla).
+- **Kategori "Turret Weapons"**: satu halaman per weapon: item weapon, slot ammo (isi tag `ammo` weapon itu, jadi U pada
+  ammo menampilkan turret yang memakainya), item base yang cocok (Turret Base atau Large Turret Base), dan tabel stat yang
+  **sama dengan tab Info GUI turret** (T1, tanpa module). Baris tabel itu dipindah ke satu helper client yang dipakai
+  `TurretScreen` dan JEI. Angka dibaca saat digambar dari data senjata client (`WeaponDataSync`), jadi config/datapack
+  yang berubah langsung terlihat. Ability weapon ada di tooltip slot weapon (halaman cukup "Ability: hover the weapon"): teks
+  ability di halaman kepanjangan (Mortar 11 baris id_id) dan halaman harus muat di 1080p GUI scale 4 (review 2026-10-20).
+- **Halaman info** (Information JEI), teks en_us + id_id: Turret Base & Large Turret Base (pasang weapon, ammo, tier),
+  upgrade kit T2/T3, repair kit, Turret Configurator, Hub Connector, Feed Hub, part Control Hub (interface, casing, power
+  port, satellite uplink T1–T3), Creative Power Source.
+- **Tombol +**: hanya saat GUI station yang sama terbuka dan resepnya milik station itu. Klik = resep terpilih + bahan
+  untuk 1 craft dipindah dari inventory pemain ke slot input; Shift-klik = sebanyak yang muat di slot. Paket baru C→S
+  `WorkstationFill(pos, recipe, crafts)` dengan cek yang sama seperti `WorkstationAction` (menu terbuka di pos itu,
+  `stillValid`), lalu server memilih resep dan memindahkan item. Bahan kurang: tombol merah dan slot yang kurang
+  ditandai (perilaku standar JEI), tidak ada item yang berpindah.
+
+**Jade** (Bastion menyusun baris; adapter Jade cuma menempelkan):
+- **Turret**: selalu: HP / max HP, tier, state. Shift: owner, module terpasang, heat (senjata ber-heat), target.
+  Ammo (isi slot) dan FE (senjata energi) lewat tampilan bawaan Jade dari capability.
+- **Workstation**: resep yang sedang diproses + persen progress. FE dan isi slot lewat bawaan Jade.
+- **Feed Hub**: jumlah turret yang disuplai. FE dan isi storage lewat bawaan Jade.
+- **Control Hub** (interface, casing, power port, satellite uplink): Online / Offline / belum terbentuk, tier, upkeep
+  FE/t, jumlah turret yang terhubung (dihitung maksimal sekali per detik per hub, bukan tiap request Jade).
+- Part multiblock (Large Turret Base, workstation, Feed Hub, Control Hub) menampilkan info blok intinya.
+- Data dari server lewat server data provider Jade (NBT ringkas); server tanpa Jade = tidak ada baris Bastion (hanya baris
+  Jade sendiri): tier/FE hub dan progress station di client tidak tersinkron, jadi baris dari data client bisa salah (review
+  2026-10-20).
+  Hitbox turret tidak pickable di client, jadi Jade selalu membaca blok base.
+- Tiap provider punya id sendiri, jadi bisa dimatikan di config Jade (lang `config.jade.plugin_bastion.*`).
+
+**Acceptance**:
+- GameTest (tanpa JEI/Jade): (1) isi baris turret/workstation/Feed Hub/Control Hub sesuai state blok, baris Shift terpisah
+  dari baris ringkas; (2) part multiblock memberi info intinya; (3) `WorkstationFill` memindahkan jumlah yang pas,
+  tidak memindahkan apa pun saat bahan kurang, menolak resep station lain dan pemain yang tidak membuka GUI itu; (4)
+  tabel stat helper sama dengan yang dulu digambar `TurretScreen`.
+- Manual (checklist di `docs/TESTING.md`): R/U di JEI untuk part, ammo, weapon; tombol + dan Shift; halaman info; Jade
+  pada turret/station/hub (ringkas & Shift); run tanpa JEI/Jade tanpa crash; `runServer` tanpa JEI/Jade.
+- `./gradlew build` lolos, semua GameTest lama lolos (juga `-PwithCompatMods`).
+- Dokumen: Known limits & changelog di `docs/release/`, `HANDOFF.md`. Versi diputuskan saat rilis (kemungkinan 0.3.0).
+
+**Di luar cakupan**: The One Probe (ronde berikut), plugin EMI/REI native, WTHIT, ikon/tekstur JEI baru selain yang
+sudah ada di GUI station, tier/module selector di kategori weapon.
+
 ---
 
 ## 9. Aturan Kerja untuk Claude Code

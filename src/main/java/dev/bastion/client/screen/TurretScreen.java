@@ -7,7 +7,6 @@ import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.HubAction;
 import dev.bastion.network.TurretConfigUpdate;
 import dev.bastion.registry.BastionItems;
-import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
 import dev.bastion.turret.targeting.TargetFilter.Category;
@@ -16,6 +15,7 @@ import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponModuleItem;
+import dev.bastion.weapon.WeaponStatRows;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -434,37 +434,8 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
         fit(graphics, weapon.getHoverName(), 30, 29, imageWidth - 10 - 30, TEXT);
 
         StatSheet stats = StatSheet.of(data, menu.tier(), menu.turret().modifierEffect());
-        String[][] left = {
-                {"damage", fmt(stats.damage())},
-                {"fire_rate", fmt(20f / stats.fireInterval()) + "/s"},
-                {"range", fmt(stats.range())},
-                {"turn_speed", fmt(stats.turnSpeed() * 20) + "°/s"},
-                // The Laser Rifle passes through every valid target on its line.
-                {"pierce", data.type().equals(BastionWeaponTypes.LASER_RIFLE.getId()) ? "∞" : String.valueOf(stats.pierce())},
-                {"spread", fmt(stats.spread()) + "°"},
-                {"ammo_save", Math.round(stats.ammoSaveChance() * 100) + "%"},
-        };
-        String[][] right = data.params().containsKey("energy_per_shot") ? new String[][]{ // energy weapons: capacitor, no heat
-                {"energy_per_shot", fe(data.param("energy_per_shot")) + " FE"},
-                {"energy_capacity", fe(data.param("energy_capacity")) + " FE"},
-                {"max_input", fe(data.param("max_input")) + " FE/t"},
-                {"max_hp", fmt(menu.maxHealth())},
-                {"regen", fmt(BastionConfig.regenPerSecond(menu.tier())) + "/s"},
-                // Tesla: bolts per discharge; the Railgun also takes a slug per shot.
-                data.params().containsKey("bolts") ? new String[]{"bolts", String.valueOf(Math.round(data.param("bolts")))}
-                        : new String[]{"ammo", String.valueOf(data.ammoPerShot())},
-        } : new String[][]{
-                {"heat_per_shot", fmt(stats.heatPerShot())},
-                {"max_heat", fmt(stats.maxHeat())},
-                {"cooling", fmt(stats.heatDissipationPerTick() * 20) + "/s"},
-                {"max_hp", fmt(menu.maxHealth())},
-                {"regen", fmt(BastionConfig.regenPerSecond(menu.tier())) + "/s"},
-                // Weapons that load ahead (Missile Launcher) show their per-missile reload instead of ammo per shot.
-                data.params().containsKey("reload_ticks") ? new String[]{"reload", fmt(data.param("reload_ticks") / stats.reloadRate() / 20f) + "s"}
-                        : new String[]{"ammo", String.valueOf(data.ammoPerShot())},
-        };
-        statColumn(graphics, left, LEFT_X);
-        statColumn(graphics, right, RIGHT_X);
+        statColumn(graphics, WeaponStatRows.left(data, stats), LEFT_X);
+        statColumn(graphics, WeaponStatRows.right(data, stats, menu.maxHealth(), BastionConfig.regenPerSecond(menu.tier())), RIGHT_X);
 
         graphics.fill(10, 120, imageWidth - 10, 121, 0xFF3C4550);
         fit(graphics, Component.translatable("gui.bastion.info.ability"), 10, 126, imageWidth - 20, MUTED);
@@ -473,17 +444,13 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
         for (int i = 0; i < lines.size(); i++) graphics.drawString(font, lines.get(i), 10, 138 + i * 10, TEXT, false);
     }
 
-    /** 3000 -> "3k", 1500 -> "1.5k", 800 -> "800": energy figures that fit the info columns. */
-    private static String fe(float value) {
-        return value >= 1000 ? fmt(value / 1000f) + "k" : fmt(value);
-    }
-
-    private void statColumn(GuiGraphics graphics, String[][] rows, int x) {
-        for (int i = 0; i < rows.length; i++) {
+    private void statColumn(GuiGraphics graphics, List<WeaponStatRows.Row> rows, int x) {
+        for (int i = 0; i < rows.size(); i++) {
             int y = 46 + i * 10; // up to 7 rows above the ability divider at y 120
-            int valueWidth = font.width(rows[i][1]);
-            fit(graphics, Component.translatable("gui.bastion.info." + rows[i][0]), x, y, COLUMN_W - valueWidth - 4, MUTED);
-            graphics.drawString(font, rows[i][1], x + COLUMN_W - valueWidth, y, TEXT, false);
+            String value = rows.get(i).value();
+            int valueWidth = font.width(value);
+            fit(graphics, Component.translatable("gui.bastion.info." + rows.get(i).key()), x, y, COLUMN_W - valueWidth - 4, MUTED);
+            graphics.drawString(font, value, x + COLUMN_W - valueWidth, y, TEXT, false);
         }
     }
 

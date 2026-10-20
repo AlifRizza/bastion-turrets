@@ -276,3 +276,23 @@ Put every value back to its "Mod default" number when done (or delete the file):
 - [ ] Set `[ion_rifle] energy_capacity = 5000` on a full Ion Rifle: its energy bar shows 5,000 at most and it still fires (4 shots of 1,200 FE per full bar).
 - [ ] Set `[plasma_cannon] damage = 0`: mobs still take the blast damage (only the direct hit's own damage is gone) and still die normally.
 - [ ] LAN / dedicated server: change the server's file; a second player sees the new numbers in the Info tab. Changing the client's own file changes nothing on that server.
+
+## JEI & Jade
+Run `./gradlew runClient --offline` (JEI and Jade come with the dev run; `-PnoDevMods` leaves them out).
+
+**JEI**
+- [ ] Press R on a Gun Barrel: the Part Workstation page shows 3 Iron Ingot + 1 Copper Ingot with their counts, 5 s · 3000 FE (30 FE/t), the Part Workstation as catalyst. All 5 stations have a tab; the Module and Ammo Workstation pages say they also craft instantly.
+- [ ] Press U on Kinetic Rounds: the Turret Weapons pages of the Gun, Machine Gun (and every turret that fires them) show up. Each page shows the weapon, the base it mounts on, its ammo (FE weapons: "Runs on FE"), the T1 stats exactly as in a turret's Info tab with that weapon, and "Ability: hover the weapon" (hovering the weapon slot shows it); no text overlaps or runs past the page, also in Bahasa Indonesia (the Mortar page has the longest text).
+- [ ] Change `[gun] damage` in `config/bastion-turrets.toml` while playing, reopen the Gun's JEI page: the new number shows. Put it back to 7.
+- [ ] Press U on a Turret Base, Repair Kit, Hub Connector, Creative Power Source: an Information page with the text from the lang file.
+- [ ] Open an Ammo Workstation with copper, gunpowder, iron nuggets and one Kinetic Rounds in your inventory, hover the Kinetic Rounds in your inventory slots inside the station GUI and press R (recipes; U would list the turrets that fire them), click + next to the recipe: the recipe is picked in the GUI and one of each moves into the inputs. Shift-click +: as many as you have. Remove the gunpowder and look at +: red, the gunpowder slot marked; clicking does nothing. On a Part Workstation page with the Ammo Workstation open there is no + button.
+
+**Jade**
+- [ ] Look at a Gun Turret: "Gun Turret · T1", HP, State; hold Shift: Owner (your name), Modules, Heat, Target while it shoots. Ammo shows as items (Jade's own), an energy weapon shows an FE bar, a non-energy one shows no FE bar.
+- [ ] Look at each block of a Large Turret Base, a Part Assembler, and a Control Hub's casing, Power Port and satellite: the core's info (turret, station, hub), not the part's.
+- [ ] Workstation: "Pick a recipe", then "Making: …", then "Working N%" while it works, with its FE bar. Feed Hub: "Feeds N turrets". Control Hub: Online / Offline / Not formed, the satellite line with the connected turret count (updates within a second), FE.
+- [ ] Jade's plugin config lists Bastion's four switches; turning "Turret" off removes the turret lines.
+
+**Without them**
+- [ ] `./gradlew runClient --offline -PnoDevMods`: the game starts, workstations and turrets work, no errors mentioning jei, jade, mezz or snownee in `run/logs/latest.log`.
+- [ ] `./gradlew runServer --offline` (the dev server has neither JEI nor Jade): it starts with no such errors; the dev client joins and sees the JEI pages, while Jade shows only its own lines (no Bastion lines without Jade on the server).

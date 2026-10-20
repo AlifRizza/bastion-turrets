@@ -185,6 +185,64 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
     }
 
     /**
+     * JEI's + button: moves the selected recipe's ingredients from the player's main inventory into the inputs for up to
+     * {@code crafts} crafts, the most that both the player's items and the input slots allow. What the inputs already hold
+     * counts; stacks of anything else stay where they are. Nothing moves when not even one craft fits. Returns the crafts.
+     */
+    public int fill(Player player, int crafts) {
+        WorkstationRecipe recipe = recipe();
+        if (recipe == null) return 0;
+        for (int n = crafts; n > 0; n--) { // ponytail: linear from the top, at most 64 tries of 6x36 stacks on a click
+            if (move(recipe, n, player, true)) {
+                move(recipe, n, player, false);
+                return n;
+            }
+        }
+        return 0;
+    }
+
+    /** Puts enough of every ingredient for {@code crafts} crafts into the inputs, on copies; writes them back unless simulating. */
+    private boolean move(WorkstationRecipe recipe, int crafts, Player player, boolean simulate) {
+        List<ItemStack> slots = new ArrayList<>(INPUTS);
+        for (int i = 0; i < INPUTS; i++) slots.add(items.getStackInSlot(i).copy());
+        List<ItemStack> inventory = player.getInventory().items.stream().map(ItemStack::copy).toList();
+        for (WorkstationRecipe.Counted counted : recipe.ingredients()) {
+            int left = counted.count() * crafts - count(counted, slots);
+            for (ItemStack source : inventory) {
+                if (left <= 0) break;
+                if (counted.ingredient().test(source)) left -= insert(slots, source, left);
+            }
+            if (left > 0) return false;
+        }
+        if (!simulate) {
+            for (int i = 0; i < INPUTS; i++) items.setStackInSlot(i, slots.get(i));
+            for (int i = 0; i < inventory.size(); i++) { // only the stacks it took from: the rest stay the same objects
+                if (!ItemStack.matches(player.getInventory().items.get(i), inventory.get(i))) player.getInventory().items.set(i, inventory.get(i));
+            }
+            setChanged();
+        }
+        return true;
+    }
+
+    /** Moves up to {@code max} of {@code source} into the slots, onto the same item first, then into empty ones; returns how many. */
+    private static int insert(List<ItemStack> slots, ItemStack source, int max) {
+        int moved = 0;
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = 0; i < slots.size() && moved < max && !source.isEmpty(); i++) {
+                ItemStack slot = slots.get(i);
+                if (pass == 0 ? !ItemStack.isSameItemSameTags(slot, source) : !slot.isEmpty()) continue;
+                int n = Math.min(Math.min(source.getMaxStackSize() - slot.getCount(), max - moved), source.getCount());
+                if (n <= 0) continue;
+                if (slot.isEmpty()) slots.set(i, source.copyWithCount(n));
+                else slot.grow(n);
+                source.shrink(n);
+                moved += n;
+            }
+        }
+        return moved;
+    }
+
+    /**
      * What one craft from these stacks makes: the recipe's result, except that a damaged base keeps its tier (its
      * BlockEntityTag Tier, set when the turret was destroyed). take() uses up the first matching stack of each
      * ingredient, so that is the one read here.

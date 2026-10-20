@@ -1,0 +1,4 @@
+{
+  "_comment": "Dev runs only (src/dev, never in the jar): Jade's dev-environment check stops the game at the title screen when a Jade plugin has a config key without a translation, and Pipez (a dev-only mod here) lacks this one.",
+  "config.jade.plugin_pipez.pipe": "Pipe"
+}

@@ -7,6 +7,12 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-20: 0.2.2 committed, tagged `v0.2.2` and pushed: JEI & Jade compat** (plan
+`docs/superpowers/plans/2026-10-20-jei-jade-compat.md`, spec PLAN §8 "Compat JEI & Jade"). Changelog in `UPLOAD.md`, store
+text changes in `docs/release/DESCRIPTION_UPDATE_0.2.2.md`. Tested in game by the user: JEI station/weapon/info pages,
+Jade on turrets. Still to test (`docs/TESTING.md` "JEI & Jade"): the + button (R on Kinetic Rounds in the Ammo
+Workstation GUI), Jade on stations/hubs, runs without JEI/Jade. Next round after that: The One Probe (`BlockInfo` is ready).
+
 **2026-10-19: 0.2.1 committed, tagged `v0.2.1` and pushed** (with the 0.2.0 commit; 0.2.0 was uploaded by the user,
 never tagged). 0.2.1 = the turret stats config and the Dome push below; changelog in `docs/release/UPLOAD.md`, store
 text changes in `docs/release/DESCRIPTION_UPDATE_0.2.1.md`. The user uploads the jar.
