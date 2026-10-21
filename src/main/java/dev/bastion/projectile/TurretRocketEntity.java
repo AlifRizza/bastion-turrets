@@ -31,6 +31,8 @@ import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.UUID;
+
 /**
  * Rocket from a Rocket Launcher Turret, homing missile from a Missile Launcher Turret, or shell from a Mortar (same class,
  * three entity types). A rocket flies straight; a missile launches slanting up, then steers toward its target with a
@@ -57,6 +59,11 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private int blastKind = TurretImpactEvent.ROCKET_BLAST;
     /** Mortar shells: blocks per tick per tick pulled down (server side; clients get the velocity every tick). */
     private float gravity;
+    /** Picks a new target once its own is gone; off for missiles an Overwatch controller fired. */
+    private boolean retargets = true;
+    /** The Overwatch controller this was fired under (null: the turret's filter decides), kept for the whole flight. */
+    @Nullable
+    private UUID controller;
     @Nullable
     private FirePatches.Patch firePatch;
 
@@ -72,6 +79,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
                               float splashRadius, float knockback, int fuel) {
         this(type, level);
         this.turret = turret.immutable();
+        if (level.getBlockEntity(turret) instanceof TurretBaseBlockEntity base) this.controller = base.shooter();
         this.damage = damage;
         this.splashDamage = splashDamage;
         this.splashRadius = splashRadius;
@@ -90,6 +98,12 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         this.acceleration = acceleration;
         this.homingDelay = delay;
         this.blastKind = TurretImpactEvent.MISSILE_BLAST;
+        return this;
+    }
+
+    /** False for a missile an Overwatch controller fired: it keeps to its lock, or flies straight without one. */
+    public TurretRocketEntity retargets(boolean retargets) {
+        this.retargets = retargets;
         return this;
     }
 
@@ -165,7 +179,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         Vec3 dir = velocity.lengthSqr() < 1e-8 ? new Vec3(0, 1, 0) : velocity.normalize();
         if (age > homingDelay) {
             if (homingTarget == null || !homingTarget.isAlive()) {
-                homingTarget = retarget();
+                homingTarget = retargets ? retarget() : null;
                 targetVelocity = Vec3.ZERO;
             }
             if (homingTarget != null) {
@@ -215,7 +229,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private boolean affects(Entity entity) {
         if (!(entity instanceof LivingEntity living) || entity instanceof TurretHitboxEntity || !living.isAlive()) return false;
         TurretBaseBlockEntity base = turret != null && level().getBlockEntity(turret) instanceof TurretBaseBlockEntity b ? b : null;
-        return base == null ? entity instanceof Enemy : base.filter().test(living, base.owner());
+        return base == null ? entity instanceof Enemy : base.hits(living, controller);
     }
 
     private void explode(Vec3 at, @Nullable Entity direct, Vec3 normal) {

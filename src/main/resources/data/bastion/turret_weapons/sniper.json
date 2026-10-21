@@ -2,6 +2,7 @@
   "type": "bastion:sniper",
   "ammo": "bastion:ammo/sniper",
   "energy_color": "#9DFF6A",
+  "bullet_color": "#FFB347",
   "range": 64,
   "fire_interval": 30,
   "damage": 24,

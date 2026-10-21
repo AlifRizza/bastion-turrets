@@ -57,7 +57,7 @@ public final class CasingRenderer {
         else total++;
         RandomSource random = RandomSource.create(seed);
         Vector3f spinAxis = new Vector3f(random.nextFloat() - 0.5f, random.nextFloat() - 0.5f, random.nextFloat() - 0.5f).normalize();
-        list.addLast(new Casing(at, velocity, argb, shell ? 0.05f : 0.028f, shell ? 0.11f : 0.07f, spinAxis, 0.6f + random.nextFloat() * 0.6f));
+        list.addLast(new Casing(at, velocity, argb, shell, shell ? 0.05f : 0.028f, shell ? 0.11f : 0.07f, spinAxis, 0.6f + random.nextFloat() * 0.6f));
     }
 
     public static void tick(ClientLevel level) {
@@ -83,7 +83,8 @@ public final class CasingRenderer {
             for (Casing c : list) {
                 float alpha = Mth.clamp((LIFETIME - c.age - partialTick) / 10f, 0, 1);
                 int light = LevelRenderer.getLightColor(level, BlockPos.containing(c.pos));
-                c.box(solid, poseStack, cam, partialTick, 0.8f, 0.82f, 0.86f, alpha, light, true);
+                if (c.shell) c.box(solid, poseStack, cam, partialTick, 1f, 0.72f, 0.28f, alpha, light, true); // brass, like a real shell
+                else c.box(solid, poseStack, cam, partialTick, 0.8f, 0.82f, 0.86f, alpha, light, true);
             }
         }
         VertexConsumer glow = buffers.getBuffer(BastionRenderTypes.additiveGlow(TEXTURE));
@@ -100,15 +101,17 @@ public final class CasingRenderer {
     private static final class Casing {
         Vec3 pos, prevPos, velocity;
         final int argb;
+        final boolean shell;
         final float radius, halfLength, spin;
         final Vector3f spinAxis;
         float angle, prevAngle;
         int age, bounces;
 
-        Casing(Vec3 pos, Vec3 velocity, int argb, float radius, float halfLength, Vector3f spinAxis, float spin) {
+        Casing(Vec3 pos, Vec3 velocity, int argb, boolean shell, float radius, float halfLength, Vector3f spinAxis, float spin) {
             this.pos = this.prevPos = pos;
             this.velocity = velocity;
             this.argb = argb;
+            this.shell = shell;
             this.radius = radius;
             this.halfLength = halfLength;
             this.spinAxis = spinAxis;

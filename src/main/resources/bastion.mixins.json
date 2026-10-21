@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "bastion.refmap.json",
   "client": [
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,6 +2,7 @@ package dev.bastion.registry;
 
 import dev.bastion.Bastion;
 import dev.bastion.hub.HubConnectorItem;
+import dev.bastion.hub.OverwatchLinkItem;
 import dev.bastion.hub.SatelliteUplinkItem;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.turret.TurretBaseItem;
@@ -163,6 +164,9 @@ public final class BastionItems {
     /** Links a turret to a Turret Control Hub (PLAN "Hub Connector"); goes in the turret's Connector slot. */
     public static final RegistryObject<HubConnectorItem> HUB_CONNECTOR = REGISTER.register("hub_connector",
             () -> new HubConnectorItem(new Item.Properties().stacksTo(16)));
+    /** A Hub Connector with remote control (PLAN "Overwatch Link"); same Connector slot. */
+    public static final RegistryObject<OverwatchLinkItem> OVERWATCH_LINK = REGISTER.register("overwatch_link",
+            () -> new OverwatchLinkItem(new Item.Properties().stacksTo(16).rarity(Rarity.RARE)));
     public static final RegistryObject<BlockItem> CREATIVE_POWER_SOURCE = REGISTER.register("creative_power_source",
             () -> new BlockItem(BastionBlocks.CREATIVE_POWER_SOURCE.get(), new Item.Properties().rarity(Rarity.EPIC)));
 

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.bastion.client.ClientTurret;
 import dev.bastion.client.anim.WeaponAnimatable;
+import dev.bastion.client.overwatch.OverwatchClient;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +23,51 @@ import software.bernie.geckolib.util.RenderUtils;
  * muzzle, eject and sensor bones are stored on the ClientTurret for VFX (PLAN 6.2).
  */
 public class WeaponMountLayer extends GeoRenderLayer<TurretBaseBlockEntity> {
+    /** Takes vertices and draws nothing: the first-person Overwatch view looks out from inside the weapon (its bones still move, so muzzles stay right). */
+    private static final VertexConsumer DISCARD = new VertexConsumer() {
+        @Override
+        public VertexConsumer vertex(double x, double y, double z) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public void endVertex() {
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a) {
+        }
+
+        @Override
+        public void unsetDefaultColor() {
+        }
+    };
+    private static final MultiBufferSource NOWHERE = type -> DISCARD;
     private final WeaponModelRenderer weaponRenderer = new WeaponModelRenderer();
 
     public WeaponMountLayer(GeoRenderer<TurretBaseBlockEntity> renderer) {
@@ -38,7 +84,9 @@ public class WeaponMountLayer extends GeoRenderLayer<TurretBaseBlockEntity> {
         bakedModel.getBone("weapon_mount").ifPresent(mount -> {
             poseStack.pushPose();
             RenderUtils.translateToPivotPoint(poseStack, mount);
-            weaponRenderer.render(poseStack, weapon, bufferSource, null, null, packedLight);
+            // GeckoLib swaps in the game's own buffers whenever buffer is null, so a hidden weapon passes DISCARD as well.
+            boolean hidden = OverwatchClient.hidesWeapon(turret.getBlockPos());
+            weaponRenderer.render(poseStack, weapon, hidden ? NOWHERE : bufferSource, null, hidden ? DISCARD : null, packedLight);
             poseStack.popPose();
 
             // The weapon's object space starts at the mount pivot, in the turret frame (floor, wall or ceiling).

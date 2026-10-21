@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -207,8 +208,9 @@ public final class Bullets {
 
     /** The turret's valid targets: bullets fly through everything else (villagers, pets, trusted players). */
     public static Predicate<Entity> validTargets(FireContext context, WeaponType type) {
+        UUID controller = context.turret().shooter(); // the rule at firing, kept for the bullet's flight
         return e -> Hitscan.canHit(e) && e instanceof LivingEntity living
-                && TargetSelector.isCandidate(context.turret(), living, context.stats(), type);
+                && TargetSelector.isCandidate(context.turret(), living, context.stats(), type, controller);
     }
 
     /**
@@ -217,8 +219,9 @@ public final class Bullets {
      */
     public static Predicate<Entity> filtered(FireContext context, WeaponType type) {
         TurretBaseBlockEntity turret = context.turret();
+        UUID controller = turret.shooter(); // the rule at firing, kept for the field's or splash's life
         return e -> Hitscan.canHit(e) && e instanceof LivingEntity living && !living.isInvulnerable()
-                && turret.filter().test(living, turret.owner()) && type.canTarget(living, turret);
+                && turret.hits(living, controller) && type.canTarget(living, turret);
     }
 
     /** Active bullets in a level, for tests and the stress scene. */

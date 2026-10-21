@@ -14,7 +14,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -104,10 +103,13 @@ public class HubInterfaceBlock extends BaseEntityBlock {
         if (level.getBlockEntity(pos) instanceof HubInterfaceBlockEntity hub) hub.recheck();
     }
 
-    /** Holding a block places it (the next part). Otherwise an unfinished hub says what is missing. */
+    /**
+     * A right-click opens a formed hub's screen whatever is in hand (user 2026-10-21: it needed an empty hand); an
+     * unfinished hub says what is missing. Shift + right-click with an item skips this (vanilla): that places the next part
+     * or links a Hub Connector.
+     */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (player.getItemInHand(hand).getItem() instanceof BlockItem) return InteractionResult.PASS;
         if (level.isClientSide) {
             if (state.getValue(STATUS) == Status.UNFORMED) {
                 DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> HubBlueprint.show(pos, state.getValue(FACING)));

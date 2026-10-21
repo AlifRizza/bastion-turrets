@@ -52,12 +52,13 @@ public class HubConnectorItem extends Item {
         return link.getLong(POS) == iface.asLong() && level.dimension().location().toString().equals(link.getString(DIMENSION));
     }
 
-    /** Right-click on a Hub Interface links the stack in hand; it runs before the Interface would open its screen. */
+    /** Shift + right-click on a Hub Interface links the stack in hand; a plain right-click opens the hub's screen (user 2026-10-21). */
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        if (!(level.getBlockState(pos).getBlock() instanceof HubInterfaceBlock)) return InteractionResult.PASS;
+        if (context.getPlayer() == null || !context.getPlayer().isSecondaryUseActive()
+                || !(level.getBlockState(pos).getBlock() instanceof HubInterfaceBlock)) return InteractionResult.PASS;
         if (!level.isClientSide) {
             link(stack, level, pos);
             if (context.getPlayer() != null) {

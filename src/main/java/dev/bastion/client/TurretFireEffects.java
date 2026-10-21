@@ -1,6 +1,7 @@
 package dev.bastion.client;
 
 import dev.bastion.client.anim.WeaponAnimatable;
+import dev.bastion.client.overwatch.OverwatchClient;
 import dev.bastion.client.render.CasingRenderer;
 import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.vfx.VfxManager;
@@ -42,7 +43,7 @@ public final class TurretFireEffects {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null || !(level.getBlockEntity(event.pos()) instanceof TurretBaseBlockEntity turret)) return;
         WeaponData data = turret.inventory().weaponData();
-        int color = 0xFF000000 | (data == null ? 0xFFFFFF : data.energyColor());
+        int color = 0xFF000000 | (data == null ? 0xFFFFFF : data.shotColor());
         WeaponFx fx = WeaponFx.of(event.weaponType());
         ClientTurret client = ClientTurret.of(event.pos());
         RandomSource random = RandomSource.create(event.seed());
@@ -104,7 +105,8 @@ public final class TurretFireEffects {
             return;
         }
         VfxManager.play(fx.muzzle(), muzzle, direction, VfxParams.of().color(color).seed(event.seed()));
-        if (client.streak >= 3) {
+        // The first-person Overwatch sight sits just over this muzzle: the shimmer would blur the whole view.
+        if (!OverwatchClient.hidesWeapon(event.pos()) && client.streak >= 3) {
             VfxManager.play(VfxPresets.HEAT_HAZE, muzzle, direction, VfxParams.of().seed(event.seed() + 1));
         }
 

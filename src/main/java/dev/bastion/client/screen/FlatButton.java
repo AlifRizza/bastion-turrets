@@ -49,7 +49,7 @@ public class FlatButton extends AbstractButton {
         if (lit != null) graphics.fill(x + 3, y + height / 2 - 2, x + 7, y + height / 2 + 2, on ? GREEN : DARK);
         Font font = Minecraft.getInstance().font;
         Component text = label.get();
-        int colour = lit == null || on ? TEXT : MUTED;
+        int colour = !active ? MUTED : lit == null || on ? TEXT : MUTED;
         float scale = Math.min(1, (right - left) / (float) font.width(text));
         graphics.pose().pushPose();
         graphics.pose().translate((left + right) / 2f, y + height / 2f, 0);

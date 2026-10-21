@@ -149,7 +149,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Build the 3x3x3 cube: the Hub Interface facing you in the middle of the front side of the middle layer (eye level when you stand on the ground), Hub Casings everywhere else with at least one Hub Power Port on the outside, then a Satellite Uplink on the top middle block (its hologram shows both blocks). Before it is done, right-click the Interface with an empty hand: the action bar names the first problem; a hologram shows cyan boxes with the missing block turning inside (bottom layer first), red over a wrong block, amber on every casing while there is no port; boxes go as you place parts, all of it when the hub forms (10 s at most).
 - [ ] Forming: a cyan sheet sweeps through the cube, a flash at the dish, the dish unfolds and turns (about one turn per 10 s) with a soft hum, the Interface screen shows a radar, cyan lines along every outer edge of the cube (none around the Interface), a chime. Without FE it is OFFLINE: red blinking screen, dish stopped and drooping, red glow, a power-down sound.
 - [ ] FE: a cable or Creative Power Source on a Power Port (up to 2,000 FE/t per port; a port in no hub takes nothing). Upkeep: T1 20, T2 60, T3 150 FE/t (hover the FE bar). Run it dry: OFFLINE, and it stays OFFLINE without flickering even while a trickle of FE comes in; it comes back ONLINE once it holds 5 s of upkeep (T1 2,000, T2 6,000, T3 15,000 FE).
-- [ ] Hub Connectors: right-click the Interface with a stack of connectors: the whole stack is linked (action bar, tooltip "Linked to the hub at x, y, z", the icon's lamp lit), and the hub screen does not open; shift + right-click in the air clears the link (shift + right-click on a block, e.g. a turret, keeps it). Put one in a turret's Connector slot (Status tab, between the ammo and the modules; hover the empty slot for its name; hoppers never touch it).
+- [ ] Hub Connectors: shift + right-click the Interface with a stack of connectors: the whole stack is linked (action bar, tooltip "Linked to the hub at x, y, z", the icon's lamp lit); a plain right-click opens the hub screen instead (since 0.3.0); shift + right-click in the air clears the link (shift + right-click on a block, e.g. a turret, keeps it). Put one in a turret's Connector slot (Status tab, between the ammo and the modules; hover the empty slot for its name; hoppers never touch it).
 - [ ] Only turrets with a connector linked to this hub show on the Map and List (header "N turrets"), within the satellite's reach: T1 its chunk, T2 3x3, T3 7x7 chunks (F3 + G). A turret without a connector, with an unlinked one, or linked to another hub does not show; with none: "No connected turrets..." on both tabs. Another player's connected turrets show only once they trust you; an op sees all.
 - [ ] Click a dot or a List row: that turret's own GUI opens from the hub; weapon, ammo and modules go in from your inventory, Targeting and Info work; "◀ Map" brings back the hub screen with the same tab, zoom and selection. Walk more than 8 blocks from the Interface, or take the connector out: it closes.
 - [ ] The hub screen nearly fills the screen (also in fullscreen and after resizing the window): a bigger map, more List rows, wider Batch columns; every text on it is one size (legend lines, names, buttons), nothing squeezed.
@@ -296,3 +296,50 @@ Run `./gradlew runClient --offline` (JEI and Jade come with the dev run; `-PnoDe
 **Without them**
 - [ ] `./gradlew runClient --offline -PnoDevMods`: the game starts, workstations and turrets work, no errors mentioning jei, jade, mezz or snownee in `run/logs/latest.log`.
 - [ ] `./gradlew runServer --offline` (the dev server has neither JEI nor Jade): it starts with no such errors; the dev client joins and sees the JEI pages, while Jade shows only its own lines (no Bastion lines without Jade on the server).
+
+## Overwatch Link
+
+Run `./gradlew runClient --offline` (add `-PwithCompatMods` for the camera/compat check at the end).
+
+Setup: a formed Control Hub (T2+), online. Two Gun turrets, a Mortar and a Tesla Coil in reach. Each gets an Overwatch Link linked to the hub (shift + right-click the Interface with the Link first). One more turret gets a plain Hub Connector.
+
+1. **It loads:** the game reaches the title screen and a world (the Camera mixin applies). The Link shows in JEI with its recipe (Module Workstation) and info page.
+2. **Hub button:**
+   - On the Map tab, shift-click one Gun turret. The side button reads "Take control" (with none or two selected: "Select one turret"; the plain connector turret: "Needs Overwatch Link").
+   - Hovering a Link turret's dot shows "Overwatch Link".
+3. **Third person:** press Take control.
+   - The screen closes and the camera sits behind the turret. Mouse looks around, and the barrel follows at once.
+   - The HUD shows: brackets, REC, time, turret name, distance to the hub, HP/ammo/heat bars, hints. No vanilla hotbar, hearts or hand.
+   - Your own body is visible at the hub if you look back.
+4. **Fire:**
+   - Hold LMB on a cow: the Gun fires and hits it. Ammo goes down in the HUD.
+   - Fire at your own spot at the hub: you take no damage.
+5. **F5, zoom, switch:**
+   - F5 switches to the barrel view (no weapon model in the way).
+   - Scroll zooms 1x–4x.
+   - ← / → jumps to the other Link turrets and skips the plain connector turret.
+6. **Mortar:**
+   - On the Mortar, glowing dashes arc from the barrel to the ground with a ring at the end. Close to the base (inside 8 blocks), the arc and ring turn red and LMB does nothing.
+   - Fire: the shell lands in the ring.
+7. **Tesla Coil:** the crosshair says "VIEW ONLY". The coil keeps zapping hostiles by itself.
+8. **Letting go:**
+   - Shift returns you to your body.
+   - Take control again, then get hit (a zombie, or `/damage @s 1`): control ends.
+   - Take control, then break the hub's Power Port so it goes offline: control ends.
+9. **Others see it** (`./gradlew runServer --offline` + this client, optional): a second player looking at a controlled turret sees its barrel follow the controller, and Jade shows "Manual: <name>".
+10. **Compat** (`-PwithCompatMods`, Embeddium/Oculus): the camera, HUD and arc still draw. Note any shader issue.
+11. **Ceiling and wall turrets** (fixed after review): take control of a Gun on a ceiling and one on a wall. Third person looks out from below/beside it and the barrel follows the crosshair (not into its own base).
+12. **Switching** (fixed after review): control turret A, press → to B, then look at A from B. A's barrel tracks targets again; it is not frozen where you left it.
+13. **Shots in flight** (fixed after review): with the Missile Launcher, lock a cow and fire, then press Shift before the missile lands. It still hits the cow.
+14. **F5 and HUD** (fixed after your test): F5 looks out like a sight just over the muzzle; nothing of the turret blocks the view, and the shots (also the Gun's tracers) fly out from under the crosshair. At GUI scale 3–4, no HUD text runs off the screen (the hints wrap onto two lines).
+15. **Sneak: Toggle** (Options > Controls, fixed after review): one Shift press leaves, the body is not left crouching, and the next session also leaves with one press.
+15b. **Aim on a mob's body** (fixed after your test): put the crosshair on a zombie's chest. The barrel aims there, not at its feet.
+15c. **Right-click on the hub** (QoL after your test): right-click the Interface holding anything (a base, a weapon module, a Hub Connector) and its screen opens. Shift + right-click links a Hub Connector or Overwatch Link, and places a block you hold.
+15d. **Override while off** (after your test): switch a Gun off (its GUI switch or a redstone torch), take control: it aims and fires. Let go: it is off again.
+15e. **Machine Gun off mid-burst** (old bug): switch a firing Machine Gun off. The barrels wind down and stop within ~1.5 s.
+15f. **Longer reach under control** (after your test): a controlled Gun (range 32) hits a zombie ~45 blocks away; on its own it would not. Config `overwatchRangeMultiplier` (default 1.5).
+15g. **Sky view** (after your test): third person sits ~3 blocks above the turret and 4 back; indoors under a low roof it stays below the roof.
+15h. **F5 really clear** (root cause fixed): F5 on the Railgun and the Gun: no part of the weapon in view at all.
+15i. **Shot marker** (sky view): a small amber square shows where the shot lands along the barrel. On open ground it sits on the crosshair; aim at a mob behind a wall the turret cannot see over, and it stays on the wall.
+15j. **Crosshair and RELOAD**: the crosshair is thin at GUI scale 3–4. Sniper, Mortar, Railgun, Shotgun show a RELOAD bar that refills after each shot; Rocket and Missile Launchers show their loaded tubes.
+16. **Dev toggles** (`/bastiondev`): `ai false` makes every test mob stand still (and new ones from `/bastiondev zombie`); `ai true` brings them back. `knockbackimmune true` stops Shotgun, Repulsor and blast knockback on them (mobs on the heavy list still get the Repulsor's heavy push); `false` undoes it.

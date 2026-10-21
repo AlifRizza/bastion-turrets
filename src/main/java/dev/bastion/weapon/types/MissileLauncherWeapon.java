@@ -126,7 +126,9 @@ public class MissileLauncherWeapon extends WeaponType {
         if (!state.salvoActive) {
             state.salvoActive = true;
             state.salvoFired = 0;
-            List<LivingEntity> targets = TargetSelector.findAll(context.turret(), context.stats(), this, TUBES);
+            // A controlled salvo goes where the controller locked, not over the filter's targets.
+            List<LivingEntity> targets = context.manualPoint() != null ? List.of()
+                    : TargetSelector.findAll(context.turret(), context.stats(), this, TUBES);
             state.salvoTargets = targets.stream().mapToInt(Entity::getId).toArray();
         }
         for (int pod = 0; pod < 2; pod++) { // one from each pod per volley
@@ -160,7 +162,8 @@ public class MissileLauncherWeapon extends WeaponType {
                 context.turret().getBlockPos(), damage, data.param("splash_damage") * context.stats().damageScale(),
                 data.param("splash_radius"), data.param("knockback"), Math.round(data.param("fuel_ticks")))
                 .homing(target, data.param("turn_rate"), data.param("cruise_speed"), data.param("acceleration"),
-                        Math.round(data.param("homing_delay")));
+                        Math.round(data.param("homing_delay")))
+                .retargets(context.manualPoint() == null);
         missile.setPos(mouth(context.turret(), data, tube));
         missile.launch(context.direction().scale(data.param("launch_speed")));
         context.level().addFreshEntity(missile);

@@ -11,8 +11,10 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -106,6 +108,31 @@ public class DevCommandTests {
             helper.assertTrue(inventory.getStackInSlot(TurretInventory.WEAPON).is(module)
                     && inventory.getStackInSlot(TurretInventory.AMMO_START).is(BastionItems.CREATIVE_AMMO.get()), module + " base contents");
         }
+        helper.succeed();
+    }
+
+    /**
+     * /bastiondev ai false: dummies stand still (no AI), now and when spawned; ai true gives it back. /bastiondev
+     * knockbackimmune true: dummies take no knockback (full knockback resistance), false undoes it (user 2026-10-20).
+     */
+    @GameTest(template = "arena", batch = "devCommandTogglesAiAndKnockback")
+    public static void devCommandTogglesAiAndKnockback(GameTestHelper helper) {
+        Vec3 at = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(4, 2, 4)));
+        var source = helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()).withPosition(at).withSuppressedOutput();
+        var commands = helper.getLevel().getServer().getCommands();
+        commands.performPrefixedCommand(source, "bastiondev ai false");
+        commands.performPrefixedCommand(source, "bastiondev knockbackimmune true");
+        commands.performPrefixedCommand(source, "bastiondev zombie 40 1");
+        List<Zombie> zombies = helper.getLevel().getEntitiesOfClass(Zombie.class, new AABB(at, at).inflate(8));
+        helper.assertTrue(zombies.size() == 1, zombies.size() + " zombies");
+        Zombie zombie = zombies.get(0);
+        boolean stillAtSpawn = zombie.isNoAi(), immuneAtSpawn = zombie.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) >= 1;
+        commands.performPrefixedCommand(source, "bastiondev ai true");
+        commands.performPrefixedCommand(source, "bastiondev knockbackimmune false");
+        boolean aiBack = !zombie.isNoAi(), knockbackBack = zombie.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) < 1;
+        zombie.discard();
+        helper.assertTrue(stillAtSpawn && immuneAtSpawn, "spawned with AI " + !stillAtSpawn + ", immune " + immuneAtSpawn);
+        helper.assertTrue(aiBack && knockbackBack, "after switching back: AI " + aiBack + ", knockback " + knockbackBack);
         helper.succeed();
     }
 }

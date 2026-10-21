@@ -2,6 +2,7 @@
   "type": "bastion:shotgun",
   "ammo": "bastion:ammo/scatter",
   "energy_color": "#FF4FD8",
+  "bullet_color": "#FFB347",
   "range": 12,
   "fire_interval": 24,
   "damage": 5,

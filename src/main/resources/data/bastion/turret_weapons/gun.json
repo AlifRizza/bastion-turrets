@@ -2,6 +2,7 @@
   "type": "bastion:gun",
   "ammo": "bastion:ammo/kinetic",
   "energy_color": "#4FD8FF",
+  "bullet_color": "#FFB347",
   "range": 32,
   "fire_interval": 12,
   "damage": 7,

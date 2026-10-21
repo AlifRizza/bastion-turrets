@@ -14,6 +14,7 @@ import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.turret.targeting.TargetSelector;
 import dev.bastion.modifier.ModifierEffect;
 import dev.bastion.weapon.FireContext;
+import dev.bastion.weapon.ManualAim;
 import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponState;
@@ -100,6 +101,9 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     @Nullable
     private LivingEntity target;
     private WeaponState weaponState = new WeaponState();
+    /** Overwatch: who steers this turret and their input (PLAN "Overwatch Link"); server only, never saved. */
+    @Nullable
+    private ManualControl manual;
 
     // Ownership and settings (PLAN 4.7)
     @Nullable
@@ -123,6 +127,12 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private int clientTargetId = -1;
     /** Launcher tubes as a bit mask, from RackSync and the update tag: loaded ones (Missile Launcher), spent ones (Rocket Launcher). */
     private int clientTubes;
+    /** Overwatch: the name of the player steering it, from the update tag; null when nobody is. */
+    @Nullable
+    private String clientController;
+    // Client: the controlling player's own aim, drawn at once instead of after the server's next sync (Overwatch)
+    private boolean predicted;
+    private float predictedYaw, predictedPitch;
     // Client render smoothing (PLAN 6.4): exponential follow + idle scan sweep
     private float renderYaw, renderPitch, prevRenderYaw, prevRenderPitch, scanCenterYaw;
     private int scanTicks;
@@ -303,6 +313,56 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         return BastionConfig.TRUSTED_CAN_DAMAGE.get() || owner == null || !filter.isTrusted(player, owner);
     }
 
+    // --- Overwatch (PLAN "Overwatch Link") ------------------------------------------------------
+
+    @Nullable
+    public ManualControl manual() {
+        return manual;
+    }
+
+    /** Server (OverwatchSessions): who steers this turret now, or null; clients learn the name through the update tag. */
+    public void setManual(@Nullable ManualControl control) {
+        manual = control;
+        target = null;
+        chargeTimer = 0;
+        if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+    }
+
+    /** Under control with a weapon that turns: the controller aims and fires it. Watch-only weapons (turn_speed 0) stay automatic. */
+    public boolean steering() {
+        WeaponData data = inventory.weaponData();
+        return manual != null && data != null && data.aim().turnSpeed() > 0;
+    }
+
+    /** Whom a shot fired now may hurt (see {@link #hits}). */
+    public boolean wouldHit(LivingEntity entity) {
+        return hits(entity, shooter());
+    }
+
+    /** The player steering the shots this turret fires now, or null when its filter decides; a shot keeps this for its whole flight. */
+    @Nullable
+    public UUID shooter() {
+        return steering() ? manual.player() : null;
+    }
+
+    /**
+     * Whom a shot may hurt: the targeting filter, or for a shot fired under {@code controller}'s control every living
+     * thing but the owner and the controller, other players only with PvP on. Bullets, fields and rockets pass the
+     * controller they were fired under, so letting go mid-flight does not change what they hit (review 2026-10-20).
+     */
+    public boolean hits(LivingEntity entity, @Nullable UUID controller) {
+        if (controller == null) return filter.test(entity, owner);
+        if (!(entity instanceof Player player)) return true;
+        UUID id = player.getUUID();
+        return !id.equals(owner) && !id.equals(controller) && level != null && level.getServer() != null && level.getServer().isPvpAllowed();
+    }
+
+    /** Client: the name of whoever steers it, or null. */
+    @Nullable
+    public String clientController() {
+        return clientController;
+    }
+
     // --- health (PLAN 4.1) -------------------------------------------------------------------
 
     /** HP of a base of this tier and size with these modules (the Info tab, JEI's weapon pages). */
@@ -464,7 +524,9 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
                 pitchVelocity = 0;
             }
         }
-        if (data == null || type == null || !active(level)) {
+        // Overwatch overrides the switch and redstone: a controller can fire a switched-off turret (user 2026-10-21).
+        if (data == null || type == null || (!active(level) && !steering())) {
+            if (data != null && type != null) type.switchedOff(this, weaponState, StatSheet.of(data, tier, inventory.modifierEffect()));
             state = TurretState.DISABLED;
             target = null;
             return;
@@ -481,6 +543,10 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             state = TurretState.IDLE;
         }
 
+        if (steering()) { // the controller reaches farther than the turret on its own (BastionConfig.overwatchRange)
+            tickManual(level, stats.withRange(stats.range() * BastionConfig.overwatchRange()), type);
+            return;
+        }
         updateTarget(stats, type);
         boolean armed = hasAmmo(stats) && !type.outOfAmmo(this, weaponState);
         type.tick(this, weaponState, stats, target != null && armed);
@@ -536,6 +602,61 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         }
         chargeTimer = 0;
         fire(level, stats, type);
+    }
+
+    /**
+     * Overwatch: the barrel snaps to the controller's aim (turn speed ignored); the trigger runs the usual cycle (cooldown,
+     * ready, charge, fire). Letting go cancels a charge; no aim (Mortar: out of reach) never fires.
+     */
+    private void tickManual(ServerLevel level, StatSheet stats, WeaponType type) {
+        target = null;
+        yawVelocity = pitchVelocity = 0;
+        aimLockTicks = 0;
+        ManualAim.Aim aim = manual.point() == null ? null : ManualAim.solve(this, type, stats, manual.point());
+        if (aim != null) {
+            yaw = Mth.wrapDegrees(aim.yaw());
+            pitch = aim.pitch();
+        }
+        boolean armed = hasAmmo(stats) && !type.outOfAmmo(this, weaponState);
+        boolean trigger = manual.trigger(level.getGameTime());
+        type.tick(this, weaponState, stats, trigger && armed);
+        if (!armed) {
+            chargeTimer = 0;
+            state = TurretState.NO_AMMO;
+            return;
+        }
+        if (!trigger || aim == null) {
+            chargeTimer = 0;
+            fireCooldown = Math.max(fireCooldown, 0);
+            state = TurretState.IDLE;
+            return;
+        }
+        if (chargeTimer == 0) {
+            if (fireCooldown > 0) {
+                state = TurretState.COOLDOWN;
+                return;
+            }
+            if (!type.ready(stats, weaponState)) {
+                fireCooldown = Math.max(fireCooldown, 0);
+                state = TurretState.AIMING;
+                return;
+            }
+        }
+        int charge = type.chargeTicks(stats);
+        if (charge > 0 && chargeTimer < charge) {
+            chargeTimer++;
+            state = TurretState.CHARGING;
+            return;
+        }
+        chargeTimer = 0;
+        fire(level, stats, type);
+    }
+
+    /** The creature the controller has locked, while it can still be hit and is in range; else none. */
+    @Nullable
+    private LivingEntity manualTarget(StatSheet stats) {
+        if (!(level.getEntity(manual.entityId()) instanceof LivingEntity living) || !living.isAlive() || living instanceof TurretHitboxEntity) return null;
+        return living.distanceToSqr(pivot(stats.data())) <= stats.range() * stats.range() && wouldHit(living) ? living : null;
     }
 
     /** Precision Lock bookkeeping (PLAN 7.1): ticks held on the same target, reset when the target changes. */
@@ -614,13 +735,15 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
 
     private void fire(ServerLevel level, StatSheet stats, WeaponType type) {
         WeaponData data = stats.data();
-        boolean lock = data.params().containsKey("precision_lock_ticks") && !weaponState.lockSpent
+        boolean steered = steering();
+        boolean lock = !steered && data.params().containsKey("precision_lock_ticks") && !weaponState.lockSpent
                 && weaponState.lockTicks >= data.param("precision_lock_ticks");
         if (lock) weaponState.lockSpent = true;
         consumeAmmo(stats, level);
         Vec3 direction = toWorld(Vec3.directionFromRotation(pitch, yaw));
         Vec3 muzzle = pivot(data).add(direction.scale(data.aim().muzzleLength()));
-        type.onFire(new FireContext(level, this, muzzle, direction, target, stats, weaponState, level.random.nextLong(), lock));
+        type.onFire(new FireContext(level, this, muzzle, direction, steered ? manualTarget(stats) : target, stats, weaponState,
+                level.random.nextLong(), lock, steered ? manual.point() : null));
         sinceShot = 0;
         fireCooldown += type.fireInterval(stats, weaponState);
         heat += stats.heatPerShot();
@@ -684,9 +807,14 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private void tickClient() {
         prevRenderYaw = renderYaw;
         prevRenderPitch = renderPitch;
+        if (predicted) { // the controller's view: no smoothing, no sweep
+            prevRenderYaw = renderYaw = predictedYaw;
+            prevRenderPitch = renderPitch = predictedPitch;
+            return;
+        }
         float wantedYaw = clientYaw, wantedPitch = clientPitch;
         WeaponData data = inventory.weaponData();
-        if (clientState == TurretState.IDLE && (data == null || data.aim().turnSpeed() > 0)) {
+        if (clientState == TurretState.IDLE && clientController == null && (data == null || data.aim().turnSpeed() > 0)) {
             // Scanning sweep, client-only (PLAN 4.5): +-45 deg around where the turret last looked, level, or as near as
             // its elevation limits allow (Missile Launcher: fixed, Mortar: always up). Weapons that never turn (Tesla) do not sweep.
             scanTicks++;
@@ -701,11 +829,22 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     public float renderYaw(float partialTick) {
-        return Mth.rotLerp(partialTick, prevRenderYaw, renderYaw);
+        return predicted ? predictedYaw : Mth.rotLerp(partialTick, prevRenderYaw, renderYaw);
     }
 
     public float renderPitch(float partialTick) {
-        return Mth.lerp(partialTick, prevRenderPitch, renderPitch);
+        return predicted ? predictedPitch : Mth.lerp(partialTick, prevRenderPitch, renderPitch);
+    }
+
+    /** Overwatch, the controlling client: where its own aim puts the barrel, set every frame by the camera (OverwatchClient). */
+    public void setPredictedAim(float yaw, float pitch) {
+        predicted = true;
+        predictedYaw = yaw;
+        predictedPitch = pitch;
+    }
+
+    public void clearPredictedAim() {
+        predicted = false;
     }
 
     public TurretState clientState() {
@@ -823,6 +962,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             clientState = TurretState.byId(tag.getByte("State"));
             clientYaw = renderYaw = prevRenderYaw = scanCenterYaw = yaw;
             clientPitch = renderPitch = prevRenderPitch = pitch;
+            clientController = tag.contains("Controller") ? tag.getString("Controller") : null;
         }
     }
 
@@ -831,6 +971,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     public CompoundTag getUpdateTag() {
         CompoundTag tag = saveWithoutMetadata();
         tag.putByte("State", (byte) state.ordinal());
+        if (manual != null) tag.putString("Controller", manual.name());
         return tag;
     }
 

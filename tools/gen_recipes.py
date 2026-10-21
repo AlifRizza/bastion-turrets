@@ -111,7 +111,8 @@ HUB = {"hub_casing": ({"iron_ingot": 4, "copper_ingot": 2, "redstone": 1}, 60, 1
        "satellite_uplink_t1": ({"iron_ingot": 3, "copper_ingot": 2, "ender_pearl": 1, "redstone": 1}, 100, 3000, 1),
        "satellite_uplink_t2": ({B + "satellite_uplink_t1": 1, "diamond": 2, "gold_ingot": 2, "ender_eye": 1}, 140, 6000, 1),
        "satellite_uplink_t3": ({B + "satellite_uplink_t2": 1, "netherite_scrap": 1, "diamond": 2, "ender_eye": 2}, 180, 10000, 1),
-       "hub_connector": ({"copper_ingot": 2, "redstone": 1, "ender_pearl": 1}, 60, 1000, 4)}
+       "hub_connector": ({"copper_ingot": 2, "redstone": 1, "ender_pearl": 1}, 60, 1000, 4),
+       "overwatch_link": ({B + "hub_connector": 1, "diamond": 2, "ender_eye": 1, "spyglass": 1, "observer": 1}, 200, 12000, 1)}
 AMMO = {  # result: (ingredients, time, energy, count, tab)
     "kinetic_rounds": ({"copper_ingot": 1, "gunpowder": 1, "iron_nugget": 1}, 40, 400, 16, "kinetic_rounds"),
     "scatter_shells": ({"paper": 1, "gunpowder": 1, "copper_ingot": 1}, 40, 400, 8, "kinetic_rounds"),

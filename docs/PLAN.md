@@ -439,6 +439,8 @@ Nilai di bawah adalah titik awal, semuanya di JSON dan akan di-balance saat play
 | Machine Gun Turret | suppression, banyak target | 24 | spin-up 0 → 12 tembakan/dtk | 2.5 | Kinetic Rounds (1 per 2 tembakan) | **Spin-up & Suppression**: target yang kena mendapat Slowness I 1 dtk; spread melebar saat panas | amber |
 | Shotgun Turret | pertahanan jarak dekat | 12 | 1 tembakan / 1.2 dtk | 8 pelet × 2.5 | Scatter Shells (1/tembakan) | **Kinetic Blast**: knockback kuat, damage pelet turun linear setelah 6 block | magenta |
 
+Warna peluru (permintaan user 2026-10-20 18:10, diperjelas 18:15): peluru Gun, Shotgun dan Sniper memakai warna amber Machine Gun lewat field JSON `bullet_color` #FFB347 (muzzle flash, tracer, impact, glow casing; tanpa field ini = `energy_color`). Hologram tetap `energy_color`: reticle Precision Lock Gun cyan, laser bidik dan titik bidik Sniper hijau. Badan shell Shotgun yang terlempar berwarna kuningan seperti shell asli (casing lain tetap baja).
+
 Semua turret memakai `WeaponType` + `FireProfile` di 4.3. Profil MVP: `HITSCAN_SINGLE` (Gun), `HITSCAN_SPINUP` (Machine Gun), `HITSCAN_SPREAD` (Shotgun). Profil lain (`PROJECTILE`, `CHARGED`, `AREA_PULSE`, `SPAWNER`, `BEAM_CONTINUOUS`) disiapkan sebagai enum tapi baru diimplementasikan post-MVP.
 
 ### 7.1 Gun Turret
@@ -854,8 +856,8 @@ Tampak samping (depan)              Tampak atas lapisan tengah
 
 **Hub Connector**
 - Item `hub_connector` (Hub Connector / Konektor Hub), tumpuk 16, tab kreatif Bastion.
-- Link: klik kanan Hub Interface (jadi atau belum) sambil memegang connector → **seluruh tumpukan di tangan** di-link ke hub itu (posisi Interface + dimensi disimpan di item); pesan action bar "Terhubung ke hub di x, y, z". Klik kanan Interface dengan connector tidak membuka GUI. Shift+klik kanan di udara menghapus link.
-- Tooltip: hub tujuan (koordinat) atau "Belum terhubung: klik kanan Hub Interface". Ikon: chip gunmetal dengan steker; yang sudah di-link lampunya cyan (item property `linked`).
+- Link: **Shift +** klik kanan Hub Interface (jadi atau belum) sambil memegang connector → **seluruh tumpukan di tangan** di-link ke hub itu (posisi Interface + dimensi disimpan di item); pesan action bar "Terhubung ke hub di x, y, z". Klik kanan biasa pada Interface membuka GUI apa pun yang dipegang (user 2026-10-21; dulu harus tangan kosong / connector langsung me-link); Shift + klik kanan dengan blok memasang blok. Shift+klik kanan di udara menghapus link.
+- Tooltip: hub tujuan (koordinat) atau "Belum terhubung: Shift + klik kanan Hub Interface". Ikon: chip gunmetal dengan steker; yang sudah di-link lampunya cyan (item property `linked`).
 - Slot: tiap turret base (standar dan Large, semua tier) punya 1 slot **Connector** baru di tab Status GUI turret, di dekat slot modul; hanya menerima Hub Connector (yang belum di-link juga boleh masuk, tapi tidak menghubungkan apa pun). Hopper/pipa tidak bisa memasukkan atau mengambilnya (otomasi hanya melihat slot amunisi).
 - Turret dihancurkan → connector drop seperti modul; turret ditambang → connector tetap di dalam seperti isi lainnya. Turret Configurator tidak menyalin connector (hanya targeting).
 - Link menyimpan posisi Interface: hub yang dibangun ulang di tempat yang sama tetap terhubung; Interface di tempat lain = link ulang.
@@ -1069,7 +1071,7 @@ file config gameplay: `bastion-common.toml` (yang sudah ada: tier base, proteksi
   `heat_dissipation_per_second`, `max_heat`, `overheat_ticks`) **plus semua `params` di JSON senjata itu** (mis.
   `charge_ticks`, `energy_per_shot`, `blast_radius`), langsung di section (tanpa sub-tabel `params`; tidak ada nama
   yang bentrok).
-- Tidak masuk config: `type`, `ammo`, `energy_color`, `pivot_height`, `muzzle_length` (identitas, warna, geometri
+- Tidak masuk config: `type`, `ammo`, `energy_color`, `bullet_color`, `pivot_height`, `muzzle_length` (identitas, warna, geometri
   model).
 - Nilai tiap key: angka dalam batasnya, awalnya angka mod (bulat ditulis tanpa `.0`). Komentar per key: penjelasan satu baris (Inggris) +
   satuan + `Mod default: <nilai JSON bawaan>` + `Range: <min> ~ <max>`.
@@ -1186,6 +1188,103 @@ item Bastion; dengan Jade, cukup melihat blok Bastion untuk tahu isinya.
 
 **Di luar cakupan**: The One Probe (ronde berikut), plugin EMI/REI native, WTHIT, ikon/tekstur JEI baru selain yang
 sudah ada di GUI station, tier/module selector di kategori weapon.
+
+### Overwatch Link: kendali turret jarak jauh (permintaan user 2026-10-20 21:27, desain disetujui per bagian malam itu)
+
+**Status**: plan `docs/superpowers/plans/2026-10-20-overwatch-link.md`; dibangun 2026-10-20/21, review akhir (Opus) + 4 putaran tes user di game diperbaiki, 224 GameTest lolos; rilis **0.3.0** (commit 2026-10-21). Belum dites ulang di game setelah putaran terakhir: langkah 15h–15j di `docs/TESTING.md` "Overwatch Link".
+
+**Tujuan**: lewat Control Hub, pemain melihat dari turret mana pun di jangkauan hub (kamera orang ketiga, seperti CCTV
+jarak jauh) dan, untuk turret yang bisa membidik, mengarahkan dan menembakkannya sendiri. Mortar (dan senjata melengkung
+berikutnya) menampilkan lintasan dan titik jatuhnya.
+
+**Keputusan user**:
+- Cakupan: **semua 3 tahap dalam satu rilis** (CCTV, tembak manual, indikator lintasan), rilis **0.3.0**.
+- Item: **Overwatch Link**, Hub Connector versi kendali di **slot Connector** yang sudah ada (bukan slot modifier, bukan
+  slot baru).
+- Tembak manual kena **semua makhluk kecuali pemilik turret**; pemain lain hanya bila PvP server aktif.
+- Badan pemain tetap di hub; **kena damage = kendali lepas**.
+- Bidik: **laras langsung ikut mouse** (turn speed diabaikan). Ini keunggulan item, jadi resepnya mahal dan tooltip/JEI
+  menjelaskannya.
+- Ekstra: ganti turret tanpa keluar, zoom scroll, HUD gaya CCTV, toggle orang pertama.
+- Kamera: **client-side seperti drone Superb Warfare** (user 21:45, mengganti pilihan server-side sebelumnya: `setCamera`
+  vanilla ikut memindahkan badan pemain, jadi server-side butuh 3 mixin server). Bukan monitor di GUI. Superb Warfare
+  GPL-3.0: hanya caranya yang dipelajari, kodenya tidak disalin (§9.4).
+
+**Overwatch Link (item)**:
+- Subclass `HubConnectorItem`: link ke hub persis seperti Hub Connector (Shift + klik kanan Interface, Shift + klik kanan di udara
+  menghapus link), diterima slot Connector. Turret dengan Link tampil di hub seperti biasa, plus bisa dikendalikan.
+- Resep Module Workstation (JSON): 1 Hub Connector, 2 diamond, 1 eye of ender, 1 spyglass, 1 observer; 200 tick, 12.000 FE.
+- Tooltip + halaman info JEI (en_us + id_id): cara pakai, dan bahwa kendali manual mengabaikan turn speed.
+- Tekstur item baru (pola Hub Connector + lensa), lewat generator di `tools/`.
+
+**Masuk & keluar kendali**:
+- GUI Control Hub: tombol **"Ambil Kendali"** untuk turret terpilih. Aktif hanya bila turret ber-Link, hub online, turret
+  dalam jangkauan & termuat, dan `canConfigure(player)`. Satu pengendali per turret; turret yang sedang dikendalikan
+  menampilkan "Dikendalikan oleh <nama>" dan tombolnya mati untuk pemain lain.
+- Keluar: tombol Shift (sneak). Lepas otomatis bila: pemain kena damage, hub offline/rusak/tidak terbentuk, turret hancur
+  atau Link dicabut/diganti, turret keluar jangkauan (satelit diganti), pemain disconnect/mati/pindah dimensi, atau GUI
+  hub tidak lagi bisa dipakai pemain itu. Saat lepas, pandangan kembali ke badan di hub.
+- Suara masuk/keluar: suara hub yang sudah ada (`control_hub.ui_select` / `control_hub.online`); suara khusus di luar
+  cakupan (bisa menyusul lewat take user).
+- **Override** (user 2026-10-21): turret yang dimatikan (tombol on/off atau redstone) tetap bisa dikendalikan dan menembak selama sesi; dilepas, kembali mati. Jangkauan saat dikendalikan = range turret (modul ikut) × `overwatchRangeMultiplier` (config server, default 1.5; dikirim ke client saat sesi mulai). Shell Mortar tetap dibatasi kecepatannya (~45 blok).
+- Senjata dengan `turn_speed` 0 (Tesla Coil, Repulsor Dome, dan senjata baru sejenis): **lihat saja**; mouse memutar
+  kamera, turret tetap menembak otomatis.
+
+**Kamera (client-side)**:
+- Tidak ada entitas kamera dan tidak ada mixin server: server hanya mencatat sesi (pemain ↔ turret) dan memberi tahu
+  client lewat paket. Client memindahkan kamera lewat mixin `Camera.setup` (posisi + rotasi ke turret) selama sesi
+  aktif; badan pemain tetap di hub dan tergambar seperti F5. Chunk dan mob di sekitar turret terlihat karena turret ada
+  dalam render distance pemain (jangkauan hub default T3 = turret ≤ ~4 chunk dari hub).
+- Turret di luar render distance client (hanya mungkin bila jangkauan hub di config dibesarkan): tombol "Ambil Kendali"
+  mati dengan pesan "di luar jarak pandang"; sesi yang turret-nya keluar dari chunk client lepas otomatis.
+- Orang ketiga: di belakang-atas pivot ~3,5 blok (base besar ~5,5), ditarik maju bila terhalang blok. **F5**: pandangan
+  dari laras: kamera tepat di depan moncong, model senjata, muzzle flash dan heat haze turret itu tidak digambar (user
+  2026-10-20: dari pivot pandangan tertutup).
+- Kontrol (KeyMapping kategori "Bastion", bisa diganti): mouse = bidik; klik kiri ditahan = tembak; scroll = zoom 1×–4×
+  (FOV); ←/→ = turret ber-Link berikutnya/sebelumnya di hub yang sama (urutan daftar hub); Shift = keluar. Tombol jalan,
+  lompat, inventory, hotbar dan pakai item dimatikan; chat dan Esc normal.
+- HUD gaya CCTV (tekstur custom, §1): bingkai sudut, titik REC + waktu, garis scan halus, nama turret (nama custom atau
+  weapon + tier), jarak ke hub, crosshair (merah bila tidak bisa menembak), bar HP, ammo atau FE, heat, charge, dan baris
+  petunjuk tombol. Tanpa tangan/hotbar vanilla.
+
+**Bidik & tembak (server)**:
+- Client mengirim arah bidik tiap tick (paket C→S): laras diarahkan ke titik yang ditunjuk crosshair (raycast dari kamera
+  sejauh range), jadi peluru keluar dari laras menuju crosshair. Server menerima hanya dari pengendali turret itu, membatasi
+  pitch ke `min_pitch`/`max_pitch`, dan memasang yaw/pitch **langsung** (tanpa turn speed).
+- Paket trigger tekan/lepas. Selama ditahan, turret menjalani siklus tembak biasa: fire interval, ammo per tembakan, heat &
+  overheat, FE, modul. MG spin-up selama ditahan. Senjata charge (Sniper, Laser Rifle, Railgun, Plasma Cannon) mengisi
+  selama ditahan dan menembak saat penuh; dilepas sebelum penuh = charge batal.
+- Selama dikendalikan: auto-target berhenti, Precision Lock Gun tidak aktif. State turret tetap state mesin yang ada
+  (CHARGING, FIRING, OVERHEAT, NO_AMMO, ...); pengendali disimpan terpisah dan disinkron, GUI turret dan Jade menampilkan
+  "Manual: <nama>".
+- Per senjata: Gun, MG, Shotgun, Sniper, Laser Rifle, Railgun, Ion Rifle, Plasma Repeater, Plasma Cannon, Flamethrower,
+  Repulsor, Rocket Launcher menembak lurus searah laras. Missile Launcher mengunci makhluk di bawah crosshair saat
+  menembak (tanpa makhluk: terbang lurus). Mortar: yaw ikut mouse, elevasi laras dari busur tinggi ke titik yang ditunjuk
+  crosshair; di luar `range` atau di bawah `min_range` tidak bisa menembak.
+- Kena: semua makhluk hidup kecuali pemilik turret; pemain lain hanya bila `pvp` server aktif. Filter GUI turret tidak
+  dipakai di mode manual.
+
+**Indikator lintasan**:
+- Rumus busur Mortar dipindah ke satu helper bersama (server menembak, client menggambar), jadi indikator selalu sama
+  dengan jatuhnya peluru. Senjata menandai diri "melengkung" lewat `WeaponType`, jadi senjata melengkung baru otomatis
+  dapat indikator.
+- Tampilan: titik-titik busur berpendar (warna energi senjata) dari laras sampai blok pertama yang tertabrak, plus cincin
+  jatuh seukuran `blast_radius`; merah bila target di luar jangkauan.
+
+**Acceptance**:
+- GameTest: syarat masuk (Link, hub online, jangkauan, izin) dan penolakan masing-masing; satu pengendali per turret;
+  setiap alasan lepas otomatis; paket bidik dari bukan-pengendali ditolak, pitch dibatasi, yaw/pitch langsung terpasang;
+  tembak manual kena sapi tapi tidak kena pemilik, pemain lain tidak kena saat PvP mati; charge batal saat trigger dilepas;
+  Mortar manual jatuh di titik bidikan (toleransi kecil) dan menolak di luar jangkauan; Missile mengunci makhluk di
+  crosshair; Tesla tetap menembak otomatis saat "dikendalikan"; Overwatch Link berfungsi sebagai Hub Connector; busur
+  helper = posisi jatuh peluru server.
+- Manual (checklist di `docs/TESTING.md`): kamera orang ketiga & F5, turret di luar render distance (tombol mati + pesan), HUD, zoom, ganti
+  turret ←/→, lepas saat kena hit, multiplayer (`runServer` + 2 client: pemain lain melihat laras bergerak), Embeddium/Oculus.
+- `./gradlew build` lolos, semua GameTest lama lolos (juga `-PwithCompatMods`). `PROTOCOL` network naik.
+- Dokumen: changelog & deskripsi store di `docs/release/`, `HANDOFF.md`.
+
+**Di luar cakupan**: layar monitor di GUI, kendali di luar jangkauan hub, tablet genggam, biaya FE saat dikendalikan, suara
+baru, kendali tanpa Control Hub, pengiriman chunk/mob di sekitar turret dari server (turret harus dalam render distance).
 
 ---
 

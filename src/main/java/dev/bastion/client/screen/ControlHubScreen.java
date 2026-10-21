@@ -8,6 +8,7 @@ import dev.bastion.menu.ControlHubMenu;
 import dev.bastion.menu.ControlHubMenu.Entry;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.HubAction;
+import dev.bastion.network.OverwatchRequest;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.turret.TurretBaseBlockEntity;
@@ -32,6 +33,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
     private static final int MARGIN = 6, TAB_ROOM = 24, MIN_W = 256, MIN_H = 200, MAX_W = 640, MAX_H = 400;
     private static final int FE_X = 8, FE_Y = 18, FE_H = 6;
     // Map tab: the map square on the left, as big as the panel allows; selection buttons, legend and hints right of it.
-    private static final int MAP_X = 8, MAP_Y = 30, SIDE_MIN = 72, LEGEND_Y = 76, HINT_Y = 146, PICK = 4;
+    private static final int MAP_X = 8, MAP_Y = 30, SIDE_MIN = 72, LEGEND_Y = 90, HINT_Y = 160, PICK = 4;
     // List tab: sort and selection buttons, then as many rows as fit.
     private static final int LIST_Y = 46, ROW_H = 18;
     private static final int[] ZOOMS = {1, 2, 4};
@@ -89,6 +91,8 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
     /** The part of a trackpad's fractional scroll that has not made a whole list row yet. */
     private double scrollRest;
     private FlatButton zoomIn, zoomOut;
+    /** Map tab: Take control of the one selected turret (PLAN "Overwatch Link"); says why not when it can't. */
+    private FlatButton control;
 
     public ControlHubScreen(ControlHubMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -128,6 +132,7 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
         super.init();
         leftPos += TAB_ROOM / 2; // the side tabs stick out on the left: centre the panel and its tabs together
         zoomIn = zoomOut = null;
+        control = null;
         if (tab() == Tab.MAP) {
             zoomOut = addRenderableWidget(new FlatButton(leftPos + MAP_X + mapSize - 30, topPos + MAP_Y + 4, 12, 12,
                     () -> Component.literal("-"), () -> zoom(mapSize / 2.0, mapSize / 2.0, -1)));
@@ -137,6 +142,7 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
                     () -> Component.translatable("gui.bastion.control_hub.select_all"), this::selectAll));
             addRenderableWidget(new FlatButton(leftPos + sideX, topPos + 58, sideW, 12,
                     () -> Component.translatable("gui.bastion.control_hub.clear"), this::clearSelection));
+            control = addRenderableWidget(new FlatButton(leftPos + sideX, topPos + 72, sideW, 12, this::controlLabel, this::takeControl));
         } else if (tab() == Tab.LIST) {
             String[] sorts = {"distance", "health", "ammo"};
             for (int i = 0; i < sorts.length; i++) {
@@ -165,6 +171,7 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
         for (var widget : renderables) {
             if (widget instanceof AbstractWidget w) w.visible = online && (tab() != Tab.BATCH || any);
         }
+        if (control != null) control.active = controlBlock() == null;
         if (!online || minecraft == null || minecraft.level == null) return;
         Set<BlockPos> present = new HashSet<>();
         for (Entry turret : menu.turrets()) present.add(turret.pos());
@@ -398,11 +405,14 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
         BlockPos p = turret.pos();
         Component supply = turret.energyWeapon() ? Component.translatable("gui.bastion.control_hub.energy", Math.round(turret.fill() * 100))
                 : Component.translatable("gui.bastion.control_hub.ammo", turret.ammo());
-        return List.of(name(turret),
+        List<Component> lines = new ArrayList<>(List.of(name(turret),
                 Component.translatable("gui.bastion.control_hub.pos", p.getX(), p.getY(), p.getZ()).withStyle(ChatFormatting.GRAY),
                 Component.translatable("gui.bastion.control_hub.hp", Math.round(turret.health()), Math.round(turret.maxHealth())).withStyle(ChatFormatting.GRAY),
                 supply.copy().withStyle(ChatFormatting.GRAY),
-                Component.translatable("gui.bastion.state." + turret.state().name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_AQUA));
+                Component.translatable("gui.bastion.state." + turret.state().name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_AQUA)));
+        if (turret.linked()) lines.add(Component.translatable("gui.bastion.control_hub.linked").withStyle(ChatFormatting.AQUA));
+        if (!turret.controller().isEmpty()) lines.add(Component.translatable("gui.bastion.control_hub.controller", turret.controller()).withStyle(ChatFormatting.GOLD));
+        return lines;
     }
 
     private static Component name(Entry turret) {
@@ -618,6 +628,46 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
 
     private void click() {
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(BastionSounds.CONTROL_HUB_UI_SELECT.get(), 1f));
+    }
+
+    // --- Overwatch (PLAN "Overwatch Link") --------------------------------------------------------
+
+    /** The one selected turret, or null when none or several are selected. */
+    @Nullable
+    private Entry selectedOne() {
+        if (HubSelection.selected.size() != 1) return null;
+        BlockPos pos = HubSelection.selected.iterator().next();
+        for (Entry turret : menu.turrets()) if (turret.pos().equals(pos)) return turret;
+        return null;
+    }
+
+    /** Why the selection can't be taken over (the button shows it), or null when it can. */
+    @Nullable
+    private Component controlBlock() {
+        Entry turret = selectedOne();
+        if (turret == null) return Component.translatable("gui.bastion.control_hub.control.pick");
+        if (!turret.linked()) return Component.translatable("gui.bastion.control_hub.control.no_link");
+        String me = minecraft == null || minecraft.player == null ? "" : minecraft.player.getGameProfile().getName();
+        if (!turret.controller().isEmpty() && !turret.controller().equals(me)) {
+            return Component.translatable("gui.bastion.control_hub.control.taken", turret.controller());
+        }
+        // The camera only works where this client has the world loaded (PLAN: no chunks are sent for it).
+        if (minecraft == null || minecraft.level == null || !minecraft.level.isLoaded(turret.pos())) {
+            return Component.translatable("gui.bastion.control_hub.control.far");
+        }
+        return null;
+    }
+
+    private Component controlLabel() {
+        Component block = controlBlock();
+        return block != null ? block : Component.translatable("gui.bastion.control_hub.control");
+    }
+
+    private void takeControl() {
+        Entry turret = selectedOne();
+        if (turret == null || controlBlock() != null) return;
+        click();
+        BastionNetwork.CHANNEL.sendToServer(OverwatchRequest.start(turret.pos()));
     }
 
     // --- batch ------------------------------------------------------------------------------------

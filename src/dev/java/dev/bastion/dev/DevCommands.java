@@ -27,7 +27,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.item.Item;
@@ -57,6 +60,9 @@ import java.util.Locale;
  * run (-PwithCompatMods) also {@code busser}, its flying ranged mob. {@code /bastiondev automation} builds the
  * Create belt/arm/funnel test rig next to you, {@code /bastiondev automation report} shows what reached each turret.
  * {@code /bastiondev turrets [t1|t2|t3]} gives every weapon on its base with Creative Ammo, ready to place (T3 by default).
+ * {@code /bastiondev ai true|false}: the test mobs walk and attack (the default) or stand still with no AI, and
+ * {@code /bastiondev knockbackimmune true|false}: they take no knockback; both apply to the mobs already out and every new one
+ * (user 2026-10-20). Repulsors still shove mobs on the server config's heavy list by its heavy push.
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class DevCommands {
@@ -65,6 +71,8 @@ public final class DevCommands {
     private static final int MAX_COUNT = 200;
     /** Spore's BusserVariants in order (setVariant takes the index): only noxious (TOXIC) shoots stingers. */
     private static final List<String> BUSSER_VARIANTS = List.of("default", "kidnapper", "kamikaze", "noxious", "transporter");
+    /** /bastiondev ai and knockbackimmune: what every test mob gets (until the server restarts). */
+    private static boolean dummyAi = true, dummyKnockbackImmune;
 
     static { // vanilla caps max_health at 1,024; dev runs and the -PwithDevCommands test jar only
         try {
@@ -109,6 +117,22 @@ public final class DevCommands {
                             c.getSource().sendSuccess(() -> Component.literal("Own turrets " + (on ? "CAN" : "can no longer")
                                     + " be damaged by their owner and trusted players (server config trustedCanDamage = " + on + ")"), true);
                             return 1;
+                        })))
+                .then(Commands.literal("ai") // testing only: test mobs walk and attack, or stand still (user 10-20)
+                        .then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
+                            dummyAi = BoolArgumentType.getBool(c, "on");
+                            int mobs = applyToDummies(c.getSource());
+                            c.getSource().sendSuccess(() -> Component.literal("Test mobs " + (dummyAi ? "walk and attack" : "stand still (no AI)")
+                                    + ": " + mobs + " now, and every new one"), true);
+                            return mobs;
+                        })))
+                .then(Commands.literal("knockbackimmune") // testing only: test mobs take no knockback (user 10-20)
+                        .then(Commands.argument("on", BoolArgumentType.bool()).executes(c -> {
+                            dummyKnockbackImmune = BoolArgumentType.getBool(c, "on");
+                            int mobs = applyToDummies(c.getSource());
+                            c.getSource().sendSuccess(() -> Component.literal("Test mobs " + (dummyKnockbackImmune ? "take no knockback" : "take knockback again")
+                                    + ": " + mobs + " now, and every new one"), true);
+                            return mobs;
                         })))
                 .then(Commands.literal("turrets") // every weapon, ready to place: no assembling for tests (user 10-10)
                         .executes(c -> giveTurrets(c.getSource(), TurretTier.T3))
@@ -199,10 +223,35 @@ public final class DevCommands {
             }
             mob.setPersistenceRequired();
             mob.addTag(DUMMY_TAG);
+            applyToggles(mob);
             level.addFreshEntity(mob);
         }
         source.sendSuccess(() -> Component.literal("Spawned " + count + " sunlight-proof " + type.getDescription().getString()
                 + "(s) with " + health + " HP"), true);
+        return count;
+    }
+
+    /** The ai and knockbackimmune settings on one test mob; knockback back to its type's own resistance when off. */
+    @SuppressWarnings("unchecked")
+    private static void applyToggles(Mob mob) {
+        mob.setNoAi(!dummyAi);
+        AttributeInstance resistance = mob.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (resistance == null) return;
+        AttributeSupplier defaults = DefaultAttributes.getSupplier((EntityType<? extends LivingEntity>) mob.getType());
+        resistance.setBaseValue(dummyKnockbackImmune ? 1 : defaults.getBaseValue(Attributes.KNOCKBACK_RESISTANCE));
+    }
+
+    /** Applies the toggles to every test mob in every loaded level; returns how many. */
+    private static int applyToDummies(CommandSourceStack source) {
+        int count = 0;
+        for (ServerLevel level : source.getServer().getAllLevels()) {
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof Mob mob && mob.getTags().contains(DUMMY_TAG)) {
+                    applyToggles(mob);
+                    count++;
+                }
+            }
+        }
         return count;
     }
 

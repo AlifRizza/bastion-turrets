@@ -32,7 +32,8 @@ import java.util.List;
  * reload after a salvo comes early by the same amount, so the cycle stays four intervals.
  */
 public class RocketLauncherWeapon extends WeaponType {
-    private static final int TUBES = 4, ALL = (1 << TUBES) - 1;
+    public static final int TUBES = 4;
+    private static final int ALL = (1 << TUBES) - 1;
     /** Single mode: ticks from a shot to its tube's reload (the tube animation's own pause before the rocket slides in). */
     private static final int SINGLE_RELOAD = 8;
     /** Ticks a reloaded rocket takes to slide into its tube (the client's tube animation runs exactly as long). */

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Target search and validation, PLAN 4.5. The turret searches every 10 ticks and re-validates its
@@ -50,8 +51,13 @@ public final class TargetSelector {
     }
 
     public static boolean isCandidate(TurretBaseBlockEntity turret, LivingEntity entity, StatSheet stats, WeaponType type) {
+        return isCandidate(turret, entity, stats, type, turret.shooter());
+    }
+
+    /** As above for a shot fired under {@code controller}'s control (null: the filter's), whoever steers the turret now. */
+    public static boolean isCandidate(TurretBaseBlockEntity turret, LivingEntity entity, StatSheet stats, WeaponType type, @Nullable UUID controller) {
         return entity.isAlive() && !entity.isSpectator() && !entity.isInvulnerable() && !(entity instanceof TurretHitboxEntity)
-                && turret.filter().test(entity, turret.owner()) && type.canTarget(entity, turret)
+                && turret.hits(entity, controller) && type.canTarget(entity, turret)
                 && entity.distanceToSqr(turret.pivot(stats.data())) <= stats.range() * stats.range();
     }
 

@@ -29,6 +29,7 @@ public final class BastionConfig {
     private static final ForgeConfigSpec.ConfigValue<List<? extends Number>> CONTROL_HUB_UPKEEP;
     public static final ForgeConfigSpec.IntValue CONTROL_HUB_RESTART_TICKS;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Number>> CONTROL_HUB_RANGE;
+    private static final ForgeConfigSpec.DoubleValue OVERWATCH_RANGE_MULTIPLIER;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_HEALTH;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_REGEN;
     private static final ForgeConfigSpec.ConfigValue<List<? extends Double>> TIER_TURN_SPEED;
@@ -95,6 +96,10 @@ public final class BastionConfig {
         CONTROL_HUB_RANGE = b
                 .comment("Side of the square of chunks a Control Hub reaches, centred on its satellite's chunk, per tier T1, T2, T3 (odd).")
                 .defineList("controlHubRange", List.<Number>of(1, 3, 7), o -> o instanceof Number n && n.intValue() >= 1 && n.intValue() % 2 == 1);
+        OVERWATCH_RANGE_MULTIPLIER = b
+                .comment("Range of a turret while a player controls it through an Overwatch Link, relative to its own (modules included).",
+                        "A Mortar's shells still only fly as far as their speed allows.")
+                .defineInRange("overwatchRangeMultiplier", 1.5, 1.0, 4.0);
         b.push("tiers");
         TIER_HEALTH = b.comment("Max HP per tier T1, T2, T3.")
                 .defineList("health", List.of(100.0, 250.0, 500.0), o -> o instanceof Double d && d > 0);
@@ -121,6 +126,11 @@ public final class BastionConfig {
 
     public static float turnSpeedMultiplier(TurretTier tier) {
         return tierValue(TIER_TURN_SPEED, tier, 1);
+    }
+
+    /** Range under Overwatch control relative to the turret's own (user 2026-10-21: the override reaches farther). */
+    public static float overwatchRange() {
+        return OVERWATCH_RANGE_MULTIPLIER.get().floatValue();
     }
 
     /** FE per tick of a formed Control Hub with a tier 1-3 satellite. */

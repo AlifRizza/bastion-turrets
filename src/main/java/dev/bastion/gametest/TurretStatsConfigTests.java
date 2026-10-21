@@ -1,6 +1,7 @@
 package dev.bastion.gametest;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.mojang.serialization.JsonOps;
 import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.config.TurretStatsConfig;
@@ -66,6 +67,26 @@ public class TurretStatsConfigTests {
                 "identity or colour changed");
         helper.assertTrue(changed.aim().pivotHeight() == sniper.aim().pivotHeight() && changed.aim().muzzleLength() == sniper.aim().muzzleLength(),
                 "geometry changed");
+        helper.succeed();
+    }
+
+    /**
+     * bullet_color (user 2026-10-20 18:15): Gun, Shotgun and Sniper bullets are the Machine Gun's amber while their holograms keep the
+     * energy colour; a weapon without it shoots in its energy colour. It survives overrides and the client sync (the codec).
+     */
+    @GameTest(template = ARENA, batch = "bulletColourIsSeparateFromEnergyColour")
+    public static void bulletColourIsSeparateFromEnergyColour(GameTestHelper helper) {
+        int amber = weapon("machine_gun").shotColor();
+        for (String id : List.of("gun", "shotgun", "sniper")) {
+            helper.assertTrue(weapon(id).shotColor() == amber, id + " bullets " + Integer.toHexString(weapon(id).shotColor()));
+        }
+        WeaponData sniper = weapon("sniper");
+        helper.assertTrue(sniper.energyColor() == 0x9DFF6A, "sniper sight " + Integer.toHexString(sniper.energyColor()));
+        helper.assertTrue(weapon("tesla").shotColor() == weapon("tesla").energyColor(), "no bullet_color must fall back to energy_color");
+        helper.assertTrue(sniper.withOverrides(Map.of("damage", 1.0)).shotColor() == amber, "overrides dropped bullet_color");
+        WeaponData synced = WeaponData.CODEC.parse(JsonOps.INSTANCE,
+                WeaponData.CODEC.encodeStart(JsonOps.INSTANCE, sniper).getOrThrow(false, e -> {})).getOrThrow(false, e -> {});
+        helper.assertTrue(synced.shotColor() == amber && synced.energyColor() == 0x9DFF6A, "sync lost a colour");
         helper.succeed();
     }
 

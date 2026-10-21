@@ -76,6 +76,7 @@ public final class BlockInfo {
         tag.putFloat("Hp", turret.health());
         tag.putFloat("MaxHp", turret.maxHealth());
         tag.putString("State", turret.state().name().toLowerCase(Locale.ROOT));
+        if (turret.manual() != null) tag.putString("Controller", turret.manual().name());
         String owner = turret.owner() == null ? null : ownerName(turret.getLevel(), turret.owner());
         if (owner != null) tag.putString("Owner", owner);
         ListTag modules = new ListTag();
@@ -135,6 +136,7 @@ public final class BlockInfo {
                 lines.add(Component.translatable("jade.bastion.turret.weapon", weapon, Component.translatable("gui.bastion.turret.tier", tag.getInt("Tier"))));
                 lines.add(Component.translatable("gui.bastion.turret.hp", fmt(tag.getFloat("Hp")), fmt(tag.getFloat("MaxHp"))));
                 lines.add(Component.translatable("jade.bastion.state", Component.translatable("gui.bastion.state." + tag.getString("State"))));
+                if (tag.contains("Controller")) lines.add(Component.translatable("gui.bastion.turret.manual", tag.getString("Controller")));
                 if (!details) break;
                 if (tag.contains("Owner")) lines.add(Component.translatable("jade.bastion.owner", tag.getString("Owner")));
                 ListTag modules = tag.getList("Modules", Tag.TAG_STRING);

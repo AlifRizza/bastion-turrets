@@ -11,6 +11,7 @@ import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Balance numbers of one weapon, loaded from data/<ns>/turret_weapons/<id>.json (PLAN 2, 7). The JSON
@@ -21,6 +22,7 @@ public record WeaponData(
         ResourceLocation type,
         TagKey<Item> ammo,
         int energyColor,
+        Optional<Integer> bulletColor,
         float range,
         float fireInterval,
         float damage,
@@ -74,6 +76,7 @@ public record WeaponData(
             ResourceLocation.CODEC.fieldOf("type").forGetter(WeaponData::type),
             TagKey.codec(Registries.ITEM).fieldOf("ammo").forGetter(WeaponData::ammo),
             COLOR.optionalFieldOf("energy_color", 0xFFFFFF).forGetter(WeaponData::energyColor),
+            COLOR.optionalFieldOf("bullet_color").forGetter(WeaponData::bulletColor),
             Codec.FLOAT.fieldOf("range").forGetter(WeaponData::range),
             Codec.FLOAT.fieldOf("fire_interval").forGetter(WeaponData::fireInterval),
             Codec.FLOAT.fieldOf("damage").forGetter(WeaponData::damage),
@@ -83,6 +86,11 @@ public record WeaponData(
             Heat.CODEC.forGetter(WeaponData::heat),
             Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("params", Map.of()).forGetter(WeaponData::params)
     ).apply(i, WeaponData::new));
+
+    /** Muzzle flash, tracer, impact and casing glow: bullet_color, else energy_color (holograms and sights always use energy_color). */
+    public int shotColor() {
+        return bulletColor.orElse(energyColor);
+    }
 
     /** A weapon-specific number; fails loudly when the JSON lacks it, so a typo never silently becomes 0. */
     public float param(String key) {
@@ -113,7 +121,7 @@ public record WeaponData(
                 ticks(overrides, "overheat_ticks", heat.overheatTicks()));
         Map<String, Float> newParams = new HashMap<>(params);
         params.forEach((key, value) -> newParams.put(key, number(overrides, key, value)));
-        return new WeaponData(type, ammo, energyColor, number(overrides, "range", range), number(overrides, "fire_interval", fireInterval),
+        return new WeaponData(type, ammo, energyColor, bulletColor, number(overrides, "range", range), number(overrides, "fire_interval", fireInterval),
                 number(overrides, "damage", damage), number(overrides, "spread", spread), number(overrides, "ammo_per_shot", ammoPerShot),
                 newAim, newHeat, Map.copyOf(newParams));
     }

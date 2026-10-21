@@ -58,6 +58,8 @@ minecraft {
         }
 
         client {
+            // Dev-only client mixins (src/dev/resources): ToroHealth's damage numbers drawn bright. Never in a jar.
+            args '--mixin.config', 'bastion-dev.mixins.json'
             if (project.hasProperty('showcase')) {
                 def scene = project.findProperty('showcase')
                 property 'bastion.showcase', scene ? scene : 'scene'

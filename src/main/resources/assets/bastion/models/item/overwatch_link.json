@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "bastion:item/overwatch_link"
+  },
+  "overrides": [
+    {"predicate": {"bastion:linked": 1}, "model": "bastion:item/overwatch_link_linked"}
+  ]
+}

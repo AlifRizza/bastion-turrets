@@ -3,6 +3,7 @@ package dev.bastion.menu;
 import dev.bastion.hub.HubInterfaceBlock.Status;
 import dev.bastion.hub.HubEdit;
 import dev.bastion.hub.HubInterfaceBlockEntity;
+import dev.bastion.hub.OverwatchLinkItem;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.HubRoster;
 import dev.bastion.registry.BastionMenus;
@@ -65,8 +66,8 @@ public class ControlHubMenu extends AbstractContainerMenu {
 
     /** One turret as the hub shows it. */
     public record Entry(BlockPos pos, Item weapon, float health, float maxHealth, TurretState state, boolean enabled,
-                        int ammo, int ammoCapacity, int energy, int energyCapacity) {
-        static Entry of(TurretBaseBlockEntity turret) {
+                        int ammo, int ammoCapacity, int energy, int energyCapacity, boolean linked, String controller) {
+        public static Entry of(TurretBaseBlockEntity turret) {
             TurretInventory inventory = turret.inventory();
             int ammo = 0;
             for (int i = 0; i < inventory.ammoSlots(); i++) {
@@ -78,7 +79,7 @@ public class ControlHubMenu extends AbstractContainerMenu {
                     .flatMap(tag -> tag.stream().findFirst()).map(item -> item.value().getMaxStackSize()).orElse(64);
             return new Entry(turret.getBlockPos(), inventory.getStackInSlot(TurretInventory.WEAPON).getItem(), turret.health(),
                     turret.maxHealth(), turret.state(), turret.enabled(), ammo, inventory.ammoSlots() * perSlot, turret.energy(),
-                    turret.energyCapacity());
+                    turret.energyCapacity(), OverwatchLinkItem.fitted(turret), turret.manual() == null ? "" : turret.manual().name());
         }
 
         public float healthFraction() {
@@ -106,11 +107,14 @@ public class ControlHubMenu extends AbstractContainerMenu {
             buf.writeVarInt(ammoCapacity);
             buf.writeVarInt(energy);
             buf.writeVarInt(energyCapacity);
+            buf.writeBoolean(linked);
+            buf.writeUtf(controller);
         }
 
         public static Entry read(FriendlyByteBuf buf) {
             return new Entry(buf.readBlockPos(), buf.readById(BuiltInRegistries.ITEM), buf.readFloat(), buf.readFloat(),
-                    buf.readEnum(TurretState.class), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
+                    buf.readEnum(TurretState.class), buf.readBoolean(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                    buf.readBoolean(), buf.readUtf(64));
         }
     }
 

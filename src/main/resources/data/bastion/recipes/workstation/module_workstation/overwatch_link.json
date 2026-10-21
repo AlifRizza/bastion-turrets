@@ -1,0 +1,32 @@
+{
+  "type": "bastion:workstation",
+  "station": "module_workstation",
+  "category": "bastion:hub_interface",
+  "ingredients": [
+    {
+      "item": "bastion:hub_connector",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "minecraft:ender_eye",
+      "count": 1
+    },
+    {
+      "item": "minecraft:spyglass",
+      "count": 1
+    },
+    {
+      "item": "minecraft:observer",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:overwatch_link"
+  },
+  "time": 200,
+  "energy": 12000
+}

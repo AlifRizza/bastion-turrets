@@ -51,6 +51,10 @@ public abstract class WeaponType {
         return true;
     }
 
+    /** Called every server tick while the turret is switched off (its switch or redstone) with this weapon mounted. */
+    public void switchedOff(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats) {
+    }
+
     /** Called every server tick while the weapon is mounted; {@code engaged} = has a target and ammo. */
     public void tick(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats, boolean engaged) {
     }
@@ -79,6 +83,20 @@ public abstract class WeaponType {
      */
     public Vec3 aimPoint(TurretBaseBlockEntity turret, LivingEntity target, Vec3 point, StatSheet stats) {
         return point;
+    }
+
+    /**
+     * Overwatch (PLAN "Overwatch Link"): where the barrel points to send a shot at {@code point}, the spot under the
+     * controller's crosshair; null when this weapon cannot reach it. Straight-firing weapons point right at it.
+     */
+    @Nullable
+    public Vec3 manualAim(TurretBaseBlockEntity turret, Vec3 point, StatSheet stats) {
+        return point;
+    }
+
+    /** Weapons that lob shells on an arc (Mortar): the Overwatch view draws their trajectory (Ballistics). */
+    public boolean ballistic() {
+        return false;
     }
 
     /**

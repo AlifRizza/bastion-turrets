@@ -84,6 +84,33 @@ public class TurretSystemsTests {
         });
     }
 
+    /**
+     * Switched off mid-burst, the Machine Gun's barrels wind down (user 2026-10-21: they kept spinning): the spin falls to
+     * 0 within spin_down_ticks (30) and the clients are told.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "machineGunSpinsDownWhenSwitchedOff")
+    public static void machineGunSpinsDownWhenSwitchedOff(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = turret(helper, BastionItems.MACHINE_GUN_TURRET.get(), BastionItems.KINETIC_ROUNDS.get(), 64);
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        husk.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000);
+        husk.setHealth(1000);
+        long[] offAt = {-1};
+        helper.onEachTick(() -> {
+            if (offAt[0] < 0 && turret.weaponState().spin >= 0.5f) {
+                turret.setEnabled(false);
+                offAt[0] = helper.getTick();
+            }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(offAt[0] >= 0, "never spun up, state " + turret.state());
+            helper.assertTrue(helper.getTick() >= offAt[0] + 40, "waiting for the spin-down");
+            helper.assertTrue(turret.weaponState().spin == 0, "still spinning " + turret.weaponState().spin + " while off");
+            turret.setEnabled(true);
+            husk.discard();
+            disarm(turret);
+        });
+    }
+
     @GameTest(template = ARENA, timeoutTicks = 200, batch = "shotgunHits")
     public static void shotgunHits(GameTestHelper helper) {
         TurretBaseBlockEntity turret = turret(helper, BastionItems.SHOTGUN_TURRET.get(), BastionItems.SCATTER_SHELLS.get(), 8);

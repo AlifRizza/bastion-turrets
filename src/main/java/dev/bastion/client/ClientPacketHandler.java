@@ -1,5 +1,6 @@
 package dev.bastion.client;
 
+import dev.bastion.client.overwatch.OverwatchClient;
 import dev.bastion.client.render.SmokeTrailRenderer;
 import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.vfx.VfxManager;
@@ -10,6 +11,8 @@ import dev.bastion.network.BulletImpact;
 import dev.bastion.network.BurnSync;
 import dev.bastion.network.HubRoster;
 import dev.bastion.network.IonField;
+import dev.bastion.network.OverwatchStatus;
+import dev.bastion.network.OverwatchView;
 import dev.bastion.network.RackSync;
 import dev.bastion.network.TurretImpactEvent;
 import dev.bastion.network.TurretStateSync;
@@ -122,5 +125,14 @@ public final class ClientPacketHandler {
     public static void hubRoster(HubRoster roster) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && mc.player.containerMenu instanceof ControlHubMenu menu && menu.containerId == roster.containerId()) menu.apply(roster);
+    }
+
+    public static void overwatchView(OverwatchView view) {
+        if (view.turret() != null && view.hub() != null) OverwatchClient.begin(view.turret(), view.hub(), view.rangeScale());
+        else OverwatchClient.end();
+    }
+
+    public static void overwatchStatus(OverwatchStatus message) {
+        OverwatchClient.status(message.entry());
     }
 }

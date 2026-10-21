@@ -6,6 +6,7 @@ import dev.bastion.client.BurnEffects;
 import dev.bastion.client.ClientTurret;
 import dev.bastion.client.ControlHubEffects;
 import dev.bastion.client.MortarEffects;
+import dev.bastion.client.overwatch.OverwatchArc;
 import dev.bastion.client.RepulsorEffects;
 import dev.bastion.client.TeslaEffects;
 import dev.bastion.client.particle.VfxParticle;
@@ -127,6 +128,7 @@ public final class VfxManager {
         if (Minecraft.getInstance().level != null) RepulsorEffects.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) FlameJetRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) TurretHolograms.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
+        if (Minecraft.getInstance().level != null) OverwatchArc.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         buffers.endBatch();
     }
 

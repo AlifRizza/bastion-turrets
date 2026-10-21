@@ -150,7 +150,7 @@ public class TurretCombatTests {
         Vec3 muzzle = helper.absoluteVec(Vec3.atCenterOf(BASE).add(1, 0.5, 0));
         Vec3 direction = husk.getBoundingBox().getCenter().subtract(muzzle).normalize();
         StatSheet stats = StatSheet.of(turret.inventory().weaponData(), turret.tier(), turret.inventory().modifierEffect());
-        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false);
+        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false, null);
         WeaponType gun = BastionWeaponTypes.GUN.get();
         Bullets.fire(context, gun, 0, List.of(direction), 1, 0, Bullets.validTargets(context, gun),
                 (bullet, hit) -> Hitscan.damage(hit.getEntity(), helper.getLevel(), 5));
@@ -176,7 +176,7 @@ public class TurretCombatTests {
         Vec3 farEnd = muzzle.add(direction.scale(40));
         helper.assertTrue(!helper.getLevel().isInWorldBounds(BlockPos.containing(farEnd)), "set-up: the step's far end must be out of the world, " + farEnd);
         StatSheet stats = StatSheet.of(turret.inventory().weaponData(), turret.tier(), turret.inventory().modifierEffect());
-        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false);
+        FireContext context = new FireContext(helper.getLevel(), turret, muzzle, direction, husk, stats, new WeaponState(), 1, false, null);
         WeaponType gun = BastionWeaponTypes.GUN.get();
         Bullets.fire(context, gun, 0, List.of(direction), 40, 0, Bullets.validTargets(context, gun),
                 (bullet, hit) -> Hitscan.damage(hit.getEntity(), helper.getLevel(), 5));

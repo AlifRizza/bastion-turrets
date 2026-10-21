@@ -7,6 +7,25 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-21: 0.3.0 committed and pushed: Overwatch Link** (spec PLAN §8 "Overwatch Link: kendali turret jarak jauh",
+plan `docs/superpowers/plans/2026-10-20-overwatch-link.md`). A Hub Connector with remote control: Take control of a
+linked turret from the Control Hub's map; client-side camera (Camera mixin, approach like Superb Warfare's drone, code
+not copied): raised third-person "sky view", F5 sight over the barrel, CCTV HUD (HP, ammo/FE, heat, charge, reload,
+shot marker), Mortar arc, manual aim/fire, 1.5x reach (`overwatchRangeMultiplier`), works on switched-off turrets. Also
+in 0.3.0: amber Gun/Shotgun/Sniper bullets (`bullet_color`), hub right-click opens the screen with anything in hand
+(shift + right-click links/places), the Machine Gun spin-down fix. 224/224 GameTests. Changelog in `UPLOAD.md`, store
+text in `DESCRIPTION_UPDATE_0.3.0.md`. Dev only (src/dev, never in a jar): `/bastiondev ai true|false` and
+`knockbackimmune true|false`; a mixin that draws ToroHealth's damage numbers bright (ToroHealth passes light 0).
+Still to check in game: `docs/TESTING.md` "Overwatch Link" 15h–15j (F5 clear on the Railgun, shot marker, thin
+crosshair, RELOAD bar). Open: missile homing under control (user still deciding; now: only the crosshair's mob, else
+straight); flaky multiblock/drop GameTests got more frequent (fixed-tick formation checks; harden them on request);
+"Damage Numbers" mod (CurseForge 1754205) is <2 weeks old: reconsider after ~2026-11-03.
+Deferred minors from the 0.3.0 review: switching turret resets F5/zoom; Jade popup may show during a session; the
+Workstation's Craft button now greys out when inactive (FlatButton); no mouse-sensitivity drop when zoomed; a modified
+client can spam ←/→ or lock missiles through walls; creative players can be hit by manual shots with PvP on; a session
+ends if ←/→ lands on a turret the client has not loaded (only with a config-enlarged reach); ending a session can load
+the turret's chunk; the hub hint has little room at the minimum panel size.
+
 **2026-10-20: 0.2.2 committed, tagged `v0.2.2` and pushed: JEI & Jade compat** (plan
 `docs/superpowers/plans/2026-10-20-jei-jade-compat.md`, spec PLAN §8 "Compat JEI & Jade"). Changelog in `UPLOAD.md`, store
 text changes in `docs/release/DESCRIPTION_UPDATE_0.2.2.md`. Tested in game by the user: JEI station/weapon/info pages,

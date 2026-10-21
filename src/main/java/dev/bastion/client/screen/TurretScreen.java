@@ -7,6 +7,7 @@ import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.HubAction;
 import dev.bastion.network.TurretConfigUpdate;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
 import dev.bastion.turret.targeting.TargetFilter.Category;
@@ -348,7 +349,11 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
         }
         int x = mouseX - leftPos, y = mouseY - topPos;
         if (x >= LAMP_X - 3 && x < LAMP_X + LAMP_SIZE + 3 && y >= LAMP_Y - 3 && y < LAMP_Y + LAMP_SIZE + 3) {
-            graphics.renderTooltip(font, Component.translatable("gui.bastion.state." + key(menu.state())), mouseX, mouseY);
+            List<Component> lines = new ArrayList<>(List.of(Component.translatable("gui.bastion.state." + key(menu.state()))));
+            String controller = minecraft.level != null && minecraft.level.getBlockEntity(menu.pos()) instanceof TurretBaseBlockEntity turret
+                    ? turret.clientController() : null;
+            if (controller != null) lines.add(Component.translatable("gui.bastion.turret.manual", controller).withStyle(ChatFormatting.GOLD));
+            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             return;
         }
         if (y < BAR_Y || y >= BAR_Y + BAR_H) return;

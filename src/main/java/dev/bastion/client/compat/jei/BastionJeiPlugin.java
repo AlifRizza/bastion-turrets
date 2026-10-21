@@ -68,6 +68,7 @@ public class BastionJeiPlugin implements IModPlugin {
         info(registration, "repair_kit", BastionItems.REPAIR_KIT.get());
         info(registration, "turret_configurator", BastionItems.TURRET_CONFIGURATOR.get());
         info(registration, "hub_connector", BastionItems.HUB_CONNECTOR.get());
+        info(registration, "overwatch_link", BastionItems.OVERWATCH_LINK.get());
         info(registration, "feed_hub", BastionItems.FEED_HUB.get());
         info(registration, "control_hub", BastionItems.HUB_INTERFACE.get(), BastionItems.HUB_CASING.get(), BastionItems.HUB_POWER_PORT.get(),
                 BastionItems.SATELLITE_UPLINK_T1.get(), BastionItems.SATELLITE_UPLINK_T2.get(), BastionItems.SATELLITE_UPLINK_T3.get());

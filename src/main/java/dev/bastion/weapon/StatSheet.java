@@ -49,6 +49,12 @@ public record StatSheet(
                 reloadRate);
     }
 
+    /** These stats with another range (Overwatch: the controller reaches farther). */
+    public StatSheet withRange(float range) {
+        return new StatSheet(data, range, fireInterval, damage, spread, ammoPerShot, turnSpeed, heatPerShot, heatDissipationPerTick, maxHeat,
+                pierce, ammoSaveChance, healthMultiplier, reloadRate);
+    }
+
     /** What damage modules multiply a weapon's other damage by (splash, blast, ion field); 1 for a weapon set to damage 0. */
     public float damageScale() {
         return data.damage() > 0 ? damage / data.damage() : 1;

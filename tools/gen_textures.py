@@ -1026,6 +1026,16 @@ def hub_connector(linked=False):
     rect(img, 7, 8, 2, 2, rgb("4FD8FF") if linked else BORE)  # lamp
     return img
 
+
+def overwatch_link(linked=False):
+    """Overwatch Link item: the Hub Connector plug with a camera lens on its body and a tally light; the lens glows amber once linked."""
+    img = hub_connector()
+    rect(img, 5, 7, 6, 4, OUTLINE)  # lens housing
+    rect(img, 6, 7, 4, 4, DARKSTEEL * 1.3)
+    rect(img, 7, 8, 2, 2, rgb("FFB347") if linked else BORE)  # lens
+    rect(img, 11, 6, 1, 1, rgb("FF3A30"))  # tally light
+    return img
+
 # --- VFX sprites (PLAN 5.2-5.4) -----------------------------------------------------------------
 # White/greyscale with alpha: particles and renderers tint them with the weapon energy colour at runtime.
 
@@ -1447,6 +1457,7 @@ TEXTURES = {
     "block/hub_interface_front.png": hub_interface_front, "block/hub_interface_recess.png": hub_interface_recess, "block/hub_screen_off.png": hub_screen_off,
     "block/hub_screen_radar.png": hub_screen_radar, "block/hub_screen_alert.png": hub_screen_alert,
     "item/hub_connector.png": hub_connector, "item/hub_connector_linked.png": lambda: hub_connector(linked=True),
+    "item/overwatch_link.png": overwatch_link, "item/overwatch_link_linked.png": lambda: overwatch_link(linked=True),
     **{f"block/satellite_uplink_t{tier}{suffix}.png": (lambda tier=tier, i=i: paint_model(f"satellite_uplink_t{tier}")[i])
        for tier in (1, 2, 3) for i, suffix in ((0, ""), (1, "_e"))},
     **VFX_SPRITES,

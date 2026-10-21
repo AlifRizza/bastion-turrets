@@ -380,8 +380,14 @@ public class ControlHubTests {
         FakePlayer player = player(helper, new BlockPos(6, 1, 1));
         ItemStack stack = new ItemStack(BastionItems.HUB_CONNECTOR.get(), 3);
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
-        InteractionResult result = stack.onItemUseFirst(new UseOnContext(player, InteractionHand.MAIN_HAND,
-                new BlockHitResult(Vec3.atCenterOf(iface), Direction.NORTH, iface, false)));
+        UseOnContext onInterface = new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(iface), Direction.NORTH, iface, false));
+        // A plain right-click leaves it to the Interface (it opens the hub's screen, user 2026-10-21); shift links.
+        InteractionResult plain = stack.onItemUseFirst(onInterface);
+        boolean linkedByPlain = HubConnectorItem.isLinked(stack);
+        player.setShiftKeyDown(true);
+        InteractionResult result = stack.onItemUseFirst(onInterface);
+        player.setShiftKeyDown(false);
+        helper.assertTrue(plain == InteractionResult.PASS && !linkedByPlain, "a plain right-click linked it: " + plain);
         helper.assertTrue(result.consumesAction() && stack.getCount() == 3 && HubConnectorItem.linkedTo(stack, level, iface),
                 "not linked by a click on the Interface: " + result + ", " + stack.getTag());
         helper.assertTrue(!HubConnectorItem.linkedTo(stack, level, iface.east()), "linked to another position");
@@ -491,6 +497,32 @@ public class ControlHubTests {
     static void connect(TurretBaseBlockEntity turret, HubInterfaceBlockEntity hub) {
         turret.inventory().setStackInSlot(TurretInventory.CONNECTOR,
                 HubConnectorItem.link(new ItemStack(BastionItems.HUB_CONNECTOR.get()), hub.getLevel(), hub.getBlockPos()));
+    }
+
+    /** Right-clicking a formed Interface opens its screen whatever is in hand (user 2026-10-21: it used to need an empty hand). */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "interfaceOpensWithAnythingInHand")
+    public static void interfaceOpensWithAnythingInHand(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        HubInterfaceBlockEntity hub = hub(helper, IFACE, 1);
+        BlockPos iface = hub.getBlockPos();
+        FakePlayer player = player(helper, new BlockPos(6, 1, 1));
+        boolean[] done = {false};
+        helper.onEachTick(() -> {
+            if (done[0] || !hub.formed()) return;
+            done[0] = true;
+            for (ItemStack held : List.of(new ItemStack(BastionItems.TURRET_BASE.get()), new ItemStack(BastionItems.GUN_TURRET.get()),
+                    new ItemStack(BastionItems.HUB_CONNECTOR.get()))) {
+                player.setItemInHand(InteractionHand.MAIN_HAND, held);
+                player.containerMenu = player.inventoryMenu;
+                InteractionResult result = level.getBlockState(iface).use(level, player, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(iface), Direction.NORTH, iface, false));
+                boolean open = player.containerMenu instanceof ControlHubMenu;
+                player.containerMenu = player.inventoryMenu;
+                helper.assertTrue(result.consumesAction() && open, "holding " + held.getItem() + ": " + result + ", screen open " + open);
+            }
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            helper.succeed();
+        });
     }
 
     /** The reach is a square of chunks centred on the satellite's chunk: 1, 3, 7 chunks a side. */

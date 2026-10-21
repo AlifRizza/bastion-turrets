@@ -51,6 +51,12 @@ public class MachineGunWeapon extends WeaponType {
         }
     }
 
+    /** Switched off mid-burst, the barrels wind down as after any burst (user 2026-10-21: they kept spinning). */
+    @Override
+    public void switchedOff(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats) {
+        tick(turret, state, stats, false);
+    }
+
     @Override
     public boolean ready(StatSheet stats, WeaponState state) {
         return state.spin >= stats.data().param("min_spin_to_fire");

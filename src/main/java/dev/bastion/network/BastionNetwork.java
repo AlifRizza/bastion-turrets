@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class BastionNetwork {
-    private static final String PROTOCOL = "11";
+    private static final String PROTOCOL = "12";
     /** Every S->C turret packet only reaches players this close (PLAN 4.8). */
     public static final double BROADCAST_RADIUS = 96;
 
@@ -58,6 +58,14 @@ public final class BastionNetwork {
                 .encoder(HubAction::encode).decoder(HubAction::decode).consumerMainThread(HubAction::handle).add();
         CHANNEL.messageBuilder(WorkstationFill.class, id++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(WorkstationFill::encode).decoder(WorkstationFill::decode).consumerMainThread(WorkstationFill::handle).add();
+        CHANNEL.messageBuilder(OverwatchRequest.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(OverwatchRequest::encode).decoder(OverwatchRequest::decode).consumerMainThread(OverwatchRequest::handle).add();
+        CHANNEL.messageBuilder(OverwatchInput.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(OverwatchInput::encode).decoder(OverwatchInput::decode).consumerMainThread(OverwatchInput::handle).add();
+        CHANNEL.messageBuilder(OverwatchView.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OverwatchView::encode).decoder(OverwatchView::decode).consumerMainThread(OverwatchView::handle).add();
+        CHANNEL.messageBuilder(OverwatchStatus.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OverwatchStatus::encode).decoder(OverwatchStatus::decode).consumerMainThread(OverwatchStatus::handle).add();
     }
 
     /** Queues a turret message (one of TurretEvents' kinds) for players within BROADCAST_RADIUS of {@code pos}. */

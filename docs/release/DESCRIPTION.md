@@ -55,6 +55,8 @@ Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn
 
 Build a 3x3x3 cube: a Hub Interface in the middle of one side at eye level, Hub Casings with at least one Hub Power Port, and a Satellite Uplink on top. Right-click an unfinished Interface and a hologram shows what is missing. Link Hub Connectors to the hub and put one in each turret you want on it: once the hub has FE, its screen shows those turrets within 1, 3x3 or 7x7 chunks (Satellite Uplink T1, T2, T3) on a map and a list, coloured by health, with their ammo and state. Click one to open its own screen from the hub: swap modules, top up ammo or change its targeting without walking over. Or select many and change their categories, priority, mob rules, trusted players or on/off all at once.
 
+**Overwatch Link**: take control of a turret from the Control Hub. Put this Hub Connector with a camera in a turret, select it on the hub's map and press Take control: you see from the turret (a raised view, or F5 for a sight over the barrel), aim with the mouse with no turn-speed limit and fire yourself, 1.5x farther than the turret reaches on its own, even when it is switched off. Mortar shots show their arc; Tesla Coils and Repulsor Domes can be watched.
+
 ## Modules
 
 | Module | Effect |

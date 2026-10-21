@@ -1,6 +1,8 @@
 package dev.bastion.client;
 
 import dev.bastion.Bastion;
+import dev.bastion.client.overwatch.OverwatchClient;
+import dev.bastion.client.overwatch.OverwatchHud;
 import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.particle.VfxParticle.Behavior;
 import dev.bastion.client.render.BakedTurretBaseModel;
@@ -25,6 +27,8 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,7 +48,22 @@ public final class BastionClient {
             // A linked connector shows its lamp lit (models/item/hub_connector.json override).
             ItemProperties.register(BastionItems.HUB_CONNECTOR.get(), Bastion.id("linked"),
                     (stack, level, entity, seed) -> HubConnectorItem.isLinked(stack) ? 1 : 0);
+            ItemProperties.register(BastionItems.OVERWATCH_LINK.get(), Bastion.id("linked"),
+                    (stack, level, entity, seed) -> HubConnectorItem.isLinked(stack) ? 1 : 0);
         });
+    }
+
+    /** Overwatch: switch to the next / previous turret (PLAN "Overwatch Link"), under Controls > Bastion. */
+    @SubscribeEvent
+    public static void onRegisterKeys(RegisterKeyMappingsEvent event) {
+        event.register(OverwatchClient.NEXT);
+        event.register(OverwatchClient.PREVIOUS);
+    }
+
+    /** The Overwatch CCTV HUD, over everything; it draws only during a session. */
+    @SubscribeEvent
+    public static void onRegisterOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAboveAll("overwatch", (gui, graphics, partialTick, width, height) -> OverwatchHud.render(graphics, partialTick, width, height));
     }
 
     @SubscribeEvent

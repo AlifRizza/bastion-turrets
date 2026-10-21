@@ -1,4 +1,4 @@
-# Upload sheet: 0.2.2
+# Upload sheet: 0.3.0
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -26,9 +26,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.2.2.jar` (`./gradlew build`) |
-| Version number         | 0.2.2                                                     |
-| Version name           | Bastion Turrets 0.2.2                                     |
+| File                   | `build/libs/bastion-1.20.1-0.3.0.jar` (`./gradlew build`) |
+| Version number         | 0.3.0                                                     |
+| Version name           | Bastion Turrets 0.3.0                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -40,7 +40,36 @@ Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain number
 ... Bump `mod_version` in `gradle.properties`, rebuild, upload as Beta. First Release: `1.0.0`.
 The next one is **0.2.0**, not 0.1.2 (user 2026-10-14: too many changes for a patch number; still Beta). Big
 updates bump the middle number, fixes the last. 0.2.1 (user 2026-10-19): the config file and the Dome push, after
-0.2.0 was uploaded. 0.2.2 (user 2026-10-20): JEI and Jade support, a patch number like 0.2.1.
+0.2.0 was uploaded. 0.2.2 (user 2026-10-20): JEI and Jade support, a patch number like 0.2.1. 0.3.0 (user 2026-10-21):
+Overwatch Link, a big update, so the middle number.
+
+## Changelog: 0.3.0
+
+```
+New
+- Overwatch Link: a Hub Connector with a camera and fire control, made at the Module Workstation. Shift + right-click a
+  Hub Interface to link it, put it in a turret's Connector slot, then on the hub's map shift-click that turret and press
+  Take control.
+- You see from the turret (a raised third-person view, F5 for a sight over the barrel), aim with the mouse and fire with
+  attack. Manual aim ignores turn speed; a controlled turret reaches 1.5x farther (server config
+  overwatchRangeMultiplier) and fires even when switched off. Scroll to zoom, arrow keys to switch turret, sneak to
+  leave; taking damage also ends it.
+- The camera HUD shows HP, ammo or FE, heat, charge and reload, and marks where the shot really lands. Mortar shots show
+  their arc and landing ring. Tesla Coils and Repulsor Domes can be watched.
+- Jade and the turret GUI show who is controlling a turret.
+
+Changes
+- Right-clicking a Hub Interface opens its screen whatever you hold; shift + right-click links a Hub Connector or places a
+  block.
+- Gun, Shotgun and Sniper bullets are amber like the Machine Gun's (their sights and holograms keep their colours); the
+  Shotgun's spent shells are brass.
+
+Fixes
+- A Machine Gun switched off mid-burst kept its barrels spinning.
+
+Note
+- Clients need this version to join a 0.3.0 server (new network packets).
+```
 
 ## Changelog: 0.2.2
 
