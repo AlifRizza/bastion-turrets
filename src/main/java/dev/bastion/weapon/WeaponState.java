@@ -37,6 +37,8 @@ public final class WeaponState {
     // Rocket Launcher: its four tubes, spent ones tracked (not saved: a fresh or reloaded launcher starts full).
     /** Spent tubes, bit i = tube i; synced to clients through RackSync as they change. */
     public int spentTubes;
+    /** Ticks each tube's reloaded rocket still slides in (0: seated; every tube's own, two can slide at once). */
+    public final int[] slideTicks = new int[4];
     /** Ticks until the last reloaded rocket has slid home and clanked (a salvo waits for it). */
     public int seatTimer;
 

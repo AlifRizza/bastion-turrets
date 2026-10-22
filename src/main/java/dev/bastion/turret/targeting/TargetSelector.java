@@ -5,6 +5,7 @@ import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -14,6 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +50,22 @@ public final class TargetSelector {
                 .filter(e -> type.sight(turret, e, stats) != null)
                 .limit(limit)
                 .toList();
+    }
+
+    /**
+     * A random valid target for shots under {@code controller}'s rule (null: the filter's, also while someone steers the
+     * turret), or null: candidates drawn at random until one is in sight, so it takes only as many sight checks as needed.
+     */
+    @Nullable
+    public static LivingEntity random(TurretBaseBlockEntity turret, StatSheet stats, WeaponType type, @Nullable UUID controller, RandomSource random) {
+        Vec3 pivot = turret.pivot(stats.data());
+        List<LivingEntity> candidates = new ArrayList<>(turret.getLevel().getEntitiesOfClass(LivingEntity.class,
+                new AABB(pivot, pivot).inflate(stats.range()), e -> isCandidate(turret, e, stats, type, controller)));
+        while (!candidates.isEmpty()) {
+            LivingEntity pick = candidates.remove(random.nextInt(candidates.size()));
+            if (type.sight(turret, pick, stats) != null) return pick;
+        }
+        return null;
     }
 
     public static boolean isCandidate(TurretBaseBlockEntity turret, LivingEntity entity, StatSheet stats, WeaponType type) {

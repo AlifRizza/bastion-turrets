@@ -31,6 +31,7 @@ import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -38,7 +39,9 @@ import java.util.UUID;
  * three entity types). A rocket flies straight; a missile launches slanting up, then steers toward its target with a
  * limited turn rate, picking a new valid target if its own dies; a shell falls on a ballistic arc and leaves a fire patch
  * (FirePatches). All explode on the first block or valid target they meet, or in the air when the fuel runs out.
- * Valid = what the firing turret's filter would shoot; they fly past everything else, and the blast spares it too.
+ * Valid = what the firing turret's filter would shoot; they fly past everything else, and the blast spares it too. A shot
+ * fired under Overwatch control hits by the controller's rule instead, except a missile chasing for the filter: one fired
+ * with no lock, or whose lock is gone (user 2026-10-22).
  * Short-lived, so never saved.
  */
 public class TurretRocketEntity extends Projectile implements GeoEntity {
@@ -59,9 +62,9 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private int blastKind = TurretImpactEvent.ROCKET_BLAST;
     /** Mortar shells: blocks per tick per tick pulled down (server side; clients get the velocity every tick). */
     private float gravity;
-    /** Picks a new target once its own is gone; off for missiles an Overwatch controller fired. */
-    private boolean retargets = true;
-    /** The Overwatch controller this was fired under (null: the turret's filter decides), kept for the whole flight. */
+    /** Fired under Overwatch control: once its target is gone the filter decides, and the new target is a random one. */
+    private boolean randomRetarget;
+    /** The Overwatch controller this was fired under (null: the turret's filter decides), kept for the flight (see randomRetarget). */
     @Nullable
     private UUID controller;
     @Nullable
@@ -101,9 +104,15 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         return this;
     }
 
-    /** False for a missile an Overwatch controller fired: it keeps to its lock, or flies straight without one. */
-    public TurretRocketEntity retargets(boolean retargets) {
-        this.retargets = retargets;
+    /** Hits by the turret's filter even when fired under control: a controlled missile chasing a filter target (user 2026-10-22). */
+    public TurretRocketEntity underFilter() {
+        this.controller = null;
+        return this;
+    }
+
+    /** A controlled missile: when its target is gone it turns to the filter's rule and a random filter target near it. */
+    public TurretRocketEntity randomRetarget() {
+        this.randomRetarget = true;
         return this;
     }
 
@@ -179,7 +188,8 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         Vec3 dir = velocity.lengthSqr() < 1e-8 ? new Vec3(0, 1, 0) : velocity.normalize();
         if (age > homingDelay) {
             if (homingTarget == null || !homingTarget.isAlive()) {
-                homingTarget = retargets ? retarget() : null;
+                if (randomRetarget) controller = null;
+                homingTarget = retarget();
                 targetVelocity = Vec3.ZERO;
             }
             if (homingTarget != null) {
@@ -195,9 +205,13 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
         hasImpulse = true; // velocity to clients every tick, so the model banks along the curve
     }
 
-    /** The nearest other valid target close to the missile, once its own is gone. */
+    /** The nearest other valid target close to the missile, once its own is gone (a controlled one: a random one). */
     @Nullable
     private LivingEntity retarget() {
+        if (randomRetarget) {
+            List<LivingEntity> near = level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(RETARGET_RANGE), this::affects);
+            return near.isEmpty() ? null : near.get(random.nextInt(near.size()));
+        }
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
         for (LivingEntity entity : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(RETARGET_RANGE), this::affects)) {

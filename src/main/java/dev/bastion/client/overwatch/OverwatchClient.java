@@ -23,6 +23,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -57,6 +59,9 @@ public final class OverwatchClient {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT, "key.categories.bastion");
     public static final KeyMapping PREVIOUS = new KeyMapping("key.bastion.overwatch.previous", KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT, "key.categories.bastion");
+    /** Rocket and Missile Launchers: Single / Salvo (user 2026-10-22). */
+    public static final KeyMapping MODE = new KeyMapping("key.bastion.overwatch.mode", KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.bastion");
     /**
      * Third person: a "sky view" (user 2026-10-21), raised this far over the pivot along the mount (a ceiling turret's view
      * hangs below it) and this far back; a large base's weapons are bigger. First person: a sight over the barrel, at most
@@ -89,6 +94,10 @@ public final class OverwatchClient {
     @Nullable
     private static Vec3 barrelImpact;
     private static double fov = 70;
+    private static int[] locks = new int[0];
+    /** Missile Launcher in Single: the creature under the crosshair its next missile would lock, or -1. */
+    private static int hoverLock = -1;
+    private static boolean modeHeld;
 
     /** Where the camera goes this frame: the anchor, the look direction and how far back (0 = first person). */
     public record View(Vec3 anchor, float yRot, float xRot, double distance) {
@@ -100,14 +109,18 @@ public final class OverwatchClient {
     public static void begin(BlockPos turretPos, BlockPos hubPos, float range) {
         TurretBaseBlockEntity previous = turret(Minecraft.getInstance().level); // switching (←/→): its barrel follows the server again
         if (previous != null) previous.clearPredictedAim();
+        if (turret == null) { // a new session; switching (←/→) keeps the view and zoom (0.3.0 review)
+            firstPerson = false;
+            zoom = 1;
+            modeHeld = false;
+        }
         turret = turretPos;
         hub = hubPos;
         rangeScale = range;
         status = null;
-        firstPerson = false;
-        zoom = 1;
         aimPoint = null;
-        aimEntity = -1;
+        aimEntity = hoverLock = -1;
+        locks = new int[0];
         canFire = watchOnly = false;
         while (Minecraft.getInstance().options.keyShift.consumeClick()) ; // a Shift press from before (shift-click on the map) must not leave at once
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(BastionSounds.CONTROL_HUB_UI_SELECT.get(), 1f));
@@ -120,11 +133,32 @@ public final class OverwatchClient {
         turret = hub = null;
         status = null;
         aimPoint = null;
+        locks = new int[0];
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(BastionSounds.CONTROL_HUB_UI_SELECT.get(), 0.8f));
     }
 
     public static void status(ControlHubMenu.Entry entry) {
         status = entry;
+    }
+
+    /**
+     * The controlled Missile Launcher's salvo locks (OverwatchLocks), creature ids in press order. A lock added or undone
+     * clicks (the hub's UI sound); the clear after a launch or a mode change stays quiet.
+     */
+    public static void locks(int[] ids) {
+        int before = locks.length;
+        locks = ids;
+        if (ids.length == before || (ids.length < before - 1)) return;
+        float pitch = ids.length > before ? 1.4f : 0.9f;
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(BastionSounds.CONTROL_HUB_UI_SELECT.get(), pitch, 0.5f));
+    }
+
+    public static int hoverLock() {
+        return hoverLock;
+    }
+
+    public static int[] locks() {
+        return locks;
     }
 
     public static boolean active() {
@@ -189,6 +223,7 @@ public final class OverwatchClient {
         TurretBaseBlockEntity base = turret(mc.level);
         WeaponData data = base == null ? null : base.inventory().weaponData();
         WeaponType type = data == null ? null : BastionWeaponTypes.REGISTRY.get().getValue(data.type());
+        hoverLock = -1;
         if (base == null || type == null || mc.player == null) {
             aimPoint = barrelImpact = null;
             canFire = watchOnly = false;
@@ -200,11 +235,22 @@ public final class OverwatchClient {
         ManualAim.Pick pick = ManualAim.pick(mc.player, from, from.add(look.scale(from.distanceTo(base.pivot(data)) + stats.range())), type.ballistic());
         aimPoint = pick.point();
         aimEntity = pick.entity() == null ? -1 : pick.entity().getId();
+        // The server's lock rule on this side: in the controlled reach, in the launcher's sight, not the owner or this player
+        // (other players depend on the server's PvP, its call).
+        if (data.type().equals(BastionWeaponTypes.MISSILE_LAUNCHER.getId()) && !base.salvo() && pick.entity() instanceof LivingEntity living
+                && !(living instanceof Player player && (player == mc.player || player.isCreative() || player.isSpectator()
+                        || player.getUUID().equals(base.owner())))
+                && living.distanceToSqr(base.pivot(data)) <= stats.range() * stats.range() && type.sight(base, living, stats) != null) {
+            hoverLock = living.getId();
+        }
         watchOnly = data.aim().turnSpeed() <= 0;
         ManualAim.Aim aim = watchOnly ? null : ManualAim.solve(base, type, stats, aimPoint);
         TurretState state = base.clientState(); // red too while it cannot shoot at all (review 2026-10-20)
         canFire = aim != null && (aim.onTarget() || data.aim().fixedPitch()) // the Missile Launcher never tilts: its missiles home in
-                && state != TurretState.NO_AMMO && state != TurretState.OVERHEAT && state != TurretState.DISABLED;
+                && state != TurretState.NO_AMMO && state != TurretState.OVERHEAT && state != TurretState.DISABLED
+                // a launcher with nothing ready to fire (spent, still seating, salvo not full) drops the press: red too (PLAN item 3);
+                // not a Missile Salvo, whose presses lock while the tubes load
+                && !(type.firesPerClick() && state == TurretState.AIMING && !locking(base, data));
         if (aim != null) base.setPredictedAim(aim.yaw(), aim.pitch());
         else base.clearPredictedAim();
         // From the raised view the camera sees over what the barrel cannot, so the HUD also marks where the shot really
@@ -216,6 +262,11 @@ public final class OverwatchClient {
             Vec3 muzzle = base.pivot(data).add(barrel.scale(data.aim().muzzleLength()));
             barrelImpact = ManualAim.pick(mc.player, muzzle, muzzle.add(barrel.scale(stats.range())), false).point();
         }
+    }
+
+    /** A Missile Launcher in Salvo: presses lock targets instead of firing. */
+    public static boolean locking(TurretBaseBlockEntity base, WeaponData data) {
+        return data.type().equals(BastionWeaponTypes.MISSILE_LAUNCHER.getId()) && base.salvo();
     }
 
     @Nullable
@@ -242,6 +293,11 @@ public final class OverwatchClient {
 
     public static int zoom() {
         return zoom;
+    }
+
+    /** Mouse turn under Overwatch zoom (MouseHandlerMixin): slower the further in, like a spyglass (0.3.0 review). */
+    public static double turnScale() {
+        return turret == null ? 1 : 1.0 / zoom;
     }
 
     /** First person looks out from inside the weapon: its model is not drawn (WeaponMountLayer). */
@@ -276,6 +332,15 @@ public final class OverwatchClient {
         for (KeyMapping key : o.keyHotbarSlots) while (key.consumeClick()) ;
         while (NEXT.consumeClick()) BastionNetwork.CHANNEL.sendToServer(OverwatchRequest.cycle(1));
         while (PREVIOUS.consumeClick()) BastionNetwork.CHANNEL.sendToServer(OverwatchRequest.cycle(-1));
+        // Once per press: a held R repeats its clicks (the server also takes one per REQUEST_TICKS).
+        boolean modePressed = false;
+        while (MODE.consumeClick()) modePressed = true;
+        if (modePressed && !modeHeld) BastionNetwork.CHANNEL.sendToServer(OverwatchRequest.mode());
+        modeHeld = MODE.isDown();
+        // Presses, not the held state: launchers fire or lock once per press, the use key undoes a lock (user 2026-10-22).
+        int clicks = 0, unlocks = 0;
+        while (o.keyAttack.consumeClick()) clicks++;
+        while (o.keyUse.consumeClick()) unlocks++;
         // A press, not the held state: with Sneak set to Toggle, isDown() stays latched (review 2026-10-20).
         if (o.keyShift.consumeClick() && mc.screen == null) {
             while (o.keyShift.consumeClick()) ;
@@ -285,7 +350,7 @@ public final class OverwatchClient {
             return;
         }
         if (aimPoint != null) {
-            BastionNetwork.CHANNEL.sendToServer(new OverwatchInput(turret, aimPoint, aimEntity, mc.screen == null && o.keyAttack.isDown()));
+            BastionNetwork.CHANNEL.sendToServer(new OverwatchInput(turret, aimPoint, aimEntity, mc.screen == null && o.keyAttack.isDown(), clicks, unlocks));
         }
     }
 
@@ -341,5 +406,6 @@ public final class OverwatchClient {
         turret = hub = null;
         status = null;
         aimPoint = null;
+        locks = new int[0];
     }
 }

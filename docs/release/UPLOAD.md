@@ -1,4 +1,4 @@
-# Upload sheet: 0.3.0
+# Upload sheet: 0.3.2
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -26,9 +26,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.3.0.jar` (`./gradlew build`) |
-| Version number         | 0.3.0                                                     |
-| Version name           | Bastion Turrets 0.3.0                                     |
+| File                   | `build/libs/bastion-1.20.1-0.3.2.jar` (`./gradlew build`) |
+| Version number         | 0.3.2                                                     |
+| Version name           | Bastion Turrets 0.3.2                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -41,7 +41,33 @@ Versions (user 2026-10-07): betas `0.1.0-beta.1` .. `-beta.4`, then plain number
 The next one is **0.2.0**, not 0.1.2 (user 2026-10-14: too many changes for a patch number; still Beta). Big
 updates bump the middle number, fixes the last. 0.2.1 (user 2026-10-19): the config file and the Dome push, after
 0.2.0 was uploaded. 0.2.2 (user 2026-10-20): JEI and Jade support, a patch number like 0.2.1. 0.3.0 (user 2026-10-21):
-Overwatch Link, a big update, so the middle number.
+Overwatch Link, a big update, so the middle number. 0.3.2 (user 2026-10-22): launcher control under Overwatch and the
+fixes. From 0.3.2 on, versions are committed and pushed with their changelog and store text ready, but uploaded later by
+the user: 0.3.2 a few days after 2026-10-22, 0.4.0 about a week after that. Development goes on in between.
+
+## Changelog: 0.3.2
+
+```
+New
+- Overwatch: Rocket and Missile Launchers fire one shot per click while a tube is loaded (no waiting for the fire
+  interval); R switches Single / Salvo.
+- Missile Launcher under control: the crosshair's mob is locked (amber brackets); with none, the missile goes for a random
+  enemy of the turret's filter and flies past what the filter spares. In Salvo, click a mob to lock a missile on it,
+  12 locks launch the salvo (one mob can take several, shown as x3), right-click undoes the last lock.
+- The camera HUD shows numbers: HP, ammo count, FE, tubes, heat, charge and reload.
+
+Fixes
+- Switching turret with the arrow keys keeps F5 and the zoom.
+- No Jade popup while controlling a turret.
+- Zoomed in, the mouse turns the view slower (like a spyglass).
+- Missiles can no longer be locked on mobs the launcher cannot see.
+- Creative and spectator players are never hit by controlled shots.
+- The Control Hub map hint no longer gets cut off on the smallest screen.
+- The arrow keys skip turrets your game has not loaded, instead of ending the control.
+
+Note
+- Clients need this version to join a 0.3.2 server (new network packets).
+```
 
 ## Changelog: 0.3.0
 

@@ -57,6 +57,8 @@ Build a 3x3x3 cube: a Hub Interface in the middle of one side at eye level, Hub 
 
 **Overwatch Link**: take control of a turret from the Control Hub. Put this Hub Connector with a camera in a turret, select it on the hub's map and press Take control: you see from the turret (a raised view, or F5 for a sight over the barrel), aim with the mouse with no turn-speed limit and fire yourself, 1.5x farther than the turret reaches on its own, even when it is switched off. Mortar shots show their arc; Tesla Coils and Repulsor Domes can be watched.
 
+Under control, Rocket and Missile Launchers fire one shot per click while a tube is loaded, and R switches between Single and Salvo. The Missile Launcher locks the mob under your crosshair; in Salvo you click mobs to place 12 locks (one mob can take several) and the salvo leaves once all twelve tubes are loaded. The camera HUD shows HP, ammo, FE and loaded tubes as numbers.
+
 ## Modules
 
 | Module | Effect |

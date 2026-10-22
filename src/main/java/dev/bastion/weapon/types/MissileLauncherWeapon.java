@@ -44,6 +44,23 @@ public class MissileLauncherWeapon extends WeaponType {
         return FireProfile.PROJECTILE;
     }
 
+    @Override
+    public boolean firesPerClick() {
+        return true;
+    }
+
+    /** Under control, salvo mode: one lock per tube before the salvo launches (user 2026-10-22). */
+    @Override
+    public int manualLocks(WeaponState state) {
+        return state.salvoMode ? TUBES : 0;
+    }
+
+    /** Every tube loaded: a controlled salvo never launches a partial load, even once the ammo has run out. */
+    @Override
+    public boolean manualSalvoReady(StatSheet stats, WeaponState state) {
+        return !state.salvoActive && state.tubes == FULL;
+    }
+
     /** Tube i: pod i / 6 (0 = the model's -X side), then row (top first) and column (inner first) inside the pod. */
     public static Vec3 tubeOffsetPx(int tube) {
         int pod = tube / PER_POD, k = tube % PER_POD, row = k / 2, col = k % 2;
@@ -78,6 +95,7 @@ public class MissileLauncherWeapon extends WeaponType {
     public void tick(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats, boolean engaged) {
         if (!(turret.getLevel() instanceof ServerLevel level)) return;
         state.salvoMode = turret.salvo();
+        if (!state.salvoMode) state.salvoActive = false; // switched to Single mid-salvo: the rest stay in their tubes
         int reloadTicks = Math.round(stats.data().param("reload_ticks") / stats.reloadRate());
         if (state.tubes == FULL) {
             state.reloadTimer = reloadTicks; // primed: the first reload comes a full interval after a shot
@@ -120,32 +138,57 @@ public class MissileLauncherWeapon extends WeaponType {
             // Alternate pods: the other pod's first loaded tube, else this pod's.
             int tube = firstLoaded(state.tubes, 1 - state.muzzle);
             if (tube < 0) tube = firstLoaded(state.tubes, state.muzzle);
-            if (tube >= 0) launch(context, tube, context.target() instanceof LivingEntity target ? target : null);
+            if (tube < 0) return;
+            // The crosshair's creature, if the launcher can see it (a modified client could name one behind a wall).
+            LivingEntity target = context.target() instanceof LivingEntity locked && sight(context.turret(), locked, context.stats()) != null ? locked : null;
+            // Under control with nothing locked: a random enemy of the filter, hit by the filter's rule (user 2026-10-22).
+            boolean filter = target == null && context.manualPoint() != null;
+            launch(context, tube, filter ? randomEnemy(context) : target, filter);
             return;
         }
         if (!state.salvoActive) {
             state.salvoActive = true;
             state.salvoFired = 0;
             // A controlled salvo goes where the controller locked, not over the filter's targets.
-            List<LivingEntity> targets = context.manualPoint() != null ? List.of()
-                    : TargetSelector.findAll(context.turret(), context.stats(), this, TUBES);
-            state.salvoTargets = targets.stream().mapToInt(Entity::getId).toArray();
+            state.salvoTargets = context.manualPoint() != null ? context.turret().manual().lockIds()
+                    : TargetSelector.findAll(context.turret(), context.stats(), this, TUBES).stream().mapToInt(Entity::getId).toArray();
         }
         for (int pod = 0; pod < 2; pod++) { // one from each pod per volley
             int tube = firstLoaded(state.tubes, pod);
-            if (tube >= 0) launch(context, tube, salvoTarget(context, state.salvoFired++));
+            if (tube < 0) continue;
+            LivingEntity target = salvoTarget(context, state.salvoFired++);
+            // A controlled salvo's lock that is gone or out of reach: a random enemy of the filter, hit by its rule.
+            boolean filter = target == null && context.manualPoint() != null;
+            launch(context, tube, filter ? randomEnemy(context) : target, filter);
         }
         if (state.tubes == 0) state.salvoActive = false;
     }
 
-    /** Missile k of a salvo goes to target k mod n: spread evenly, all on one when there is one. */
+    /**
+     * Missile k of a salvo goes to target k mod n: spread evenly, all on one when there is one. Under control the targets
+     * are the locks, one per missile; a lock that is gone or out of reach gives none.
+     */
     @Nullable
     private static LivingEntity salvoTarget(FireContext context, int k) {
         int[] ids = context.state().salvoTargets;
-        if (ids.length > 0 && context.level().getEntity(ids[k % ids.length]) instanceof LivingEntity target && target.isAlive()) {
+        boolean manual = context.manualPoint() != null;
+        if (ids.length > 0 && context.level().getEntity(ids[k % ids.length]) instanceof LivingEntity target && target.isAlive()
+                && (!manual || reachable(context, target))) {
             return target;
         }
-        return context.target() instanceof LivingEntity target ? target : null;
+        return !manual && context.target() instanceof LivingEntity target ? target : null;
+    }
+
+    /** A lock still worth a missile at launch: in the controlled reach and hittable by the controller's rule. */
+    private static boolean reachable(FireContext context, LivingEntity target) {
+        double range = context.stats().range();
+        return target.distanceToSqr(context.turret().pivot(context.stats().data())) <= range * range && context.turret().wouldHit(target);
+    }
+
+    /** A random valid target of the turret's filter (not the controller's rule), or none. */
+    @Nullable
+    private LivingEntity randomEnemy(FireContext context) {
+        return TargetSelector.random(context.turret(), context.stats(), this, null, context.level().random);
     }
 
     private static int firstLoaded(int tubes, int pod) {
@@ -155,15 +198,17 @@ public class MissileLauncherWeapon extends WeaponType {
         return -1;
     }
 
-    private void launch(FireContext context, int tube, @Nullable LivingEntity target) {
+    /** {@code filter}: the missile hits by the turret's filter, not the controller's rule. */
+    private void launch(FireContext context, int tube, @Nullable LivingEntity target, boolean filter) {
         WeaponData data = context.stats().data();
         float damage = context.stats().damage();
         TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), context.level(),
                 context.turret().getBlockPos(), damage, data.param("splash_damage") * context.stats().damageScale(),
                 data.param("splash_radius"), data.param("knockback"), Math.round(data.param("fuel_ticks")))
                 .homing(target, data.param("turn_rate"), data.param("cruise_speed"), data.param("acceleration"),
-                        Math.round(data.param("homing_delay")))
-                .retargets(context.manualPoint() == null);
+                        Math.round(data.param("homing_delay")));
+        if (context.manualPoint() != null) missile.randomRetarget();
+        if (filter) missile.underFilter();
         missile.setPos(mouth(context.turret(), data, tube));
         missile.launch(context.direction().scale(data.param("launch_speed")));
         context.level().addFreshEntity(missile);

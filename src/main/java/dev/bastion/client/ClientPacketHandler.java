@@ -11,6 +11,7 @@ import dev.bastion.network.BulletImpact;
 import dev.bastion.network.BurnSync;
 import dev.bastion.network.HubRoster;
 import dev.bastion.network.IonField;
+import dev.bastion.network.OverwatchLocks;
 import dev.bastion.network.OverwatchStatus;
 import dev.bastion.network.OverwatchView;
 import dev.bastion.network.RackSync;
@@ -134,5 +135,9 @@ public final class ClientPacketHandler {
 
     public static void overwatchStatus(OverwatchStatus message) {
         OverwatchClient.status(message.entry());
+    }
+
+    public static void overwatchLocks(OverwatchLocks message) {
+        OverwatchClient.locks(message.ids());
     }
 }

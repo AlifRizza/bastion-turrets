@@ -19,6 +19,7 @@ import dev.bastion.weapon.StatSheet;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponState;
 import dev.bastion.weapon.WeaponType;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -31,6 +32,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -325,6 +327,9 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         manual = control;
         target = null;
         chargeTimer = 0;
+        // A salvo under way was aimed by whoever steered: the next controller or the filter does not finish it.
+        weaponState.salvoActive = false;
+        weaponState.salvoTargets = new int[0];
         if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
     }
 
@@ -353,6 +358,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     public boolean hits(LivingEntity entity, @Nullable UUID controller) {
         if (controller == null) return filter.test(entity, owner);
         if (!(entity instanceof Player player)) return true;
+        if (player.isCreative() || player.isSpectator()) return false; // as with player attacks: no hits on creative or spectating players
         UUID id = player.getUUID();
         return !id.equals(owner) && !id.equals(controller) && level != null && level.getServer() != null && level.getServer().isPvpAllowed();
     }
@@ -513,6 +519,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     private void tickServer(ServerLevel level) {
+        if (manual != null && manual.released()) setManual(null); // its session ended while this chunk was out of reach
         maintainHitbox(level);
         regenerate();
         WeaponData data = inventory.weaponData();
@@ -620,6 +627,10 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         boolean armed = hasAmmo(stats) && !type.outOfAmmo(this, weaponState);
         boolean trigger = manual.trigger(level.getGameTime());
         type.tick(this, weaponState, stats, trigger && armed);
+        if (type.firesPerClick()) {
+            tickPerClick(level, stats, type, aim, armed);
+            return;
+        }
         if (!armed) {
             chargeTimer = 0;
             state = TurretState.NO_AMMO;
@@ -652,10 +663,76 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         fire(level, stats, type);
     }
 
+    /**
+     * Overwatch, launchers (user 2026-10-22): one shot per press while a tube is loaded, fire_interval ignored; a press
+     * with nothing loaded is dropped, holding the key fires once. Missile Salvo: each press locks the creature under the
+     * crosshair instead (use undoes the last), and the salvo launches at the last lock once every tube is loaded.
+     */
+    private void tickPerClick(ServerLevel level, StatSheet stats, WeaponType type, @Nullable ManualAim.Aim aim, boolean armed) {
+        int need = Math.min(type.manualLocks(weaponState), ManualControl.MAX_LOCKS);
+        IntArrayList pressed = new IntArrayList(); // the attack presses' creatures, for the shots
+        for (int press : manual.takePresses()) { // in arrival order, each with the creature its input named
+            if (press == ManualControl.UNLOCK) {
+                if (need > 0) manual.removeLastLock();
+                continue;
+            }
+            pressed.add(press);
+            // Missile Salvo: the press locks that creature if the launcher may hit and can see it (a modified client could
+            // name one behind a wall); else (empty space, gone, out of reach, hidden) it is ignored.
+            LivingEntity mob = need > 0 && manual.lockCount() < need ? creature(press, stats) : null;
+            if (mob != null && type.sight(this, mob, stats) != null) manual.addLock(mob.getId());
+        }
+        if (need == 0) manual.clearLocks(); // locks live only in a press-to-lock mode: any mode change drops them
+        if (!armed) {
+            state = TurretState.NO_AMMO;
+            return;
+        }
+        if (aim == null) {
+            state = TurretState.IDLE;
+            return;
+        }
+        if (weaponState.salvoActive) { // a launched salvo ripples out on its own, salvo_interval apart
+            if (fireCooldown > 0) {
+                state = TurretState.COOLDOWN;
+                return;
+            }
+            fire(level, stats, type);
+            return;
+        }
+        if (need > 0) {
+            boolean loaded = type.manualSalvoReady(stats, weaponState);
+            if (manual.lockCount() < need || !loaded) {
+                state = loaded ? TurretState.IDLE : TurretState.AIMING;
+                return;
+            }
+            fireCooldown = 0;
+            fire(level, stats, type); // onFire takes the locks as the salvo's targets
+            manual.clearLocks();
+            return;
+        }
+        boolean ready = type.ready(stats, weaponState);
+        if (pressed.isEmpty() || !ready) {
+            state = ready ? TurretState.IDLE : TurretState.AIMING;
+            return;
+        }
+        fireCooldown = 0; // presses skip fire_interval
+        // At the press's own creature: in a lag spike a later input may have moved the crosshair off it (review 2026-10-22).
+        fire(level, stats, type, creature(pressed.getInt(0), stats));
+        // One shot per tick: presses that arrived together fire on the next ticks while a tube is still loaded, and are
+        // dropped the moment none is, never saved for a reload.
+        if (type.ready(stats, weaponState)) manual.keepClicks(pressed.subList(1, pressed.size()).toIntArray());
+    }
+
     /** The creature the controller has locked, while it can still be hit and is in range; else none. */
     @Nullable
     private LivingEntity manualTarget(StatSheet stats) {
-        if (!(level.getEntity(manual.entityId()) instanceof LivingEntity living) || !living.isAlive() || living instanceof TurretHitboxEntity) return null;
+        return creature(manual.entityId(), stats);
+    }
+
+    /** Creature {@code id} while the controller's shots can hit it and it is in their reach; else none. */
+    @Nullable
+    private LivingEntity creature(int id, StatSheet stats) {
+        if (!(level.getEntity(id) instanceof LivingEntity living) || !living.isAlive() || living instanceof TurretHitboxEntity) return null;
         return living.distanceToSqr(pivot(stats.data())) <= stats.range() * stats.range() && wouldHit(living) ? living : null;
     }
 
@@ -734,6 +811,11 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     private void fire(ServerLevel level, StatSheet stats, WeaponType type) {
+        fire(level, stats, type, steering() ? manualTarget(stats) : target);
+    }
+
+    /** One shot, {@code at} the context's target (the turret's, or under control the creature the press was on). */
+    private void fire(ServerLevel level, StatSheet stats, WeaponType type, @Nullable Entity at) {
         WeaponData data = stats.data();
         boolean steered = steering();
         boolean lock = !steered && data.params().containsKey("precision_lock_ticks") && !weaponState.lockSpent
@@ -742,7 +824,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         consumeAmmo(stats, level);
         Vec3 direction = toWorld(Vec3.directionFromRotation(pitch, yaw));
         Vec3 muzzle = pivot(data).add(direction.scale(data.aim().muzzleLength()));
-        type.onFire(new FireContext(level, this, muzzle, direction, steered ? manualTarget(stats) : target, stats, weaponState,
+        type.onFire(new FireContext(level, this, muzzle, direction, at, stats, weaponState,
                 level.random.nextLong(), lock, steered ? manual.point() : null));
         sinceShot = 0;
         fireCooldown += type.fireInterval(stats, weaponState);
@@ -785,6 +867,10 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             target = null;
             weaponState = new WeaponState();
             lastSync = null;
+            if (manual != null) { // presses and locks were for the weapon that left
+                manual.takePresses();
+                manual.clearLocks();
+            }
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }

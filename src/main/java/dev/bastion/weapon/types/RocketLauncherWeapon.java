@@ -50,6 +50,11 @@ public class RocketLauncherWeapon extends WeaponType {
     }
 
     @Override
+    public boolean firesPerClick() {
+        return true;
+    }
+
+    @Override
     public boolean firesAsItReloads() {
         return true;
     }
@@ -60,11 +65,14 @@ public class RocketLauncherWeapon extends WeaponType {
         if (!(turret.getLevel() instanceof ServerLevel level)) return;
         state.salvoMode = turret.salvo();
         if (state.seatTimer > 0) state.seatTimer--;
+        for (int tube = 0; tube < TUBES; tube++) if (state.slideTicks[tube] > 0) state.slideTicks[tube]--;
         int interval = Math.max(1, Math.round(stats.fireInterval()));
         if (state.spentTubes == 0) { // primed for the next shot
             state.reloadTimer = state.salvoMode ? Math.max(1, interval - SLIDE_TICKS - SALVO_HOLD) : SINGLE_RELOAD;
         } else if (--state.reloadTimer <= 0) {
-            state.spentTubes &= state.spentTubes - 1; // the lowest spent tube: its rocket starts sliding in
+            int tube = Integer.numberOfTrailingZeros(state.spentTubes); // the lowest spent tube: its rocket starts sliding in
+            state.spentTubes &= ~(1 << tube);
+            state.slideTicks[tube] = SLIDE_TICKS;
             state.seatTimer = SLIDE_TICKS + SALVO_HOLD;
             state.reloadTimer = !state.salvoMode && Integer.bitCount(state.spentTubes) <= 1 ? SINGLE_RELOAD : interval;
         }
@@ -74,11 +82,18 @@ public class RocketLauncherWeapon extends WeaponType {
         }
     }
 
-    /** Single: any loaded tube. Salvo: all four, the last one slid home. */
+    /** Single: a loaded tube whose rocket has slid home (review 2026-10-22: clicks fired a half-seated one). Salvo: all four, the last one slid home. */
     @Override
     public boolean ready(StatSheet stats, WeaponState state) {
-        if (!state.salvoMode) return state.spentTubes != ALL;
+        if (!state.salvoMode) return seated(state) != 0;
         return state.spentTubes == 0 && state.seatTimer == 0;
+    }
+
+    /** Loaded tubes whose rocket has finished sliding in. */
+    private static int seated(WeaponState state) {
+        int seated = ~state.spentTubes & ALL;
+        for (int tube = 0; tube < TUBES; tube++) if (state.slideTicks[tube] > 0) seated &= ~(1 << tube);
+        return seated;
     }
 
     @Override
@@ -97,8 +112,11 @@ public class RocketLauncherWeapon extends WeaponType {
         WeaponState state = context.state();
         if (state.spentTubes == ALL) return; // ready() keeps this from happening
         if (!state.salvoMode) {
-            // Tubes fire in turn; after a mode switch the next one may still be empty, then the first loaded one goes.
-            int tube = (state.spentTubes >> state.muzzle & 1) == 0 ? state.muzzle : Integer.numberOfTrailingZeros(~state.spentTubes & ALL);
+            // Tubes fire in turn; after a mode switch the next one may still be empty (or its rocket still sliding in),
+            // then the first seated one goes.
+            int seated = seated(state);
+            if (seated == 0) return;
+            int tube = (seated >> state.muzzle & 1) != 0 ? state.muzzle : Integer.numberOfTrailingZeros(seated);
             launch(context, tube);
             state.muzzle = (tube + 1) % TUBES;
             return;

@@ -10,6 +10,7 @@ import dev.bastion.hub.OverwatchSessions;
 import dev.bastion.menu.ControlHubMenu;
 import dev.bastion.projectile.TurretRocketEntity;
 import dev.bastion.registry.BastionBlocks;
+import dev.bastion.registry.BastionEntities;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.LargeTurretBaseBlock;
@@ -41,6 +42,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -220,12 +222,15 @@ public class OverwatchTests {
         helper.assertTrue(!turret.wouldHit(owner) && !turret.wouldHit(controller), "it hits the owner or the controller");
         var server = helper.getLevel().getServer();
         boolean pvp = server.isPvpAllowed();
+        var creative = FakePlayerFactory.get(helper.getLevel(), new GameProfile(UUID.randomUUID(), "creative"));
+        creative.setGameMode(GameType.CREATIVE);
         server.setPvpAllowed(true);
-        boolean withPvp = turret.wouldHit(other);
+        boolean withPvp = turret.wouldHit(other), creativeHit = turret.wouldHit(creative);
         server.setPvpAllowed(false);
         boolean withoutPvp = turret.wouldHit(other);
         server.setPvpAllowed(pvp);
         helper.assertTrue(withPvp && !withoutPvp, "PvP on " + withPvp + ", off " + withoutPvp);
+        helper.assertTrue(!creativeHit, "a creative player is hit with PvP on");
         turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.TESLA_TURRET.get()));
         helper.assertTrue(!turret.steering() && !turret.wouldHit(cow), "a Tesla is steered");
         release(turret);
@@ -346,7 +351,8 @@ public class OverwatchTests {
         LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
         ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
         launcher.setManual(control);
-        helper.onEachTick(() -> control.input(cow.getBoundingBox().getCenter(), cow.getId(), true, helper.getLevel().getGameTime()));
+        crosshairOn(helper, control, cow.getBoundingBox().getCenter(), cow.getId());
+        clickOn(helper, control, 2, cow, 1);
         helper.succeedWhen(() -> {
             helper.assertTrue(hurt(cow), "the locked cow was not hit, state " + launcher.state());
             helper.assertTrue(!hurt(husk), "the husk was hit");
@@ -535,6 +541,41 @@ public class OverwatchTests {
         });
     }
 
+    /** R flips the controlled launcher's Single/Salvo setting; a player not at its controls and a weapon without modes change nothing. */
+    @GameTest(template = YARD, timeoutTicks = 80, batch = "modeKeyFlipsSalvo")
+    public static void modeKeyFlipsSalvo(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        FakePlayer player = ControlHubTests.player(helper, STAND);
+        FakePlayer second = second(helper);
+        HubInterfaceBlockEntity hub = ControlHubTests.hub(helper, IFACE, 1);
+        hub.setEnergy(100_000);
+        TurretBaseBlockEntity turret = ControlHubTests.base(level, corner(hub), null);
+        turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.ROCKET_LAUNCHER_TURRET.get()));
+        link(turret, hub);
+        whenOnline(helper, hub, () -> {
+            BlockPos t = turret.getBlockPos();
+            helper.assertTrue(OverwatchSessions.start(player, hub.getBlockPos(), t) == null, "refused");
+            OverwatchSessions.toggleMode(second);
+            helper.assertTrue(!turret.salvo(), "a player not at the controls switched it");
+            OverwatchSessions.toggleMode(player);
+            helper.assertTrue(turret.salvo(), "R did not switch to Salvo");
+            OverwatchSessions.toggleMode(player); // held R repeating, or a modified client: too soon, ignored
+            helper.assertTrue(turret.salvo(), "a second R in the same tick switched it back");
+            helper.runAfterDelay(OverwatchSessions.REQUEST_TICKS, () -> {
+                OverwatchSessions.toggleMode(player);
+                helper.assertTrue(!turret.salvo(), "R did not switch back to Single");
+                turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.GUN_TURRET.get()));
+                helper.runAfterDelay(OverwatchSessions.REQUEST_TICKS, () -> {
+                    OverwatchSessions.toggleMode(player);
+                    helper.assertTrue(!turret.salvo(), "a Gun took a fire mode");
+                    OverwatchSessions.stop(player);
+                    level.removeBlock(t, false);
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
     /** ← / → go round the hub's Overwatch turrets, past one with a plain connector and one another player controls. */
     @GameTest(template = YARD, timeoutTicks = 80, batch = "switchingSkipsTakenAndPlainTurrets")
     public static void switchingSkipsTakenAndPlainTurrets(GameTestHelper helper) {
@@ -556,13 +597,17 @@ public class OverwatchTests {
             helper.assertTrue(OverwatchSessions.start(player, h, a.getBlockPos()) == null, "first refused");
             OverwatchSessions.cycle(player, 1);
             helper.assertTrue(b.getBlockPos().equals(OverwatchSessions.controlled(player)) && a.manual() == null, "next went to " + OverwatchSessions.controlled(player));
-            OverwatchSessions.cycle(player, 1);
-            helper.assertTrue(a.getBlockPos().equals(OverwatchSessions.controlled(player)), "it did not wrap: " + OverwatchSessions.controlled(player));
-            helper.assertTrue(taken.manual() != null && taken.manual().player().equals(second.getUUID()), "the other player's turret moved");
-            OverwatchSessions.stop(player);
-            OverwatchSessions.stop(second);
-            for (BlockPos pos : List.of(corner, corner.east(), corner.east(2), corner.south())) level.removeBlock(pos, false);
-            helper.succeed();
+            OverwatchSessions.cycle(player, 1); // spam (a modified client): too soon, ignored
+            helper.assertTrue(b.getBlockPos().equals(OverwatchSessions.controlled(player)), "a second switch in the same tick went through");
+            helper.runAfterDelay(OverwatchSessions.REQUEST_TICKS, () -> {
+                OverwatchSessions.cycle(player, 1);
+                helper.assertTrue(a.getBlockPos().equals(OverwatchSessions.controlled(player)), "it did not wrap: " + OverwatchSessions.controlled(player));
+                helper.assertTrue(taken.manual() != null && taken.manual().player().equals(second.getUUID()), "the other player's turret moved");
+                OverwatchSessions.stop(player);
+                OverwatchSessions.stop(second);
+                for (BlockPos pos : List.of(corner, corner.east(), corner.east(2), corner.south())) level.removeBlock(pos, false);
+                helper.succeed();
+            });
         });
     }
 
@@ -724,6 +769,581 @@ public class OverwatchTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(hurt(cow), "the controlled Shotgun did not reach the cow, state " + shotgun.state());
             release(shotgun);
+        });
+    }
+
+    // --- launchers under control: one shot per click (PLAN "Overwatch: mode, tembak per klik & lock") -------
+
+    /** The crosshair held on {@code point} (and creature {@code entity}, -1: none) every tick, the attack key up. */
+    private static void crosshairOn(GameTestHelper helper, ManualControl control, Vec3 point, int entity) {
+        helper.onEachTick(() -> control.input(point, entity, false, helper.getLevel().getGameTime()));
+    }
+
+    /**
+     * Runs {@code body} once, at test tick {@code tick} or the first tick after it on which the level can look up every one
+     * of {@code mobs} by id: a test placed in a freshly loaded chunk lists its entities a few ticks late, and a press on a
+     * creature the server cannot find locks nothing (the cause of the "0 locked" flakes, 2026-10-22).
+     */
+    private static void once(GameTestHelper helper, long tick, List<LivingEntity> mobs, Runnable body) {
+        boolean[] done = {false};
+        helper.onEachTick(() -> {
+            if (done[0] || helper.getTick() < tick) return;
+            for (LivingEntity mob : mobs) if (helper.getLevel().getEntity(mob.getId()) != mob) return;
+            done[0] = true;
+            body.run();
+        });
+    }
+
+    /** {@code count} presses on {@code mob} at test tick {@code tick}, or once the level can find it. */
+    private static void clickOn(GameTestHelper helper, ManualControl control, long tick, LivingEntity mob, int count) {
+        once(helper, tick, List.of(mob), () -> control.input(mob.getBoundingBox().getCenter(), mob.getId(), false, count, 0, helper.getLevel().getGameTime()));
+    }
+
+    /** True once the level can look {@code mob} up by id (see {@link #once}). */
+    private static boolean findable(GameTestHelper helper, LivingEntity mob) {
+        return helper.getLevel().getEntity(mob.getId()) == mob;
+    }
+
+    /** {@code count} presses of the attack key reaching the server at test tick {@code tick}. */
+    private static void click(GameTestHelper helper, ManualControl control, long tick, Vec3 point, int entity, int count) {
+        helper.runAtTickTime(tick, () -> control.input(point, entity, false, count, 0, helper.getLevel().getGameTime()));
+    }
+
+    private static TurretBaseBlockEntity rocketsAt(GameTestHelper helper, ManualControl control) {
+        TurretBaseBlockEntity turret = small(helper, BastionItems.ROCKET_LAUNCHER_TURRET.get(), BastionItems.ROCKETS.get(), 16);
+        turret.setManual(control);
+        return turret;
+    }
+
+    /**
+     * Each click fires a loaded tube at once (fire_interval 36 ignored); a click with all four spent is dropped, and a
+     * tube that reloads does not fire by itself. A click while its rocket still slides in is dropped too (review
+     * 2026-10-22: "selesai reload"); once seated the next click fires it. With no ammo left a click does nothing. Timed
+     * from the launcher's first tick (it primes reloadTimer to 8), not from the test's start.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 120, batch = "rocketClicksSkipTheFireInterval")
+    public static void rocketClicksSkipTheFireInterval(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity turret = rocketsAt(helper, control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        Runnable press = () -> control.input(at, cow.getId(), false, 1, 0, helper.getLevel().getGameTime());
+        int[] spent = {0};
+        // From the first press (t0): tube 0 reloads ~t0+8 and slides in until ~t0+22; the next reload ~t0+44, seated ~t0+58.
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(turret.weaponState().reloadTimer == 8, "the launcher has not ticked yet"))
+                .thenExecute(press).thenIdle(1).thenExecute(press).thenIdle(1).thenExecute(press).thenIdle(1).thenExecute(press)
+                .thenIdle(2).thenExecute(press) // t0+5: all four spent
+                .thenIdle(2)
+                .thenExecute(() -> helper.assertTrue(ammo(turret) == 12 && turret.weaponState().spentTubes == 0b1111,
+                        "after four quick clicks and one on spent tubes: ammo " + ammo(turret) + ", spent " + Integer.toBinaryString(turret.weaponState().spentTubes)))
+                .thenIdle(5).thenExecute(press) // t0+12: tube 0 reloaded, still sliding in
+                .thenIdle(3)
+                .thenExecute(() -> helper.assertTrue(ammo(turret) == 12, "fired on its own or while the rocket slid in: ammo " + ammo(turret)))
+                .thenIdle(11).thenExecute(press) // t0+26: seated
+                .thenIdle(3)
+                .thenExecute(() -> helper.assertTrue(ammo(turret) == 11, "the click on the seated rocket: ammo " + ammo(turret)))
+                .thenExecute(() -> turret.inventory().setStackInSlot(TurretInventory.AMMO_START, ItemStack.EMPTY))
+                .thenIdle(32)
+                .thenExecute(() -> { // t0+62
+                    spent[0] = turret.weaponState().spentTubes;
+                    helper.assertTrue(spent[0] != 0b1111, "no tube reloaded by t0+62");
+                })
+                .thenExecute(press)
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(turret.state() == TurretState.NO_AMMO, "with no ammo: " + turret.state());
+                    helper.assertTrue((turret.weaponState().spentTubes & ~spent[0]) == 0, "a rocket left with no ammo");
+                })
+                .thenExecute(() -> release(turret))
+                .thenSucceed();
+    }
+
+    /** Holding the attack key fires once: one press, then the key held for 40 ticks, is one rocket. */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "holdingFiresOnce")
+    public static void holdingFiresOnce(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity turret = rocketsAt(helper, control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        helper.onEachTick(() -> control.input(at, cow.getId(), true, helper.getLevel().getGameTime()));
+        click(helper, control, 2, at, cow.getId(), 1);
+        helper.runAtTickTime(45, () -> {
+            helper.assertTrue(ammo(turret) == 15, "held for 40 ticks: ammo " + ammo(turret));
+            release(turret);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Presses reaching the server in one tick (a lag spike) each fire while a tube is loaded, one per tick: five presses
+     * on four loaded tubes are four rockets; the fifth is dropped, it does not fire when a tube reloads (review 2026-10-22).
+     */
+    @GameTest(template = ARENA, timeoutTicks = 40, batch = "pressesInOneTickFireEachLoadedTube")
+    public static void pressesInOneTickFireEachLoadedTube(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity turret = rocketsAt(helper, control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        click(helper, control, 2, at, cow.getId(), 5);
+        helper.runAtTickTime(9, () -> helper.assertTrue(ammo(turret) == 12, "five presses in one tick on four tubes: ammo " + ammo(turret)));
+        helper.runAtTickTime(16, () -> {
+            helper.assertTrue(ammo(turret) == 12, "the fifth press fired once a tube reloaded: ammo " + ammo(turret));
+            release(turret);
+            helper.succeed();
+        });
+    }
+
+    /** Rocket Salvo under control: a click before all four are seated does nothing; once seated, one click sends all four in one tick. */
+    @GameTest(template = ARENA, timeoutTicks = 80, batch = "rocketSalvoClickNeedsAllFour")
+    public static void rocketSalvoClickNeedsAllFour(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity turret = rocketsAt(helper, control);
+        turret.setSalvo(true);
+        turret.weaponState().spentTubes = 0b0001; // reloads at once, then slides in for SLIDE_TICKS + the salvo hold
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        click(helper, control, 2, at, cow.getId(), 1);
+        click(helper, control, 40, at, cow.getId(), 1);
+        int[] last = {16};
+        boolean[] together = {false};
+        helper.onEachTick(() -> {
+            int now = ammo(turret);
+            if (last[0] - now == 4) together[0] = true;
+            last[0] = now;
+        });
+        helper.runAtTickTime(4, () -> helper.assertTrue(ammo(turret) == 16, "fired before the fourth rocket was seated: ammo " + ammo(turret)));
+        helper.runAtTickTime(43, () -> {
+            helper.assertTrue(ammo(turret) == 12 && together[0], "one click should send all four in one tick: ammo " + ammo(turret));
+            release(turret);
+            helper.succeed();
+        });
+    }
+
+    /** Missile Single under control: holding launches nothing; three clicks on three ticks launch three (fire_interval 8 would allow one). */
+    @GameTest(template = RANGE, timeoutTicks = 60, batch = "missileClicksLaunchEachTube")
+    public static void missileClicksLaunchEachTube(GameTestHelper helper) {
+        TurretBaseBlockEntity launcher = largeWith(helper, BastionItems.MISSILE_LAUNCHER_TURRET.get());
+        launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES;
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        launcher.setManual(control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        helper.onEachTick(() -> control.input(at, cow.getId(), helper.getTick() <= 10, helper.getLevel().getGameTime()));
+        helper.runAtTickTime(11, () -> helper.assertTrue(Integer.bitCount(launcher.weaponState().tubes) == 12,
+                "holding launched: " + Integer.bitCount(launcher.weaponState().tubes) + " tubes left"));
+        for (int tick : new int[]{12, 13, 14}) click(helper, control, tick, at, cow.getId(), 1);
+        helper.runAtTickTime(17, () -> {
+            helper.assertTrue(Integer.bitCount(launcher.weaponState().tubes) == 9, "three clicks: " + Integer.bitCount(launcher.weaponState().tubes) + " tubes left");
+            release(launcher);
+            helper.succeed();
+        });
+    }
+
+    // --- controlled missiles fall back to the filter (user 2026-10-22, choice A) -------------------------------
+
+    /** Nothing under the crosshair: a press sends the missile after the filter's husk, never the cow the filter spares. */
+    @GameTest(template = RANGE, timeoutTicks = 300, batch = "unlockedMissileChasesTheFilter")
+    public static void unlockedMissileChasesTheFilter(GameTestHelper helper) {
+        TurretBaseBlockEntity launcher = largeWith(helper, BastionItems.MISSILE_LAUNCHER_TURRET.get());
+        launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES;
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        launcher.setManual(control);
+        Vec3 ground = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(12, 2, 6)));
+        crosshairOn(helper, control, ground, -1);
+        once(helper, 2, List.of(cow, husk), () -> control.input(ground, -1, false, 1, 0, helper.getLevel().getGameTime()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurt(husk), "the missile did not go for the filter's husk");
+            helper.assertTrue(!hurt(cow), "the cow was hit");
+            release(launcher);
+        });
+    }
+
+    /** A missile chasing for the filter flies through a cow: launched straight at it under control, the cow is untouched. */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "filterMissilePassesACow")
+    public static void filterMissilePassesACow(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = small(helper, BastionItems.GUN_TURRET.get(), BastionItems.KINETIC_ROUNDS.get(), 0);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        turret.setManual(new ManualControl(UUID.randomUUID(), "Tester"));
+        TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), helper.getLevel(), turret.getBlockPos(),
+                4, 0, 0.5f, 0, 60).homing(null, 11, 1.1f, 0.07f, 0).underFilter();
+        missile.setPos(cow.getBoundingBox().getCenter().add(-3, 0, 0));
+        missile.launch(new Vec3(0.4, 0, 0));
+        helper.getLevel().addFreshEntity(missile);
+        helper.runAtTickTime(40, () -> {
+            helper.assertTrue(!hurt(cow), "a filter missile hit the cow");
+            release(turret);
+            helper.succeed();
+        });
+    }
+
+    /** A controlled missile whose locked cow is gone turns to the filter: the husk, not the nearer second cow. */
+    @GameTest(template = RANGE, timeoutTicks = 200, batch = "lostLockTurnsToTheFilter")
+    public static void lostLockTurnsToTheFilter(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = small(helper, BastionItems.GUN_TURRET.get(), BastionItems.KINETIC_ROUNDS.get(), 0);
+        LivingEntity locked = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 5));
+        LivingEntity other = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        turret.setManual(new ManualControl(UUID.randomUUID(), "Tester"));
+        TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), helper.getLevel(), turret.getBlockPos(),
+                4, 0, 0.5f, 0, 120).homing(locked, 11, 1.1f, 0.07f, 0).randomRetarget();
+        // Over the second cow (nearest once the lock is gone), heading for the husk side.
+        missile.setPos(locked.getBoundingBox().getCenter().add(0, 3, -4));
+        missile.launch(new Vec3(0, 0, 0.4));
+        helper.getLevel().addFreshEntity(missile);
+        helper.runAtTickTime(1, locked::discard);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurt(husk), "the missile did not turn to the husk");
+            helper.assertTrue(!hurt(other), "the missile hit the second cow");
+            release(turret);
+        });
+    }
+
+    // --- Missile Salvo locks (user 2026-10-22) -------------------------------------------------------------
+
+    /** A Missile Launcher in salvo mode under {@code control}, every tube loaded, with Creative Ammo when {@code ammo}. */
+    private static TurretBaseBlockEntity salvoLauncher(GameTestHelper helper, ManualControl control, boolean ammo) {
+        TurretBaseBlockEntity launcher = largeWith(helper, BastionItems.MISSILE_LAUNCHER_TURRET.get());
+        if (ammo) launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES;
+        launcher.setSalvo(true);
+        launcher.setManual(control);
+        return launcher;
+    }
+
+    private static int loaded(TurretBaseBlockEntity launcher) {
+        return Integer.bitCount(launcher.weaponState().tubes);
+    }
+
+    /**
+     * Eleven locks on the cow launch nothing; the twelfth launches all twelve, every one at the cow. Waits on each step
+     * rather than fixed ticks (a test's first turret ticks can come late).
+     */
+    @GameTest(template = RANGE, timeoutTicks = 120, batch = "salvoLaunchesOnTheTwelfthLock")
+    public static void salvoLaunchesOnTheTwelfthLock(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, true);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        Vec3 at = cow.getBoundingBox().getCenter();
+        clickOn(helper, control, 2, cow, 11);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(control.lockCount() == 11, "eleven presses: " + control.lockCount() + " locked"))
+                .thenExecuteAfter(3, () -> {
+                    helper.assertTrue(control.lockCount() == 11 && loaded(launcher) == 12, "eleven locks launched: " + loaded(launcher) + " tubes left");
+                    control.input(at, cow.getId(), false, 1, 0, helper.getLevel().getGameTime());
+                })
+                .thenWaitUntil(() -> helper.assertTrue(launcher.weaponState().salvoTargets.length == 12, "no salvo after the twelfth lock"))
+                .thenExecute(() -> {
+                    int[] targets = launcher.weaponState().salvoTargets;
+                    helper.assertTrue(java.util.Arrays.stream(targets).allMatch(id -> id == cow.getId()),
+                            "salvo targets " + java.util.Arrays.toString(targets) + ", cow " + cow.getId());
+                    helper.assertTrue(control.lockCount() == 0, "locks left after the launch: " + control.lockCount());
+                })
+                .thenWaitUntil(() -> helper.assertTrue(loaded(launcher) == 0, "tubes left after the salvo: " + loaded(launcher)))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** A mob that is gone or a press on empty space locks nothing; presses add locks in order; a right-click removes the last. */
+    @GameTest(template = RANGE, timeoutTicks = 60, batch = "locksRefuseAndUnlock")
+    public static void locksRefuseAndUnlock(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, false);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        LivingEntity gone = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 6));
+        Vec3 goneAt = gone.getBoundingBox().getCenter();
+        helper.runAtTickTime(1, gone::discard);
+        click(helper, control, 2, goneAt, gone.getId(), 1);
+        click(helper, control, 4, Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(12, 2, 6))), -1, 1);
+        helper.startSequence()
+                .thenExecuteAfter(6, () -> helper.assertTrue(control.lockCount() == 0, "locked a gone mob or empty space: " + control.lockCount()))
+                .thenWaitUntil(() -> helper.assertTrue(findable(helper, cow) && findable(helper, husk), "the cow and husk are not listed yet"))
+                .thenExecute(() -> control.input(cow.getBoundingBox().getCenter(), cow.getId(), false, 2, 0, helper.getLevel().getGameTime()))
+                .thenIdle(2)
+                .thenExecute(() -> control.input(husk.getBoundingBox().getCenter(), husk.getId(), false, 1, 0, helper.getLevel().getGameTime()))
+                .thenWaitUntil(() -> helper.assertTrue(java.util.Arrays.equals(control.lockIds(), new int[]{cow.getId(), cow.getId(), husk.getId()}),
+                        "locks " + java.util.Arrays.toString(control.lockIds())))
+                .thenExecute(() -> helper.assertTrue(control.takeLocksChanged() && !control.takeLocksChanged(), "the change flag is not one-shot"))
+                .thenExecute(() -> control.input(husk.getBoundingBox().getCenter(), husk.getId(), false, 0, 1, helper.getLevel().getGameTime()))
+                .thenWaitUntil(() -> helper.assertTrue(java.util.Arrays.equals(control.lockIds(), new int[]{cow.getId(), cow.getId()}),
+                        "after one right-click " + java.util.Arrays.toString(control.lockIds())))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Locks clear when the mode goes to Single. */
+    @GameTest(template = RANGE, timeoutTicks = 60, batch = "locksClearOnModeChange")
+    public static void locksClearOnModeChange(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, true);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        clickOn(helper, control, 2, cow, 5);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(control.lockCount() == 5, "five presses: " + control.lockCount()))
+                .thenExecute(() -> launcher.setSalvo(false))
+                .thenIdle(2)
+                .thenExecute(() -> helper.assertTrue(control.lockCount() == 0, "locks kept in Single: " + control.lockCount()))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** A controlled salvo never launches a partial load: seven tubes, no ammo left, twelve locks, nothing leaves. */
+    @GameTest(template = RANGE, timeoutTicks = 80, batch = "salvoNeverLaunchesPartial")
+    public static void salvoNeverLaunchesPartial(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, false);
+        launcher.weaponState().tubes = 0b1111111;
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        clickOn(helper, control, 2, cow, 12);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(control.lockCount() == 12, "twelve presses: " + control.lockCount()))
+                .thenIdle(30)
+                .thenExecute(() -> helper.assertTrue(loaded(launcher) == 7 && !launcher.weaponState().salvoActive, "launched a partial load: " + loaded(launcher) + " left"))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /**
+     * A locked cow gone before the launch sends its missiles to the filter's husk, picked at launch: in the wide YARD the
+     * husk is over 20 blocks from the flight toward the lock, out of a lost missile's own search (RETARGET_RANGE, 10).
+     */
+    @GameTest(template = YARD, timeoutTicks = 300, batch = "deadLockGoesToTheFilter")
+    public static void deadLockGoesToTheFilter(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, false);
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES & ~1; // eleven: no launch until ammo comes
+        LivingEntity locked = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(14, 2, 5));
+        LivingEntity other = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(16, 2, 6));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(14, 2, 28));
+        clickOn(helper, control, 2, locked, 12);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(control.lockCount() == 12, "twelve presses: " + control.lockCount()))
+                .thenExecute(locked::discard)
+                .thenExecute(() -> launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get())))
+                .thenWaitUntil(() -> helper.assertTrue(hurt(husk), "the salvo did not go for the husk, " + loaded(launcher) + " tubes loaded"))
+                .thenExecute(() -> helper.assertTrue(!hurt(other), "the salvo hit the other cow"))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Switching to Single in the middle of a salvo stops it: no missile leaves after the switch, and the locks are gone. */
+    @GameTest(template = RANGE, timeoutTicks = 80, batch = "singleStopsTheRipple")
+    public static void singleStopsTheRipple(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, true);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        clickOn(helper, control, 2, cow, 12);
+        int[] left = {-1};
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(launcher.weaponState().salvoActive && loaded(launcher) < 12, "the salvo did not start"))
+                .thenExecute(() -> {
+                    launcher.setSalvo(false);
+                    left[0] = loaded(launcher);
+                })
+                .thenIdle(10) // ripple pairs are salvo_interval (2) apart: five more would have left by now
+                .thenExecute(() -> helper.assertTrue(!launcher.weaponState().salvoActive && loaded(launcher) >= left[0] && left[0] > 0 && control.lockCount() == 0,
+                        "the salvo went on in Single: " + left[0] + " at the switch, " + loaded(launcher) + " now, active "
+                                + launcher.weaponState().salvoActive + ", locks " + control.lockCount()))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    // --- follow-up minors (user 2026-10-22 21:00) -------------------------------------------------------------
+
+    /** Presses made while a weapon that does not take them is mounted are not kept for a launcher swapped in later. */
+    @GameTest(template = ARENA, timeoutTicks = 40, batch = "stalePressesDoNotFireAfterASwap")
+    public static void stalePressesDoNotFireAfterASwap(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        TurretBaseBlockEntity turret = small(helper, BastionItems.GUN_TURRET.get(), BastionItems.KINETIC_ROUNDS.get(), 10);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        turret.setManual(control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        click(helper, control, 2, at, cow.getId(), 5);
+        helper.runAtTickTime(6, () -> {
+            turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.ROCKET_LAUNCHER_TURRET.get()));
+            turret.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.ROCKETS.get(), 16));
+        });
+        helper.runAtTickTime(12, () -> {
+            helper.assertTrue(ammo(turret) == 16, "a rocket left with no press after the swap: ammo " + ammo(turret));
+            release(turret);
+            helper.succeed();
+        });
+    }
+
+    /** Locks go when the launcher is taken out: no brackets are left on screen for a weapon without them. */
+    @GameTest(template = RANGE, timeoutTicks = 40, batch = "locksClearWhenTheWeaponChanges")
+    public static void locksClearWhenTheWeaponChanges(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, true);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        clickOn(helper, control, 2, cow, 3);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(control.lockCount() == 3, "three presses: " + control.lockCount()))
+                .thenExecute(() -> {
+                    control.takeLocksChanged();
+                    launcher.inventory().setStackInSlot(TurretInventory.WEAPON, ItemStack.EMPTY);
+                    helper.assertTrue(control.lockCount() == 0 && control.takeLocksChanged(), "locks kept after the weapon came out: " + control.lockCount());
+                })
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Each press locks the creature its own packet named, in order; a press and an undo in one packet cancel out. */
+    @GameTest(template = RANGE, timeoutTicks = 40, batch = "pressesKeepTheirOwnTarget")
+    public static void pressesKeepTheirOwnTarget(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, false);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        Vec3 cowAt = cow.getBoundingBox().getCenter(), huskAt = husk.getBoundingBox().getCenter();
+        once(helper, 2, List.of(cow, husk), () -> { // two packets before one turret tick (a lag spike)
+            long time = helper.getLevel().getGameTime();
+            control.input(cowAt, cow.getId(), false, 1, 0, time);
+            control.input(huskAt, husk.getId(), false, 1, 0, time);
+        });
+        int[] both = {cow.getId(), husk.getId()};
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(java.util.Arrays.equals(control.lockIds(), both), "locks " + java.util.Arrays.toString(control.lockIds())))
+                .thenExecute(() -> control.input(cowAt, cow.getId(), false, 1, 1, helper.getLevel().getGameTime()))
+                .thenIdle(3)
+                .thenExecute(() -> helper.assertTrue(java.util.Arrays.equals(control.lockIds(), both),
+                        "a press and its undo in one packet left " + java.util.Arrays.toString(control.lockIds())))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Letting go in the middle of a controlled salvo stops it: the rest are not sent at the player's locks later. */
+    @GameTest(template = RANGE, timeoutTicks = 60, batch = "lettingGoStopsTheSalvo")
+    public static void lettingGoStopsTheSalvo(GameTestHelper helper) {
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, true);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        clickOn(helper, control, 2, cow, 12);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(launcher.weaponState().salvoActive && loaded(launcher) < 12, "the salvo did not start"))
+                .thenExecute(() -> {
+                    launcher.setManual(null);
+                    helper.assertTrue(!launcher.weaponState().salvoActive && launcher.weaponState().salvoTargets.length == 0,
+                            "the salvo went on after letting go, targets " + java.util.Arrays.toString(launcher.weaponState().salvoTargets));
+                })
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Stone from the launcher's top to the cow at (19, 2, 3) in RANGE: x 16, y 2-7, z 1-6. */
+    private static void wall(GameTestHelper helper) {
+        for (int y = 2; y <= 7; y++) {
+            for (int z = 1; z <= 6; z++) helper.setBlock(new BlockPos(16, y, z), Blocks.STONE);
+        }
+    }
+
+    /** A wall between the launcher and the cow: the cow cannot be locked (a modified client could aim through it). */
+    @GameTest(template = RANGE, timeoutTicks = 40, batch = "locksNeedTheLauncherToSeeTheMob")
+    public static void locksNeedTheLauncherToSeeTheMob(GameTestHelper helper) {
+        wall(helper);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity launcher = salvoLauncher(helper, control, false);
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(findable(helper, cow), "the cow is not listed yet"))
+                .thenExecute(() -> control.input(cow.getBoundingBox().getCenter(), cow.getId(), false, 3, 0, helper.getLevel().getGameTime()))
+                .thenIdle(3)
+                .thenExecute(() -> helper.assertTrue(control.lockCount() == 0, "locked a cow behind a wall: " + control.lockCount()))
+                .thenExecute(() -> release(launcher))
+                .thenSucceed();
+    }
+
+    /** Missile Single on a cow behind a wall: the missile goes for the filter's husk the launcher can see instead. */
+    @GameTest(template = RANGE, timeoutTicks = 300, batch = "walledCrosshairMobGoesToTheFilter")
+    public static void walledCrosshairMobGoesToTheFilter(GameTestHelper helper) {
+        wall(helper);
+        TurretBaseBlockEntity launcher = largeWith(helper, BastionItems.MISSILE_LAUNCHER_TURRET.get());
+        launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES;
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        launcher.setManual(control);
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        once(helper, 2, List.of(cow, husk), () -> control.input(at, cow.getId(), false, 1, 0, helper.getLevel().getGameTime()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurt(husk), "the missile did not go for the husk");
+            helper.assertTrue(!hurt(cow), "the missile hit the cow behind the wall");
+            release(launcher);
+        });
+    }
+
+    // --- second review (2026-10-22) -----------------------------------------------------------------------
+
+    /** Two rockets sliding in at once (they reload 8 ticks apart, each slides 14): neither fires before its own slide ends. */
+    @GameTest(template = ARENA, timeoutTicks = 80, batch = "eachRocketSlidesInBeforeItFires")
+    public static void eachRocketSlidesInBeforeItFires(GameTestHelper helper) {
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        TurretBaseBlockEntity turret = rocketsAt(helper, control);
+        turret.weaponState().spentTubes = 0b0011; // tube 0 reloads at once, tube 1 eight ticks later
+        Vec3 at = cow.getBoundingBox().getCenter();
+        crosshairOn(helper, control, at, cow.getId());
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(turret.weaponState().spentTubes == 0b0010, "tube 0 did not reload"))
+                .thenExecute(() -> control.input(at, cow.getId(), false, 2, 0, helper.getLevel().getGameTime())) // tubes 2 and 3
+                .thenWaitUntil(() -> helper.assertTrue((turret.weaponState().spentTubes & 0b0011) == 0 && ammo(turret) == 14,
+                        "tube 1 did not reload or tubes 2-3 did not fire: spent " + Integer.toBinaryString(turret.weaponState().spentTubes) + ", ammo " + ammo(turret)))
+                .thenExecute(() -> control.input(at, cow.getId(), false, 1, 0, helper.getLevel().getGameTime())) // tube 0: 8 of its 14 ticks
+                .thenIdle(2)
+                .thenExecute(() -> helper.assertTrue(ammo(turret) == 14, "a rocket still sliding in fired: ammo " + ammo(turret)))
+                .thenIdle(6)
+                .thenExecute(() -> control.input(at, cow.getId(), false, 1, 0, helper.getLevel().getGameTime()))
+                .thenIdle(2)
+                .thenExecute(() -> helper.assertTrue(ammo(turret) == 13, "the seated rocket did not fire: ammo " + ammo(turret)))
+                .thenExecute(() -> release(turret))
+                .thenSucceed();
+    }
+
+    /** Missile Single in a lag spike: a press on the cow and the crosshair moved off it arrive together; the missile still goes for the cow. */
+    @GameTest(template = RANGE, timeoutTicks = 300, batch = "singleMissileKeepsThePressTarget")
+    public static void singleMissileKeepsThePressTarget(GameTestHelper helper) {
+        TurretBaseBlockEntity launcher = largeWith(helper, BastionItems.MISSILE_LAUNCHER_TURRET.get());
+        launcher.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
+        launcher.weaponState().tubes = MissileLauncherWeapon.ALL_TUBES;
+        LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        launcher.setManual(control);
+        Vec3 ground = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(12, 2, 6)));
+        crosshairOn(helper, control, ground, -1);
+        once(helper, 2, List.of(cow, husk), () -> {
+            long time = helper.getLevel().getGameTime();
+            control.input(cow.getBoundingBox().getCenter(), cow.getId(), false, 1, 0, time);
+            control.input(ground, -1, false, 0, 0, time);
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(hurt(cow), "the missile did not go for the cow its press was on");
+            release(launcher);
+        });
+    }
+
+    /** A control whose session ended while the turret could not be reached lets go on the turret's next tick. */
+    @GameTest(template = ARENA, timeoutTicks = 20, batch = "releasedControlLetsGo")
+    public static void releasedControlLetsGo(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = small(helper, BastionItems.GUN_TURRET.get(), BastionItems.KINETIC_ROUNDS.get(), 10);
+        ManualControl control = new ManualControl(UUID.randomUUID(), "Tester");
+        turret.setManual(control);
+        control.release();
+        helper.runAtTickTime(3, () -> {
+            helper.assertTrue(turret.manual() == null, "the turret still has the released control");
+            release(turret);
+            helper.succeed();
         });
     }
 }

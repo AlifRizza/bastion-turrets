@@ -6,7 +6,8 @@
   "refmap": "bastion.refmap.json",
   "client": [
     "LevelRendererMixin",
-    "CameraMixin"
+    "CameraMixin",
+    "MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

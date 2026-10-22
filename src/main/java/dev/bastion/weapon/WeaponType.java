@@ -117,4 +117,22 @@ public abstract class WeaponType {
     public boolean ready(StatSheet stats, WeaponState state) {
         return true;
     }
+
+    /**
+     * Overwatch: one shot per press while loaded, fire_interval ignored, holding the key fires once (Rocket and Missile
+     * Launchers, PLAN "Overwatch: mode, tembak per klik & lock").
+     */
+    public boolean firesPerClick() {
+        return false;
+    }
+
+    /** Overwatch, per-press weapons: locks a press-to-lock salvo needs before it launches; 0 when a press fires instead. */
+    public int manualLocks(WeaponState state) {
+        return 0;
+    }
+
+    /** Overwatch: whether a fully locked salvo may launch now. */
+    public boolean manualSalvoReady(StatSheet stats, WeaponState state) {
+        return ready(stats, state);
+    }
 }

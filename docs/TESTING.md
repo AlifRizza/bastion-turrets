@@ -343,3 +343,37 @@ Setup: a formed Control Hub (T2+), online. Two Gun turrets, a Mortar and a Tesla
 15i. **Shot marker** (sky view): a small amber square shows where the shot lands along the barrel. On open ground it sits on the crosshair; aim at a mob behind a wall the turret cannot see over, and it stays on the wall.
 15j. **Crosshair and RELOAD**: the crosshair is thin at GUI scale 3–4. Sniper, Mortar, Railgun, Shotgun show a RELOAD bar that refills after each shot; Rocket and Missile Launchers show their loaded tubes.
 16. **Dev toggles** (`/bastiondev`): `ai false` makes every test mob stand still (and new ones from `/bastiondev zombie`); `ai true` brings them back. `knockbackimmune true` stops Shotgun, Repulsor and blast knockback on them (mobs on the heavy list still get the Repulsor's heavy push); `false` undoes it.
+
+## Overwatch: launchers (2026-10-22)
+
+Setup: a Control Hub as in "Overwatch Link", a Rocket Launcher and a Missile Launcher (Large Turret Base) with an Overwatch Link each, ammo in both. Zombies and a cow in range (`/bastiondev zombie`, `/bastiondev ai false` keeps them still).
+
+1. **R switches mode**: control the Rocket Launcher, press R. The HUD's MODE row flips SINGLE / SALVO. Leave, open the turret's GUI: it shows the same mode. R on a Gun does nothing.
+2. **Click speed**: Rocket in SINGLE with TUBES 4/4. Click 4 times fast: 4 rockets leave about as fast as you click (on a laggy server too: no click on a loaded tube is lost). Click again at once: nothing. When one tube reloads (TUBES 1/4), a click fires it right away.
+3. **Holding**: hold attack on a loaded Rocket: one rocket only.
+4. **Rocket Salvo**: in SALVO the crosshair is red until TUBES shows 4/4 and the last rocket has slid in; a click then does nothing. Once white: one click, all four leave together. In SINGLE with all four spent the crosshair is red too.
+5. **Missile Single**:
+   - Crosshair on a zombie: amber brackets frame it. Click: the missile goes for it.
+   - Aim at empty ground with a zombie and a cow in range: the missile goes for the zombie, never the cow, even when the cow is in its way.
+6. **Missile Salvo locks**:
+   - Click one zombie 3 times: brackets with ×3, and LOCK 3/12. You hear a click per lock.
+   - Right-click: ×2, LOCK 2/12.
+   - Click empty sky: no lock.
+   - Lock 12 in total over 2–3 mobs: all 12 launch once TUBES shows 12/12, each mob gets its count.
+7. **Lock gone**: lock a zombie 12 times while the tubes are still loading, then kill it with another turret before the launch. The missiles go for another hostile, not a cow.
+8. **Locks clear**: with some locks, press R, or ←/→ to another turret and back: LOCK is gone.
+9. **Numbers on every turret**: HP `now/max`, AMMO an item count, FE `12.4k` style, TUBES on launchers; HEAT, CHARGE, RELOAD in %. At GUI scale 3–4 nothing runs off the screen (the hints may wrap to two lines).
+10. **Automatic mode unchanged**: let go. The launchers fire on their own as before (Rocket Salvo: all four; Missile Salvo: twelve spread over the targets).
+11. **Ammo out before 12**: Missile in SALVO, take the Missiles out while TUBES shows e.g. 7/12, lock 12: nothing launches (TUBES 7/12, AMMO 0). Press R: Single, each click fires one.
+12. **Rocket still sliding in** (review fix): in SINGLE fire all four, then click fast as one tube reloads: it fires only once its rocket has slid all the way in (the clank).
+
+### Minor fixes (2026-10-22, also from the 0.3.0 review)
+1. **←/→ keeps the view**: F5 and zoom 3x on one turret, → to the next: still F5 and 3x.
+2. **No Jade popup** while controlling (Jade installed: `-PwithCompatMods`); it comes back after leaving.
+3. **Zoom sensitivity**: at 4x the mouse turns the view about 4 times slower than at 1x; after leaving, normal speed.
+4. **Holding R**: hold R for two seconds: the mode flips once.
+5. **Brackets follow the server**: a zombie behind a wall the launcher cannot see over gets no bracket and cannot be locked (Single: the missile goes for a visible hostile). Your own body at the hub never gets one.
+6. **Creative players** are never hit by controlled shots, PvP on or off (needs a second player, `runServer` + 2 clients).
+7. **Letting go mid-salvo**: launch a Missile Salvo, press Shift during it: the rest stay in their tubes.
+8. **Hub hint** at the smallest hub screen (GUI scale 4, small window): the map tab's hint shows all its lines (smaller print), none cut off.
+9. **HUD**: in Missile SALVO the hint line says "lock" for the attack key; HP number moves with the HP bar.

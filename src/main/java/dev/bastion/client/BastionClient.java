@@ -58,6 +58,7 @@ public final class BastionClient {
     public static void onRegisterKeys(RegisterKeyMappingsEvent event) {
         event.register(OverwatchClient.NEXT);
         event.register(OverwatchClient.PREVIOUS);
+        event.register(OverwatchClient.MODE);
     }
 
     /** The Overwatch CCTV HUD, over everything; it draws only during a session. */

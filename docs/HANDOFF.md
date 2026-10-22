@@ -7,6 +7,38 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-22: 0.3.2 committed and pushed (not tagged, not uploaded): Overwatch launcher control + every Overwatch minor;
+not yet tested by the user in game** (spec PLAN §8 "Overwatch: mode, tembak per klik & lock Rocket/Missile", plan
+`docs/superpowers/plans/2026-10-22-overwatch-launcher-control.md`). Release plan (user 22:00): versions are now committed
+with changelog (`UPLOAD.md`) and store text (`DESCRIPTION_UPDATE_0.3.2.md`) ready, uploaded later by the user: 0.3.2 in a
+few days, 0.4.0 (next, started 2026-10-22) about a week after. Under control the Rocket and Missile
+Launchers fire one shot per press (`WeaponType.firesPerClick`, `TurretBaseBlockEntity.tickPerClick`; fire_interval
+ignored, holding fires once, presses on empty tubes dropped); R (`OverwatchClient.MODE`, `OverwatchSessions.toggleMode`)
+flips the turret's own Salvo setting. Missile Single: the crosshair's mob, else a random filter enemy that hits by the
+filter (`TurretRocketEntity.underFilter`); a controlled missile that loses its target turns to the filter
+(`randomRetarget`). Missile Salvo: presses lock (`ManualControl` locks, `OverwatchLocks` S->C), 12 locks + 12 tubes
+launch, never a partial load; use key undoes the last lock. HUD numbers on every turret, lock brackets with xN. PROTOCOL 13.
+Changelog in `UPLOAD.md` ("0.3.2"). Manual checklist:
+`docs/TESTING.md` "Overwatch: launchers". Flaky seen during the build: feedHubScrollFollowsShrink, laserHitsAStrafingTarget,
+feedHubDropsOwnShare, powerPortTakesFeOnlyWhenFormed (all outside the changed code). Final review (Opus, xhigh): no
+Critical; 2 Important fixed (presses arriving in one tick now fire one per tick while a tube is loaded; crosshair red
+while a launcher cannot fire, Missile Salvo excepted). Then (user 21:00) every minor fixed, this review's and the 0.3.0
+review's: presses kept per input in order with their own target (`ManualControl.takePresses`, UNLOCK), dropped on a
+weapon change; locks need the launcher's sight (no locking through walls); `MAX_LOCKS`; `TargetSelector.random` (sight
+checks only until one fits); taking control or letting go stops a running salvo; a Single rocket fires only once seated
+(a slide timer per tube, `WeaponState.slideTicks`); ←/→ and R once per `REQUEST_TICKS` (4) on the server, R once per press on the client;
+←/→ skips turrets whose chunk the client lacks; ending a session never loads the turret's chunk; creative/spectator
+players never hit by controlled shots; ←/→ keeps F5 and zoom; no Jade popup in a session
+(`client.compat.jade.OverwatchJadePlugin`); mouse turns 1/zoom as fast (`MouseHandlerMixin`); hover bracket skips owner
+and self and needs the launcher's sight; HP number from the bar's health; "lock" hint in Missile Salvo; JEI text says the
+key can be changed; the hub's map hint shrinks to fit. Second review (Opus, xhigh, no Critical/Important) minors fixed
+too: each press fires at its own creature (Missile Single in a lag spike); a session's end releases its `ManualControl`, so
+a turret out of reach lets go on its next tick; `MouseHandlerMixin` is optional (`require = 0`); R state resets per
+session; the hover bracket skips creative/spectator players; the rocket click test runs from the launcher's first tick. Kept on purpose: the Workstation's Craft button greys out when it
+cannot craft (0.3.0 review noted it; it is the intended feedback). The "0 locked" GameTest flake's cause: a test in a
+fresh chunk cannot look entities up by id for a few ticks; lock tests now wait (`once`/`clickOn`). 245/245 (with
+`-PwithCompatMods`: only the known fixed-tick flake feedHubScrollFollowsShrink); 248/248 after the second review.
+
 **2026-10-21: 0.3.0 committed and pushed: Overwatch Link** (spec PLAN §8 "Overwatch Link: kendali turret jarak jauh",
 plan `docs/superpowers/plans/2026-10-20-overwatch-link.md`). A Hub Connector with remote control: Take control of a
 linked turret from the Control Hub's map; client-side camera (Camera mixin, approach like Superb Warfare's drone, code

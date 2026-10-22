@@ -1286,6 +1286,90 @@ berikutnya) menampilkan lintasan dan titik jatuhnya.
 **Di luar cakupan**: layar monitor di GUI, kendali di luar jangkauan hub, tablet genggam, biaya FE saat dikendalikan, suara
 baru, kendali tanpa Control Hub, pengiriman chunk/mob di sekitar turret dari server (turret harus dalam render distance).
 
+### Overwatch: mode, tembak per klik & lock Rocket/Missile (permintaan user 2026-10-22 16:54, desain dibahas 16:54–17:04, disetujui 17:12)
+
+**Status**: desain disetujui user 2026-10-22 17:12 (default 1–10 "oke", tabrakan missile filter = A); plan `docs/superpowers/plans/2026-10-22-overwatch-launcher-control.md`; dibangun 2026-10-22, rilis **0.3.2** (commit 2026-10-22, upload beberapa hari kemudian); belum dites user di game (`docs/TESTING.md` "Overwatch: launchers").
+
+**Tujuan**: saat dikendalikan lewat Overwatch, Rocket Launcher dan Missile Launcher terasa seperti senjata yang dipegang
+sendiri: pemain memilih mode, menembak secepat ia mengklik selama tabung terisi, dan Missile mengunci sasaran sendiri,
+termasuk menumpuk beberapa missile pada satu mob. HUD menampilkan angka, bukan hanya bar.
+
+**Keputusan user**:
+- Selama dikendalikan ada tombol untuk mengganti **Single ↔ Salvo** (Rocket Launcher; Missile Launcher juga, lihat
+  "Keputusan saya").
+- **Tembak per klik** (khusus Rocket & Missile saat dikendalikan): selama ada tabung terisi, setiap klik menembak satu,
+  jedanya = kecepatan klik pemain; `fire_interval` tidak dipakai. Tabung kosong semua = tunggu reload; tabung yang selesai
+  reload langsung bisa ditembak. Kecepatan reload tidak berubah.
+- **Salvo harus menunggu semua tabung penuh** (Rocket 4, Missile 12).
+- **Missile Single**: crosshair di atas mob = tanda lock di mob itu; klik = missile mengejar mob itu. Crosshair tidak di
+  atas mob = missile tetap meluncur dan mengejar **musuh acak menurut filter GUI turret** (bukan semua makhluk).
+- **Missile Salvo**: tiap klik pada mob = 1 lock; **12 lock** baru meluncur. Satu mob boleh di-lock berkali-kali (12 klik
+  pada satu mob = 12 missile ke mob itu). Mob dengan lebih dari 1 missile **diberi penanda jumlahnya**.
+- **Angka di HUD untuk semua turret** (bukan hanya launcher).
+- **Missile yang mengejar musuh acak menurut filter mengikuti filter juga untuk tabrakan dan ledakan** (user 17:12, pilihan
+  A): melewati dan tidak melukai sapi, villager, peliharaan di jalurnya, seperti missile otomatis. Berlaku untuk Single
+  tanpa lock, lock pada mob yang mati sebelum peluncuran, dan sasaran yang mati di tengah jalan (saat itu missile berganti
+  ke aturan filter). Missile yang mengejar mob hasil lock pemain tetap memakai aturan manual (semua kecuali pemilik;
+  pemain lain hanya saat PvP). Catatan builder: `TargetSelector.isCandidate` memakai `turret.shooter()` selama dikendalikan,
+  jadi filter harus diminta eksplisit.
+
+**Keputusan saya (default; disetujui user 17:12 "default oke")**:
+1. Tombol ganti mode: KeyMapping baru `key.bastion.overwatch.mode`, default **R**, kategori "Bastion". Berlaku untuk Rocket
+   dan Missile. Mengubah setelan Salvo **milik turret** (sama dengan tombol di GUI turret, tersimpan setelah sesi). HUD
+   menampilkan `SINGLE`/`SALVO`. Turret lain: tombol tidak berbuat apa-apa.
+2. Satu klik = satu tembakan; **klik ditahan tidak menembak beruntun** untuk kedua launcher saat dikendalikan (senjata lain
+   tetap tahan-untuk-tembak seperti 0.3.0).
+3. Rocket Salvo: satu klik = 4 rocket bersamaan, hanya bila keempat tabung penuh (aturan seat/SALVO_HOLD yang ada tetap);
+   belum penuh = klik diabaikan dan crosshair merah.
+4. Missile Salvo:
+   - Lock boleh dipasang selama tabung belum penuh. Missile meluncur otomatis begitu **12 lock dan 12 tabung penuh**
+     (yang mana pun terpenuhi terakhir), dengan riak `salvo_interval` seperti salvo otomatis.
+   - Hanya mob di bawah crosshair yang bisa di-lock (raycast client berhenti di blok), yang dalam jangkauan kendali
+     (range × `overwatchRangeMultiplier`) dan yang boleh kena tembakan manual (`hits`: semua kecuali pemilik; pemain lain
+     hanya saat PvP). Server memeriksa ulang setiap lock (jangkauan, `hits`, entitas ada).
+   - **Klik kanan = hapus lock terakhir.** Semua lock hilang saat mode diganti, pindah turret (←/→), atau sesi berakhir.
+     Lock pada mob yang mati sebelum peluncuran tetap dihitung; missile-nya mengejar musuh acak menurut filter.
+   - Klik di tempat kosong (tidak ada mob yang bisa di-lock) **diabaikan**: tidak menambah lock (user: "harus click/pilih
+     mob 12 kali"; satu mob cukup untuk 12 lock).
+   - Ammo habis sebelum 12 tabung terisi: Salvo **tidak meluncur** (aturan user "harus tunggu semua penuh"); HUD
+     menunjukkan TABUNG n/12 dan AMMO 0, pemain menekan R untuk Single. Berbeda dari salvo otomatis, yang menembakkan isi
+     yang ada saat ammo habis.
+5. Missile yang sasarannya mati di tengah jalan (Single maupun Salvo, saat dikendalikan) mencari **musuh acak menurut
+   filter** dalam radius `RETARGET_RANGE` yang ada; tidak ada = terbang lurus sampai bahan bakar habis. (Sekarang: missile
+   manual tidak mencari sasaran baru.)
+6. Musuh acak = acak di antara kandidat `TargetSelector` (filter GUI, jangkauan, garis pandang launcher), bukan yang
+   terdekat.
+7. Penanda lock (digambar dengan fill seperti bingkai sudut HUD, tanpa tekstur; warna amber HUD): braket empat sudut di sekeliling hitbox mob.
+   Single: muncul pada mob di bawah crosshair yang bisa di-lock. Salvo: pada setiap mob ter-lock, plus `×N` bila N ≥ 2.
+   HUD menampilkan `LOCK n/12` di mode Salvo.
+8. Angka HUD: HP `sekarang/maks`; AMMO jumlah item ammo di slot; ENERGY FE (disingkat, mis. `12.4k`); baris baru
+   **TABUNG** untuk launcher `terisi/total` (menggantikan bar RELOAD launcher); HEAT, CHARGE dan RELOAD senjata lambat
+   dalam persen.
+9. Petunjuk tombol di HUD ditambah "R: mode" untuk launcher dan "Klik kanan: hapus lock" di Missile Salvo.
+10. Suara lock/hapus lock: `control_hub.ui_select` yang sudah ada, pelan. Tanpa suara baru.
+
+**Diserahkan ke builder**: bentuk paket (C→S klik, lock tambah/hapus, ganti mode; S→C daftar lock untuk penanda), di
+mana daftar lock disimpan (`ManualControl` server-side, tidak disimpan ke NBT), cara menghitung klik agar klik cepat
+tidak hilang di antara tick, gambar braket di layar (proyeksi hitbox) atau di dunia.
+
+**Acceptance**:
+- GameTest: tembak per klik melewati `fire_interval` dan berhenti saat tabung habis, tabung yang reload langsung bisa
+  ditembak (Rocket & Missile); klik ditahan = satu tembakan; Rocket Salvo menolak saat belum penuh lalu 4 sekaligus saat
+  penuh; Missile Single dengan mob di crosshair mengejar mob itu, tanpa mob mengejar kandidat filter (bukan mob di luar
+  filter); Missile Salvo: 11 lock tidak meluncur, lock ke-12 + tabung penuh meluncur 12, 12 lock pada satu mob = 12
+  missile ke mob itu, lock ke mob di luar jangkauan/pemilik ditolak, hapus lock, lock hilang saat ganti mode/turret/sesi;
+  sasaran mati → missile mengejar kandidat filter; missile filter melewati dan tidak melukai mob di luar filter (sapi),
+  missile hasil lock tetap mengenai sapi yang di-lock; ganti mode dari Overwatch mengubah `salvo()` turret dan ditolak dari
+  bukan-pengendali; paket dari bukan-pengendali ditolak. Mode otomatis (tanpa kendali) tidak berubah: GameTest lama lolos.
+- Manual (`docs/TESTING.md`): R ganti mode + HUD, klik cepat 4 rocket, Missile Single lock & tanpa lock, Salvo 12 lock
+  dengan `×N`, klik kanan hapus lock, angka HUD di semua turret.
+- `./gradlew build` lolos, semua GameTest lolos (juga `-PwithCompatMods`). `PROTOCOL` network naik. Angka balance tetap di
+  JSON/config.
+- Dokumen: changelog & deskripsi store di `docs/release/`, `HANDOFF.md`, tooltip/JEI Overwatch Link bila menyebut kontrol.
+
+**Di luar cakupan**: perubahan mode otomatis (tanpa kendali), tembak per klik untuk senjata lain, lock untuk senjata selain
+Missile, suara baru, nomor versi rilis (diputuskan user saat commit).
+
 ---
 
 ## 9. Aturan Kerja untuk Claude Code

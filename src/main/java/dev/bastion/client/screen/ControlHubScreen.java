@@ -376,10 +376,15 @@ public class ControlHubScreen extends AbstractContainerScreen<ControlHubMenu> {
             graphics.fill(sideX, y + 1, sideX + 5, y + 6, 0xFF000000 | colours[i]);
             scaled(graphics, lines.get(i), sideX + 8, y, legendScale, MUTED);
         }
-        // The hint at full size when it fits under the legend, else small print (the 256 x 200 panel has room for 4 lines).
+        // The hint as large as lets all of it fit under the legend (0.3.0 review: the 256 x 200 panel cut its last line),
+        // never under half size.
         Component text = Component.translatable("gui.bastion.control_hub.hint");
-        float small = font.split(text, sideW).size() * 10 <= imageHeight - 6 - HINT_Y ? 1 : 0.75f;
-        List<FormattedCharSequence> hint = font.split(text, (int) (sideW / small));
+        float small = 1;
+        List<FormattedCharSequence> hint = font.split(text, sideW);
+        while (small > 0.5f && hint.size() * 10 * small > imageHeight - 6 - HINT_Y) {
+            small -= 0.05f;
+            hint = font.split(text, (int) (sideW / small));
+        }
         graphics.pose().pushPose();
         graphics.pose().translate(sideX, HINT_Y, 0);
         graphics.pose().scale(small, small, 1);

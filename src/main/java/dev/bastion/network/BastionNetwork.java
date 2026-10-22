@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Mod.EventBusSubscriber(modid = Bastion.MOD_ID)
 public final class BastionNetwork {
-    private static final String PROTOCOL = "12";
+    private static final String PROTOCOL = "13";
     /** Every S->C turret packet only reaches players this close (PLAN 4.8). */
     public static final double BROADCAST_RADIUS = 96;
 
@@ -66,6 +66,8 @@ public final class BastionNetwork {
                 .encoder(OverwatchView::encode).decoder(OverwatchView::decode).consumerMainThread(OverwatchView::handle).add();
         CHANNEL.messageBuilder(OverwatchStatus.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OverwatchStatus::encode).decoder(OverwatchStatus::decode).consumerMainThread(OverwatchStatus::handle).add();
+        CHANNEL.messageBuilder(OverwatchLocks.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(OverwatchLocks::encode).decoder(OverwatchLocks::decode).consumerMainThread(OverwatchLocks::handle).add();
     }
 
     /** Queues a turret message (one of TurretEvents' kinds) for players within BROADCAST_RADIUS of {@code pos}. */

@@ -13,10 +13,10 @@ import java.util.function.Supplier;
 
 /**
  * C->S Overwatch (PLAN "Overwatch Link"): take control of a turret from the open hub screen, switch to the next or previous
- * one, or let go. The server re-checks everything (OverwatchSessions).
+ * one, flip a launcher's fire mode, or let go. The server re-checks everything (OverwatchSessions).
  */
 public record OverwatchRequest(Kind kind, BlockPos turret, int step) {
-    public enum Kind {START, CYCLE, EXIT}
+    public enum Kind {START, CYCLE, EXIT, MODE}
 
     public static OverwatchRequest start(BlockPos turret) {
         return new OverwatchRequest(Kind.START, turret, 0);
@@ -28,6 +28,10 @@ public record OverwatchRequest(Kind kind, BlockPos turret, int step) {
 
     public static OverwatchRequest exit() {
         return new OverwatchRequest(Kind.EXIT, BlockPos.ZERO, 0);
+    }
+
+    public static OverwatchRequest mode() {
+        return new OverwatchRequest(Kind.MODE, BlockPos.ZERO, 0);
     }
 
     public void encode(FriendlyByteBuf buf) {
@@ -52,6 +56,7 @@ public record OverwatchRequest(Kind kind, BlockPos turret, int step) {
                 }
                 case CYCLE -> OverwatchSessions.cycle(player, step);
                 case EXIT -> OverwatchSessions.stop(player);
+                case MODE -> OverwatchSessions.toggleMode(player);
             }
         }
         context.get().setPacketHandled(true);
