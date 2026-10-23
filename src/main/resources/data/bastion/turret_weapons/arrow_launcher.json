@@ -1,0 +1,27 @@
+{
+  "type": "bastion:arrow_launcher",
+  "ammo": "bastion:ammo/arrow",
+  "energy_color": "#8A8A8A",
+  "range": 32,
+  "fire_interval": 50,
+  "damage": 3,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 6,
+  "aim_tolerance": 4,
+  "aim_lock_ticks": 2,
+  "min_pitch": 40,
+  "max_pitch": 85,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.5875,
+  "params": {
+    "shell_speed": 1.4,
+    "gravity": 0.05,
+    "drag": 0.99,
+    "min_range": 6,
+    "arrows": 6,
+    "ring_radius": 1.5,
+    "stuck_ticks": 200,
+    "glow_ticks": 200
+  }
+}

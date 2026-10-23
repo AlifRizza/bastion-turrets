@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IOI",
+    "IHI",
+    "P P"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:potato"
+    },
+    "H": {
+      "item": "minecraft:leather"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "bastion:potato_shotgun",
+    "count": 1
+  }
+}

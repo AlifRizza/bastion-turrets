@@ -18,6 +18,7 @@ import dev.bastion.network.HubRoster;
 import dev.bastion.network.TurretConfigUpdate;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.FeedHubBlock.Part;
 import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
@@ -442,13 +443,13 @@ public class ControlHubTests {
     /** A turret saved before the Connector slot (14 slots) loads with an empty 15th slot and everything else where it was. */
     @GameTest(template = EMPTY, batch = "oldTurretSaveGetsAConnectorSlot")
     public static void oldTurretSaveGetsAConnectorSlot(GameTestHelper helper) {
-        TurretInventory old = new TurretInventory(() -> TurretTier.T3, () -> false, slot -> {});
+        TurretInventory old = new TurretInventory(() -> TurretTier.T3, () -> BaseKind.STANDARD, () -> true, slot -> {});
         old.setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.GUN_TURRET.get()));
         old.setStackInSlot(TurretInventory.AMMO_START + 8, new ItemStack(BastionItems.KINETIC_ROUNDS.get(), 32));
         old.setStackInSlot(TurretInventory.MODIFIER_START + 3, new ItemStack(BastionItems.RANGE_MODULE.get()));
         CompoundTag tag = old.serializeNBT();
         tag.putInt("Size", 14); // what a turret saved before this update holds
-        TurretInventory loaded = new TurretInventory(() -> TurretTier.T3, () -> false, slot -> {});
+        TurretInventory loaded = new TurretInventory(() -> TurretTier.T3, () -> BaseKind.STANDARD, () -> true, slot -> {});
         loaded.deserializeNBT(tag);
         helper.assertTrue(loaded.getSlots() == 15, "slots after loading: " + loaded.getSlots());
         helper.assertTrue(loaded.getStackInSlot(TurretInventory.WEAPON).is(BastionItems.GUN_TURRET.get())

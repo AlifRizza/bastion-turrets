@@ -175,6 +175,23 @@ MODEL_MATERIALS = {
                                      "head": "frame", "dish": "armor", "dish_rim": "frame", "feed": "steel", "glow_beacon": "emitter",
                                      **({"antenna": "steel"} if tier >= 2 else {}), **({"glow_beacons": "emitter"} if tier == 3 else {})}
        for tier in (1, 2, 3)},
+    # early game (PLAN "Turret early game"): rustic materials, no emitter anywhere
+    "makeshift_turret_base": {"plinth": "stone", "body": "wood", "posts": "wood_dark", "rope": "rope", "deck": "wood",
+                              "bands": "iron_band", "rivets": "rivet", "weapon_mount": "wood_dark", "mount_plate": "iron_band"},
+    **{name: {"yaw_pivot": "wood", "yoke_iron": "iron_band", "yoke_rivets": "rivet", "axle": "iron_band", **bones} for name, bones in {
+        "cobblestone_turret": {"body": "wood", "body_iron": "iron_band", "body_rivets": "rivet", "spring": "spring",
+                               "barrel_0": "wood_dark", "barrel_iron": "iron_band", "barrel_rivets": "rivet", "bore": "bore",
+                               "stone_load": "stone"},
+        "snowball_repeater": {"body": "wood", "body_iron": "iron_band", "hopper": "wood_dark", "hopper_iron": "iron_band",
+                              "snow": "snow", "drum": "wood_dark", "drum_iron": "iron_band", "barrel_0": "iron", "bores": "bore",
+                              "gear": "iron", "crank": "iron_band", "crank_handle": "wood"},
+        "potato_shotgun": {"body": "wood", "tank": "iron_band", "tank_rivets": "rivet", "straps": "leather", "pump_barrel": "iron",
+                           "pump": "rivet", "pump_handle": "wood", "pump_grips": "leather", "barrel_0": "iron", "bore": "bore"},
+        "arrow_launcher": {"wheels": "wood_dark", "wheel_iron": "iron_band", "shafts": "wood", "body": "wood", "barrel_0": "wood",
+                           "box_face": "wood_dark", "holes": "bore", "body_iron": "iron_band", "body_rivets": "rivet", "slider": "wood",
+                           "slider_iron": "iron_band", "arrows": "wood", "arrowheads": "rivet", "fletching": "feather",
+                           "bow_l": "wood_dark", "string_l": "rope", "bow_r": "wood_dark", "string_r": "rope", "windlass": "rope",
+                           "windlass_spokes": "wood_dark"}}.items()},
 }
 
 
@@ -189,7 +206,11 @@ STATUS_BASE = rgb("3A4046")  # base glow texels: neutral, the translucent health
 # v1 material names still map, so an unconverted model keeps painting
 MATERIAL_ALIASES = {"panel": "armor", "panel_plain": "armor", "graphite": "frame", "metal": "steel"}
 MATERIAL_COLOURS = {"armor": GUNMETAL, "hex": GUNMETAL, "frame": DARKSTEEL, "steel": STEEL, "vent": DARKSTEEL,
-                    "bore": BORE, "emitter": GLOW_BASE, "status": STATUS_BASE}
+                    "bore": BORE, "emitter": GLOW_BASE, "status": STATUS_BASE,
+                    # rustic, for the early-game base and turrets: wood, stone, iron, rope, leather, springs
+                    "wood": rgb("A0723F"), "wood_dark": rgb("5C3D24"), "stone": rgb("75716A"), "iron_band": rgb("4A4C50"),
+                    "rivet": rgb("A3A6AA"), "rope": rgb("BFA073"), "leather": rgb("7A4A2A"), "spring": rgb("80868D"),
+                    "iron": rgb("6C7075"), "snow": rgb("E6ECF0"), "feather": rgb("D8D2C4")}
 
 
 def hex_lines(h, w, size=3.0):
@@ -202,6 +223,60 @@ def hex_lines(h, w, size=3.0):
     cy = -cx - cz
     fx, fy, fz = [np.abs(c - np.round(c)) for c in (cx, cy, cz)]
     return np.maximum(np.maximum(np.minimum(fx, fy), np.minimum(fy, fz)), np.minimum(fx, fz)) > 0.36
+
+
+def rustic(material, side, shade, rough, seed):
+    """Surface detail of the rustic materials (early game); other materials pass through unchanged."""
+    h, w = shade.shape
+    rng = np.random.default_rng(seed + 7)
+    yy, xx = np.mgrid[0:h, 0:w]
+    along_w = w >= h  # wood grain and spring axis run along the longer side
+    if material in ("wood", "wood_dark"):
+        shade = shade * (1 + rng.normal(0, 0.09, (h, 1) if along_w else (1, w)))  # grain streaks
+        if material == "wood" and min(w, h) >= 4:  # board seams every 4 texels
+            shade[(yy if along_w else xx) % 4 == 3] *= 0.62
+        if w * h >= 40 and min(w, h) >= 3:  # a knot
+            ky, kx = rng.integers(1, h - 1), rng.integers(1, w - 1)
+            shade[ky - 1:ky + 2, kx - 1:kx + 2] *= 0.85
+            shade[ky, kx] *= 0.7
+        rough = 0.05
+    elif material == "stone":  # speckled, with block joints on the sides
+        speck = rng.random((h, w))
+        shade[speck < 0.14] *= 0.74
+        shade[speck > 0.9] *= 1.16
+        if side and h >= 4:
+            shade[2] *= 0.72
+            shade[(yy < 2) & (xx % 6 == 2)] *= 0.72
+            shade[(yy > 2) & (xx % 6 == 5)] *= 0.72
+        rough = 0.06
+    elif material == "iron_band":  # dark iron, a soft highlight towards the top
+        if side and h >= 2:
+            shade *= (1.15 - 0.3 * np.linspace(0, 1, h))[:, None]
+        rough = 0.03
+    elif material == "iron":  # worn iron (pipes, barrels): pitted, a soft highlight towards the top
+        shade[rng.random((h, w)) < 0.08] *= 0.78
+        if side and h >= 2:
+            shade *= (1.12 - 0.24 * np.linspace(0, 1, h))[:, None]
+        rough = 0.03
+    elif material == "snow":  # packed snow: a few grey and bright grains
+        grain = rng.random((h, w))
+        shade[grain < 0.1] *= 0.9
+        shade[grain > 0.93] *= 1.06
+        rough = 0.015
+    elif material == "rivet":
+        shade *= 1.1
+        rough = 0.02
+    elif material == "rope":  # twisted strands
+        shade[(xx + yy) % 3 == 0] *= 0.7
+        rough = 0.05
+    elif material == "leather":  # smooth, a stitched seam under the top edge
+        if side and h >= 3 and w >= 3:
+            shade[1, 1:-1:2] *= 1.35
+        rough = 0.025
+    elif material == "spring":  # coil turns across the spring's axis
+        shade[(xx if along_w else yy) % 2 == 0] *= 0.6
+        rough = 0.02
+    return shade, rough
 
 
 def face_pixels(material, face, w, h, seed):
@@ -226,6 +301,7 @@ def face_pixels(material, face, w, h, seed):
     if side and material in ("armor", "hex") and w >= 6 and h >= 6:
         for y, x in ((1, 1), (1, w - 2), (h - 2, 1), (h - 2, w - 2)):
             shade[y, x] *= 1.35  # rivets
+    shade, rough = rustic(material, side, shade, rough, seed)
     # bevels: light catches the top-left edges, the bottom-right ones fall into shadow
     if side and material not in ("bore", "emitter", "status"):
         if h > 1:
@@ -648,6 +724,45 @@ def damaged_base():
     img = np.zeros((16, 16, 4))
     stamp(img, DAMAGED_BASE, 0, 3)
     return outline(img, OUTLINE)
+
+
+# Crack centres spread over the tile; projected on the makeshift base's sides, rows 12-15 fall on the stone plinth,
+# 4-11 on the crate and 2-3 on the deck edge.
+CRACK_CENTRES = ((4, 6), (11, 13), (12, 4), (3, 12), (8, 9), (13, 8))
+CRACK_COUNTS, CRACK_BRANCHES, CRACK_REACH = (2, 4, 6), (2, 3, 3), (3, 4, 5)
+DIRECTIONS = [(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx or dy]
+
+
+def makeshift_cracks(level):
+    """Damage overlay of the makeshift base (TurretBaseRenderer, health <= 75 / 50 / 25 %): thin dark cracks running out
+    from a few points, box-projected at one texel per model px so the tile spans the block. Each level keeps the cracks
+    of the one before, makes them longer and adds more; the last also knocks a chip out at two of the points."""
+    rng = np.random.default_rng(41)
+    crack = np.zeros((16, 16), dtype=bool)
+    for i, (cx, cy) in enumerate(CRACK_CENTRES):
+        dirs = rng.permutation(len(DIRECTIONS))[:3]  # drawn for every centre at every level, so cracks only grow
+        wander = rng.random((3, 6))
+        if i >= CRACK_COUNTS[level]:
+            continue
+        crack[cy, cx] = True
+        for b in range(CRACK_BRANCHES[level]):
+            dx, dy = DIRECTIONS[dirs[b]]
+            x, y = cx, cy
+            for step in range(CRACK_REACH[level]):
+                sx, sy = dx, dy
+                if wander[b, step] < 0.3:  # a jag: a straight branch steps aside, a diagonal one goes straight
+                    aside = 1 if wander[b, step] < 0.15 else -1
+                    sx, sy = (dx, 0) if dx and dy else (dx or aside, dy or aside)
+                x, y = x + sx, y + sy
+                if not (0 <= x < 16 and 0 <= y < 16):
+                    break
+                crack[y, x] = True
+    if level == 2:
+        for cx, cy in CRACK_CENTRES[:2]:
+            crack[cy:cy + 2, cx:cx + 2] = True
+    img = np.zeros((16, 16, 4))
+    img[crack, :3], img[crack, 3] = rgb("21170F"), 1
+    return img
 
 
 # --- GUI --------------------------------------------------------------------------------------
@@ -1256,6 +1371,51 @@ def scorch():
     streaks = np.abs(np.sin(th * 9 + 2.0 * value_noise(64, 3, 311))) ** 12 * soft(r / 0.98, 1.0) * (r > rim * 0.7)
     return white(np.clip(body * (0.75 + 0.35 * n) + streaks * 0.7, 0, 1))
 
+def wind_streak():
+    """Pale streak of air (early game, lit, not glowing): a soft thin line along X, fading toward both ends."""
+    x, y = grid(16)
+    return white(soft(np.abs(y) * 3, 1.2) * soft(np.abs(x), 0.8) * 0.9)
+
+# --- early sling shots (TracerRenderer pellets, lit by the world) ------------------------------------------
+
+def lump(seed, rough, size=16):
+    """An irregular round lump: its alpha (a soft 1 px rim), its light (lit from the top left) and its 0..1 radius."""
+    x, y = grid(size)
+    r, th = np.hypot(x, y), np.arctan2(y, x)
+    rng = np.random.default_rng(seed)
+    edge = 0.8 + sum(rng.uniform(-rough, rough) / (1 + k / 6) * np.cos(k * th + rng.uniform(0, 2 * np.pi)) for k in (2, 3, 5, 7, 11))
+    alpha = np.clip((edge - r) * size / 2, 0, 1)
+    nz = np.sqrt(np.clip(1 - (r / edge) ** 2, 0, 1))
+    light = np.clip((-0.5 * x / edge - 0.6 * y / edge + 0.62 * nz) / 0.95, 0.25, 1)
+    return alpha, light, np.clip(r / edge, 0, 1)
+
+def pebble():
+    """Cobblestone Turret shot: a rough grey rock, speckled, darker at its rim."""
+    a, light, r = lump(1300, 0.13)
+    grain = value_noise(16, 8, 1301)
+    grey = (0.5 + 0.3 * (grain - 0.5)) * (0.55 + 0.6 * light) * (1 - 0.25 * r ** 4) * np.where(grain > 0.78, 0.6, 1)  # dark pits
+    img = white(a)
+    img[..., :3] = np.clip(grey, 0, 1)[..., None]
+    return img
+
+def snow_clump():
+    """Snowball Repeater shot: a soft white clump, bumpy, shaded pale blue."""
+    a, light, r = lump(1310, 0.07)
+    img = white(a * (1 - 0.3 * r ** 6))  # a softer rim than a stone's
+    shade = 0.82 + 0.18 * light + 0.05 * (value_noise(16, 6, 1311) - 0.5)
+    img[..., 0], img[..., 1], img[..., 2] = shade * 0.94, shade * 0.97, np.minimum(shade * 1.03, 1)
+    return img
+
+def potato_chunk():
+    """Potato Shotgun shot: a chunk of potato, brown skin round a pale yellow cut face, with a dark eye or two."""
+    a, light, r = lump(1320, 0.1)
+    skin, flesh = np.array([0.55, 0.4, 0.22]), np.array([0.93, 0.83, 0.55])
+    img = white(a)
+    img[..., :3] = np.where((r > 0.72)[..., None], skin, flesh) * (0.6 + 0.45 * light)[..., None]
+    img[5:7, 9:11, :3] = skin * 0.5
+    img[10, 5, :3] = skin * 0.5
+    return np.clip(img, 0, 1)
+
 # --- renderer textures (textures/vfx) -----------------------------------------------------------
 
 def tracer():
@@ -1379,6 +1539,8 @@ VFX_SPRITES = {
     **{f"particle/flame_{i}.png": (lambda i=i: flame(i)) for i in range(3)},
     "particle/dust_ring.png": dust_ring,
     **{f"particle/flame_jet_{i}.png": (lambda i=i: flame_jet(i)) for i in range(6)},
+    "particle/wind_streak.png": wind_streak,
+    "vfx/pebble.png": pebble, "vfx/snow_clump.png": snow_clump, "vfx/potato_chunk.png": potato_chunk,
     "vfx/arc.png": arc, "vfx/smoke_trail.png": smoke_strip, "vfx/flame_jet.png": flame_strip, "vfx/fire_sheet.png": fire_sheet, "vfx/beam.png": beam_strip, "vfx/orb.png": orb, "vfx/flare.png": flare,
 }
 
@@ -1447,6 +1609,11 @@ TEXTURES = {
     "item/tier_upgrade_kit_t3.png": lambda: upgrade_kit(3),
     "item/turret_configurator.png": configurator,
     "item/damaged_turret_base.png": damaged_base,
+    "block/makeshift_turret_base.png": lambda: paint_model("makeshift_turret_base")[0],
+    "block/makeshift_turret_base_e.png": lambda: paint_model("makeshift_turret_base")[1],  # all transparent: no glow
+    **{f"block/makeshift_cracks_{level}.png": (lambda level=level: makeshift_cracks(level)) for level in range(3)},
+    **{f"item/{name}{suffix}.png": (lambda name=name, i=i: paint_model(name)[i])  # early game: the _e is all transparent (no glow)
+       for name in ("cobblestone_turret", "snowball_repeater", "potato_shotgun", "arrow_launcher") for i, suffix in ((0, ""), (1, "_e"))},
     "gui/turret.png": turret_gui,
     "gui/turret_plain.png": lambda: turret_gui(plain=True),
     "gui/control_hub.png": control_hub_gui,

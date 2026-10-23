@@ -1,5 +1,6 @@
 package dev.bastion.turret;
 
+import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.damage.BastionExplosion;
 import dev.bastion.menu.TurretMenu;
@@ -29,7 +30,11 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -71,6 +76,8 @@ import java.util.UUID;
 public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity, MenuProvider {
     /** Height of the base: the weapon mounts this far out from the attached face. */
     public static final double BASE_HEIGHT = 1.0;
+    /** What a destroyed makeshift base drops (a loot table, so a datapack can change it). */
+    private static final ResourceLocation MAKESHIFT_SCRAP = Bastion.id("gameplay/makeshift_scrap");
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.turret_base.idle");
     private static final int SEARCH_INTERVAL = 10;
     /** Ticks after a shot during which the burst counts as still going (Aim.sweep_tolerance applies). */
@@ -86,7 +93,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     public static final ModelProperty<TurretTier> MODEL_TIER = new ModelProperty<>();
 
     private TurretTier tier = TurretTier.T1;
-    private final TurretInventory inventory = new TurretInventory(() -> tier, this::large, this::onSlotChanged);
+    private final TurretInventory inventory = new TurretInventory(() -> tier, this::kind, () -> facing() == Direction.UP, this::onSlotChanged);
     private final AmmoOnlyItemHandler ammo = new AmmoOnlyItemHandler(inventory);
     private LazyOptional<IItemHandler> ammoCapability = LazyOptional.of(() -> ammo);
     /** Forge Energy for energy weapons (Tesla Coil); the capacitor's size comes from the weapon's energy_capacity param. */
@@ -98,6 +105,8 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private TurretState state = TurretState.DISABLED;
     private float yaw, pitch, yawVelocity, pitchVelocity;
     private float heat, ammoCredit, fireCooldown;
+    /** One item of the stack the last shot took from the ammo slots (Arrow Launcher: which arrows); not saved. */
+    private ItemStack lastAmmo = ItemStack.EMPTY;
     private int searchTimer, aimLockTicks, overheatTimer, chargeTimer;
     private int sinceShot = SWEEP_GRACE + 1;
     @Nullable
@@ -147,9 +156,13 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         return inventory;
     }
 
+    public BaseKind kind() {
+        return BaseKind.of(getBlockState().getBlock());
+    }
+
     /** A 2x2 large base (big weapon modules) rather than the standard one-block base. */
     public boolean large() {
-        return getBlockState().getBlock() instanceof LargeTurretBaseBlock;
+        return kind() == BaseKind.LARGE;
     }
 
     public TurretTier tier() {
@@ -372,13 +385,14 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     // --- health (PLAN 4.1) -------------------------------------------------------------------
 
     /** HP of a base of this tier and size with these modules (the Info tab, JEI's weapon pages). */
-    public static float maxHealth(TurretTier tier, boolean large, ModifierEffect effect) {
-        float size = large ? BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue() : 1;
+    public static float maxHealth(TurretTier tier, BaseKind kind, ModifierEffect effect) {
+        if (kind == BaseKind.MAKESHIFT) return BastionConfig.makeshiftBaseHealth(); // no tier, no modules
+        float size = kind == BaseKind.LARGE ? BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue() : 1;
         return BastionConfig.maxHealth(tier) * size * Math.max(0.1f, 1 + effect.maxHealth());
     }
 
     public float maxHealth() {
-        return maxHealth(tier, large(), inventory.modifierEffect());
+        return maxHealth(tier, kind(), inventory.modifierEffect());
     }
 
     public float health() {
@@ -402,7 +416,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
 
     /** One tier up, never down (PLAN 4.1). Full health after the upgrade. */
     public boolean upgradeTo(TurretTier next) {
-        if (next.ordinal() != tier.ordinal() + 1 || !(level instanceof ServerLevel server)) return false;
+        if (kind() == BaseKind.MAKESHIFT || next.ordinal() != tier.ordinal() + 1 || !(level instanceof ServerLevel server)) return false;
         tier = next;
         health = -1;
         setChanged();
@@ -418,11 +432,21 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
      */
     private void destroy(ServerLevel server) {
         Vec3 center = alongMount(0.6);
-        BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f);
-        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED, large() ? 1.6f : 1f));
+        BaseKind kind = kind();
+        if (kind != BaseKind.MAKESHIFT) BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f); // planks fall apart, no blast (user 2026-10-23)
+        // The client picks the sound by this scale: 0.8 is the makeshift wood crunch.
+        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED,
+                kind == BaseKind.LARGE ? 1.6f : kind == BaseKind.MAKESHIFT ? 0.8f : 1f));
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (i >= TurretInventory.MODIFIER_START) Containers.dropItemStack(server, center.x, center.y, center.z, inventory.getStackInSlot(i));
             inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
+        if (kind == BaseKind.MAKESHIFT) { // scrap instead of a damaged base: nothing to restore
+            LootParams params = new LootParams.Builder(server).withParameter(LootContextParams.ORIGIN, center).create(LootContextParamSets.CHEST);
+            server.getServer().getLootData().getLootTable(MAKESHIFT_SCRAP).getRandomItems(params)
+                    .forEach(stack -> Containers.dropItemStack(server, center.x, center.y, center.z, stack));
+            server.removeBlock(worldPosition, false);
+            return;
         }
         ItemStack base = new ItemStack(large() ? BastionItems.DAMAGED_LARGE_TURRET_BASE.get() : BastionItems.DAMAGED_TURRET_BASE.get());
         if (tier != TurretTier.T1) base.getOrCreateTagElement("BlockEntityTag").putString("Tier", tier.name());
@@ -803,11 +827,17 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         if (ammoCredit + 1e-4f < stats.ammoPerShot()) {
             int slot = inventory.findAmmoSlot();
             if (slot < 0) return;
+            lastAmmo = inventory.getStackInSlot(slot).copyWithCount(1);
             // Creative Ammo pays for the shot without being used up.
             if (!inventory.getStackInSlot(slot).is(BastionItems.CREATIVE_AMMO.get())) inventory.extractItem(slot, 1, false);
             ammoCredit += 1;
         }
         ammoCredit -= stats.ammoPerShot();
+    }
+
+    /** One item of the stack the last shot took (Arrow Launcher: tipped, spectral or plain arrows; Creative Ammo fires plain ones); empty until then. */
+    public ItemStack lastAmmo() {
+        return lastAmmo;
     }
 
     private void fire(ServerLevel level, StatSheet stats, WeaponType type) {
@@ -979,7 +1009,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     @Override
     public <C> LazyOptional<C> getCapability(Capability<C> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) return ammoCapability.cast();
-        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ForgeCapabilities.ENERGY) return kind() == BaseKind.MAKESHIFT ? LazyOptional.empty() : energyCapability.cast();
         return super.getCapability(cap, side);
     }
 
@@ -1046,6 +1076,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         weaponState.tubes = weaponState.syncedTubes = clientTubes = tag.getInt("Tubes");
         if (tag.contains("State")) { // only in the client update tag
             clientState = TurretState.byId(tag.getByte("State"));
+            clientHealth = tag.getFloat("HealthFraction");
             clientYaw = renderYaw = prevRenderYaw = scanCenterYaw = yaw;
             clientPitch = renderPitch = prevRenderPitch = pitch;
             clientController = tag.contains("Controller") ? tag.getString("Controller") : null;
@@ -1057,6 +1088,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     public CompoundTag getUpdateTag() {
         CompoundTag tag = saveWithoutMetadata();
         tag.putByte("State", (byte) state.ordinal());
+        tag.putFloat("HealthFraction", health() / maxHealth()); // damage looks (health lights, makeshift cracks) without a sync
         if (manual != null) tag.putString("Controller", manual.name());
         return tag;
     }

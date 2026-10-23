@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PXP",
+    "IPI",
+    " I "
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:crossbow"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "bastion:arrow_launcher",
+    "count": 1
+  }
+}

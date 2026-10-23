@@ -115,9 +115,11 @@ public final class ClientPacketHandler {
             return;
         }
         boolean destroyed = event.kind() == TurretImpactEvent.DESTROYED;
-        VfxManager.play(destroyed ? VfxPresets.TURRET_DESTROYED : VfxPresets.TIER_UP, at, new Vec3(0, 1, 0),
+        boolean makeshift = destroyed && event.scale() < 0.9f; // a makeshift base (TurretBaseBlockEntity#destroy): wood falls apart, no glow
+        VfxManager.play(makeshift ? VfxPresets.MAKESHIFT_DESTROYED : destroyed ? VfxPresets.TURRET_DESTROYED : VfxPresets.TIER_UP, at, new Vec3(0, 1, 0),
                 VfxParams.of().scale(event.scale()).color(destroyed ? VfxPresets.AMBER : VfxPresets.CYAN).seed(at.hashCode()));
-        var sound = !destroyed ? BastionSounds.TURRET_TIER_UP : event.scale() > 1.2f ? BastionSounds.TURRET_DESTROYED_LARGE : BastionSounds.TURRET_DESTROYED;
+        var sound = !destroyed ? BastionSounds.TURRET_TIER_UP : makeshift ? BastionSounds.MAKESHIFT_BASE_DESTROYED
+                : event.scale() > 1.2f ? BastionSounds.TURRET_DESTROYED_LARGE : BastionSounds.TURRET_DESTROYED;
         level.playLocalSound(at.x, at.y, at.z, sound.get(),
                 SoundSource.BLOCKS, destroyed ? 1.6f : 1f, 1f, false);
     }

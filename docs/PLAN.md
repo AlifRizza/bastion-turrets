@@ -955,10 +955,20 @@ Tampak samping (depan)              Tampak atas lapisan tengah
 
 ---
 
-### Turret early game (permintaan user 2026-10-14 23:13, desain disetujui malam itu per bagian) — **untuk nanti, versi belum diputuskan**
+### Turret early game (permintaan user 2026-10-14 23:13, desain disetujui malam itu per bagian) — **rilis 0.4.0**
 
-**Status**: desain saja, belum ada plan atau kode. Versi: belum diputuskan oleh user (masuk 0.2.0 atau sesudahnya;
-rekomendasi: 0.3.0, karena 0.2.0 sudah besar dan lini ini butuh 5 model, tekstur dan suara baru).
+**Status**: versi **0.4.0** (user 2026-10-22 22:00), dikerjakan mulai 2026-10-22; plan
+`docs/superpowers/plans/2026-10-22-early-game-turrets.md`, eksekusi subagent per task (user 22:15). Model lewat script
+`tools/blockout` (bukan Blockbench, user 22:03). **Dibangun 2026-10-22/23 (7 task), di-commit 2026-10-23 (belum
+di-push, belum di-upload)**; showcase `-Pshowcase=early` dicek 2026-10-23, user mencoba di game 13:22. GameTest 284/284.
+Changelog dan teks toko 0.4.0 siap, upload sekitar seminggu setelah 0.3.2. Keputusan controller (mis. `shell_speed` 1,4, volley 1 di kaki target + 5 di ring):
+`docs/HANDOFF.md` §0. Checklist: `docs/TESTING.md` "Early game turrets (0.4.0)".
+
+**Keputusan tambahan (user 2026-10-22 22:15)**:
+- Base makeshift hancur menjatuhkan **rongsokan**: 1 iron ingot + 2 planks (loot table JSON, bisa diubah datapack);
+  senjata dan ammo hilang seperti base standar.
+- Base makeshift bisa dipasang di **lantai, dinding, plafon** (seperti base standar); **Arrow Launcher hanya di base yang
+  di lantai** (ditolak di base dinding/plafon).
 
 **Latar belakang**: user ingin empat turret early game yang dibuat di crafting table tanpa workstation, memakai peluru
 yang gampang didapat, di base terpisah, dengan desain yang tidak terlalu futuristik.
@@ -1020,7 +1030,11 @@ energi; tekstur original)
 - Cobblestone: meriam pegas pendek-lebar di pivot kayu; tembak = pegas tertekan, laras mundur.
 - Snowball: drum 4 laras yang diputar engkol, corong salju di atas; drum berputar selama menembak.
 - Potato: pipa besi gemuk, tabung tekanan, pompa tangan (spud gun); pompa naik-turun tiap tembakan.
-- Arrow: rak balista 6 panah (2x3) menghadap ke atas, busur dan tali; tali menyentak, rak terisi ulang.
+- Arrow: **hwacha** (user 2026-10-23 12:59; dulu rak balista, terbaca seperti crossbow yang bisa membidik lurus): kotak
+  kayu dengan 20 lubang (5x4) di mukanya, 6 panah (2x3) menyembul, di atas kereta dua roda dengan dua gagang tarik;
+  busur kecil di sudut belakang kotak dan tali; tali menyentak, panah baru meluncur masuk dari belakang. `min_pitch`
+  **40** (dulu 20): saat diam ia menengadah seperti Mortar, tidak pernah datar (lengkung tinggi tidak pernah di bawah
+  45°, jadi jangkauan tetap). Item di tangan/hotbar/JEI juga miring 40°.
 - Proyektil: Cobblestone = sprite batu kasar abu-abu berputar + debu tipis, kena = serpihan batu dan debu;
   Snowball = gumpalan putih lembut + jejak beku samar, kena = ledakan salju dan serpihan; Potato = potongan kentang
   berguling, kena = cipratan dan potongan kecil; Arrow = panah vanilla + garis angin pucat mengikuti tiap panah,

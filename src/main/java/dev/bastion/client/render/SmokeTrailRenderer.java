@@ -27,7 +27,8 @@ import java.util.Map;
  * The smoke rockets and missiles leave behind (PLAN 5.2 ribbon): a camera-facing strip through the points each one
  * passed, widening, rising and fading as they age, so the trail hangs in the air for a moment after the rocket is
  * gone. Lit by the world (dark at night), the texture fixed in world space. Plus a hot exhaust glow at the nozzle.
- * Fed every tick by RocketEffects.
+ * Fed every tick by RocketEffects; the early game's turret arrows leave a thin pale wind streak through it (EarlyEffects),
+ * without the glow.
  */
 public final class SmokeTrailRenderer {
     private static final ResourceLocation SMOKE = Bastion.id("textures/vfx/smoke_trail.png");
@@ -62,11 +63,20 @@ public final class SmokeTrailRenderer {
 
     /** The rocket {@code id} passed {@code tail} this tick; missiles leave a thinner, shorter trail. */
     public static void add(int id, Vec3 tail, boolean missile, long gameTime) {
+        add(id, tail, gameTime, missile ? 28 : 50, missile ? 0.32f : 0.62f, missile ? 0.2f : 0.32f, missile ? 0xE2E5E9 : 0xA4A8AE);
+    }
+
+    /** The turret arrow {@code id} passed {@code tail} this tick: a short, thin, pale streak of air, no glow (early game). */
+    public static void addWind(int id, Vec3 tail, long gameTime) {
+        add(id, tail, gameTime, 7, 0.08f, 0, 0xE8ECEF);
+    }
+
+    private static void add(int id, Vec3 tail, long gameTime, int life, float width, float glow, int rgb) {
         Trail trail = TRAILS.get(id);
         if (trail != null && trail.ended) return; // exploded: the entity may linger a tick on the client
         if (trail == null) {
             if (TRAILS.size() >= MAX_TRAILS) return;
-            trail = missile ? new Trail(28, 0.32f, 0.2f, 0xE2E5E9) : new Trail(50, 0.62f, 0.32f, 0xA4A8AE);
+            trail = new Trail(life, width, glow, rgb);
             TRAILS.put(id, trail);
         }
         Point last = trail.points.peekFirst();
@@ -104,7 +114,7 @@ public final class SmokeTrailRenderer {
         Matrix4f pose = poseStack.last().pose();
         Vec3 cam = camera.getPosition();
         float now = level.getGameTime() + partialTick;
-        VertexConsumer smoke = buffers.getBuffer(BastionRenderTypes.translucentGlow(SMOKE));
+        VertexConsumer smoke = buffers.getBuffer(BastionRenderTypes.translucentLit(SMOKE));
         Map<Vec3, Float> heads = new HashMap<>();
         for (Map.Entry<Integer, Trail> entry : TRAILS.entrySet()) {
             Trail trail = entry.getValue();
@@ -118,7 +128,7 @@ public final class SmokeTrailRenderer {
                 Point newest = trail.points.peekFirst();
                 Vec3 tail = rocket.getPosition(partialTick).add(newest.pos.subtract(rocket.position()));
                 points.add(new Point(tail, (long) now, newest.distance - newest.pos.distanceTo(tail)));
-                heads.put(tail, trail.glow);
+                if (trail.glow > 0) heads.put(tail, trail.glow);
             }
             for (Point point : trail.points) if (!flying || point.born < level.getGameTime()) points.add(point);
             ribbon(smoke, pose, cam, level, trail, points, now);

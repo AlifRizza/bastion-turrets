@@ -138,6 +138,15 @@ WORKSTATIONS = {  # crafting table: pattern, key
                                                  "I": "iron_ingot"}),
 }
 
+# Early game (0.4.0): crafting-table recipes, all with iron.
+EARLY = {
+    "makeshift_turret_base": (["CIC", "LIL", "CIC"], {"C": "cobblestone", "I": "iron_ingot", "L": "#minecraft:logs"}),
+    "cobblestone_turret": (["CSC", "ICI", "P P"], {"C": "cobblestone", "S": "string", "I": "iron_ingot", "P": "#minecraft:planks"}),
+    "snowball_repeater": (["SBS", "IPI", "PIP"], {"S": "stick", "B": "snow_block", "I": "iron_ingot", "P": "#minecraft:planks"}),
+    "potato_shotgun": (["IOI", "IHI", "P P"], {"O": "potato", "H": "leather", "I": "iron_ingot", "P": "#minecraft:planks"}),
+    "arrow_launcher": (["PXP", "IPI", " I "], {"X": "crossbow", "I": "iron_ingot", "P": "#minecraft:planks"}),
+}
+
 # Crafting-table recipes that the workstations replace.
 OLD = ["turret_base", "large_turret_base", "turret_base_from_damaged", "large_turret_base_from_damaged", "gun_turret",
        "machine_gun_turret", "shotgun_turret", "sniper_turret", "rocket_launcher_turret", "missile_launcher_turret", "tesla_turret",
@@ -196,10 +205,14 @@ def main():
     for station, (pattern, key) in WORKSTATIONS.items():
         write(DATA / f"{station}.json", {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": pattern,
                                         "key": {k: {"item": item(v)} for k, v in key.items()}, "result": {"item": B + station, "count": 1}})
+    for result, (pattern, key) in EARLY.items():
+        write(DATA / f"{result}.json", {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": pattern,
+                                       "key": {k: ({"tag": v[1:]} if v.startswith("#") else {"item": item(v)}) for k, v in key.items()},
+                                       "result": {"item": B + result, "count": 1}})
     removed = [name for name in OLD if (DATA / f"{name}.json").exists()]
     for name in removed:
         (DATA / f"{name}.json").unlink()
-    print(f"{n} workstation recipes, {len(WORKSTATIONS)} workstation crafting recipes, removed {len(removed)} old recipes")
+    print(f"{n} workstation recipes, {len(WORKSTATIONS)} workstation and {len(EARLY)} early crafting recipes, removed {len(removed)} old recipes")
 
 
 if __name__ == "__main__":

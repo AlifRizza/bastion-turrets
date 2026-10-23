@@ -21,7 +21,8 @@ public final class BastionBlockEntities {
 
     @SuppressWarnings("DataFlowIssue") // null data fixer type is the standard for modded block entities
     public static final RegistryObject<BlockEntityType<TurretBaseBlockEntity>> TURRET_BASE = REGISTER.register("turret_base",
-            () -> BlockEntityType.Builder.of(TurretBaseBlockEntity::new, BastionBlocks.TURRET_BASE.get(), BastionBlocks.LARGE_TURRET_BASE.get())
+            () -> BlockEntityType.Builder.of(TurretBaseBlockEntity::new, BastionBlocks.TURRET_BASE.get(), BastionBlocks.LARGE_TURRET_BASE.get(),
+                    BastionBlocks.MAKESHIFT_TURRET_BASE.get())
                     .build(null));
     /** The three non-core blocks of a large base; they forward automation to the core. */
     @SuppressWarnings("DataFlowIssue")

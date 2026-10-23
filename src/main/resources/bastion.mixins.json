@@ -7,7 +7,9 @@
   "client": [
     "LevelRendererMixin",
     "CameraMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "ArrowMixin",
+    "AbstractArrowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

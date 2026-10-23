@@ -69,6 +69,10 @@ public final class TurretFireEffects {
         }
         client.streak = now - client.lastShotTick <= 20 ? client.streak + 1 : 1;
         client.lastShotTick = now;
+        if (fx.early()) { // rustic: lit sprites or real arrows, no glow, light, casing or heat haze
+            EarlyEffects.fire(level, event, fx, client, muzzle, direction, color);
+            return;
+        }
         // Weapons with their own delivery: lightning bolts and a flame stream instead of tracers.
         if (fx == WeaponFx.TESLA) {
             TeslaEffects.discharge(level, event, muzzle, color);
@@ -153,7 +157,7 @@ public final class TurretFireEffects {
                 BastionSounds.SHOTGUN_SHELL.get(), SoundSource.HOSTILE, 0.5f, 1f, false));
     }
 
-    private static void impact(ClientLevel level, WeaponFx fx, boolean lock, TurretFireEvent.Shot shot, int color, long seed) {
+    static void impact(ClientLevel level, WeaponFx fx, boolean lock, TurretFireEvent.Shot shot, int color, long seed) {
         int blockColor = 0xFF888888;
         if (shot.hit() == TurretFireEvent.BLOCK) {
             var state = Block.stateById(shot.blockState());

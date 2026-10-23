@@ -620,5 +620,46 @@
     "sounds": [
       "bastion:control_hub/ui_select"
     ]
+  },
+  "cobblestone.fire": {
+    "subtitle": "subtitles.bastion.cobblestone.fire",
+    "sounds": [
+      "bastion:cobblestone/fire_0",
+      "bastion:cobblestone/fire_1"
+    ]
+  },
+  "snowball.fire": {
+    "subtitle": "subtitles.bastion.snowball.fire",
+    "sounds": [
+      "bastion:snowball/fire_0",
+      "bastion:snowball/fire_1",
+      "bastion:snowball/fire_2"
+    ]
+  },
+  "potato.fire": {
+    "subtitle": "subtitles.bastion.potato.fire",
+    "sounds": [
+      "bastion:potato/fire_0",
+      "bastion:potato/fire_1"
+    ]
+  },
+  "arrow_launcher.fire": {
+    "subtitle": "subtitles.bastion.arrow_launcher.fire",
+    "sounds": [
+      "bastion:arrow_launcher/fire_0",
+      "bastion:arrow_launcher/fire_1"
+    ]
+  },
+  "makeshift_base.place": {
+    "subtitle": "subtitles.bastion.makeshift_base.place",
+    "sounds": [
+      "bastion:makeshift_base/place"
+    ]
+  },
+  "makeshift_base.destroyed": {
+    "subtitle": "subtitles.bastion.makeshift_base.destroyed",
+    "sounds": [
+      "bastion:makeshift_base/destroyed"
+    ]
   }
 }

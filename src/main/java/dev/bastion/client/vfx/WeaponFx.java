@@ -74,6 +74,17 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
     public static final WeaponFx PLASMA_CANNON = new WeaponFx(VfxPresets.PLASMA_CANNON_MUZZLE, VfxPresets.PLASMA_BURST, VfxPresets.PLASMA_BURST,
             0.6f, 1f, 110f, false, false, BastionSounds.PLASMA_CANNON_FIRE, BastionSounds.PLASMA_CANNON_FIRE);
 
+    // Early game (PLAN "Turret early game", EarlyEffects): rustic, nothing glows. The sling shots fly as lit sprites
+    // (tracerWidth = their size across); the Arrow Launcher's arrows are entities, so it has no impact of its own.
+    public static final WeaponFx COBBLESTONE = new WeaponFx(VfxPresets.COBBLE_MUZZLE, VfxPresets.COBBLE_IMPACT, VfxPresets.COBBLE_IMPACT,
+            0.3f, 1f, 30f, false, false, BastionSounds.COBBLESTONE_FIRE, BastionSounds.COBBLESTONE_FIRE);
+    public static final WeaponFx SNOWBALL = new WeaponFx(VfxPresets.SNOW_MUZZLE, VfxPresets.SNOW_IMPACT, VfxPresets.SNOW_IMPACT,
+            0.28f, 1f, 6f, false, false, BastionSounds.SNOWBALL_FIRE, BastionSounds.SNOWBALL_FIRE);
+    public static final WeaponFx POTATO = new WeaponFx(VfxPresets.POTATO_MUZZLE, VfxPresets.POTATO_IMPACT, VfxPresets.POTATO_IMPACT,
+            0.2f, 1f, 45f, false, false, BastionSounds.POTATO_FIRE, BastionSounds.POTATO_FIRE);
+    public static final WeaponFx ARROW_LAUNCHER = new WeaponFx(VfxPresets.ARROW_SNAP, v -> {}, v -> {},
+            0, 1f, 10f, false, false, BastionSounds.ARROW_LAUNCHER_FIRE, BastionSounds.ARROW_LAUNCHER_FIRE);
+
     private static final Map<ResourceLocation, WeaponFx> BY_TYPE = Map.ofEntries(
             Map.entry(Bastion.id("gun"), GUN), Map.entry(Bastion.id("machine_gun"), MACHINE_GUN), Map.entry(Bastion.id("shotgun"), SHOTGUN),
             Map.entry(Bastion.id("sniper"), SNIPER), Map.entry(Bastion.id("rocket_launcher"), ROCKET_LAUNCHER),
@@ -82,7 +93,14 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
             Map.entry(Bastion.id("railgun"), RAILGUN), Map.entry(Bastion.id("mortar"), MORTAR),
             Map.entry(Bastion.id("repulsor"), REPULSOR), Map.entry(Bastion.id("repulsor_dome"), REPULSOR_DOME),
             Map.entry(Bastion.id("ion_rifle"), ION_RIFLE), Map.entry(Bastion.id("plasma_repeater"), PLASMA_REPEATER),
-            Map.entry(Bastion.id("plasma_cannon"), PLASMA_CANNON));
+            Map.entry(Bastion.id("plasma_cannon"), PLASMA_CANNON), Map.entry(Bastion.id("cobblestone"), COBBLESTONE),
+            Map.entry(Bastion.id("snowball"), SNOWBALL), Map.entry(Bastion.id("potato"), POTATO),
+            Map.entry(Bastion.id("arrow_launcher"), ARROW_LAUNCHER));
+
+    /** An early weapon (EarlyEffects): no glow, light, casing or heat haze. */
+    public boolean early() {
+        return this == COBBLESTONE || this == SNOWBALL || this == POTATO || this == ARROW_LAUNCHER;
+    }
 
     public static WeaponFx of(ResourceLocation weaponType) {
         return BY_TYPE.getOrDefault(weaponType, GUN);

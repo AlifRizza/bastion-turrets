@@ -1,7 +1,7 @@
 # Bastion Turrets
 
 Futuristic, modular turrets for Forge 1.20.1. Place a base, mount a weapon, feed it ammo and tune it with modules.
-The muzzle flashes, beams, lightning arcs and explosions were all made for this mod. You won't find a single vanilla particle in there.
+The muzzle flashes, beams, lightning arcs and explosions were all made for this mod. You won't find a vanilla particle in there, except the swirls of a potion effect on a mob hit by a tipped or spectral arrow. The Arrow Launcher fires real vanilla arrows, drawn as usual (plain, tipped or spectral); their trails and puffs are ours.
 
 > This is a beta. Numbers will move between versions, so back up your world before you update.
 
@@ -27,6 +27,10 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
 | Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks away, through walls: 6 blocks from the edge of its reach, one more per block closer (heavy mobs 60% less). Runs on FE. |
 | Plasma Cannon Turret | Large | Charges, then fires a big slow plasma ball that explodes like a BFG: every enemy within 4 blocks of the impact takes heavy damage, more near the middle. One Plasma Cell per shot. |
+| Cobblestone Turret | Makeshift | A spring cannon that flings cobblestone (or cobbled deepslate): 3 damage per stone, 16 block range. |
+| Snowball Repeater | Makeshift | A crank drum that fires five snowballs a second, 1.5 damage each. One snowball is four shots. |
+| Potato Shotgun | Makeshift | A spud gun: 5 potato chunks of 2 damage in a wide cone, 10 block range. Poisonous potatoes work too (no poison). |
+| Arrow Launcher | Makeshift | One arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only. |
 
 The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire real shots with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
@@ -40,6 +44,8 @@ The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire re
 The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar, Repulsor Dome and Plasma Cannon) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
 
 Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, modded ones too (Fungal Infection: Spore works out of the box), and bullets from gun mods like TaCZ hit them as well: a turret's lights turn yellow below half HP and blink red when it's about to go, and a Repair Kit puts back 40% HP. Let one get destroyed and the weapon and its ammo are gone for good: only the modules drop, plus a Damaged Turret Base that the Part Assembler restores with a Repair Kit, at the tier it had. Mining a base works like breaking a shulker box, so tier and contents stay with the item.
+
+The Makeshift Turret Base is the early one: a crate of wood, stone and iron made at a crafting table, before you have FE or any workstation. It mounts on floors, walls or ceilings and takes only the four early turrets (the Arrow Launcher only on a floor), which fit no other base. It has 50 HP (a T1 Turret Base has 100) and no tiers, module slots, FE or Connector slot. Nothing on it glows: cracks show its damage. Destroyed, it falls apart into an iron ingot and two planks, and the weapon and its ammo are lost; mined, it keeps its contents like the other bases.
 
 <!-- screenshot: 07_floor_wall_ceiling.png -->
 
@@ -78,20 +84,20 @@ Every module comes in Mk1, Mk2 and Mk3 (one and a half and twice the Mk1 effect)
 
 ## Ammo and automation
 
-Ammo comes in ten kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells and Plasma Cells). Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
+Ammo comes in ten kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells and Plasma Cells), and the early turrets fire what you already have: cobblestone or cobbled deepslate, snowballs, potatoes and any arrow. Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
 
 <!-- screenshot: 08_create_automation.png -->
 
 ## Workstations
 
-Survival players make all turret gear in five machines that run on FE. Each one has an animated model and its own GUI.
+Survival players make all turret gear except the early turrets and their base in five machines that run on FE. Each one has an animated model and its own GUI.
 
 - Part Workstation (2x1x2) machines the parts for each base and weapon.
 - Part Assembler (2x2x2) builds bases and weapons out of those parts and restores damaged bases.
 - Module Workstation and Ammo Workstation (1x1x2) craft instantly from your inventory, or run by themselves when automation feeds them.
 - Charging Station (1x1x1) fills Empty Laser Cells and Empty Plasma Cells with FE.
 
-The crafting table only makes the stations. A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.
+The crafting table makes only the stations and the early gear (the Makeshift Turret Base and its four turrets). A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.
 
 > **You need an FE source.** Bastion doesn't add a generator. Pair it with any mod that makes Forge Energy, for example Create Crafts & Additions, Mekanism, Thermal Series, Powah or Immersive Engineering.
 

@@ -1,6 +1,6 @@
 # Sound Sheet: Bastion Turrets
 
-Semua SFX di mod (69 sound event, termasuk 8 milik Ion Rifle dan Plasma dan 4 milik Turret Control Hub). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
+Semua SFX di mod (75 sound event, termasuk 8 milik Ion Rifle dan Plasma, 4 milik Turret Control Hub dan 6 milik turret early game). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
 
 ## Mulai dari sini
 
@@ -426,6 +426,11 @@ P1 = terdengar terus, ganti duluan · P2 = biasa · P3 = jarang atau versi jauh 
 | 67 | [`control_hub.online`](#67) | Control Hub | P2 | 1,2 dtk | 1 |  |
 | 68 | [`control_hub.offline`](#68) | Control Hub | P2 | 1 dtk | 1 |  |
 | 69 | [`control_hub.dish_loop`](#69) | Control Hub | P2 | 3 dtk | 1 | ya |
+| 71 | [`cobblestone.fire`](#71) | Cobblestone Turret | P2 | 0,6 dtk | 2 |  |
+| 72 | [`snowball.fire`](#72) | Snowball Repeater | P2 | 0,2 dtk | 3 |  |
+| 73 | [`potato.fire`](#73) | Potato Shotgun | P2 | 0,8 dtk | 2 |  |
+| 74 | [`arrow_launcher.fire`](#74) | Arrow Launcher | P2 | 0,9 dtk | 2 |  |
+| 75 | [`makeshift_base.place`](#75) | Makeshift Turret Base | P2 | 0,8 dtk | 1 |  |
 | 7 | [`gun.fire_tail`](#7) | Gun Turret | P3 | 1,2 dtk | 2 |  |
 | 10 | [`machine_gun.fire_tail`](#10) | Machine Gun | P3 | 1,2 dtk | 2 |  |
 | 16 | [`shotgun.fire_tail`](#16) | Shotgun | P3 | 1,2 dtk | 2 |  |
@@ -441,6 +446,7 @@ P1 = terdengar terus, ganti duluan · P2 = biasa · P3 = jarang atau versi jauh 
 | 55 | [`repulsor.push_tail`](#55) | Repulsor | P3 | 1,2 dtk | 1 |  |
 | 58 | [`repulsor.dome_burst_tail`](#58) | Repulsor Dome | P3 | 2,4 dtk | 1 |  |
 | 70 | [`control_hub.ui_select`](#70) | Control Hub | P3 | 0,12 dtk | 1 |  |
+| 76 | [`makeshift_base.destroyed`](#76) | Makeshift Turret Base | P3 | 1,6 dtk | 1 |  |
 | 1 | [`debug.ping`](#1) | Dev | Lewati | 0,6 dtk | 1 |  |
 | 4 | [`turret.servo`](#4) | Turret base | Lewati | 1 dtk | 1 | ya |
 | 11 | [`machine_gun.spin_up`](#11) | Machine Gun | Lewati | 1 dtk | 1 |  |
@@ -1510,4 +1516,95 @@ Klik/pilih turret di layar hub.
 
 ```text
 A tiny clean sci-fi interface beep for selecting an item on a tactical map, very short. 0.12 seconds. Dry, isolated UI sound, mono, no music, no voices.
+```
+
+---
+
+## Turret early game
+
+Rustik: kayu, pegas, tali, udara; bukan senjata api atau energi. Tanpa hum idle dan tanpa suara proyektil kena (keputusan
+user). Tanpa versi jauh (`_tail`): pemain di atas 32 blok mendengar suara tembakan yang sama, lebih pelan.
+
+<a id="71"></a>
+### 71. `cobblestone.fire`
+
+**P2** · 0,6 dtk · 2 varian · `cobblestone/fire_0..1.ogg` · terdengar sampai 16 blok  
+Cobblestone Turret melontar batu: meriam pegas pendek di pivot kayu, pegas tertekan lalu lepas (tiap 0,75 dtk).
+
+**Cari:** `catapult release wood` · `spring launch thunk` · `rock throw whoosh`
+
+**Prompt AI:**
+
+```text
+A small wooden spring cannon flinging a rock: a hard wooden thunk as a coiled iron spring releases, a short springy metallic twang, and a heavy stone whooshing away. Rustic and mechanical, no gunpowder, no explosion. 0.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="72"></a>
+### 72. `snowball.fire`
+
+**P2** · 0,2 dtk · 3 varian · `snowball/fire_0..2.ogg` · terdengar sampai 16 blok  
+Snowball Repeater: drum 4 laras diputar engkol, satu bola salju tiap tembakan (5 per detik).
+
+**Cari:** `snowball throw` · `soft thump pop` · `ratchet click`
+
+**Prompt AI:**
+
+```text
+One shot of a hand-cranked snowball repeater: a soft muffled 'fwump' of packed snow pushed out of a wooden barrel with a quick ratchet click of the crank. Light and short so it repeats cleanly five times a second. 0.2 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="73"></a>
+### 73. `potato.fire`
+
+**P2** · 0,8 dtk · 2 varian · `potato/fire_0..1.ogg` · terdengar sampai 16 blok  
+Potato Shotgun (spud gun): pipa besi gemuk melepas tekanan, 5 potongan kentang keluar sekaligus (tiap 1,5 dtk).
+
+**Cari:** `potato cannon` · `air cannon pop` · `pneumatic release`
+
+**Prompt AI:**
+
+```text
+A homemade potato cannon firing: a hollow, deep pneumatic 'foomp' out of a thick iron pipe, a bassy pop with a short ringing pipe resonance, followed by a hiss of escaping air. Crude and mechanical, no gunpowder. 0.8 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="74"></a>
+### 74. `arrow_launcher.fire`
+
+**P2** · 0,9 dtk · 2 varian · `arrow_launcher/fire_0..1.ogg` · terdengar sampai 16 blok  
+Arrow Launcher: rak balista 6 panah, enam tali menyentak bersamaan dan melepas satu volley (tiap 2,5 dtk).
+
+**Cari:** `ballista release` · `crossbow shot` · `bow string twang`
+
+**Prompt AI:**
+
+```text
+A small wooden ballista rack loosing six arrows at once: several taut bowstrings snapping together into one deep thrumming twang, a hard wooden thunk of the frame, and a quick rush of arrows leaving. 0.9 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="75"></a>
+### 75. `makeshift_base.place`
+
+**P2** · 0,8 dtk · 1 varian · `makeshift_base/place.ogg` · terdengar sampai 16 blok  
+Makeshift Turret Base dipasang, atau modul senjata dipasang di atasnya: papan kayu berderit (pengganti `turret.deploy` di base ini).
+
+**Cari:** `wood creak` · `wooden crate set down` · `plank creak`
+
+**Prompt AI:**
+
+```text
+A heavy wooden crate with iron straps set down on stone: a dull wooden knock followed by a slow creak of planks and joints settling under the weight. 0.8 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="76"></a>
+### 76. `makeshift_base.destroyed`
+
+**P3** · 1,6 dtk · 1 varian · `makeshift_base/destroyed.ogg` · terdengar sampai 16 blok  
+Makeshift Turret Base hancur (HP 0): kayu remuk dan pecah jadi rongsokan, tanpa ledakan energi.
+
+**Cari:** `wood break crash` · `crate smash` · `wood splinter`
+
+**Prompt AI:**
+
+```text
+A wooden turret platform smashed apart: planks crunching and splintering with a heavy thud, then loose boards and scrap iron clattering to the ground. No explosion. 1.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
 ```

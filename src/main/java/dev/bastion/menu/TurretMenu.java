@@ -2,6 +2,7 @@ package dev.bastion.menu;
 
 import dev.bastion.hub.HubInterfaceBlockEntity;
 import dev.bastion.registry.BastionMenus;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
@@ -9,6 +10,7 @@ import dev.bastion.turret.TurretTier;
 import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.weapon.WeaponData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -61,7 +63,8 @@ public class TurretMenu extends AbstractContainerMenu {
     public static void writeOpenData(FriendlyByteBuf buf, TurretBaseBlockEntity base, @Nullable BlockPos hub) {
         buf.writeBlockPos(base.getBlockPos());
         buf.writeEnum(base.tier());
-        buf.writeBoolean(base.large());
+        buf.writeEnum(base.kind());
+        buf.writeBoolean(base.facing() == Direction.UP);
         base.filter().write(buf);
         buf.writeBoolean(base.enabled());
         buf.writeBoolean(base.redstoneInverted());
@@ -71,7 +74,7 @@ public class TurretMenu extends AbstractContainerMenu {
 
     /** Client side; slot contents and data arrive through the normal menu sync. */
     public TurretMenu(int id, Inventory playerInventory, FriendlyByteBuf buf) {
-        this(id, playerInventory, buf.readBlockPos(), buf.readEnum(TurretTier.class), buf.readBoolean(), buf);
+        this(id, playerInventory, buf.readBlockPos(), buf.readEnum(TurretTier.class), buf.readEnum(BaseKind.class), buf.readBoolean(), buf);
     }
 
     public TurretMenu(int id, Inventory playerInventory, TurretBaseBlockEntity base) {
@@ -84,8 +87,8 @@ public class TurretMenu extends AbstractContainerMenu {
                 base.redstoneInverted(), base.salvo(), serverData(base), hub);
     }
 
-    private TurretMenu(int id, Inventory playerInventory, BlockPos pos, TurretTier tier, boolean large, FriendlyByteBuf buf) {
-        this(id, playerInventory, new TurretInventory(() -> tier, () -> large, slot -> {}), pos, tier, TargetFilter.read(buf),
+    private TurretMenu(int id, Inventory playerInventory, BlockPos pos, TurretTier tier, BaseKind kind, boolean upright, FriendlyByteBuf buf) {
+        this(id, playerInventory, new TurretInventory(() -> tier, () -> kind, () -> upright, slot -> {}), pos, tier, TargetFilter.read(buf),
                 buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), new SimpleContainerData(DATA_COUNT), buf.readNullable(FriendlyByteBuf::readBlockPos));
     }
 
@@ -164,6 +167,11 @@ public class TurretMenu extends AbstractContainerMenu {
 
     public TurretInventory turret() {
         return turret;
+    }
+
+    /** The kind of base this was opened on (from the open data on the client). */
+    public BaseKind kind() {
+        return turret.kind();
     }
 
     public float health() {

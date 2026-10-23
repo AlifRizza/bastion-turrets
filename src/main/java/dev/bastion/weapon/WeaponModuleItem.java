@@ -1,6 +1,7 @@
 package dev.bastion.weapon;
 
 import dev.bastion.client.render.WeaponItemRenderer;
+import dev.bastion.turret.BaseKind;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -28,22 +29,31 @@ import java.util.function.Consumer;
  */
 public class WeaponModuleItem extends Item implements GeoItem {
     private final ResourceLocation weaponId;
-    private final boolean large;
+    private final BaseKind kind;
     private final AnimatableInstanceCache animations = GeckoLibUtil.createInstanceCache(this);
 
     public WeaponModuleItem(Properties properties, ResourceLocation weaponId) {
-        this(properties, weaponId, false);
+        this(properties, weaponId, BaseKind.STANDARD);
     }
 
     /** @param large a big module that mounts only on a Large Turret Base (and nothing small fits there) */
     public WeaponModuleItem(Properties properties, ResourceLocation weaponId, boolean large) {
+        this(properties, weaponId, large ? BaseKind.LARGE : BaseKind.STANDARD);
+    }
+
+    /** @param kind the only kind of base this module mounts on */
+    public WeaponModuleItem(Properties properties, ResourceLocation weaponId, BaseKind kind) {
         super(properties);
         this.weaponId = weaponId;
-        this.large = large;
+        this.kind = kind;
+    }
+
+    public BaseKind kind() {
+        return kind;
     }
 
     public boolean large() {
-        return large;
+        return kind == BaseKind.LARGE;
     }
 
     public ResourceLocation weaponId() {
@@ -77,7 +87,8 @@ public class WeaponModuleItem extends Item implements GeoItem {
         tooltip.add(Component.translatable("tooltip.bastion.weapon.fire_rate", fmt(20f / data.fireInterval())).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bastion.weapon.range", fmt(data.range())).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bastion.weapon." + modelName() + ".ability").withStyle(ChatFormatting.DARK_AQUA));
-        tooltip.add(Component.translatable(large ? "tooltip.bastion.weapon.fits_large" : "tooltip.bastion.weapon.fits_small")
+        tooltip.add(Component.translatable(large() ? "tooltip.bastion.weapon.fits_large"
+                : kind == BaseKind.MAKESHIFT ? "tooltip.bastion.weapon.fits_makeshift" : "tooltip.bastion.weapon.fits_small")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 

@@ -188,14 +188,15 @@ public class TurretWorkstationTests {
                 && station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).is(BastionItems.PLASMA_CELL.get()), "cells not charged yet"));
     }
 
-    /** Survival: the crafting table makes the workstations, nothing else of the mod. */
-    @GameTest(template = ARENA, batch = "craftingTableOnlyMakesWorkstations")
-    public static void craftingTableOnlyMakesWorkstations(GameTestHelper helper) {
+    /** Survival: the crafting table makes the workstations and the early turrets (0.4.0), nothing else of the mod. */
+    @GameTest(template = ARENA, batch = "craftingTableMakesStationsAndEarlyTurrets")
+    public static void craftingTableMakesStationsAndEarlyTurrets(GameTestHelper helper) {
         var recipes = helper.getLevel().getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING);
         var registry = helper.getLevel().registryAccess();
         var made = recipes.stream().map(r -> r.getResultItem(registry)).filter(s -> s.getItem().getCreatorModId(s).equals(Bastion.MOD_ID))
                 .map(s -> s.getItem().toString()).sorted().toList();
-        helper.assertTrue(made.equals(List.of("ammo_workstation", "charging_station", "module_workstation", "part_assembler", "part_workstation")),
+        helper.assertTrue(made.equals(List.of("ammo_workstation", "arrow_launcher", "charging_station", "cobblestone_turret", "makeshift_turret_base",
+                "module_workstation", "part_assembler", "part_workstation", "potato_shotgun", "snowball_repeater")),
                 "the crafting table still makes " + made);
         helper.succeed();
     }

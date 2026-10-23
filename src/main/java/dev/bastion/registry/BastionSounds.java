@@ -96,6 +96,16 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> SHOTGUN_PUMP = register("shotgun.pump");
     public static final RegistryObject<SoundEvent> SHOTGUN_SHELL = register("shotgun.shell");
 
+    // Early game (PLAN "Turret early game"): no hum, no hit sounds (user decision).
+    public static final RegistryObject<SoundEvent> COBBLESTONE_FIRE = register("cobblestone.fire");
+    public static final RegistryObject<SoundEvent> SNOWBALL_FIRE = register("snowball.fire");
+    public static final RegistryObject<SoundEvent> POTATO_FIRE = register("potato.fire");
+    public static final RegistryObject<SoundEvent> ARROW_LAUNCHER_FIRE = register("arrow_launcher.fire");
+    /** The makeshift base's wood creak: placing it (its SoundType) and mounting a weapon on it. */
+    public static final RegistryObject<SoundEvent> MAKESHIFT_BASE_PLACE = register("makeshift_base.place");
+    /** A makeshift base destroyed: wood crunching apart. */
+    public static final RegistryObject<SoundEvent> MAKESHIFT_BASE_DESTROYED = register("makeshift_base.destroyed");
+
     private static RegistryObject<SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(Bastion.id(name)));
     }

@@ -280,18 +280,23 @@ public class TurretFeedHubTests {
         hubs(helper, min, 2, 1);
         TurretBaseBlockEntity tesla = large(helper, min.above(), BastionItems.TESLA_TURRET.get());
         int input = 4 * BastionConfig.FEED_HUB_MAX_INPUT.get();
-        helper.runAtTickTime(3, () -> {
+        int[] capacity = {0};
+        boolean[] fed = {false};
+        helper.onEachTick(() -> { // once formed: a fresh chunk ticks its block entities a few ticks late
             IEnergyStorage hub = helper.getBlockEntity(min.offset(1, 0, 1)).getCapability(ForgeCapabilities.ENERGY, Direction.EAST)
                     .orElseThrow(IllegalStateException::new);
-            helper.assertTrue(hub.getMaxEnergyStored() == 4 * BastionConfig.FEED_HUB_ENERGY_CAPACITY.get(), "capacity " + hub.getMaxEnergyStored());
+            capacity[0] = hub.getMaxEnergyStored();
+            if (fed[0] || capacity[0] != 4 * BastionConfig.FEED_HUB_ENERGY_CAPACITY.get()) return;
+            fed[0] = true;
             helper.assertTrue(hub.receiveEnergy(Integer.MAX_VALUE, false) == input, "took more or less than its per-tick input");
             helper.assertTrue(hub.receiveEnergy(1, false) == 0, "took FE past its per-tick input");
         });
-        helper.runAfterDelay(4, () -> helper.succeedWhen(() -> {
+        helper.succeedWhen(() -> {
+            helper.assertTrue(fed[0], "never formed: capacity " + capacity[0]);
             IEnergyStorage hub = helper.getBlockEntity(min).getCapability(ForgeCapabilities.ENERGY, Direction.UP).orElseThrow(IllegalStateException::new);
             helper.assertTrue(tesla.energy() > 0, "the Tesla Coil got no FE");
             helper.assertTrue(tesla.energy() + hub.getEnergyStored() == input, "FE lost or made: " + tesla.energy() + " + " + hub.getEnergyStored());
-        }));
+        });
     }
 
     /**

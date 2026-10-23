@@ -6,6 +6,7 @@ import dev.bastion.weapon.WeaponModuleItem;
 import dev.bastion.weapon.types.MissileLauncherWeapon;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import java.util.Map;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
@@ -23,6 +24,11 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
     private static final float[] RAIL_COILS = {0.128f, 0.299f, 0.470f, 0.642f, 0.813f};
     static final String[] TRACKED = {"muzzle_0", "muzzle_1", "muzzle_2", "muzzle_3", "muzzle_4", "muzzle_5", "muzzle_6", "muzzle_7",
             "muzzle_8", "muzzle_9", "muzzle_10", "muzzle_11", "eject_0", "sensor"};
+    /**
+     * Held weapons shown at their rest elevation (degrees up; level if absent): the Arrow Launcher rests at its min_pitch,
+     * so its icon reads as a volley thrown up, not a level crossbow (user 2026-10-23). fit_item_display.py HELD_PITCH matches.
+     */
+    private static final Map<String, Float> HELD_PITCH = Map.of("arrow_launcher", 40f);
 
     private static String name(GeoAnimatable animatable) {
         return animatable instanceof WeaponAnimatable weapon ? weapon.item().modelName() : ((WeaponModuleItem) animatable).modelName();
@@ -53,6 +59,8 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
             pitch = (-weapon.pitch() + weapon.recoil.sample()) * Mth.DEG_TO_RAD;
             spin = Mth.lerp(animationState.getPartialTick(), weapon.prevSpinAngle, weapon.spinAngle);
             for (String name : TRACKED) getBone(name).ifPresent(bone -> bone.setTrackingMatrices(true));
+        } else {
+            pitch = HELD_PITCH.getOrDefault(name(animatable), 0f) * Mth.DEG_TO_RAD;
         }
         float focus = animatable instanceof WeaponAnimatable weapon
                 ? Mth.lerp(animationState.getPartialTick(), weapon.prevFocusAngle, weapon.focusAngle) : 0;

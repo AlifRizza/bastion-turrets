@@ -14,8 +14,10 @@ import software.bernie.geckolib.renderer.GeoBlockRenderer;
 public class TurretBaseRenderer extends GeoBlockRenderer<TurretBaseBlockEntity> {
     public TurretBaseRenderer() {
         super(new TurretBaseModel<>());
-        // The shared model glow, yellow below half HP and blinking red below a quarter (PLAN 4.1).
+        // The shared model glow, yellow below half HP and blinking red below a quarter (PLAN 4.1). A makeshift base has no
+        // glow pixels (all-transparent _e), so it gets no health lights: it cracks instead.
         addRenderLayer(new EmissiveLayer<>(this, turret -> EmissiveLayer.healthGlow(turret.clientHealth())));
+        addRenderLayer(new CrackLayer(this));
         addRenderLayer(new WeaponMountLayer(this));
     }
 

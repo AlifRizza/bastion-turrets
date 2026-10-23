@@ -2,6 +2,7 @@ package dev.bastion.dev;
 
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretTier;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -101,9 +103,15 @@ public class DevCommandTests {
                 return data != null && ItemStack.of(data.getCompound("Inventory").getList("Items", 10).getCompound(0)).is(module);
             }).findFirst().orElse(null);
             helper.assertTrue(base != null, "no base holds " + module);
-            helper.assertTrue(base.is(module.large() ? BastionItems.LARGE_TURRET_BASE.get() : BastionItems.TURRET_BASE.get()), module + " on the wrong base");
-            helper.assertTrue(TurretBaseItem.tier(base) == TurretTier.T2, module + " base is " + TurretBaseItem.tier(base));
-            TurretInventory inventory = new TurretInventory(() -> TurretTier.T2, module::large, slot -> {});
+            Item expected = switch (module.kind()) {
+                case MAKESHIFT -> BastionItems.MAKESHIFT_TURRET_BASE.get();
+                case LARGE -> BastionItems.LARGE_TURRET_BASE.get();
+                case STANDARD -> BastionItems.TURRET_BASE.get();
+            };
+            helper.assertTrue(base.is(expected), module + " on the wrong base");
+            TurretTier tier = module.kind() == BaseKind.MAKESHIFT ? TurretTier.T1 : TurretTier.T2; // a makeshift base has no tier
+            helper.assertTrue(TurretBaseItem.tier(base) == tier, module + " base is " + TurretBaseItem.tier(base));
+            TurretInventory inventory = new TurretInventory(() -> TurretTier.T2, module::kind, () -> true, slot -> {});
             inventory.deserializeNBT(base.getTagElement("BlockEntityTag").getCompound("Inventory"));
             helper.assertTrue(inventory.getStackInSlot(TurretInventory.WEAPON).is(module)
                     && inventory.getStackInSlot(TurretInventory.AMMO_START).is(BastionItems.CREATIVE_AMMO.get()), module + " base contents");

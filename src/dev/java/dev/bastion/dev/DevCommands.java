@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import dev.bastion.Bastion;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretTier;
@@ -145,20 +146,23 @@ public final class DevCommands {
     }
 
     /**
-     * One base per weapon module (a Large Turret Base for the big ones) at {@code tier}, holding the weapon and Creative
-     * Ammo (which also pays energy weapons' shots), into the player's inventory: placed, it fires.
+     * One base per weapon module (a Large Turret Base for the big ones, a tierless Makeshift Turret Base for the early ones)
+     * at {@code tier}, holding the weapon and Creative Ammo (which also pays energy weapons' shots), into the player's
+     * inventory: placed, it fires.
      */
     private static int giveTurrets(CommandSourceStack source, TurretTier tier) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         int given = 0;
         for (RegistryObject<Item> entry : BastionItems.REGISTER.getEntries()) {
             if (!(entry.get() instanceof WeaponModuleItem module)) continue;
-            ItemStack base = TurretBaseItem.withTier((module.large() ? BastionItems.LARGE_TURRET_BASE : BastionItems.TURRET_BASE).get(), tier);
-            TurretInventory inventory = new TurretInventory(() -> tier, module::large, slot -> {});
+            boolean early = module.kind() == BaseKind.MAKESHIFT;
+            ItemStack base = early ? new ItemStack(BastionItems.MAKESHIFT_TURRET_BASE.get())
+                    : TurretBaseItem.withTier((module.large() ? BastionItems.LARGE_TURRET_BASE : BastionItems.TURRET_BASE).get(), tier);
+            TurretInventory inventory = new TurretInventory(() -> tier, module::kind, () -> true, slot -> {});
             inventory.setStackInSlot(TurretInventory.WEAPON, new ItemStack(module));
             inventory.setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
             base.getOrCreateTagElement("BlockEntityTag").put("Inventory", inventory.serializeNBT());
-            base.setHoverName(Component.empty().append(module.getDescription()).append(" " + tier.name()));
+            base.setHoverName(Component.empty().append(module.getDescription()).append(early ? "" : " " + tier.name()));
             if (!player.getInventory().add(base)) player.drop(base, false);
             given++;
         }

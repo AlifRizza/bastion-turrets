@@ -1,6 +1,7 @@
 package dev.bastion.registry;
 
 import dev.bastion.Bastion;
+import dev.bastion.projectile.TurretArrowEntity;
 import dev.bastion.projectile.TurretRocketEntity;
 import dev.bastion.turret.TurretHitboxEntity;
 import net.minecraft.world.entity.EntityType;
@@ -36,6 +37,12 @@ public final class BastionEntities {
             () -> EntityType.Builder.<TurretRocketEntity>of(TurretRocketEntity::new, MobCategory.MISC)
                     .sized(0.4f, 0.4f).clientTrackingRange(8).updateInterval(1).setShouldReceiveVelocityUpdates(true).noSummon().fireImmune()
                     .build(Bastion.id("turret_mortar_shell").toString()));
+
+    /** Arrow Launcher arrow: a vanilla arrow (vanilla arrow renderer, the early-game exception to PLAN 1), sized and tracked like one. */
+    public static final RegistryObject<EntityType<TurretArrowEntity>> TURRET_ARROW = REGISTER.register("turret_arrow",
+            () -> EntityType.Builder.<TurretArrowEntity>of(TurretArrowEntity::new, MobCategory.MISC)
+                    .sized(0.5f, 0.5f).clientTrackingRange(4).updateInterval(20).noSummon()
+                    .build(Bastion.id("turret_arrow").toString()));
 
     /** The hitbox is a LivingEntity (so mobs can target it) and every LivingEntity needs attributes. */
     public static void registerAttributes(EntityAttributeCreationEvent event) {

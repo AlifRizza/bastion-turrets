@@ -447,6 +447,59 @@ def plasma_cannon_hit(v):
 
 
 
+# --- Early game (PLAN "Turret early game"): wood, springs, strings and air; no hum, no hit sounds ----------
+def cobblestone_fire(v):
+    """Spring cannon: a wooden thunk, the spring's twang and the stone whooshing off."""
+    j = jitter(1200 + v); L = 0.6; tt = t(L)
+    thunk = sweep(L, 170 * j, 70) * env(L, 0.002, 0.05)
+    knock = bp(noise(L, 1201 + v), 300, 2500) * env(L, 0.001, 0.02) * 0.8
+    twang = np.sin(2 * np.pi * 240 * j * tt + 3 * np.sin(2 * np.pi * 7 * tt)) * env(L, 0.003, 0.12) * 0.35
+    whoosh = bp(noise(L, 1202 + v), 400, 3000) * env(L, 0.03, 0.08) * 0.4
+    return fade_out(norm(thunk + knock + twang + whoosh), 0.08)
+def snowball_fire(v):
+    """Crank drum: a soft fwump of snow leaving a barrel and a ratchet click, short enough for five a second."""
+    j = jitter(1210 + v); L = 0.2
+    fwump = onepole_lp(noise(L, 1211 + v), 1200) * env(L, 0.002, 0.03)
+    pop = sweep(L, 260 * j, 120) * env(L, 0.001, 0.025) * 0.6
+    click = hp(noise(L, 1212 + v), 2500) * env(L, 0.0005, 0.006) * 0.5
+    return fade_out(norm(fwump + pop + click, 0.8), 0.03)
+def potato_fire(v):
+    """Spud gun: a hollow pneumatic foomp out of the iron pipe, then a hiss of air."""
+    j = jitter(1220 + v); L = 0.8
+    foomp = sweep(L, 130 * j, 55) * env(L, 0.003, 0.08)
+    pipe = np.sin(2 * np.pi * 310 * j * t(L)) * env(L, 0.002, 0.05) * 0.4  # the pipe's hollow ring
+    blast = bp(noise(L, 1221 + v), 150, 1800) * env(L, 0.002, 0.06) * 0.8
+    hiss = hp(noise(L, 1222 + v), 2500) * env(L, 0.02, 0.2) * 0.25
+    return fade_out(norm(foomp + pipe + blast + hiss), 0.1)
+def arrow_launcher_fire(v):
+    """Ballista rack: six strings snap together into a low twang over a wooden thunk."""
+    j = jitter(1230 + v); L = 0.9; tt = t(L); strings = np.zeros(n(L))
+    for k in range(6):  # six strings, a hair apart
+        s = n(0.004 * k); f = (95 + 9 * k) * j
+        string = (np.sin(2 * np.pi * f * tt) + 0.5 * np.sin(4 * np.pi * f * tt) + 0.25 * np.sin(6 * np.pi * f * tt)) * env(L, 0.001, 0.18)
+        strings[s:] += string[:len(strings) - s] / 6
+    snap = hp(noise(L, 1231 + v), 1800) * env(L, 0.0005, 0.01) * 0.9
+    thunk = sweep(L, 150 * j, 60) * env(L, 0.002, 0.06) * 0.8
+    whoosh = bp(noise(L, 1232 + v), 500, 4000) * env(L, 0.02, 0.12) * 0.3
+    return fade_out(norm(strings + snap + thunk + whoosh), 0.15)
+def makeshift_place():
+    """Makeshift base set down (or a weapon mounted on it): a wooden knock, then planks creaking as they settle."""
+    L = 0.8; tt = t(L)
+    knock = bp(noise(L, 1240), 200, 2000) * env(L, 0.001, 0.03) + sweep(L, 160, 80) * env(L, 0.002, 0.04) * 0.7
+    rate = 45 + 30 * np.sin(2 * np.pi * 1.1 * tt)  # stick-slip: a pulse train whose rate wanders
+    pulses = (np.sin(2 * np.pi * np.cumsum(rate) / RATE) > 0.97).astype(float)
+    creak = bp(pulses, 300, 1800) * np.clip((tt - 0.12) / 0.08, 0, 1) * np.exp(-np.maximum(tt - 0.3, 0) / 0.25) * 2.5
+    return fade_out(norm(knock + creak, 0.8), 0.08)
+def makeshift_destroyed():
+    """Makeshift base destroyed: planks crunch and splinter apart over a heavy thud, loose pieces clatter down."""
+    L = 1.6
+    thud = sweep(L, 110, 40) * env(L, 0.003, 0.15)
+    crunch = bp(noise(L, 1250), 250, 3500) * env(L, 0.002, 0.12) * 0.8
+    splinters = crackles(L, 1251, 60, 900, (0.2, 0.9), (0.0, 0.45))
+    clatter = crackles(L, 1252, 14, 400, (0.1, 0.5), (0.35, 0.9))
+    return fade_out(norm(thud + crunch + splinters + clatter), 0.2)
+
+
 def hub_online():
     """Control Hub online: a short servo whirr under two rising chime tones."""
     L = 1.2
@@ -516,6 +569,11 @@ SOUNDS = {
     **{f"plasma/cannon_hit_{v}.ogg": (lambda v=v: plasma_cannon_hit(v)) for v in range(2)},
     "control_hub/online.ogg": hub_online, "control_hub/offline.ogg": hub_offline,
     "control_hub/dish_loop.ogg": hub_dish_loop, "control_hub/ui_select.ogg": hub_ui_select,
+    **{f"cobblestone/fire_{v}.ogg": (lambda v=v: cobblestone_fire(v)) for v in range(2)},
+    **{f"snowball/fire_{v}.ogg": (lambda v=v: snowball_fire(v)) for v in range(3)},
+    **{f"potato/fire_{v}.ogg": (lambda v=v: potato_fire(v)) for v in range(2)},
+    **{f"arrow_launcher/fire_{v}.ogg": (lambda v=v: arrow_launcher_fire(v)) for v in range(2)},
+    "makeshift_base/place.ogg": makeshift_place, "makeshift_base/destroyed.ogg": makeshift_destroyed,
 }
 
 if __name__ == "__main__":

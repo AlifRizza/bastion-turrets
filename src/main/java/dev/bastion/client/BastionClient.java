@@ -15,6 +15,7 @@ import dev.bastion.client.screen.FeedHubScreen;
 import dev.bastion.client.screen.TurretScreen;
 import dev.bastion.client.screen.WorkstationScreen;
 import dev.bastion.hub.HubConnectorItem;
+import dev.bastion.projectile.TurretArrowEntity;
 import dev.bastion.registry.BastionBlockEntities;
 import dev.bastion.registry.BastionEntities;
 import dev.bastion.registry.BastionItems;
@@ -23,7 +24,11 @@ import dev.bastion.registry.BastionMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.SpectralArrowRenderer;
+import net.minecraft.client.renderer.entity.TippableArrowRenderer;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
@@ -81,6 +86,14 @@ public final class BastionClient {
         event.registerEntityRenderer(BastionEntities.TURRET_ROCKET.get(), RocketRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer(context, "turret_missile"));
         event.registerEntityRenderer(BastionEntities.TURRET_MORTAR_SHELL.get(), context -> new RocketRenderer(context, "turret_mortar_shell"));
+        // The vanilla arrow (PLAN early-game exception), plain or tipped; one made from a spectral arrow looks like one.
+        event.registerEntityRenderer(BastionEntities.TURRET_ARROW.get(), context -> new TippableArrowRenderer(context) {
+            @Override
+            public ResourceLocation getTextureLocation(Arrow arrow) {
+                return arrow instanceof TurretArrowEntity turret && turret.spectral() ? SpectralArrowRenderer.SPECTRAL_ARROW_LOCATION
+                        : super.getTextureLocation(arrow);
+            }
+        });
     }
 
     /** How each particle moves and looks (PLAN 5.4); sprites come from assets/bastion/particles/<type>.json. */
@@ -102,6 +115,7 @@ public final class BastionClient {
         particle(event, BastionParticles.DUST_RING, Behavior.billboard(false).flat(0));
         particle(event, BastionParticles.FLAME_JET, Behavior.billboard(true).withFrames().physics(-0.02f, 0.9f, false).spinning(0.05f)
                 .burning().colliding());
+        particle(event, BastionParticles.WIND_STREAK, Behavior.billboard(false).stretched(1.5f, false).physics(0, 0.7f, false));
     }
 
     private static void particle(RegisterParticleProvidersEvent event, RegistryObject<ParticleType<BastionParticles.Options>> type, Behavior behavior) {

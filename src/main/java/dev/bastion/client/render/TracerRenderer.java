@@ -5,25 +5,33 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.bastion.Bastion;
 import dev.bastion.client.vfx.VfxManager;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Visual bullets (PLAN 5.3): a glowing stretched streak (or a plasma ball) that travels at a fixed speed, trailing a
  * short ribbon, then fires {@code onArrive} (the impact). Turret bullets (dev.bastion.weapon.Bullets) fly their whole
- * path until the server's impact for their id cuts them short ({@link #land}).
+ * path until the server's impact for their id cuts them short ({@link #land}). The early sling shots fly as lit sprites
+ * instead ({@link #spawnPellet}).
  */
 public final class TracerRenderer {
     private static final ResourceLocation TEXTURE = Bastion.id("textures/vfx/tracer.png"), ORB = Bastion.id("textures/vfx/orb.png");
@@ -67,6 +75,20 @@ public final class TracerRenderer {
     /** A glowing ball of {@code radius} instead of a streak (Plasma Repeater, Plasma Cannon and its fragments). */
     public static void spawnOrb(int id, Vec3 from, Vec3 end, double speed, int argb, float radius, float trailBlocks, Landing landing) {
         track(new Tracer(id, from, end, argb, radius, speed, null, landing, false, radius, points(trailBlocks, speed)));
+    }
+
+    /**
+     * Bullet {@code id} as a lit sprite instead of a glowing streak (the early sling shots: a stone, a snow clump, a potato
+     * chunk): {@code size} across, spinning {@code spin} radians a tick and tumbling, dark at night like the world around
+     * it. {@code puff}, if any, runs at it every tick of its flight (a wisp of dust or frost).
+     */
+    public static void spawnPellet(int id, Vec3 from, Vec3 end, double speed, ResourceLocation sprite, float size, float spin,
+                                   @Nullable Consumer<Vec3> puff, Landing landing) {
+        Tracer pellet = new Tracer(id, from, end, -1, size, speed, null, landing, false, 0, 1); // no streak, ball or ribbon
+        pellet.sprite = sprite;
+        pellet.spin = spin;
+        pellet.puff = puff;
+        track(pellet);
     }
 
     /**
@@ -121,6 +143,7 @@ public final class TracerRenderer {
             t.trail.addFirst(t.head(t.age));
             int max = t.trailPoints > 0 ? t.trailPoints : VfxManager.trailLength();
             while (t.trail.size() > max) t.trail.removeLast();
+            if (t.puff != null && !t.arrived) t.puff.accept(t.head(t.age));
             if (!t.arrived && t.age >= t.arrival()) {
                 t.arrived = true;
                 if (t.onArrive != null) arrivals.add(t.onArrive);
@@ -158,6 +181,7 @@ public final class TracerRenderer {
             }
             if (t.trail.size() > 1) TrailRenderer.ribbon(buffer, pose, cam, List.copyOf(t.trail), t.width * 1.2f, t.argb, alpha * 0.35f);
         }
+        pellets(poseStack, buffers, camera, partialTick);
         if (!orbs) return;
         // Energy bolts (Ion Rifle): a deep halo round the streak and its ribbon, alpha-blended so it reads against a bright sky.
         VertexConsumer deep = buffers.getBuffer(BastionRenderTypes.translucentGlow(TEXTURE));
@@ -189,6 +213,46 @@ public final class TracerRenderer {
         }
     }
 
+    /**
+     * The sling shots in flight, one batch per sprite: alpha-blended and lit by the world where each one is (dark at night,
+     * not a glow). Gone the moment they land (the impact takes over); one that ran
+     * out of range with nothing hit fades out where it stopped, as a tracer does, instead of blinking out mid-air.
+     */
+    private static void pellets(PoseStack poseStack, MultiBufferSource buffers, Camera camera, float partialTick) {
+        Matrix4f pose = poseStack.last().pose();
+        Vec3 cam = camera.getPosition();
+        Vector3f left = camera.getLeftVector(), up = camera.getUpVector();
+        BlockAndTintGetter level = camera.getEntity().level();
+        Set<ResourceLocation> drawn = new HashSet<>();
+        for (Tracer first : ACTIVE) {
+            if (first.sprite == null || !drawn.add(first.sprite)) continue;
+            VertexConsumer buffer = buffers.getBuffer(BastionRenderTypes.translucentLit(first.sprite));
+            for (Tracer t : ACTIVE) {
+                float time = t.age + partialTick;
+                if (!first.sprite.equals(t.sprite) || time >= t.arrival() && t.onArrive != null) continue; // landed (no onArrive: ran out of range)
+                float alpha = alpha(t, partialTick);
+                Vec3 head = t.head(time);
+                // Turned by its spin; one side squashes and stretches back as if the lump tumbles over.
+                float angle = t.spin * time + t.id, r = t.width * 0.5f, tumble = r * (0.7f + 0.3f * Math.abs(Mth.cos(angle * 0.6f)));
+                float c = Mth.cos(angle), s = Mth.sin(angle);
+                Vector3f a = new Vector3f(left).mul(c).add(new Vector3f(up).mul(s)).mul(tumble);
+                Vector3f b = new Vector3f(up).mul(c).sub(new Vector3f(left).mul(s)).mul(r);
+                Vec3 p = head.subtract(cam);
+                int light = LevelRenderer.getLightColor(level, BlockPos.containing(head));
+                corner(buffer, pose, p, a, b, -1, -1, 0, 1, light, alpha);
+                corner(buffer, pose, p, a, b, 1, -1, 1, 1, light, alpha);
+                corner(buffer, pose, p, a, b, 1, 1, 1, 0, light, alpha);
+                corner(buffer, pose, p, a, b, -1, 1, 0, 0, light, alpha);
+            }
+        }
+    }
+
+    private static void corner(VertexConsumer buffer, Matrix4f pose, Vec3 p, Vector3f a, Vector3f b, int sa, int sb, float u, float v, int light,
+                               float alpha) {
+        buffer.vertex(pose, (float) p.x + sa * a.x() + sb * b.x(), (float) p.y + sa * a.y() + sb * b.y(), (float) p.z + sa * a.z() + sb * b.z())
+                .color(1f, 1f, 1f, alpha).uv(u, v).uv2(light).endVertex();
+    }
+
     private static float alpha(Tracer t, float partialTick) {
         float time = t.age + partialTick, arrival = t.arrival();
         return time <= arrival ? 1 : Mth.clamp(1 - (time - arrival) / FADE_TICKS, 0, 1);
@@ -211,6 +275,12 @@ public final class TracerRenderer {
         final float orb;
         /** Ribbon length in ticks of travel; 0 or less = the quality preset's. */
         final int trailPoints;
+        /** An early sling shot's lit sprite (spawnPellet), its spin in radians a tick and its per-tick puff; null = none. */
+        @Nullable
+        ResourceLocation sprite;
+        float spin;
+        @Nullable
+        Consumer<Vec3> puff;
         @Nullable
         final Landing landing;
         final ArrayDeque<Vec3> trail = new ArrayDeque<>();

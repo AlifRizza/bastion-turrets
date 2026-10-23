@@ -80,7 +80,11 @@ final class WeaponCategory implements IRecipeCategory<WeaponModuleItem> {
     public void setRecipe(IRecipeLayoutBuilder builder, WeaponModuleItem weapon, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 1).addItemStack(new ItemStack(weapon));
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 23)
-                .addItemStack(new ItemStack(weapon.large() ? BastionItems.LARGE_TURRET_BASE.get() : BastionItems.TURRET_BASE.get()));
+                .addItemStack(new ItemStack(switch (weapon.kind()) {
+                    case LARGE -> BastionItems.LARGE_TURRET_BASE.get();
+                    case MAKESHIFT -> BastionItems.MAKESHIFT_TURRET_BASE.get();
+                    case STANDARD -> BastionItems.TURRET_BASE.get();
+                }));
         Ingredient ammo = weapon.ammo();
         if (!ammo.isEmpty()) builder.addSlot(RecipeIngredientRole.INPUT, AMMO_X, 23).addIngredients(ammo);
     }
@@ -100,7 +104,7 @@ final class WeaponCategory implements IRecipeCategory<WeaponModuleItem> {
         graphics.drawString(font, Component.translatable("jei.bastion.weapon.base_stats"), 0, STATS_Y - 12, MUTED, false);
         StatSheet stats = StatSheet.of(data, TurretTier.T1);
         column(graphics, font, WeaponStatRows.left(data, stats), 0);
-        column(graphics, font, WeaponStatRows.right(data, stats, TurretBaseBlockEntity.maxHealth(TurretTier.T1, weapon.large(), ModifierEffect.NONE),
+        column(graphics, font, WeaponStatRows.right(data, stats, TurretBaseBlockEntity.maxHealth(TurretTier.T1, weapon.kind(), ModifierEffect.NONE),
                 BastionConfig.regenPerSecond(TurretTier.T1)), WIDTH - COLUMN_W);
         // The ability is in the weapon's own tooltip; drawn here it ran past the page (Mortar: 11 lines in id_id), and the page
         // has to stay short enough for a 1080p screen at GUI scale 4.

@@ -64,6 +64,7 @@ public class BastionJeiPlugin implements IModPlugin {
                 .filter(WeaponModuleItem.class::isInstance).map(WeaponModuleItem.class::cast).toList());
         info(registration, "turret_base", BastionItems.TURRET_BASE.get());
         info(registration, "large_turret_base", BastionItems.LARGE_TURRET_BASE.get());
+        info(registration, "makeshift_turret_base", BastionItems.MAKESHIFT_TURRET_BASE.get());
         info(registration, "tier_upgrade_kit", BastionItems.TIER_UPGRADE_KIT_T2.get(), BastionItems.TIER_UPGRADE_KIT_T3.get());
         info(registration, "repair_kit", BastionItems.REPAIR_KIT.get());
         info(registration, "turret_configurator", BastionItems.TURRET_CONFIGURATOR.get());

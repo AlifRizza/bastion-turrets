@@ -7,6 +7,69 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-23: 0.4.0 "early game turrets" built, NOT committed, not tested by the user in game** (spec PLAN §8 "Turret
+early game", plan `docs/superpowers/plans/2026-10-22-early-game-turrets.md`, 7 subagent tasks; every ruling in the
+ledger `.superpowers/sdd/2026-10-22-early-game-turrets/progress.md`). Everything sits in the working tree; the user
+commits. `mod_version=0.4.0`, changelog `UPLOAD.md` "0.4.0", store text `DESCRIPTION_UPDATE_0.4.0.md` (already applied
+to both DESCRIPTION files). Not uploaded: 0.3.2 goes up a few days after 2026-10-22, 0.4.0 about a week after that. What
+it is: `BaseKind` (STANDARD/LARGE/MAKESHIFT) on `TurretInventory` and `WeaponModuleItem`; the Makeshift Turret Base
+(`MakeshiftTurretBaseBlock`, HP 50 from server config `makeshiftBaseHealth`, no tier/modules/FE/Connector, cracks
+`CrackLayer`, scrap loot `bastion:gameplay/makeshift_scrap`); four MAKESHIFT modules: Cobblestone Turret, Snowball
+Repeater, Potato Shotgun (`SlingWeapon`, data bullets drawn as lit sprites by `TracerRenderer.spawnPellet`) and Arrow
+Launcher (`ArrowLauncherWeapon extends MortarWeapon`, `TurretArrowEntity extends Arrow`, drag-aware
+`Ballistics.highArc`, floor only through the `TurretInventory` upright check); ammo tags
+`bastion:ammo/{pebble,snow,potato,arrow}` and `#bastion:ammo_early` (kept out of `#bastion:ammo`); crafting-table recipes
+(`tools/gen_recipes.py` EARLY); models by `tools/blockout/design_makeshift_base.py` and `design_weapons.py`; client VFX
+`client/EarlyEffects`; client mixins `ArrowMixin`/`AbstractArrowMixin` (`require = 0`); 6 placeholder sounds
+(SOUND_SHEET #71–76; drop the changelog's placeholder Note once real ones are in). **Known state**: (1)
+`run/config/bastion-turrets.toml` had a stale `[arrow_launcher] shell_speed = 2.2` (written by Forge before the JSON
+default became 1.4; it overrides the JSON and failed 6 GameTests). Reset to 1.4 with the user's permission on
+2026-10-23 06:19. All 283 GameTests pass (`build/gt-blast-green2.log`; laserHitsAStrafingTarget flaked once, known). (2) Showcase run 2026-10-23 06:23 and 06:31 (`-Pshowcase=early
+-PshowcaseWorld=showcase_fx`, `run/screenshots/showcase_early_*`): models, fire clips (Arrow Launcher strings
+straighten, rack refills; Snowball drum turns; Potato pump; Cobblestone reload), side views, wreck, items and GUI read
+as designed. Fixed from it: (a) vanilla `position_color_tex_lightmap` never reads the lightmap, so `translucentGlow` is
+fullbright whatever light is passed; the sling shots and every `SmokeTrailRenderer` trail (arrow wind streaks, and
+rocket/missile/mortar smoke since they shipped) glowed at night. New `BastionRenderTypes.translucentLit` (vanilla text
+shader, same vertex format, reads the lightmap, fogs) for both; before/after night frames confirm. (b) `ARROW_MIST`
+scale 0.5 → 2 (0.05 → 0.2 blocks), life 14 → 18: the tipped mist was invisible from 15 blocks; now faint green puffs.
+(c) `EarlyShowcase` landed frames follow the stuck volley (the launcher shoots the nearest husk past min range, not its
+own). Open, the user's eye: the heaviest crack stage (15 % HP) reads as near-black blotches, not cracks; proposed
+thinner 1-px jagged lines in dark brown. (3) Committed 2026-10-23 as 0.4.0 (user "commit" 13:32); not pushed, not uploaded. User decisions: design 2026-10-14 (a separate locked base, every
+arrow with its effect, iron in every recipe, the spec's numbers); 2026-10-22 22:00 version 0.4.0, 22:03 models by
+script, 22:15 scrap drop (1 iron ingot + 2 planks), floor/wall/ceiling with the Arrow Launcher on floors only, subagent
+execution. My calls (controller; the user may change them): bullet speeds 2.0/2.5/1.8 with lead 0.9; Arrow Launcher
+`shell_speed` 1.4 (2.2 cannot reach min_range 6 and arcs 38 blocks high), gravity 0.05, drag 0.99, pitch 40–85 (user 12:59, was 20–85); a
+volley is 1 arrow at the target's feet + 5 on the 1.5 ring (6 on the ring miss a lone mob); stuck arrows vanish after
+`stuck_ticks` 200; an empty makeshift base takes `#bastion:ammo_early`; axe and pickaxe; Creative Ammo fires plain
+arrows; id_id name "Base Turret Darurat"; locked ammo frames hidden on a makeshift base; the arrows' tipped swirls
+replaced by our mist, water bubbles and splash suppressed, spectral ammo drawn with the spectral texture, arrows stuck
+in a player stay vanilla; a destroyed makeshift base bursts into wood and dust (no amber blast), mounting creaks, no
+smoke wisp; Snowball fire clip 0.15 s; Arrow Launcher pivot/muzzle kept; the update tag carries the HP (also fixes a
+standard base's lights after a rejoin); a re-placed base drops a weapon that no longer fits; a mob hit by a tipped or
+spectral turret arrow keeps vanilla's effect swirls (the game's display of a potion effect; vanilla
+`Arrow.doPostHurtEffects` keeps the potion's visibility; the Machine Gun's slowness hides its own), the store intro says
+so; `BastionNetwork.PROTOCOL` stays 13 (no `bastion:main` packet changed; the menu's open data rides Forge's
+`NetworkHooks`, and new registry entries keep 0.3.2 clients out). Final review (Opus, xhigh): no Critical; the drag
+closed form matches vanilla's arrow tick to 1e-14. Fixed after it: an empty makeshift base on a wall or ceiling refuses
+arrows (`TurretInventory.isAmmo`; no Arrow Launcher can mount there, so a hopper would fill it with dead stock; test
+`wallMakeshiftRefusesArrowsWhenEmpty`); the spectral Glowing time is the JSON param `glow_ticks` (200). **User
+decisions 2026-10-23 06:19**: (a) the Arrow Launcher keeps aiming at the feet, no lead (Mortar solver; flight 2.1–2.7
+s, so it hits standing mobs and crowds, a walking zombie mostly escapes; TESTING step 9 keeps `ai false`). (b) A
+destroyed makeshift base no longer blasts (`TurretBaseBlockEntity.destroy` skips `BastionExplosion` for MAKESHIFT;
+test `destroyedMakeshiftDoesNotExplode`); it only bursts into wood and dust. **User decision 2026-10-23 12:59**: the
+Arrow Launcher's ballista read as a crossbow that could aim level (it rested at min_pitch 20 and was built like one), so
+it is now a hwacha (`design_weapons.py arrow_launcher`: a box with 20 holes on a two-wheeled cart, small bow at the
+box's back, arrows slide in from behind; the scratch `write_anims.py` regenerated its clips) and `min_pitch` 40 in the
+JSON and, with permission, `run/config` (test `arrowLauncherRestsLookingUp`; the drag solve never goes under 45, so
+reach is unchanged). The held item is drawn tilted 40 (`WeaponModel.HELD_PITCH`, matched by `fit_item_display.py
+HELD_PITCH`). Showcase 13:16 checked the model, fire clip, hotbar and GUI icons. 284/284 GameTests
+(`build/gt-hwacha.log`); satelliteHalvesBreakTogether flaked once in the RED run ("drops: []", unrelated). Tool
+drift: `design_weapons.py` rewrites `missile_launcher_turret.geo.json` and `fit_item_display.py` rewrites the two
+`*_turntable.json` item models differently from the committed files; restore those after running them. Deferred minors (ledger): the drag solve runs about 400–700 evaluations per tracking launcher-tick (cache per tick,
+fewer bisections), arrow hits skip `TurretHurtSounds`, a client arrow may puff dust at a hit mob's feet for a tick.
+Flaky in the Task 7 runs: bulletsTakeTime, controlHubInfoLines (once each, compat runs, code unchanged). How to test:
+`docs/TESTING.md` "Early game turrets (0.4.0)" (reset the config line first).
+
 **2026-10-22: 0.3.2 committed and pushed (not tagged, not uploaded): Overwatch launcher control + every Overwatch minor;
 not yet tested by the user in game** (spec PLAN §8 "Overwatch: mode, tembak per klik & lock Rocket/Missile", plan
 `docs/superpowers/plans/2026-10-22-overwatch-launcher-control.md`). Release plan (user 22:00): versions are now committed

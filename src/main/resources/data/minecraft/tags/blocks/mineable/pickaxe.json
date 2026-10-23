@@ -3,6 +3,7 @@
   "values": [
     "bastion:turret_base",
     "bastion:large_turret_base",
+    "bastion:makeshift_turret_base",
     "bastion:part_workstation",
     "bastion:part_assembler",
     "bastion:module_workstation",

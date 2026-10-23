@@ -39,6 +39,22 @@ public final class BastionRenderTypes extends RenderType {
                     .setOutputState(PARTICLES_TARGET)
                     .createCompositeState(false)));
 
+    /**
+     * Like TRANSLUCENT_GLOW but lit by the world: vanilla's position_color_tex_lightmap shader never reads the light it is
+     * given, the text shader (same vertex format) multiplies by it and adds fog. Smoke trails, sling shots.
+     */
+    private static final Function<ResourceLocation, RenderType> TRANSLUCENT_LIT = Util.memoize(texture -> create("bastion_translucent_lit",
+            DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 1024, false, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_TEXT_SHADER)
+                    .setTextureState(new TextureStateShard(texture, true, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setLightmapState(LIGHTMAP)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setOutputState(PARTICLES_TARGET)
+                    .createCompositeState(false)));
+
     private static final RenderType GHOST_BOX = create("bastion_ghost_box", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS,
             256, false, true, CompositeState.builder()
                     .setShaderState(POSITION_COLOR_SHADER)
@@ -72,9 +88,14 @@ public final class BastionRenderTypes extends RenderType {
         return ADDITIVE_GLOW.apply(texture);
     }
 
-    /** Vertex order as {@link #additiveGlow}. */
+    /** Vertex order as {@link #additiveGlow}; fullbright whatever light is passed. */
     public static RenderType translucentGlow(ResourceLocation texture) {
         return TRANSLUCENT_GLOW.apply(texture);
+    }
+
+    /** Vertex order as {@link #additiveGlow}; pass the world's light where the quad is (dark at night). */
+    public static RenderType translucentLit(ResourceLocation texture) {
+        return TRANSLUCENT_LIT.apply(texture);
     }
 
     /** Placement hologram boxes: flat colour, translucent, both sides, no depth write. */

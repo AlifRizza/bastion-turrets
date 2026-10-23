@@ -1,4 +1,4 @@
-# Upload sheet: 0.3.2
+# Upload sheet: 0.4.0
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
@@ -26,9 +26,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.3.2.jar` (`./gradlew build`) |
-| Version number         | 0.3.2                                                     |
-| Version name           | Bastion Turrets 0.3.2                                     |
+| File                   | `build/libs/bastion-1.20.1-0.4.0.jar` (`./gradlew build`) |
+| Version number         | 0.4.0                                                     |
+| Version name           | Bastion Turrets 0.4.0                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -44,6 +44,49 @@ updates bump the middle number, fixes the last. 0.2.1 (user 2026-10-19): the con
 Overwatch Link, a big update, so the middle number. 0.3.2 (user 2026-10-22): launcher control under Overwatch and the
 fixes. From 0.3.2 on, versions are committed and pushed with their changelog and store text ready, but uploaded later by
 the user: 0.3.2 a few days after 2026-10-22, 0.4.0 about a week after that. Development goes on in between.
+0.4.0 (user 2026-10-22 22:00): the early game turrets, a big update, so the middle number. Prepared on 2026-10-23
+(changelog below, store text in `DESCRIPTION_UPDATE_0.4.0.md`), committed 2026-10-23, not pushed or uploaded yet: the user uploads it
+about a week after 0.3.2.
+
+## Changelog: 0.4.0
+
+```
+New: early game turrets, made at the crafting table, no FE needed
+- Makeshift Turret Base: a crate of wood, stone and iron (3 iron ingots, 2 logs, 4 cobblestone). Floor, wall or
+  ceiling. 50 HP (server config makeshiftBaseHealth), no tiers, module slots, FE or Connector slot. Only the four
+  turrets below fit on it, and they fit no other base. Cracks and wood splinters show its damage; nothing glows.
+  Destroyed, it falls apart without a blast, drops an iron ingot and two oak planks, and the weapon and ammo are lost.
+  Mined, it keeps its contents.
+- Cobblestone Turret: a spring cannon. One cobblestone (or cobbled deepslate) per shot, 3 damage, a shot every
+  0.75 s, 16 blocks.
+- Snowball Repeater: a crank drum. 5 shots a second of 1.5 damage, one snowball for 4 shots, 14 blocks.
+- Potato Shotgun: a spud gun. 5 chunks of 2 damage in a wide cone every 1.5 s, 10 blocks. Poisonous potatoes work
+  too (no poison).
+- Arrow Launcher (floor base only): a hwacha, an arrow box on a wheeled cart, always tilted up. One arrow fires a
+  volley of 6 every 2.5 s on a high arc over walls, one onto the
+  target and five around it, 3 damage each. Mobs on the ground 6 to 32 blocks away, never flyers. Any arrow: tipped
+  arrows keep their effect, spectral arrows make the target glow; Creative Ammo fires plain arrows. The arrows fly
+  through what the turret may not shoot, can't be picked up and vanish 10 s after they stick.
+- The four have their own rustic models, shots, impacts and sounds, with no glow or light.
+- Hoppers and pipes load them like any turret. An empty Makeshift Turret Base takes only early ammo, and the other
+  bases never take it.
+- JEI: a Turret Weapons page for each of the four and an information page for the base. Jade shows the base without
+  a tier.
+
+Changes
+- config/bastion-turrets.toml has a section for each new turret (the Arrow Launcher's adds arrows per volley, ring
+  radius, arc speed, gravity, drag and how long a stuck arrow stays). The server config has makeshiftBaseHealth (50).
+
+Fixes
+- A damaged turret base that does not regenerate (T1 by default) showed full-health lights after you rejoined or came
+  back from far away.
+- Rocket, missile and mortar shell smoke trails glowed at night; they are now as dark as the night around them (the
+  exhaust glow still shines).
+
+Note
+- Clients need this version to join a 0.4.0 server (new blocks, items and an entity).
+- The sounds of the four new turrets and the makeshift base are placeholders for now.
+```
 
 ## Changelog: 0.3.2
 

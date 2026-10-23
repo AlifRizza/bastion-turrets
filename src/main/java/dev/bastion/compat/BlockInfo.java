@@ -6,6 +6,7 @@ import dev.bastion.hub.HubCasingBlock;
 import dev.bastion.hub.HubInterfaceBlock;
 import dev.bastion.hub.HubInterfaceBlockEntity;
 import dev.bastion.hub.SatelliteUplinkBlock;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.FeedHubBlock;
 import dev.bastion.turret.FeedHubBlockEntity;
 import dev.bastion.turret.TurretBaseBlock;
@@ -72,7 +73,7 @@ public final class BlockInfo {
         tag.putString("Kind", "turret");
         ItemStack weapon = turret.inventory().getStackInSlot(TurretInventory.WEAPON);
         if (!weapon.isEmpty()) tag.putString("Weapon", id(weapon.getItem()));
-        tag.putInt("Tier", turret.tier().ordinal() + 1);
+        if (turret.kind() != BaseKind.MAKESHIFT) tag.putInt("Tier", turret.tier().ordinal() + 1);
         tag.putFloat("Hp", turret.health());
         tag.putFloat("MaxHp", turret.maxHealth());
         tag.putString("State", turret.state().name().toLowerCase(Locale.ROOT));
@@ -133,7 +134,8 @@ public final class BlockInfo {
             case "turret" -> {
                 Component weapon = tag.contains("Weapon") ? item(tag.getString("Weapon")).getDescription()
                         : Component.translatable("gui.bastion.info.no_weapon");
-                lines.add(Component.translatable("jade.bastion.turret.weapon", weapon, Component.translatable("gui.bastion.turret.tier", tag.getInt("Tier"))));
+                lines.add(tag.contains("Tier") ? Component.translatable("jade.bastion.turret.weapon", weapon,
+                        Component.translatable("gui.bastion.turret.tier", tag.getInt("Tier"))) : weapon.copy());
                 lines.add(Component.translatable("gui.bastion.turret.hp", fmt(tag.getFloat("Hp")), fmt(tag.getFloat("MaxHp"))));
                 lines.add(Component.translatable("jade.bastion.state", Component.translatable("gui.bastion.state." + tag.getString("State"))));
                 if (tag.contains("Controller")) lines.add(Component.translatable("gui.bastion.turret.manual", tag.getString("Controller")));

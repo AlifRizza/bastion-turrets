@@ -2,6 +2,7 @@ package dev.bastion.registry;
 
 import dev.bastion.Bastion;
 import dev.bastion.weapon.WeaponType;
+import dev.bastion.weapon.types.ArrowLauncherWeapon;
 import dev.bastion.weapon.types.GunWeapon;
 import dev.bastion.weapon.types.IonRifleWeapon;
 import dev.bastion.weapon.types.MachineGunWeapon;
@@ -17,6 +18,7 @@ import dev.bastion.weapon.types.RepulsorWeapon;
 import dev.bastion.weapon.types.RocketLauncherWeapon;
 import dev.bastion.weapon.types.ShotgunWeapon;
 import dev.bastion.weapon.types.SniperWeapon;
+import dev.bastion.weapon.types.SlingWeapon;
 import dev.bastion.weapon.types.TeslaWeapon;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -46,4 +48,9 @@ public final class BastionWeaponTypes {
     public static final RegistryObject<WeaponType> ION_RIFLE = REGISTER.register("ion_rifle", IonRifleWeapon::new);
     public static final RegistryObject<WeaponType> PLASMA_REPEATER = REGISTER.register("plasma_repeater", PlasmaRepeaterWeapon::new);
     public static final RegistryObject<WeaponType> PLASMA_CANNON = REGISTER.register("plasma_cannon", PlasmaCannonWeapon::new);
+    // The early flingers share one implementation; each JSON names its own type id.
+    public static final RegistryObject<WeaponType> COBBLESTONE = REGISTER.register("cobblestone", SlingWeapon::new);
+    public static final RegistryObject<WeaponType> SNOWBALL = REGISTER.register("snowball", SlingWeapon::new);
+    public static final RegistryObject<WeaponType> POTATO = REGISTER.register("potato", SlingWeapon::new);
+    public static final RegistryObject<WeaponType> ARROW_LAUNCHER = REGISTER.register("arrow_launcher", ArrowLauncherWeapon::new);
 }

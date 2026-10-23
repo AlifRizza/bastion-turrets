@@ -1,0 +1,22 @@
+{
+  "type": "bastion:snowball",
+  "ammo": "bastion:ammo/snow",
+  "energy_color": "#8A8A8A",
+  "bullet_color": "#F2F6FF",
+  "range": 14,
+  "fire_interval": 4,
+  "damage": 1.5,
+  "spread": 3,
+  "ammo_per_shot": 0.25,
+  "turn_speed": 6,
+  "aim_tolerance": 4,
+  "aim_lock_ticks": 2,
+  "min_pitch": -35,
+  "max_pitch": 80,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.0125,
+  "params": {
+    "bullet_speed": 2.5,
+    "lead_accuracy": 0.9
+  }
+}

@@ -4,9 +4,11 @@ import dev.bastion.client.anim.WeaponAnimatable;
 import dev.bastion.client.render.RailRenderer;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
+import dev.bastion.client.vfx.VfxPreset;
 import dev.bastion.client.vfx.VfxPresets;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.registry.BastionWeaponTypes;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
@@ -95,9 +97,9 @@ public final class ClientTurret {
                 case OVERHEAT -> WeaponAnimatable.Pose.OVERHEAT;
                 default -> WeaponAnimatable.Pose.IDLE;
             });
-            if (seen && turret.getLevel() instanceof ClientLevel level) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, BastionSounds.TURRET_DEPLOY.get(),
-                        SoundSource.BLOCKS, 0.8f, 1f, false);
+            if (seen && turret.getLevel() instanceof ClientLevel level) { // a makeshift base creaks instead of a servo's whir
+                var deploy = turret.kind() == BaseKind.MAKESHIFT ? BastionSounds.MAKESHIFT_BASE_PLACE : BastionSounds.TURRET_DEPLOY;
+                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, deploy.get(), SoundSource.BLOCKS, 0.8f, 1f, false);
             }
         }
         seen = true;
@@ -168,15 +170,19 @@ public final class ClientTurret {
             weapon.missiles = turret.clientTubes();
         }
         if (turret.clientDamaged() && level.random.nextInt(turret.clientCritical() ? 8 : 40) == 0) {
-            // Damaged: short-circuit sparks off a random side of the base, often once it is critical (PLAN 4.1).
+            // Damaged: short-circuit sparks off a random side of the base, often once it is critical (PLAN 4.1); a
+            // makeshift base sheds wood splinters instead.
             float angle = level.random.nextFloat() * Mth.TWO_PI;
             Vec3 side = new Vec3(Mth.cos(angle), 0.4, Mth.sin(angle));
-            VfxManager.play(VfxPresets.DAMAGED_SPARK, Vec3.atBottomCenterOf(pos).add(side.x * 0.45, 0.35, side.z * 0.45), side,
+            VfxPreset damage = turret.kind() == BaseKind.MAKESHIFT ? VfxPresets.WOOD_SPLINTERS : VfxPresets.DAMAGED_SPARK;
+            VfxManager.play(damage, Vec3.atBottomCenterOf(pos).add(side.x * 0.45, 0.35, side.z * 0.45), side,
                     VfxParams.of().seed(level.random.nextLong()));
         }
         weaponTick(level, state, data);
-        loopSounds(level, data);
-        smokeAfterBursts(level);
+        // The early weapons on a makeshift base (wood and springs) neither hum nor smoke after a burst.
+        boolean makeshift = turret.kind() == BaseKind.MAKESHIFT;
+        loopSounds(level, data, !makeshift);
+        if (!makeshift) smokeAfterBursts(level);
 
         for (Iterator<Delayed> it = delayed.iterator(); it.hasNext(); ) {
             Delayed d = it.next();
@@ -277,10 +283,10 @@ public final class ClientTurret {
     }
 
 
-    /** Idle hum while armed; the Machine Gun's spin-up, fire roar and spin-down (PLAN 5.7, 7.2); the Flamethrower's roar. */
-    private void loopSounds(ClientLevel level, @Nullable WeaponData data) {
+    /** Idle hum while armed ({@code hums}); the Machine Gun's spin-up, fire roar and spin-down (PLAN 5.7, 7.2); the Flamethrower's roar. */
+    private void loopSounds(ClientLevel level, @Nullable WeaponData data, boolean hums) {
         var sounds = Minecraft.getInstance().getSoundManager();
-        if (weapon != null && (hum == null || hum.finished())) {
+        if (hums && weapon != null && (hum == null || hum.finished())) {
             hum = new TurretLoopSound(BastionSounds.TURRET_IDLE_HUM.get(), this,
                     () -> weapon == null ? 0 : (lastState == TurretState.DISABLED ? 0 : 0.18), () -> 1.0);
             sounds.play(hum);

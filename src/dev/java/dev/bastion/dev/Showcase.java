@@ -33,6 +33,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public final class Showcase {
             && !System.getProperty("bastion.showcase").equals("health")
             && !System.getProperty("bastion.showcase").equals("placement")
             && !System.getProperty("bastion.showcase").equals("modules")
+            && !System.getProperty("bastion.showcase").equals("early")
             && !System.getProperty("bastion.showcase").equals("ion") && !System.getProperty("bastion.showcase").equals("plasma")
             && !System.getProperty("bastion.showcase").equals("hub") && !System.getProperty("bastion.showcase").startsWith("video");
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0);
@@ -175,6 +177,18 @@ public final class Showcase {
         level.setBlock(pos, BastionBlocks.TURRET_BASE.get().defaultBlockState().setValue(TurretBaseBlock.FACING, facing), 3);
         TurretBaseBlockEntity turret = (TurretBaseBlockEntity) level.getBlockEntity(pos);
         for (TurretTier t : TurretTier.values()) if (t.ordinal() > 0 && t.ordinal() <= tier.ordinal()) turret.upgradeTo(t);
+        arm(turret, weapon);
+    }
+
+    /** A makeshift base (no tiers); a null {@code weapon} leaves it empty. */
+    static TurretBaseBlockEntity placeMakeshift(ServerLevel level, BlockPos pos, Direction facing, @Nullable Item weapon) {
+        level.setBlock(pos, BastionBlocks.MAKESHIFT_TURRET_BASE.get().defaultBlockState().setValue(TurretBaseBlock.FACING, facing), 3);
+        TurretBaseBlockEntity turret = (TurretBaseBlockEntity) level.getBlockEntity(pos);
+        if (weapon != null) arm(turret, weapon);
+        return turret;
+    }
+
+    private static void arm(TurretBaseBlockEntity turret, Item weapon) {
         turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(weapon));
         turret.inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));
     }

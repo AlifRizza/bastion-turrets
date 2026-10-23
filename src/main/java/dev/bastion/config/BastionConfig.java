@@ -16,6 +16,7 @@ public final class BastionConfig {
     public static final ForgeConfigSpec.IntValue TURRET_HURT_SOUND_INTERVAL;
     public static final ForgeConfigSpec.DoubleValue TURRET_HURT_SOUND_VOLUME;
     public static final ForgeConfigSpec.DoubleValue LARGE_HEALTH_MULTIPLIER;
+    private static final ForgeConfigSpec.DoubleValue MAKESHIFT_HEALTH;
     public static final ForgeConfigSpec.IntValue WORKSTATION_ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue WORKSTATION_MAX_INPUT;
     public static final ForgeConfigSpec.BooleanValue MORTAR_BLOCK_FIRE;
@@ -54,6 +55,9 @@ public final class BastionConfig {
         LARGE_HEALTH_MULTIPLIER = b
                 .comment("Max HP of a Large Turret Base (2x2) relative to a standard base of the same tier.")
                 .defineInRange("largeBaseHealthMultiplier", 2.5, 0.1, 100);
+        MAKESHIFT_HEALTH = b
+                .comment("Max HP of a Makeshift Turret Base (the early-game base; it has no tiers and no modules).")
+                .defineInRange("makeshiftBaseHealth", 50.0, 1, 100000);
         WORKSTATION_ENERGY_CAPACITY = b
                 .comment("FE a workstation stores (PLAN Fase 9).")
                 .defineInRange("workstationEnergyCapacity", 50000, 1000, Integer.MAX_VALUE);
@@ -114,6 +118,10 @@ public final class BastionConfig {
     private static float tierValue(ForgeConfigSpec.ConfigValue<List<? extends Double>> list, TurretTier tier, double fallback) {
         List<? extends Double> values = list.get();
         return (float) (tier.ordinal() < values.size() ? values.get(tier.ordinal()) : fallback);
+    }
+
+    public static float makeshiftBaseHealth() {
+        return MAKESHIFT_HEALTH.get().floatValue();
     }
 
     public static float maxHealth(TurretTier tier) {

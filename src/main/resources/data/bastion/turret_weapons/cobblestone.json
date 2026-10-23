@@ -1,0 +1,22 @@
+{
+  "type": "bastion:cobblestone",
+  "ammo": "bastion:ammo/pebble",
+  "energy_color": "#8A8A8A",
+  "bullet_color": "#9A9A9A",
+  "range": 16,
+  "fire_interval": 15,
+  "damage": 3,
+  "spread": 1.5,
+  "ammo_per_shot": 1,
+  "turn_speed": 6,
+  "aim_tolerance": 4,
+  "aim_lock_ticks": 2,
+  "min_pitch": -35,
+  "max_pitch": 80,
+  "pivot_height": 0.4375,
+  "muzzle_length": 0.8625,
+  "params": {
+    "bullet_speed": 2.0,
+    "lead_accuracy": 0.9
+  }
+}

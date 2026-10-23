@@ -5,6 +5,7 @@ import dev.bastion.hub.HubConnectorItem;
 import dev.bastion.hub.OverwatchLinkItem;
 import dev.bastion.hub.SatelliteUplinkItem;
 import dev.bastion.modifier.ModifierItem;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretConfiguratorItem;
 import dev.bastion.turret.TurretInventory;
@@ -42,6 +43,8 @@ public final class BastionItems {
             () -> new TurretBaseItem(BastionBlocks.TURRET_BASE.get(), new Item.Properties()));
     public static final RegistryObject<TurretBaseItem> LARGE_TURRET_BASE = REGISTER.register("large_turret_base",
             () -> new TurretBaseItem(BastionBlocks.LARGE_TURRET_BASE.get(), new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<TurretBaseItem> MAKESHIFT_TURRET_BASE = REGISTER.register("makeshift_turret_base",
+            () -> new TurretBaseItem(BastionBlocks.MAKESHIFT_TURRET_BASE.get(), new Item.Properties()));
 
     // Weapon modules, PLAN 7; each names its data/bastion/turret_weapons JSON.
     public static final RegistryObject<WeaponModuleItem> GUN_TURRET = REGISTER.register("gun_turret",
@@ -250,6 +253,16 @@ public final class BastionItems {
         return item instanceof WorkstationItem || item == CREATIVE_POWER_SOURCE.get();
     }
 
+    // Early modules (0.4.0): Makeshift Turret Base only.
+    public static final RegistryObject<WeaponModuleItem> COBBLESTONE_TURRET = REGISTER.register("cobblestone_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("cobblestone"), BaseKind.MAKESHIFT));
+    public static final RegistryObject<WeaponModuleItem> SNOWBALL_REPEATER = REGISTER.register("snowball_repeater",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("snowball"), BaseKind.MAKESHIFT));
+    public static final RegistryObject<WeaponModuleItem> POTATO_SHOTGUN = REGISTER.register("potato_shotgun",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("potato"), BaseKind.MAKESHIFT));
+    public static final RegistryObject<WeaponModuleItem> ARROW_LAUNCHER = REGISTER.register("arrow_launcher",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("arrow_launcher"), BaseKind.MAKESHIFT));
+
     /** Anything in the bastion:ammo tag (incl. Creative Ammo); tags are bound by the time a tab's contents are built. */
     private static boolean isAmmo(Item item) {
         return new ItemStack(item).is(TurretInventory.AMMO);
@@ -262,7 +275,7 @@ public final class BastionItems {
                     .icon(() -> icon.get().getDefaultInstance())
                     .displayItems((params, output) -> REGISTER.getEntries().stream().map(RegistryObject::get).filter(holds).forEach(item -> {
                         output.accept(item);
-                        if (item instanceof TurretBaseItem) { // ready-made T2 and T3 bases next to the plain one (user 2026-10-07)
+                        if (item instanceof TurretBaseItem base && base.kind() != BaseKind.MAKESHIFT) { // no tiers on a makeshift base; ready-made T2 and T3 bases next to the plain one (user 2026-10-07)
                             output.accept(TurretBaseItem.withTier(item, TurretTier.T2));
                             output.accept(TurretBaseItem.withTier(item, TurretTier.T3));
                         }

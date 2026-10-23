@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "bastion:block/makeshift_turret_base" }
+  }
+}

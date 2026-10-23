@@ -45,7 +45,7 @@ public final class TurretStatsConfig {
     /** The built-in weapons (data/bastion/turret_weapons/<id>.json), in the order of the store description's weapon table. */
     public static final List<String> WEAPONS = List.of("gun", "machine_gun", "shotgun", "sniper", "rocket_launcher",
             "flamethrower", "laser_rifle", "repulsor", "ion_rifle", "plasma_repeater", "missile_launcher", "tesla", "railgun",
-            "mortar", "repulsor_dome", "plasma_cannon");
+            "mortar", "repulsor_dome", "plasma_cannon", "cobblestone", "snowball", "potato", "arrow_launcher");
 
     private static final Map<String, String> NAMES = Map.ofEntries(
             Map.entry("gun", "Gun Turret"), Map.entry("machine_gun", "Machine Gun Turret"), Map.entry("shotgun", "Shotgun Turret"),
@@ -54,7 +54,9 @@ public final class TurretStatsConfig {
             Map.entry("repulsor", "Repulsor"), Map.entry("ion_rifle", "Ion Rifle Turret"),
             Map.entry("plasma_repeater", "Plasma Repeater Turret"), Map.entry("missile_launcher", "Missile Launcher Turret"),
             Map.entry("tesla", "Tesla Coil Turret"), Map.entry("railgun", "Railgun Turret"), Map.entry("mortar", "Mortar Turret"),
-            Map.entry("repulsor_dome", "Repulsor Dome"), Map.entry("plasma_cannon", "Plasma Cannon Turret"));
+            Map.entry("repulsor_dome", "Repulsor Dome"), Map.entry("plasma_cannon", "Plasma Cannon Turret"),
+            Map.entry("cobblestone", "Cobblestone Turret"), Map.entry("snowball", "Snowball Repeater"), Map.entry("potato", "Potato Shotgun"),
+            Map.entry("arrow_launcher", "Arrow Launcher"));
 
     private static final String[] HEADER = {
             "Bastion Turrets: weapon stats. Each value starts at the mod's own number (\"Mod default\" in its comment).",
@@ -85,6 +87,7 @@ public final class TurretStatsConfig {
     /** Every weapon-specific param a built-in weapon JSON uses (a GameTest checks the list against the JSON). */
     public static final Map<String, Key> PARAMS = Map.ofEntries(
             Map.entry("acceleration", new Key("Missile: speed gained per tick, in blocks per tick per tick.", 0, 10)),
+            Map.entry("arrows", new Key("Arrows per volley; one arrow item fires one volley.", 1, 64)),
             Map.entry("base_pierce", new Key("Extra targets each round passes through.", 0, 64)),
             Map.entry("blast_damage", new Key("Blast damage at the centre (half at the edge).", 0, 10000)),
             Map.entry("blast_radius", new Key("Blast radius in blocks.", 0, 64)),
@@ -98,6 +101,7 @@ public final class TurretStatsConfig {
             Map.entry("charge_ticks", new Key("Ticks it charges before each shot.", 0, 12000)),
             Map.entry("cone_angle", new Key("Half-angle of its cone in degrees.", 0, 180)),
             Map.entry("cruise_speed", new Key("Missile: top speed in blocks per tick.", 0.01, 100)),
+            Map.entry("drag", new Key("Share of its speed an arrow keeps each tick in the air (vanilla arrows 0.99; below 1).", 0.5, 0.999)),
             Map.entry("energy_capacity", new Key("FE the turret's capacitor holds.", 0, 3000000)),
             Map.entry("energy_per_shot", new Key("FE per shot.", 0, 10000000)),
             Map.entry("falloff_end", new Key("Distance in blocks where pellet damage bottoms out.", 0, 256)),
@@ -108,7 +112,8 @@ public final class TurretStatsConfig {
             Map.entry("field_ticks", new Key("Ticks the ion core's beams stay visible.", 0, 200)),
             Map.entry("fire_ticks", new Key("Ticks a fire patch burns.", 0, 12000)),
             Map.entry("fuel_ticks", new Key("Missile: ticks of flight before its fuel runs out.", 0, 12000)),
-            Map.entry("gravity", new Key("Shell gravity in blocks per tick per tick.", 0.001, 1)),
+            Map.entry("glow_ticks", new Key("Ticks of Glowing a spectral arrow gives its target.", 0, 1200)),
+            Map.entry("gravity", new Key("Shell or arrow gravity in blocks per tick per tick.", 0.001, 1)),
             Map.entry("headshot_multiplier", new Key("Damage multiplier on a headshot.", 0, 100)),
             Map.entry("homing_delay", new Key("Missile: ticks after launch before it starts steering.", 0, 200)),
             Map.entry("hot_spread", new Key("Spread in degrees while hot.", 0, 90)),
@@ -127,9 +132,10 @@ public final class TurretStatsConfig {
             Map.entry("precision_lock_multiplier", new Key("Damage multiplier of the shot after holding a target for precision_lock_ticks.", 0, 100)),
             Map.entry("precision_lock_ticks", new Key("Ticks on one target before the precision shot.", 0, 12000)),
             Map.entry("reload_ticks", new Key("Ticks to reload one tube.", 1, 12000)),
+            Map.entry("ring_radius", new Key("Radius in blocks of the ring the volley lands on around the target.", 0, 16)),
             Map.entry("rocket_speed", new Key("Rocket speed in blocks per tick.", 0.01, 100)),
             Map.entry("salvo_interval", new Key("Salvo mode: ticks between the rounds of a salvo (0 = all at once).", 0, 200)),
-            Map.entry("shell_speed", new Key("Shell launch speed in blocks per tick.", 0.01, 100)),
+            Map.entry("shell_speed", new Key("Shell or arrow launch speed in blocks per tick.", 0.01, 100)),
             Map.entry("shock_knockback", new Key("How hard the impact's shockwave throws mobs.", 0, 100)),
             Map.entry("shock_radius", new Key("Reach of the impact's shockwave in blocks.", 0, 64)),
             Map.entry("slowness_amplifier", new Key("Level of the Slowness its hits apply (0 = Slowness I).", 0, 10)),
@@ -139,6 +145,7 @@ public final class TurretStatsConfig {
             Map.entry("spin_up_ticks", new Key("Ticks the barrels take to spin up.", 1, 12000)),
             Map.entry("splash_damage", new Key("Splash damage to targets around the impact.", 0, 10000)),
             Map.entry("splash_radius", new Key("Splash radius in blocks.", 0, 64)),
+            Map.entry("stuck_ticks", new Key("Ticks an arrow stays stuck in a block before it vanishes (vanilla's 1200 at most).", 0, 1200)),
             Map.entry("turn_rate", new Key("Missile: degrees it can turn per tick while homing.", 0, 180)));
 
     /** ammo_per_shot of a weapon that takes no ammo items: any number above 0 would leave it waiting for items forever. */

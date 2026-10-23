@@ -40,6 +40,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -705,16 +706,18 @@ public class OverwatchTests {
     public static void crosshairPicksTheBodyNotTheFeet(GameTestHelper helper) {
         LivingEntity cow = helper.spawnWithNoFreeWill(EntityType.COW, FAR);
         var viewer = FakePlayerFactory.getMinecraft(helper.getLevel());
-        Vec3 body = cow.getBoundingBox().getCenter(), from = body.add(-5, 0, 0);
-        ManualAim.Pick pick = ManualAim.pick(viewer, from, from.add(20, 0, 0), false);
-        helper.assertTrue(pick.entity() == cow, "picked " + pick.entity());
-        helper.assertTrue(Math.abs(pick.point().y - body.y) < 0.05 && pick.point().x < body.x, "aimed at " + pick.point() + ", body " + body);
-        ManualAim.Pick lob = ManualAim.pick(viewer, from, from.add(20, 0, 0), true);
-        helper.assertTrue(lob.entity() == cow && lob.point().equals(cow.position()), "a shell aims at " + lob.point());
-        ManualAim.Pick wall = ManualAim.pick(viewer, from.add(0, 1.5, 0), from.add(20, 1.5, 0), false);
-        helper.assertTrue(wall.entity() == null && wall.point().x < from.x + 20, "over the cow it picked " + wall.entity() + " at " + wall.point());
-        cow.discard();
-        helper.succeed();
+        once(helper, 0, List.of(cow), () -> { // a fresh chunk's entities can't be picked for a few ticks
+            Vec3 body = cow.getBoundingBox().getCenter(), from = body.add(-5, 0, 0);
+            ManualAim.Pick pick = ManualAim.pick(viewer, from, from.add(20, 0, 0), false);
+            helper.assertTrue(pick.entity() == cow, "picked " + pick.entity());
+            helper.assertTrue(Math.abs(pick.point().y - body.y) < 0.05 && pick.point().x < body.x, "aimed at " + pick.point() + ", body " + body);
+            ManualAim.Pick lob = ManualAim.pick(viewer, from, from.add(20, 0, 0), true);
+            helper.assertTrue(lob.entity() == cow && lob.point().equals(cow.position()), "a shell aims at " + lob.point());
+            ManualAim.Pick wall = ManualAim.pick(viewer, from.add(0, 1.5, 0), from.add(20, 1.5, 0), false);
+            helper.assertTrue(wall.entity() == null && wall.point().x < from.x + 20, "over the cow it picked " + wall.entity() + " at " + wall.point());
+            cow.discard();
+            helper.succeed();
+        });
     }
 
     // --- override: control works on a switched-off turret (user 2026-10-21) ------------------------------
@@ -992,13 +995,19 @@ public class OverwatchTests {
         LivingEntity other = helper.spawnWithNoFreeWill(EntityType.COW, new BlockPos(19, 2, 3));
         LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(19, 2, 10));
         turret.setManual(new ManualControl(UUID.randomUUID(), "Tester"));
-        TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), helper.getLevel(), turret.getBlockPos(),
-                4, 0, 0.5f, 0, 120).homing(locked, 11, 1.1f, 0.07f, 0).randomRetarget();
-        // Over the second cow (nearest once the lock is gone), heading for the husk side.
-        missile.setPos(locked.getBoundingBox().getCenter().add(0, 3, -4));
-        missile.launch(new Vec3(0, 0, 0.4));
-        helper.getLevel().addFreshEntity(missile);
-        helper.runAtTickTime(1, locked::discard);
+        // Only once the level can find all three: in a fresh chunk the missile's retarget would see nobody and fly into the wall.
+        once(helper, 0, List.of(locked, other, husk), () -> {
+            // Its retarget reaches 10 blocks, past this box: mobs earlier tests left nearby (a Repulsor test's ravager) would draw it.
+            helper.getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(helper.absolutePos(new BlockPos(19, 2, 5))).inflate(16),
+                    e -> e != locked && e != other && e != husk && e instanceof Mob).forEach(Entity::discard);
+            TurretRocketEntity missile = new TurretRocketEntity(BastionEntities.TURRET_MISSILE.get(), helper.getLevel(), turret.getBlockPos(),
+                    4, 0, 0.5f, 0, 120).homing(locked, 11, 1.1f, 0.07f, 0).randomRetarget();
+            // Over the second cow (nearest once the lock is gone), heading for the husk side.
+            missile.setPos(locked.getBoundingBox().getCenter().add(0, 3, -4));
+            missile.launch(new Vec3(0, 0, 0.4));
+            helper.getLevel().addFreshEntity(missile);
+            locked.discard();
+        });
         helper.succeedWhen(() -> {
             helper.assertTrue(hurt(husk), "the missile did not turn to the husk");
             helper.assertTrue(!hurt(other), "the missile hit the second cow");

@@ -38,6 +38,8 @@ public final class BastionParticles {
     public static final RegistryObject<ParticleType<Options>> DUST_RING = register("dust_ring");
     // Flamethrower: billowing fire that piles up against walls instead of passing through them
     public static final RegistryObject<ParticleType<Options>> FLAME_JET = register("flame_jet");
+    // Early game (nothing glows): a pale streak of air along its motion, the Arrow Launcher's string snap
+    public static final RegistryObject<ParticleType<Options>> WIND_STREAK = register("wind_streak");
 
     private static RegistryObject<ParticleType<Options>> register(String name) {
         return REGISTER.register(name, () -> new ParticleType<>(false, Options.DESERIALIZER) {

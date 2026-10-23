@@ -479,6 +479,71 @@ public final class VfxPresets {
             .burst(BastionParticles.SPARK.get(), 4, v.direction(), 70, 0.2f, 0.45f, 8, Curve.LINEAR, 0xFFFFC870)
             .burst(BastionParticles.SMOKE_WISP.get(), 1, UP, 10, 0.02f, 1.1f, 30, Curve.EASE_OUT, 0x90404448);
 
+    /** A damaged makeshift base sheds wood splinters instead (PLAN "Turret early game"): lit debris, wood brown. */
+    public static final VfxPreset WOOD_SPLINTERS = v -> v
+            .burst(BastionParticles.DEBRIS.get(), 3, v.direction(), 60, 0.14f, 0.4f, 25, Curve.LINEAR, 0xFF8A5A32);
+
+    /** A makeshift base destroyed: it bursts into planks, iron scraps and dust; no flash, ring, sparks or light. */
+    public static final VfxPreset MAKESHIFT_DESTROYED = v -> v
+            .burst(BastionParticles.DEBRIS.get(), 22, UP, 120, 0.4f, 1.1f, 40, Curve.LINEAR, 0xFF8A5A32)
+            .burst(BastionParticles.DEBRIS.get(), 6, UP, 120, 0.35f, 0.9f, 40, Curve.LINEAR, 0xFF6A6E74)
+            .burst(BastionParticles.SMOKE_PUFF.get(), 12, UP, 90, 0.08f, 4f, 60, Curve.EASE_OUT, 0xA09A8A74)
+            .shake(0.6f, 14);
+
+    // --- Early game: rustic, nothing glows (PLAN "Turret early game"; shots in flight: EarlyEffects) -------------------
+
+    /** Cobblestone Turret: the spring kicks a puff of dust out of the barrel. */
+    public static final VfxPreset COBBLE_MUZZLE = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 4, v.direction(), 25, 0.07f, 1.5f, 22, Curve.EASE_OUT, 0x90B4AA9C)
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), v.direction(), 0.03f, 1.6f, 10, Curve.EASE_OUT, 0x80B4AA9C);
+
+    /** Every tick behind a flying stone: a thin wisp of dust. */
+    public static final VfxPreset COBBLE_TRAIL = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 1, v.direction(), 30, 0.01f, 0.7f, 12, Curve.EASE_OUT, 0x50A89E92);
+
+    /** A stone lands: chips of it fly off and dust puffs up in the colour of what it hit. */
+    public static final VfxPreset COBBLE_IMPACT = v -> v
+            .burst(BastionParticles.DEBRIS.get(), 7, v.params().normal(), 70, 0.2f, 0.55f, 26, Curve.LINEAR, 0xFF8C8C8C)
+            .burst(BastionParticles.SMOKE_PUFF.get(), 4, v.params().normal(), 60, 0.05f, 1.6f, 25, Curve.EASE_OUT, dust(v.params().blockColor(), 0xA0));
+
+    /** Snowball Repeater: a breath of cold vapour from the barrel. */
+    public static final VfxPreset SNOW_MUZZLE = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 3, v.direction(), 30, 0.05f, 1.3f, 26, Curve.EASE_OUT, 0x80E4F0FF);
+
+    /** Every tick behind a flying snowball: a faint frosty wisp. */
+    public static final VfxPreset SNOW_TRAIL = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 1, v.direction(), 30, 0.008f, 0.6f, 10, Curve.EASE_OUT, 0x48E8F2FF);
+
+    /** A snowball bursts: a puff of powder snow and flakes thrown out. */
+    public static final VfxPreset SNOW_IMPACT = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 5, v.params().normal(), 80, 0.09f, 1.4f, 18, Curve.EASE_OUT, 0xC0F4F8FF)
+            .burst(BastionParticles.DEBRIS.get(), 6, v.params().normal(), 75, 0.18f, 0.4f, 22, Curve.LINEAR, 0xFFF4F8FF);
+
+    /** Potato Shotgun: the pressure blows a big puff of air and dust out of the pipe. */
+    public static final VfxPreset POTATO_MUZZLE = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 5, v.direction(), 35, 0.1f, 1.8f, 24, Curve.EASE_OUT, 0x90C8C0B0)
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), v.direction(), 0.05f, 2.4f, 10, Curve.EASE_OUT, 0x80C8C0B0);
+
+    /** A potato chunk lands: a starchy splat on what it hit and a few small bits. */
+    public static final VfxPreset POTATO_IMPACT = v -> v
+            .ring(BastionParticles.DUST_RING.get(), v.origin().add(v.params().normal().scale(0.02)), v.params().normal(), 0, 1.4f, 12,
+                    Curve.EASE_OUT, 0xC0E8D49A)
+            .burst(BastionParticles.DEBRIS.get(), 4, v.params().normal(), 70, 0.16f, 0.45f, 22, Curve.LINEAR, 0xFFD8B070);
+
+    /** Arrow Launcher, at each tube: the string snaps and pale streaks of air shoot out along the arrow. */
+    public static final VfxPreset ARROW_SNAP = v -> v
+            .burst(BastionParticles.WIND_STREAK.get(), 3, v.direction(), 6, 0.6f, 0.8f, 5, Curve.LINEAR, 0xB0F2F4F6)
+            .burst(BastionParticles.SMOKE_PUFF.get(), 1, v.direction(), 30, 0.03f, 0.8f, 14, Curve.EASE_OUT, 0x60C8C0B4);
+
+    /** A turret arrow sticks in a block: a little dust in the block's colour. */
+    public static final VfxPreset ARROW_STICK = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 3, v.direction(), 60, 0.03f, 0.9f, 20, Curve.EASE_OUT, dust(v.params().blockColor(), 0xA0))
+            .burst(BastionParticles.DEBRIS.get(), 2, v.direction(), 50, 0.12f, 0.35f, 18, Curve.LINEAR, v.params().blockColor());
+
+    /** A tipped turret arrow's mist in its potion colour (ours, in place of vanilla's swirls). */
+    public static final VfxPreset ARROW_MIST = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 1, UP, 180, 0.01f, 2f, 18, Curve.EASE_OUT, v.params().color()); // 0.2 blocks: reads from 15+ blocks away
+
     // --- Repulsor and Repulsor Dome, white-blue (rings and the dome sphere: RepulsorEffects) ---------------------
 
     /** The emitter's pop: a pale flash, a light, a small kick. */
@@ -583,6 +648,19 @@ public final class VfxPresets {
         ALL.put("turret_destroyed", TURRET_DESTROYED);
         ALL.put("tier_up", TIER_UP);
         ALL.put("damaged_spark", DAMAGED_SPARK);
+        ALL.put("wood_splinters", WOOD_SPLINTERS);
+        ALL.put("makeshift_destroyed", MAKESHIFT_DESTROYED);
+        ALL.put("cobble_muzzle", COBBLE_MUZZLE);
+        ALL.put("cobble_trail", COBBLE_TRAIL);
+        ALL.put("cobble_impact", COBBLE_IMPACT);
+        ALL.put("snow_muzzle", SNOW_MUZZLE);
+        ALL.put("snow_trail", SNOW_TRAIL);
+        ALL.put("snow_impact", SNOW_IMPACT);
+        ALL.put("potato_muzzle", POTATO_MUZZLE);
+        ALL.put("potato_impact", POTATO_IMPACT);
+        ALL.put("arrow_snap", ARROW_SNAP);
+        ALL.put("arrow_stick", ARROW_STICK);
+        ALL.put("arrow_mist", ARROW_MIST);
         ALL.put("repulsor_muzzle", REPULSOR_MUZZLE);
         ALL.put("repulsor_ring", REPULSOR_RING);
         ALL.put("repulsor_haze", REPULSOR_HAZE);

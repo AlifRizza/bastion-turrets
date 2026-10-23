@@ -33,9 +33,13 @@ public class TurretBaseItem extends BlockItem implements GeoItem {
         super(block, properties);
     }
 
+    public BaseKind kind() {
+        return BaseKind.of(getBlock());
+    }
+
     /** The 2x2 Large Turret Base rather than the standard one. */
     public boolean large() {
-        return getBlock() instanceof LargeTurretBaseBlock;
+        return kind() == BaseKind.LARGE;
     }
 
     /** A fresh base of that tier, as a placed one would drop it (BlockEntityTag Tier; T1 has no tag). */
@@ -54,12 +58,13 @@ public class TurretBaseItem extends BlockItem implements GeoItem {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         CompoundTag data = getBlockEntityData(stack);
         TurretTier tier = tier(stack);
-        tooltip.add(Component.translatable("tooltip.bastion.turret_base.tier", tier.ordinal() + 1).withStyle(ChatFormatting.GRAY));
+        if (kind() != BaseKind.MAKESHIFT) tooltip.add(Component.translatable("tooltip.bastion.turret_base.tier", tier.ordinal() + 1).withStyle(ChatFormatting.GRAY));
         int stored = data == null ? 0 : data.getCompound("Inventory").getList("Items", Tag.TAG_COMPOUND).size();
         if (stored > 0) {
             tooltip.add(Component.translatable("tooltip.bastion.turret_base.stored", stored).withStyle(ChatFormatting.GRAY));
         }
         if (large()) tooltip.add(Component.translatable("tooltip.bastion.large_turret_base").withStyle(ChatFormatting.DARK_GRAY));
+        if (kind() == BaseKind.MAKESHIFT) tooltip.add(Component.translatable("tooltip.bastion.makeshift_turret_base").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // Only ever called on the client, so the client-package renderer is never loaded on a server.

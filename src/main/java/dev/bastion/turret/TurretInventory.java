@@ -5,8 +5,10 @@ import dev.bastion.hub.HubConnectorItem;
 import dev.bastion.modifier.ModifierEffect;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponModuleItem;
+import dev.bastion.weapon.WeaponType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -27,6 +29,11 @@ public class TurretInventory extends ItemStackHandler {
     /** Every Bastion ammo; accepted while no weapon is mounted, so a base can be stocked in advance (PLAN 4.2). */
     public static final TagKey<Item> AMMO = ItemTags.create(Bastion.id("ammo"));
 
+    /** What an empty makeshift base accepts: the early ammo, which never joins {@link #AMMO}. */
+    public static final TagKey<Item> AMMO_EARLY = ItemTags.create(Bastion.id("ammo_early"));
+    /** Arrow Launcher ammo: refused by an empty makeshift base off the floor, where no Arrow Launcher can mount. */
+    private static final TagKey<Item> ARROWS = ItemTags.create(Bastion.id("ammo/arrow"));
+
     public static final int WEAPON = 0;
     public static final int AMMO_START = 1;
     public static final int MODIFIER_START = AMMO_START + TurretTier.MAX_AMMO_SLOTS;
@@ -35,15 +42,22 @@ public class TurretInventory extends ItemStackHandler {
     public static final int SIZE = CONNECTOR + 1;
 
     private final Supplier<TurretTier> tier;
-    /** True on a large (2x2) base: only big weapon modules fit, and only big ones fit there. */
-    private final BooleanSupplier large;
+    /** The base kind: a weapon module fits only the kind it is made for. */
+    private final Supplier<BaseKind> kind;
+    /** Mounted on a floor (FACING UP): a makeshift base takes an arc-lobbing module (Arrow Launcher) only there. */
+    private final BooleanSupplier upright;
     private final IntConsumer onChanged;
 
-    public TurretInventory(Supplier<TurretTier> tier, BooleanSupplier large, IntConsumer onChanged) {
+    public TurretInventory(Supplier<TurretTier> tier, Supplier<BaseKind> kind, BooleanSupplier upright, IntConsumer onChanged) {
         super(SIZE);
         this.tier = tier;
-        this.large = large;
+        this.kind = kind;
+        this.upright = upright;
         this.onChanged = onChanged;
+    }
+
+    public BaseKind kind() {
+        return kind.get();
     }
 
     public int ammoSlots() {
@@ -61,11 +75,12 @@ public class TurretInventory extends ItemStackHandler {
      */
     public TagKey<Item> ammoTag() {
         WeaponData data = weaponData();
-        return data != null ? data.ammo() : AMMO;
+        return data != null ? data.ammo() : kind.get() == BaseKind.MAKESHIFT ? AMMO_EARLY : AMMO;
     }
 
     /** Ammo for the mounted weapon; Creative Ammo fits every weapon. */
     public boolean isAmmo(ItemStack stack) {
+        if (weaponData() == null && kind.get() == BaseKind.MAKESHIFT && !upright.getAsBoolean() && stack.is(ARROWS)) return false;
         return stack.is(ammoTag()) || stack.is(BastionItems.CREATIVE_AMMO.get());
     }
 
@@ -77,8 +92,9 @@ public class TurretInventory extends ItemStackHandler {
         return -1;
     }
 
-    /** Whether the current tier unlocks this slot (the Connector slot is always open). */
+    /** Whether the current tier unlocks this slot (the Connector slot is always open, except on a makeshift base). */
     public boolean isActive(int slot) {
+        if (slot >= MODIFIER_START && kind.get() == BaseKind.MAKESHIFT) return false; // no modifier slots, no Connector
         if (slot == CONNECTOR) return true;
         if (slot < AMMO_START) return true;
         if (slot < MODIFIER_START) return slot - AMMO_START < tier.get().ammoSlots;
@@ -89,10 +105,21 @@ public class TurretInventory extends ItemStackHandler {
     public boolean isItemValid(int slot, ItemStack stack) {
         if (!isActive(slot)) return false;
         if (slot == CONNECTOR) return stack.getItem() instanceof HubConnectorItem;
-        if (slot == WEAPON) return stack.getItem() instanceof WeaponModuleItem module && module.large() == large.getAsBoolean();
+        if (slot == WEAPON) return stack.getItem() instanceof WeaponModuleItem module && module.kind() == kind.get()
+                && (kind.get() != BaseKind.MAKESHIFT || upright.getAsBoolean() || !ballistic(module));
         if (slot < MODIFIER_START) return isAmmo(stack);
         return stack.getItem() instanceof ModifierItem modifier && !hasModifierElsewhere(stack.getItem(), slot)
                 && modifier.effect().fits(weaponId());
+    }
+
+    /**
+     * Lobs on an arc (Arrow Launcher, Mortar): its arrows would fly sideways off a wall base, so on a makeshift base it fits
+     * the floor only (user 2026-10-22). The large base, the Mortar's, is floor-only anyway.
+     */
+    private static boolean ballistic(WeaponModuleItem module) {
+        WeaponData data = module.data();
+        WeaponType type = data == null ? null : BastionWeaponTypes.REGISTRY.get().getValue(data.type());
+        return type != null && type.ballistic();
     }
 
     /** Id of the mounted weapon's data, or null without a weapon. */
@@ -115,7 +142,7 @@ public class TurretInventory extends ItemStackHandler {
         ModifierEffect total = ModifierEffect.NONE;
         ResourceLocation weapon = weaponId();
         for (int i = 0; i < tier.get().modifierSlots; i++) {
-            if (getStackInSlot(MODIFIER_START + i).getItem() instanceof ModifierItem modifier && modifier.effect().fits(weapon)) {
+            if (isActive(MODIFIER_START + i) && getStackInSlot(MODIFIER_START + i).getItem() instanceof ModifierItem modifier && modifier.effect().fits(weapon)) {
                 total = total.plus(modifier.effect());
             }
         }

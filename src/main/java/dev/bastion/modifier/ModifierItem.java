@@ -1,5 +1,6 @@
 package dev.bastion.modifier;
 
+import dev.bastion.turret.BaseKind;
 import dev.bastion.weapon.WeaponModuleItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -88,8 +89,9 @@ public class ModifierItem extends Item {
         return weapons().stream().filter(w -> e.affects(w.weaponId(), w.data())).toList();
     }
 
+    /** The modules a modifier can be mounted with; early weapons are out, a makeshift base has no modifier slots. */
     private static List<WeaponModuleItem> weapons() {
-        return BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null)
+        return BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null && w.kind() != BaseKind.MAKESHIFT)
                 .map(i -> (WeaponModuleItem) i).toList();
     }
 

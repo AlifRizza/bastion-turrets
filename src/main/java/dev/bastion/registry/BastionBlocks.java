@@ -7,15 +7,18 @@ import dev.bastion.hub.HubPowerPortBlock;
 import dev.bastion.hub.SatelliteUplinkBlock;
 import dev.bastion.turret.FeedHubBlock;
 import dev.bastion.turret.LargeTurretBaseBlock;
+import dev.bastion.turret.MakeshiftTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.workstation.CreativePowerSourceBlock;
 import dev.bastion.workstation.WorkstationBlock;
 import dev.bastion.workstation.WorkstationType;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraftforge.common.util.ForgeSoundType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -26,6 +29,14 @@ public final class BastionBlocks {
     // No requiresCorrectToolForDrops: breaking by hand must still drop the base and its stored ammo.
     public static final RegistryObject<TurretBaseBlock> TURRET_BASE = REGISTER.register("turret_base", () -> new TurretBaseBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6f).sound(SoundType.METAL).noOcclusion().dynamicShape()));
+    /**
+     * The early-game base (BaseKind.MAKESHIFT): wood and scrap iron, so softer than the metal ones. It sounds like wood, but
+     * placing it creaks (its own sound; suppliers because sounds register after blocks).
+     */
+    public static final RegistryObject<MakeshiftTurretBaseBlock> MAKESHIFT_TURRET_BASE = REGISTER.register("makeshift_turret_base", () -> new MakeshiftTurretBaseBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2f, 3f).noOcclusion().dynamicShape()
+                    .sound(new ForgeSoundType(1f, 1f, () -> SoundEvents.WOOD_BREAK, () -> SoundEvents.WOOD_STEP, BastionSounds.MAKESHIFT_BASE_PLACE,
+                            () -> SoundEvents.WOOD_HIT, () -> SoundEvents.WOOD_FALL))));
     /** 2x2x1 multiblock for big weapon modules; pistons cannot split it. */
     public static final RegistryObject<LargeTurretBaseBlock> LARGE_TURRET_BASE = REGISTER.register("large_turret_base", () -> new LargeTurretBaseBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5f, 9f).sound(SoundType.METAL).noOcclusion().dynamicShape()

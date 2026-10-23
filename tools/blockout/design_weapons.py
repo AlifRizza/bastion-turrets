@@ -1,5 +1,6 @@
 """Weapon modules v2 (~1 block): shared yoke + per-weapon receiver and barrels. PLAN 6.2 bone names.
 Origin = top of the base's turntable (weapon_mount), +Y = mount axis, barrels point north (-Z). Units px."""
+import math
 import sys
 from kit import Kit, GEO, TAN22
 
@@ -692,6 +693,224 @@ def plasma_cannon(path):
     k.write("plasma_cannon_turret", path, bounds=(4, 3), offset=(0, 1, 0))
 
 
+# --- early game (PLAN "Turret early game", Tampilan): rustic, wood / stone / iron / rope / leather, no glow, no sensor ---
+
+def rustic_yoke(k):
+    """yoke() for the early line: the same pivot (painted wood) with an iron strap and two rivets round each arm."""
+    yoke(k)
+    straps, rivets = [], []
+    for side in (-1, 1):
+        x0, x1 = sorted((side * 4.85, side * 7.25))
+        straps.append(k.box("armstrap", x0, 3.6, -2.75, x1, 4.4, 2.75))
+        r0, r1 = sorted((side * 7.25, side * 7.5))
+        rivets += [k.box("yrivet", r0, 3.75, z - 0.25, r1, 4.25, z + 0.25) for z in (-1.8, 1.8)]
+    k.bone("yoke_iron", "yaw_pivot", pivot=(0, 4.0, 0), cubes=straps)
+    k.bone("yoke_rivets", "yoke_iron", pivot=(0, 4.0, 0), cubes=rivets)
+
+
+def cobblestone_turret(path):
+    """Cobblestone Turret: a short, wide spring cannon on a wooden pivot. A stave barrel bound with iron hoops lies in a
+    wooden cradle with a cobblestone loaded in its mouth; behind it a coil spring runs over two guide rods to an iron
+    back plate. The fire clip kicks the barrel back, squeezing the spring, and the stone is gone until it reloads.
+    muzzle_0 = the mouth (cobblestone.json muzzle_length 0.8625 = 13.8 px)."""
+    k = Kit(128)
+    rustic_yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("bed", -4.4, 3.0, -5.6, 4.4, 4.2, 6.6),
+        k.box("cheek", -4.6, 4.2, -4.4, -3.6, 9.8, 1.4), k.box("cheek", 3.6, 4.2, -4.4, 4.6, 9.8, 1.4)])
+    k.bone("body_iron", "body", pivot=(0, P, 0), cubes=[
+        k.box("backplate", -3.4, P - 3.4, 5.4, 3.4, P + 3.4, 6.4),
+        k.box("guide", -3.5, 4.2, 1.4, -2.9, 4.8, 5.4), k.box("guide", 2.9, 4.2, 1.4, 3.5, 4.8, 5.4),
+        k.box("bedstrap", -4.6, 2.8, -5.4, 4.6, 4.4, -4.6), k.box("bedstrap", -4.6, 2.8, 3.0, 4.6, 4.4, 3.8)])
+    k.bone("body_rivets", "body_iron", pivot=(0, P, 0), cubes=[
+        k.box("crivet", x0, y, z, x0 + 0.3, y + 0.6, z + 0.6) for x0 in (-4.9, 4.6) for y in (4.8, 8.6) for z in (-3.6, -0.4)])
+    # The spring squeezes towards the back plate: its pivot sits on the plate.
+    k.bone("spring", "body", pivot=(0, P, 5.4), cubes=k.rod_z("coil", 0, P, 0.9, 5.4, 4.8, 3.6))
+    k.bone("barrel_0", "body", pivot=(0, P, 0), cubes=k.rod_z("stave", 0, P, -12.0, 0.0, 7.0, 5.0))
+    k.bone("barrel_iron", "barrel_0", pivot=(0, P, -6.0), cubes=k.rod_z("hoop", 0, P, -6.2, -5.3, 7.6, 5.6)
+           + k.rod_z("hoop", 0, P, -9.2, -8.3, 7.6, 5.6) + k.rod_z("lip", 0, P, -13.4, -12.0, 8.6, 6.6)
+           + [k.box("breech", -2.8, P - 2.8, 0.0, 2.8, P + 2.8, 0.9)])
+    rivets = []
+    for z in (-5.75, -8.75):
+        rivets += [k.box("hrivet", -0.3, P + 3.8, z - 0.3, 0.3, P + 4.1, z + 0.3),
+                   k.box("hrivetx", -4.1, P - 0.3, z - 0.3, -3.8, P + 0.3, z + 0.3), k.box("hrivetx", 3.8, P - 0.3, z - 0.3, 4.1, P + 0.3, z + 0.3)]
+    k.bone("barrel_rivets", "barrel_iron", pivot=(0, P, -6.0), cubes=rivets)
+    k.bone("bore", "barrel_0", pivot=(0, P, -13.4), cubes=[k.box("bore", -2.9, P - 2.9, -13.45, 2.9, P + 2.9, -13.4)])
+    k.bone("stone_load", "barrel_0", pivot=(0, P, -12.6), cubes=[
+        k.box("pebble", -2.0, P - 1.7, -13.7, 2.0, P + 1.6, -11.6), k.box("pebblev", -1.5, P - 2.1, -13.6, 1.5, P + 2.1, -11.7)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, -13.8))
+    k.write("cobblestone_turret", path, bounds=(3, 2.5), offset=(0, 0.5, 0))
+
+
+def snowball_repeater(path):
+    """Snowball Repeater: a crank gun. A wooden gearbox with a snow hopper on top turns a drum of four iron barrels (2x2
+    with square plates, so a quarter turn looks the same: the fire clip turns it 90 degrees a shot, which reads as steady
+    turning while it fires), cranked by a handle at the back through a gear on its flank. muzzle_0 = the upper right
+    barrel's tip, where a barrel always stands when a shot leaves (snowball.json muzzle_length 1.0125 = 16.2 px)."""
+    k = Kit(128)
+    rustic_yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[k.box("gearbox", -3.8, 3.4, -2.0, 3.8, 10.2, 5.6)])
+    k.bone("body_iron", "body", pivot=(0, P, 0), cubes=[
+        k.box("gbstrap", -4.0, 3.2, 0.4, 4.0, 10.4, 1.2), k.box("gbstrap", -4.0, 3.2, 3.6, 4.0, 10.4, 4.4),
+        k.box("bearing", -2.6, P - 2.6, -2.6, 2.6, P + 2.6, -2.0)])
+    k.bone("hopper", "body", pivot=(0, 10.2, 1.8), cubes=[
+        k.box("neck", -1.8, 10.2, 0.0, 1.8, 11.2, 3.6), k.box("funnel", -2.8, 11.2, -0.8, 2.8, 12.2, 4.4),
+        k.box("bowl", -3.6, 12.2, -1.6, 3.6, 14.2, 5.2),
+        k.box("rimx", -3.6, 14.2, -1.6, 3.6, 15.0, -1.0), k.box("rimx", -3.6, 14.2, 4.6, 3.6, 15.0, 5.2),
+        k.box("rimz", -3.6, 14.2, -1.0, -3.0, 15.0, 4.6), k.box("rimz", 3.0, 14.2, -1.0, 3.6, 15.0, 4.6)])
+    k.bone("hopper_iron", "hopper", pivot=(0, 13.2, 1.8), cubes=[k.box("hband", -3.8, 12.8, -1.8, 3.8, 13.6, 5.4)])
+    k.bone("snow", "hopper", pivot=(0, 14.2, 1.8), cubes=[
+        k.box("snowfill", -3.0, 14.2, -1.0, 3.0, 14.8, 4.6), k.box("heap", -2.0, 14.8, 0.0, 2.0, 15.5, 3.6),
+        k.box("heaptop", -1.0, 15.5, 0.8, 1.0, 16.0, 2.8)])
+    # The drum turns about the bore axis (fire clip); everything on it is 4-fold symmetric.
+    k.bone("drum", "body", pivot=(0, P, -4.6), cubes=k.rod_z("drum", 0, P, -7.0, -2.6, 7.6, 5.6))
+    k.bone("drum_iron", "drum", pivot=(0, P, -4.6), cubes=k.rod_z("dhoop", 0, P, -6.6, -5.8, 8.0, 6.0)
+           + k.rod_z("dhoop", 0, P, -3.8, -3.0, 8.0, 6.0) + [
+               k.box("clamp", -3.4, P - 3.4, -11.0, 3.4, P + 3.4, -10.2), k.box("clamp2", -3.2, P - 3.2, -14.8, 3.2, P + 3.2, -14.0)])
+    tubes = [(sx * 1.9, P + sy * 1.9) for sx in (-1, 1) for sy in (-1, 1)]
+    k.bone("barrel_0", "drum", pivot=(0, P, -7.0), cubes=[c for x, y in tubes for c in k.rod_z("sbarrel", x, y, -16.0, -7.0, 2.4, 1.6)])
+    k.bone("bores", "barrel_0", pivot=(0, P, -16.0), cubes=[k.box("sbore", x - 0.6, y - 0.6, -16.05, x + 0.6, y + 0.6, -16.0) for x, y in tubes])
+    gy, gz = P + 1.0, 3.6
+    k.bone("gear", "body", pivot=(4.3, gy, gz), cubes=[
+        k.box("gear", 4.0, gy - 1.7, gz - 1.7, 4.6, gy + 1.7, gz + 1.7),
+        k.box("gear", 4.0, gy - 1.7, gz - 1.7, 4.6, gy + 1.7, gz + 1.7, rot=[45, 0, 0], pivot=[4.3, gy, gz])])
+    k.bone("crank", "body", pivot=(0, P, 5.6), cubes=[
+        k.box("crankhub", -1.0, P - 1.0, 5.6, 1.0, P + 1.0, 6.6), k.box("crankarm", -0.5, P - 0.5, 6.6, 0.5, P + 4.0, 7.4)])
+    k.bone("crank_handle", "crank", pivot=(0, P + 3.6, 7.4), cubes=[k.box("handle", -0.7, P + 2.9, 7.4, 0.7, P + 4.3, 9.8)])
+    k.bone("muzzle_0", "body", pivot=(-1.9, P + 1.9, -16.2))
+    k.write("snowball_repeater", path, bounds=(3, 2.5), offset=(0, 0.5, 0))
+
+
+def potato_shotgun(path):
+    """Potato Shotgun, a spud gun: a fat iron pipe strapped with leather to a wooden fore-stock, a riveted pressure tank
+    behind it and a hand pump standing on the tank (the fire clip pumps it down and up). One muzzle_0 for all the pellets
+    (potato.json muzzle_length 1.20625 = 19.3 px)."""
+    k = Kit(128)
+    rustic_yoke(k)
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[k.box("forestock", -2.2, 3.0, -13.0, 2.2, 4.8, -3.6)])
+    k.bone("tank", "body", pivot=(0, P, 1.5), cubes=k.rod_z("tank", 0, P, -3.0, 6.0, 8.6, 6.6)
+           + k.rod_z("tankcap", 0, P, 6.0, 6.8, 6.4, 4.4) + k.rod_z("reducer", 0, P, -3.8, -3.0, 6.8, 5.0))
+    rivets = []
+    for z in (-2.3, 5.3):
+        rivets += [k.box("trivet", -0.35, P + 4.3, z - 0.35, 0.35, P + 4.6, z + 0.35),
+                   k.box("trivetx", -4.6, P - 0.35, z - 0.35, -4.3, P + 0.35, z + 0.35), k.box("trivetx", 4.3, P - 0.35, z - 0.35, 4.6, P + 0.35, z + 0.35)]
+    k.bone("tank_rivets", "tank", pivot=(0, P, 1.5), cubes=rivets)
+    k.bone("straps", "body", pivot=(0, P, 0), cubes=k.rod_z("tstrap", 0, P, 0.2, 1.0, 9.0, 7.0) + [
+        k.box("pstrap", -2.9, 2.8, -8.4, 2.9, 9.9, -7.6), k.box("pstrap", -2.9, 2.8, -14.6, 2.9, 9.9, -13.8)])
+    k.bone("pump_barrel", "body", pivot=(0, P + 6.5, 3.6), cubes=[
+        k.box("pumptube", -1.1, P + 4.0, 2.5, 1.1, P + 9.0, 4.7), k.box("pumptubev", -0.75, P + 4.0, 2.15, 0.75, P + 9.0, 5.05),
+        k.box("pumpcap", -1.4, P + 9.0, 2.2, 1.4, P + 9.6, 5.0)])
+    # The plunger: it drops into the tube on each shot (fire clip).
+    k.bone("pump", "body", pivot=(0, P + 9.6, 3.6), cubes=[k.box("plunger", -0.35, P + 9.6, 3.25, 0.35, P + 12.0, 3.95)])
+    k.bone("pump_handle", "pump", pivot=(0, P + 12.4, 3.6), cubes=[k.box("tbar", -3.0, P + 12.0, 3.0, 3.0, P + 12.9, 4.2)])
+    k.bone("pump_grips", "pump_handle", pivot=(0, P + 12.4, 3.6), cubes=[
+        k.box("grip", -3.2, P + 11.9, 2.9, -2.0, P + 13.0, 4.3), k.box("grip", 2.0, P + 11.9, 2.9, 3.2, P + 13.0, 4.3)])
+    k.bone("barrel_0", "body", pivot=(0, P, -3.8), cubes=k.rod_z("pipe", 0, P, -18.0, -3.8, 5.4, 4.0)
+           + k.rod_z("coupling", 0, P, -11.0, -9.6, 6.4, 5.0) + k.rod_z("mouth", 0, P, -19.0, -17.4, 6.6, 5.2))
+    k.bone("bore", "barrel_0", pivot=(0, P, -19.0), cubes=[k.box("bore", -2.1, P - 2.1, -19.05, 2.1, P + 2.1, -19.0)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, -19.3))
+    k.write("potato_shotgun", path, bounds=(3, 2.5), offset=(0, 0.5, 0))
+
+
+# Arrow Launcher: the arrow tips sit at the JSON muzzle (arrow_launcher.json pivot_height 0.4375 = P / 16, muzzle_length
+# 1.5875 = -AL_TIP / 16; kept as they are, its min-range reach margin is thin). muzzle_0..5 = AL_ARROWS, top row first.
+AL_TIP = -25.4
+AL_ARROWS = [(x, P + y) for y in (1.3, -1.3) for x in (-2.4, 0.0, 2.4)]
+# Hwacha box (user 2026-10-23: the ballista read as a crossbow aimed level): half width, half height, front and back z.
+# Every point of it is further than 6 px from the axle, so it clears the yoke arms over the whole pitch range.
+AL_BOX = (6.0, 5.2, -20.0, -8.0)
+# Bow (per side, geo +X shown) on the box's back corners: the arm swept back AL_SWEEP degrees from its root, the string
+# from its tip to the slider's lug (AL_LUG), all behind the box. The fire clip straightens the strings (keyframe -string
+# angle) and slides the slider forward.
+AL_ROOT, AL_ARM, AL_SWEEP, AL_LUG = (6.0, -8.6), 4.5, 25.0, (5.0, -4.7)
+# Cart wheels on the yaw pivot, round the axle: inside the bow and string's sweep (both stay over 5.5 px from the axle).
+AL_WHEEL_X, AL_WHEEL_R = (7.7, 8.9), 5.0
+
+
+def al_string():
+    """Bow tip, string length and string angle (degrees, geo +X side)."""
+    tip = (AL_ROOT[0] + AL_ARM * math.cos(math.radians(AL_SWEEP)), AL_ROOT[1] + AL_ARM * math.sin(math.radians(AL_SWEEP)))
+    dx, dz = AL_LUG[0] - tip[0], AL_LUG[1] - tip[1]
+    return tip, math.hypot(dx, dz), math.degrees(math.atan2(dz, -dx))
+
+
+def arrow_launcher(path):
+    """Arrow Launcher, a hwacha (user 2026-10-23): a wooden box with a grid of 20 arrow holes in its face, six of them
+    loaded (2 rows of 3, tips out), on a two-wheeled cart with pull shafts. A small bow on the box's back corners is drawn
+    by two strings to a slider behind the arrows; a windlass with rope sits on the stock. The code keeps it pitched 40-85
+    degrees up, so it never looks level. Fire clip: the strings snap straight, the slider jumps forward, the rack
+    empties, the windlass winds it back and six new arrows slide in from behind. muzzle_0..5 = the arrow tips (AL_TIP)."""
+    k = Kit(128)
+    rustic_yoke(k)
+    wx0, wx1 = AL_WHEEL_X
+    R, a, at = AL_WHEEL_R, 2 * AL_WHEEL_R * TAN22, 2 * (AL_WHEEL_R + 0.35) * TAN22
+    wheels, tyres = [], []
+    for side in (-1, 1):
+        x0, x1 = sorted((side * wx0, side * wx1))
+        for i in range(8):
+            spin = dict(rot=[45 * i, 0, 0], pivot=[x0, P, 0])
+            wheels.append(k.box("rim", x0, P + R - 1.0, -a / 2, x1, P + R, a / 2, **spin))
+            tyres.append(k.box("tyre", x0 + 0.15, P + R, -at / 2, x1 - 0.15, P + R + 0.35, at / 2, **spin))
+        wheels += [k.box("wspoke", x0 + 0.3, P - R + 0.6, -0.4, x1 - 0.3, P + R - 0.6, 0.4, rot=[45 * i, 0, 0], pivot=[x0, P, 0])
+                   for i in range(4)]
+        tyres += k.rod_x("hub", P, 0, *sorted((side * 7.0, side * 9.6)), 2.0)
+    k.bone("wheels", "yaw_pivot", pivot=(0, P, 0), cubes=wheels)
+    k.bone("wheel_iron", "wheels", pivot=(0, P, 0), cubes=tyres)
+    k.bone("shafts", "yaw_pivot", pivot=(0, 2.0, 3.4), cubes=[
+        k.box("pole", x0, 1.6, 3.4, x0 + 0.8, 2.4, 7.6) for x0 in (-4.4, 3.6)])
+    bx, by, z0, z1 = AL_BOX
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[
+        k.box("stock", -4.4, P - 3.0, -3.0, 4.4, P + 2.0, 2.5), k.box("trough", -4.4, P - 3.4, z1 - 0.4, 4.4, P - 2.6, -3.0),
+        k.box("rail", -4.4, P - 2.6, z1 - 0.4, -3.6, P - 1.6, -3.0), k.box("rail", 3.6, P - 2.6, z1 - 0.4, 4.4, P - 1.6, -3.0),
+        k.box("post", -3.8, P + 2.0, 0.6, -3.0, P + 4.4, 2.0), k.box("post", 3.0, P + 2.0, 0.6, 3.8, P + 4.4, 2.0)])
+    k.bone("barrel_0", "body", pivot=(0, P, (z0 + z1) / 2), cubes=[  # the box the arrows leave from, open at the back
+        k.box("lid", -bx, P + by - 0.8, z0 + 1.0, bx, P + by, z1), k.box("floor", -bx, P - by, z0 + 1.0, bx, P - by + 0.8, z1),
+        k.box("wall", -bx, P - by + 0.8, z0 + 1.0, -bx + 0.8, P + by - 0.8, z1), k.box("wall", bx - 0.8, P - by + 0.8, z0 + 1.0, bx, P + by - 0.8, z1)])
+    k.bone("box_face", "barrel_0", pivot=(0, P, z0), cubes=[k.box("face", -bx, P - by, z0, bx, P + by, z0 + 1.0)])
+    k.bone("holes", "box_face", pivot=(0, P, z0), cubes=[
+        k.box("hole", x - 0.7, P + y - 0.7, z0 - 0.05, x + 0.7, P + y + 0.7, z0) for y in (-3.9, -1.3, 1.3, 3.9) for x in (-4.8, -2.4, 0.0, 2.4, 4.8)])
+    iron = [k.box("bowmount", x0, P - 1.0, AL_ROOT[1] - 0.8, x0 + 0.6, P + 1.0, AL_ROOT[1] + 0.8) for x0 in (-bx - 0.6, bx)]
+    for zb in (z0 + 2.4, z1 - 3.0):  # bands round the box
+        iron += [k.box("bandtop", -bx - 0.2, P + by, zb, bx + 0.2, P + by + 0.2, zb + 0.6),
+                 k.box("bandtop", -bx - 0.2, P - by - 0.2, zb, bx + 0.2, P - by, zb + 0.6),
+                 k.box("bandside", -bx - 0.2, P - by, zb, -bx, P + by, zb + 0.6), k.box("bandside", bx, P - by, zb, bx + 0.2, P + by, zb + 0.6)]
+    k.bone("body_iron", "body", pivot=(0, P, (z0 + z1) / 2), cubes=iron)
+    k.bone("body_rivets", "body_iron", pivot=(0, P, (z0 + z1) / 2), cubes=[
+        k.box("arivet", x0, P + y - 0.25, z + 0.05, x0 + 0.25, P + y + 0.25, z + 0.55)
+        for x0 in (-bx - 0.45, bx + 0.2) for y in (-3.0, 3.0) for z in (z0 + 2.4, z1 - 3.0)])
+    k.bone("slider", "body", pivot=(0, P, -4.9), cubes=[k.box("slider", -3.5, P - 2.5, -5.6, 3.5, P + 2.6, -4.2)])
+    k.bone("slider_iron", "slider", pivot=(0, P, -4.7), cubes=[
+        k.box("lug", -5.2, P - 0.5, -5.2, -3.5, P + 0.5, -4.2), k.box("lug", 3.5, P - 0.5, -5.2, 5.2, P + 0.5, -4.2)])
+    # The rack empties and refills by scaling this bone (fire clip); its pivot sits on the arrow tails.
+    k.bone("arrows", "body", pivot=(0, P, -5.6), cubes=[k.box("shaft", x - 0.3, y - 0.3, -24.0, x + 0.3, y + 0.3, -5.6) for x, y in AL_ARROWS])
+    k.bone("arrowheads", "arrows", pivot=(0, P, -24.5), cubes=[
+        c for x, y in AL_ARROWS for c in (k.box("head", x - 0.6, y - 0.2, -25.0, x + 0.6, y + 0.2, -24.0),
+                                          k.box("headtip", x - 0.25, y - 0.15, AL_TIP, x + 0.25, y + 0.15, -25.0))])
+    k.bone("fletching", "arrows", pivot=(0, P, -7.4), cubes=[
+        c for x, y in AL_ARROWS for c in (k.box("fletch", x - 0.8, y - 0.08, -9.0, x + 0.8, y + 0.08, -5.8),
+                                          k.box("fletchv", x - 0.08, y - 0.8, -9.0, x + 0.08, y + 0.8, -5.8))])
+    tip, length, angle = al_string()
+    for side, name in ((1, "l"), (-1, "r")):
+        rx, rz = side * AL_ROOT[0], AL_ROOT[1]
+        x0, x1 = sorted((rx, rx + side * AL_ARM))
+        r0, r1 = sorted((rx, rx + side * 3.0))
+        k.bone(f"bow_{name}", "body", pivot=(rx, P, rz), cubes=[
+            k.box("bowarm", x0, P - 0.6, rz - 0.6, x1, P + 0.6, rz + 0.6, rot=[0, -side * AL_SWEEP, 0], pivot=[rx, P, rz]),
+            k.box("bowroot", r0, P - 0.9, rz - 0.8, r1, P + 0.9, rz + 0.8, rot=[0, -side * AL_SWEEP, 0], pivot=[rx, P, rz])])
+        tx = side * tip[0]
+        s0, s1 = sorted((tx, tx - side * length))
+        k.bone(f"string_{name}", f"bow_{name}", pivot=(tx, P, tip[1]), cubes=[
+            k.box("string", s0, P - 0.15, tip[1] - 0.15, s1, P + 0.15, tip[1] + 0.15, rot=[0, side * angle, 0], pivot=[tx, P, tip[1]])])
+    k.bone("windlass", "body", pivot=(0, P + 3.4, 1.3), cubes=k.rod_x("roller", P + 3.4, 1.3, -3.0, 3.0, 2.0))
+    spokes = []
+    for x0 in (-4.4, 3.8):
+        spokes += [k.box("spoke", x0, P + 1.2, 1.0, x0 + 0.6, P + 5.6, 1.6), k.box("spokez", x0, P + 3.1, -0.9, x0 + 0.6, P + 3.7, 3.5)]
+    k.bone("windlass_spokes", "windlass", pivot=(0, P + 3.4, 1.3), cubes=spokes)
+    for i, (x, y) in enumerate(AL_ARROWS):
+        k.bone(f"muzzle_{i}", "body", pivot=(x, y, AL_TIP))
+    k.write("arrow_launcher", path, bounds=(3.5, 2.5), offset=(0, 0.5, 0))
+
+
 out = sys.argv[1] if len(sys.argv) > 1 else GEO
 gun(f"{out}/gun_turret.geo.json")
 machine_gun(f"{out}/machine_gun_turret.geo.json")
@@ -712,3 +931,7 @@ repulsor_dome(f"{out}/repulsor_dome_turret.geo.json")
 ion_rifle(f"{out}/ion_rifle_turret.geo.json")
 plasma_repeater(f"{out}/plasma_repeater_turret.geo.json")
 plasma_cannon(f"{out}/plasma_cannon_turret.geo.json")
+cobblestone_turret(f"{out}/cobblestone_turret.geo.json")
+snowball_repeater(f"{out}/snowball_repeater.geo.json")
+potato_shotgun(f"{out}/potato_shotgun.geo.json")
+arrow_launcher(f"{out}/arrow_launcher.geo.json")

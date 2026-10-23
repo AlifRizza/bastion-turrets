@@ -249,7 +249,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Another player (second client) cannot open the GUI or remove the weapon of your turret; trusted players can.
 
 ## Workstations (survival crafting, Fase 9)
-- [ ] The crafting table only makes the 5 stations (Part Workstation needs a smithing table, the Part Assembler a Part Workstation and a diamond). No turret, module or ammo recipe left there.
+- [ ] The crafting table makes the 5 stations (Part Workstation needs a smithing table, the Part Assembler a Part Workstation and a diamond) and, since 0.4.0, the early gear: the Makeshift Turret Base and its four turrets. No other turret, module or ammo recipe there.
 - [ ] Placing: the station grows to your right, away from you and up from the block you click, its front facing you; it refuses if any of its blocks is taken. Breaking any block breaks it all and drops it once (with its contents).
 - [ ] Power: a Creative Power Source (creative tab) next to any of its blocks, or any FE cable; the bar top right fills (hover for FE). Without FE nothing is made ("Needs FE").
 - [ ] Part Workstation: pick a tab (each turret/base) and a part, put the materials in (or let a hopper/belt/arm do it: only that recipe's materials go in), it machines it over a few seconds (carriage runs, spindle spins, sparks, hum), part in the output (hoppers can pull it).
@@ -259,7 +259,7 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] GUI: tabs, list with scroll, turning preview (flat icons face you), ingredients with have/need in green/red, progress bar, status text, no overlapping text.
 
 ## Creative tabs
-- [ ] Six Bastion tabs in this order (Forge puts mod tabs on the creative screen's next pages): Turret Bases (bases, damaged bases, repair and upgrade kits, configurator), Weapon Modules, Ammo (incl. Creative Ammo), Modules (incl. Choke Module), Workstations (the 5 stations + Creative Power Source), Parts (all 33, grouped per base/weapon).
+- [ ] Six Bastion tabs in this order (Forge puts mod tabs on the creative screen's next pages): Turret Bases (bases, damaged bases, repair and upgrade kits, configurator; the Makeshift Turret Base once, with no T2/T3 copies), Weapon Modules (the four early turrets at the end), Ammo (incl. Creative Ammo; no vanilla items), Modules (incl. Choke Module), Workstations (the 5 stations + Creative Power Source), Parts (all 33, grouped per base/weapon).
 - [ ] No item shows up in two Bastion tabs; Bahasa Indonesia names: "Bastion: Workstation", "Bastion: Part".
 
 ## Persistence & servers
@@ -377,3 +377,100 @@ Setup: a Control Hub as in "Overwatch Link", a Rocket Launcher and a Missile Lau
 7. **Letting go mid-salvo**: launch a Missile Salvo, press Shift during it: the rest stay in their tubes.
 8. **Hub hint** at the smallest hub screen (GUI scale 4, small window): the map tab's hint shows all its lines (smaller print), none cut off.
 9. **HUD**: in Missile SALVO the hint line says "lock" for the attack key; HP number moves with the HP bar.
+
+## Early game turrets (0.4.0)
+
+**First**: check that `run/config/bastion-turrets.toml` has `[arrow_launcher] shell_speed = 1.4` (reset from a stale
+2.2 on 2026-10-23) and `min_pitch = 40` (was 20, 2026-10-23 13:00). With 2.2 the Arrow Launcher arcs about 38 blocks
+high, never fires under a low roof, and 6 GameTests fail; with 20 it rests nearly level.
+
+Setup: a world with a few Makeshift Turret Bases, the four early turrets and their ammo. Targets: `/bastiondev zombie`
+(`/bastiondev ai false` keeps them still). Vanilla zombies have 2 armour, so ToroHealth shows 3 as ~2.9, 2 as ~1.9 and
+1.5 as ~1.4.
+
+1. **Recipes** (crafting table; JEI R on each item). Key: C cobblestone, I iron ingot, L any log, P any planks,
+   S string, K stick, B snow block, O potato, H leather, X crossbow. Every one needs iron.
+   - Makeshift Turret Base `CIC / LIL / CIC`
+   - Cobblestone Turret `CSC / ICI / P P`
+   - Snowball Repeater `KBK / IPI / PIP`
+   - Potato Shotgun `IOI / IHI / P P`
+   - Arrow Launcher `PXP / IPI / _I_` (`_` = empty)
+2. **Base on floor, wall, ceiling**: place one on each. It reads as a plank crate on a stone plinth with iron straps,
+   rivets and rope. Wood creaks when it is placed and when a weapon is mounted. Nothing glows, by day or by night. An
+   axe or a pickaxe mines it.
+3. **Base screen**: right-click it. The title is "Makeshift Turret Base" with no T1; no Modules label, no module or
+   Connector frames, only the 3 ammo slots (no hatched locked frames). Hovering where the Connector slot was shows
+   nothing.
+4. **Locks**:
+   - Each early turret mounts on it (right-click with the module); a Gun Turret is refused.
+   - An early turret on a standard or Large Turret Base is refused: "This module fits a Makeshift Turret Base only".
+   - A Tier Upgrade Kit on it is refused ("A makeshift base cannot be upgraded") and stays in your hand.
+   - Turret Configurator copy/paste, ON/OFF and redstone work as on a standard base.
+5. **Arrow Launcher, floor only**: on a wall or ceiling base it is refused ("This module fits a base on the floor
+   only"), by right-click and by shift-click in the screen. Mount it on a floor base, mine the base, place the base on a
+   wall: the launcher pops off as an item.
+   An empty wall or ceiling base takes no arrows (hopper, shift-click) but still takes stones; a floor base takes arrows.
+   Spectral arrows: Glowing lasts `glow_ticks` (200 by default).
+6. **Cobblestone Turret**: cobblestone or cobbled deepslate, one per shot, a shot every 0.75 s, reaches 16 blocks,
+   ~2.9 per hit. Look: a short hooped cannon with a stone in its mouth and a spring behind; when it fires the barrel
+   kicks back into the spring, the stone leaves and a new one appears. In flight a grey rock tumbles with a thin dust
+   wisp; chips and dust where it hits. Sound: a spring thunk and twang.
+7. **Snowball Repeater**: 5 shots a second, one snowball for 4 shots (16 snowballs = 64 shots, about 13 s), reaches 14
+   blocks, ~1.4 per hit. Look: four barrels on a drum, a snow hopper on top, a crank at the back, a gear on the left.
+   The drum turns a quarter and the crank once per shot, and keeps turning through a burst (no stop-go). Cold vapour at
+   the muzzle, a white clump with faint frost in flight, a snow burst with white flakes on a hit.
+8. **Potato Shotgun**: a shot every 1.5 s, 5 chunks in a wide cone, reaches 10 blocks, ~1.9 per chunk. Poisonous
+   potatoes fire too and poison nothing. Look: a fat iron pipe, a dark pressure tank and a hand pump with a T-handle;
+   the pump goes down and up after each shot. Tumbling potato chunks, a flat splat ring and tan bits on a hit.
+9. **Arrow Launcher**: a zombie 6 to 32 blocks away. One arrow item = one volley of 6, every 2.5 s. The volley climbs
+   about 14–20 blocks and lands about 2.25–2.75 s after it leaves: one arrow at the zombie's feet, five on a ring about
+   1.5 blocks around it, ~2.9 per arrow.
+   - It ignores flyers (a bat, a phantom) and anything closer than 6 blocks.
+   - A cow or villager next to the zombie is never hit; the arrows fly through them.
+   - The arrows cannot be picked up and vanish 10 s after they stick.
+   - Look: a hwacha. A wooden box with a grid of 20 holes in its face, six arrows (2 rows of 3) sticking out of it, on
+     a cart with two spoked wheels and two pull shafts; a small bow on the box's back corners, strings to a slider, a
+     windlass at the back. When it fires, the strings snap straight, the holes empty, the windlass winds back and six
+     new arrows slide in from behind.
+   - With no target it sweeps left and right with the box tilted about 40° up, never level. In your hand, the
+     hotbar and JEI it is tilted the same way.
+     String-snap streaks at the rack, a pale wind streak behind each arrow, a little dust where one sticks.
+10. **Arrow kinds**:
+    - Tipped (e.g. Poison): the zombie gets the effect; a mist in the arrow's colour follows the arrows, with no vanilla
+      swirls on the arrows. The zombie itself shows the effect's usual swirls while it lasts, as with a potion.
+    - Spectral: the arrows are drawn yellow (spectral texture) and the zombie glows for 10 s.
+    - Creative Ammo: plain arrows.
+11. **Into water**: a volley that lands in water makes no bubbles and no splash.
+12. **Your own arrows unchanged**: shoot a tipped arrow and a fully drawn (crit) shot with a bow yourself: the vanilla
+    swirls and crit sparkles still show (the arrow mixins touch turret arrows only).
+13. **Mixin log**: after a session with launchers firing, search `run/logs/latest.log` for `ArrowMixin` and
+    `AbstractArrowMixin`: no warning or error. Both are optional mixins: if one fails to apply, the game still runs and
+    the vanilla swirls or bubbles quietly come back.
+14. **Missed sling shot**: a rock, snow clump or potato chunk that misses and runs out of range fades out where it
+    stops over a few ticks; it does not blink out.
+15. **Night**: no idle hum, no glow and no light from the base or the four weapons; no muzzle flash, no smoke wisp after
+    a burst. The shots and the arrows' wind streaks are dark at night (lit by their surroundings, not glowing); next to
+    a torch they light up. A Rocket Launcher's or Mortar's smoke trail at night is dark too (only the exhaust glows).
+16. **Cracks**: let mobs hit a base, or `/data` its Health. Below 75 % a few thin cracks, below 50 % more cracks and a
+    brown splinter now and then, below 25 % heavy cracks. No coloured health lights at any HP. Leave and rejoin (or walk
+    100+ blocks away and back): the cracks are still there. The heaviest stage looked like dark blotches more than
+    cracks in the first screenshots: tell me how it reads to you.
+17. **Destroyed**: let a base reach 0 HP. It bursts into planks, scraps and dust with a wood crunch, with no amber flash
+    or ring, and no blast: you, a pet or a cow standing next to it take no damage and no knockback. It drops 1 iron
+    ingot and 2 oak planks and no Damaged base; the weapon and ammo are gone.
+18. **Mined**: mine an armed base with ammo in it (axe or pickaxe): the item keeps the weapon and ammo; placing it puts
+    them back.
+19. **Automation**:
+    - A hopper into an empty makeshift base: cobblestone, snowballs, potatoes and arrows go in; Kinetic Rounds do not.
+    - With a Cobblestone Turret mounted, only cobblestone and cobbled deepslate go in.
+    - A hopper with cobblestone into an empty standard Turret Base: nothing goes in.
+    - A makeshift base with a Cobblestone Turret on a Feed Hub face, cobblestone in the hub: the turret gets fed.
+    - A comparator reads the ammo level.
+20. **JEI**: U on cobblestone, a snowball, a potato or a plain arrow opens that turret's Turret Weapons page: base Makeshift
+    Turret Base, HP 50, the ammo and the stats. U on the Makeshift Turret Base: its information page (also in Bahasa
+    Indonesia, where it names the Pelontar Panah).
+21. **Jade**: look at a makeshift base with a Cobblestone Turret: "Cobblestone Turret" with no "· T1", HP `now/50`, the
+    state.
+22. **Bahasa Indonesia**: Base Turret Darurat, Turret Batu, Pelontar Bola Salju, Shotgun Kentang, Pelontar Panah.
+23. **Dedicated server** (`runServer` + a client): the four turrets fire, arrows draw (spectral ones yellow), no errors
+    in either log.

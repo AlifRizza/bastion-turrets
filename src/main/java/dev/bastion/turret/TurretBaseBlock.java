@@ -151,8 +151,12 @@ public class TurretBaseBlock extends BaseEntityBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof TurretBaseBlockEntity base) {
-            base.setOwner(player.getUUID());
+        if (!(level.getBlockEntity(pos) instanceof TurretBaseBlockEntity base)) return;
+        if (placer instanceof Player player) base.setOwner(player.getUUID());
+        // A base broken keeps its weapon; placed again where that weapon does not fit (an Arrow Launcher on a wall), it drops off.
+        ItemStack weapon = base.inventory().getStackInSlot(TurretInventory.WEAPON);
+        if (!level.isClientSide && !weapon.isEmpty() && !base.inventory().isItemValid(TurretInventory.WEAPON, weapon)) {
+            popResource(level, pos, base.inventory().extractItem(TurretInventory.WEAPON, 1, false));
         }
     }
 
@@ -181,7 +185,9 @@ public class TurretBaseBlock extends BaseEntityBlock {
                 : held.is(BastionItems.TIER_UPGRADE_KIT_T3.get()) ? TurretTier.T3 : null;
         if (upgrade != null) {
             if (!level.isClientSide) {
-                if (base.upgradeTo(upgrade)) {
+                if (base.kind() == BaseKind.MAKESHIFT) {
+                    player.displayClientMessage(Component.translatable("message.bastion.turret.makeshift_no_tier"), true);
+                } else if (base.upgradeTo(upgrade)) {
                     if (!player.getAbilities().instabuild) held.shrink(1);
                 } else {
                     player.displayClientMessage(Component.translatable("message.bastion.turret.wrong_tier", upgrade.ordinal()), true);
@@ -197,9 +203,14 @@ public class TurretBaseBlock extends BaseEntityBlock {
 
         if (held.getItem() instanceof WeaponModuleItem module && !hasWeapon) {
             if (!base.inventory().isItemValid(TurretInventory.WEAPON, held)) {
-                // Big modules need a large base and small ones a standard base.
-                if (!level.isClientSide) player.displayClientMessage(Component.translatable(module.large()
-                        ? "message.bastion.turret.needs_large_base" : "message.bastion.turret.needs_small_base"), true);
+                // Big modules need a large base, small ones a standard base and early ones a makeshift base; the right
+                // kind refused is the Arrow Launcher on a wall or ceiling makeshift base.
+                String needs = module.kind() == base.kind() ? "needs_floor" : switch (module.kind()) {
+                    case MAKESHIFT -> "needs_makeshift_base";
+                    case LARGE -> "needs_large_base";
+                    case STANDARD -> "needs_small_base";
+                };
+                if (!level.isClientSide) player.displayClientMessage(Component.translatable("message.bastion.turret." + needs), true);
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
             if (!level.isClientSide) {

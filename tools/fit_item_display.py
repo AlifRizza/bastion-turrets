@@ -25,18 +25,32 @@ MODELS = {"turret_base": "turret_base", "gun_turret": "gun_turret", "machine_gun
           "ion_rifle_turret": "ion_rifle_turret", "plasma_repeater_turret": "plasma_repeater_turret", "plasma_cannon_turret": "plasma_cannon_turret",
           "part_workstation": "part_workstation", "part_assembler": "part_assembler",
           "module_workstation": "module_workstation", "ammo_workstation": "ammo_workstation", "charging_station": "charging_station",
-          "satellite_uplink_t1": "satellite_uplink_t1", "satellite_uplink_t2": "satellite_uplink_t2", "satellite_uplink_t3": "satellite_uplink_t3"}
+          "satellite_uplink_t1": "satellite_uplink_t1", "satellite_uplink_t2": "satellite_uplink_t2", "satellite_uplink_t3": "satellite_uplink_t3",
+          "makeshift_turret_base": "makeshift_turret_base", "cobblestone_turret": "cobblestone_turret",
+          "snowball_repeater": "snowball_repeater", "potato_shotgun": "potato_shotgun", "arrow_launcher": "arrow_launcher"}
 # Parts (PLAN Fase 9) show some bones of a weapon or base model: fit each to just those bones.
 PARTS = json.loads((ASSETS / "parts.json").read_text())  # item model -> geo
-SIZE_FACTOR = {"turret_base": 0.68, "large_turret_base": 0.8, "part_workstation": 0.8, "part_assembler": 0.8,
+SIZE_FACTOR = {"turret_base": 0.68, "makeshift_turret_base": 0.68, "large_turret_base": 0.8, "part_workstation": 0.8, "part_assembler": 0.8,
                "module_workstation": 0.75, "ammo_workstation": 0.75, "charging_station": 0.68,
                "satellite_uplink_t1": 0.8, "satellite_uplink_t2": 0.8, "satellite_uplink_t3": 0.8}  # a block-sized model reads right a bit smaller, like vanilla's 0.625 blocks
+
+
+# Held weapons drawn at their rest elevation (WeaponModel.HELD_PITCH, degrees up): pitch_pivot and below tilt about its pivot.
+HELD_PITCH = {"arrow_launcher": 40}
 
 
 def bounds(geo, only=None, rotated=False):
     """Model bounds in blocks; {rotated}: turn each cube's corners by its rotation (rings of rotated segments, parts)."""
     lo, hi = [1e9] * 3, [-1e9] * 3
-    for bone in json.loads((ASSETS / f"geo/{geo}.geo.json").read_text())["minecraft:geometry"][0]["bones"]:
+    bones = json.loads((ASSETS / f"geo/{geo}.geo.json").read_text())["minecraft:geometry"][0]["bones"]
+    parent = {b["name"]: b.get("parent") for b in bones}
+    pitch_pivot = next((b["pivot"] for b in bones if b["name"] == "pitch_pivot"), None)
+
+    def tilted(name):
+        while name and name != "pitch_pivot": name = parent[name]
+        return name == "pitch_pivot" and geo in HELD_PITCH
+
+    for bone in bones:
         if only is not None and bone["name"] not in only:
             continue
         for c in bone.get("cubes", []):
@@ -45,6 +59,10 @@ def bounds(geo, only=None, rotated=False):
             if rotated and c.get("rotation"):
                 pv = c.get("pivot", [0, 0, 0])
                 corners = [tuple(a + b for a, b in zip(rotate(tuple(v - q for v, q in zip(corner, pv)), c["rotation"]), pv)) for corner in corners]
+            if tilted(bone["name"]):  # the front (-Z) goes up
+                t, (_, py, pz) = math.radians(HELD_PITCH[geo]), pitch_pivot
+                corners = [(x, py + (y - py) * math.cos(t) - (z - pz) * math.sin(t), pz + (z - pz) * math.cos(t) + (y - py) * math.sin(t))
+                           for x, y, z in corners]
             for corner in corners:
                 for i in range(3):
                     lo[i] = min(lo[i], corner[i])

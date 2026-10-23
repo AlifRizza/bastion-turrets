@@ -8,6 +8,7 @@ import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.turret.TurretBaseBlock;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretHitboxEntity;
@@ -400,7 +401,7 @@ public class TurretSystemsTests {
         helper.assertTrue(!amplified.contains("repulsor") && !amplified.contains("repulsor_dome") && amplified.contains("tesla"), "Damage Amplifier: " + amplified);
         helper.assertTrue(!recycled.contains("tesla") && !recycled.contains("repulsor") && recycled.contains("railgun"), "Ammo Recycler: " + recycled);
         helper.assertTrue(amplified.contains("ion_rifle") && !recycled.contains("ion_rifle"), "Ion Rifle: amplified " + amplified + ", recycled " + recycled);
-        long weapons = BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null).count();
+        long weapons = BuiltInRegistries.ITEM.stream().filter(i -> i instanceof WeaponModuleItem w && w.data() != null && w.kind() != BaseKind.MAKESHIFT).count(); // early weapons take no modifiers
         helper.assertTrue(worksOn(BastionItems.RANGE_MODULE).size() == weapons, "Range Module: " + worksOn(BastionItems.RANGE_MODULE));
         helper.succeed();
     }

@@ -7,6 +7,7 @@ import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.HubAction;
 import dev.bastion.network.TurretConfigUpdate;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretState;
@@ -104,6 +105,11 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
             fireModeButton.visible = supportsSalvo();
         }
         if (tab == Tab.TARGETING) initTargeting();
+    }
+
+    /** A makeshift base: no tier, module slots or Connector slot to show. */
+    private boolean makeshift() {
+        return menu.kind() == BaseKind.MAKESHIFT;
     }
 
     private boolean supportsSalvo() {
@@ -209,9 +215,11 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(tab == Tab.STATUS ? TEXTURE : PLAIN, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (tab == Tab.STATUS) {
-            // Ammo and modifier slots: open frame when the tier unlocks them, hatched frame while locked.
+            // Ammo and modifier slots: open frame when the tier unlocks them, hatched frame while locked. A makeshift
+            // base never unlocks more (no tiers, modules or Connector): its dead slots get no frame at all.
             for (int i = TurretInventory.AMMO_START; i < TurretInventory.SIZE; i++) {
                 Slot slot = menu.slots.get(i);
+                if (makeshift() && !slot.isActive()) continue;
                 graphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1, slot.isActive() ? SLOT_U : LOCKED_SLOT_U, 0, 18, 18);
                 // A weapon-specific module left in after a weapon swap does nothing: tint its slot red.
                 if (slot.isActive() && menu.turret().inactiveModifier(i)) {
@@ -219,7 +227,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
                 }
             }
             Slot connector = menu.slots.get(TurretInventory.CONNECTOR);
-            if (!connector.hasItem()) graphics.blit(TEXTURE, leftPos + connector.x, topPos + connector.y, CONNECTOR_ICON_U, CONNECTOR_ICON_V, 16, 16);
+            if (!makeshift() && !connector.hasItem()) graphics.blit(TEXTURE, leftPos + connector.x, topPos + connector.y, CONNECTOR_ICON_U, CONNECTOR_ICON_V, 16, 16);
             float hp = menu.maxHealth() > 0 ? menu.health() / menu.maxHealth() : 1;
             gauge(graphics, HP_BAR_X, hp, hp < 0.3f ? 0xFFFF5A4F : 0xFF7CFF8A);
             if (menu.maxEnergy() > 0) { // energy weapons (Tesla Coil) have no heat: the second gauge is their capacitor
@@ -269,7 +277,8 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        Component tier = Component.translatable("gui.bastion.turret.tier", menu.tier().ordinal() + 1);
+        // No tier text on a makeshift base: it has no tiers.
+        Component tier = makeshift() ? Component.empty() : Component.translatable("gui.bastion.turret.tier", menu.tier().ordinal() + 1);
         int tierX = (menu.hub() != null ? imageWidth - 78 : imageWidth - 42) - font.width(tier);
         fit(graphics, title, titleLabelX, titleLabelY, tierX - 4 - titleLabelX, TEXT);
         graphics.drawString(font, tier, tierX, titleLabelY, ACCENT, false);
@@ -285,7 +294,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
         int ammoX = TurretMenu.AMMO_X - 1, modulesX = TurretMenu.MODIFIER_X - 1;
         fit(graphics, Component.translatable("gui.bastion.turret.weapon"), 10, GROUP_LABEL_Y, ammoX - 4 - 10, MUTED);
         fit(graphics, Component.translatable("gui.bastion.turret.ammo"), ammoX, GROUP_LABEL_Y, modulesX - 4 - ammoX, MUTED);
-        fit(graphics, Component.translatable("gui.bastion.turret.modules"), modulesX, GROUP_LABEL_Y, imageWidth - 10 - modulesX, MUTED);
+        if (!makeshift()) fit(graphics, Component.translatable("gui.bastion.turret.modules"), modulesX, GROUP_LABEL_Y, imageWidth - 10 - modulesX, MUTED);
         fit(graphics, playerInventoryTitle, inventoryLabelX, inventoryLabelY, imageWidth - 10 - inventoryLabelX, MUTED);
         renderStateLamp(graphics);
     }
@@ -343,7 +352,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretMenu> {
 
     private void renderStatusTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         Slot connector = menu.slots.get(TurretInventory.CONNECTOR);
-        if (!connector.hasItem() && isHovering(connector.x, connector.y, 16, 16, mouseX, mouseY)) {
+        if (!makeshift() && !connector.hasItem() && isHovering(connector.x, connector.y, 16, 16, mouseX, mouseY)) {
             graphics.renderTooltip(font, Component.translatable("gui.bastion.turret.connector"), mouseX, mouseY);
             return;
         }

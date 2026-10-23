@@ -1,0 +1,23 @@
+{
+  "type": "bastion:potato",
+  "ammo": "bastion:ammo/potato",
+  "energy_color": "#8A8A8A",
+  "bullet_color": "#C8A060",
+  "range": 10,
+  "fire_interval": 30,
+  "damage": 2,
+  "spread": 10,
+  "ammo_per_shot": 1,
+  "turn_speed": 6,
+  "aim_tolerance": 4,
+  "aim_lock_ticks": 2,
+  "min_pitch": -35,
+  "max_pitch": 80,
+  "pivot_height": 0.4375,
+  "muzzle_length": 1.20625,
+  "params": {
+    "pellets": 5,
+    "bullet_speed": 1.8,
+    "lead_accuracy": 0.9
+  }
+}

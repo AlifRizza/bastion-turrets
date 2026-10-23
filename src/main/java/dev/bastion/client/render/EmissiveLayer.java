@@ -9,11 +9,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoCube;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import software.bernie.geckolib.util.RenderUtils;
 
+import java.util.Map;
 import java.util.function.ToIntFunction;
 
 /**
@@ -49,7 +51,9 @@ public class EmissiveLayer<T extends GeoAnimatable> extends GeoRenderLayer<T> {
         RenderType glow = BastionRenderTypes.translucentEmissive(texture);
         int rgb = color.applyAsInt(animatable);
         float pulse = 0.8f + 0.2f * Mth.sin((float) RenderUtils.getCurrentTick() * 0.12f); // ~2.6 s breath
-        GlowCubes.active = GlowCubes.of(bakedModel, texture); // renderers that route through GlowCubes draw only the lit faces
+        Map<GeoCube, boolean[]> lit = GlowCubes.of(bakedModel, texture);
+        if (lit.isEmpty()) return; // nothing glows (the makeshift base, the early weapons): no glow pass at all
+        GlowCubes.active = lit; // renderers that route through GlowCubes draw only the lit faces
         try {
             getRenderer().reRender(bakedModel, poseStack, bufferSource, animatable, glow, bufferSource.getBuffer(glow),
                     partialTick, LightTexture.FULL_BRIGHT, packedOverlay,
