@@ -43,6 +43,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,9 +78,14 @@ public class TurretBaseBlock extends BaseEntityBlock {
     /** Share of max HP one repair kit restores. */
     private static final float REPAIR_FRACTION = 0.4f;
 
-    /** Where this base's block entity lives; a multiblock part answers with its core block (LargeTurretBaseBlock). */
+    /** Where this base's block entity lives; a multiblock part answers with its core block (Large/FortressTurretBaseBlock). */
     public BlockPos corePos(BlockState state, BlockGetter level, BlockPos pos) {
         return pos;
+    }
+
+    /** Every block of the base this block belongs to: itself for a 1x1 base; multiblock bases override it with their footprint. */
+    public List<BlockPos> footprint(BlockState state, BlockPos pos) {
+        return List.of(pos);
     }
 
     /** The turret behind any block of a base, small or large, or null. */
@@ -203,11 +209,12 @@ public class TurretBaseBlock extends BaseEntityBlock {
 
         if (held.getItem() instanceof WeaponModuleItem module && !hasWeapon) {
             if (!base.inventory().isItemValid(TurretInventory.WEAPON, held)) {
-                // Big modules need a large base, small ones a standard base and early ones a makeshift base; the right
-                // kind refused is the Arrow Launcher on a wall or ceiling makeshift base.
+                // Huge modules need a fortress base, big ones a large base, small ones a standard base and early ones a
+                // makeshift base; the right kind refused is the Arrow Launcher on a wall or ceiling makeshift base.
                 String needs = module.kind() == base.kind() ? "needs_floor" : switch (module.kind()) {
                     case MAKESHIFT -> "needs_makeshift_base";
                     case LARGE -> "needs_large_base";
+                    case FORTRESS -> "needs_fortress_base";
                     case STANDARD -> "needs_small_base";
                 };
                 if (!level.isClientSide) player.displayClientMessage(Component.translatable("message.bastion.turret." + needs), true);

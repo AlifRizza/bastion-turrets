@@ -91,8 +91,19 @@ PARTS = {
     "plasma_cannon_turret": {"plasma_cannon_core": ({"diamond": 1, "glowstone": 1, "blaze_rod": 1}, LARGE_PART),
                              "plasma_cannon_barrel": ({"iron_block": 1, "copper_block": 1}, LARGE_PART),
                              "plasma_cannon_mount": ({"iron_ingot": 4, "copper_ingot": 2, "observer": 1}, LARGE_PART)},
+    # Fortress Turret Base weapons (0.5.0, PLAN "Turret 3x3"): heavy parts, assembled under the large-weapon tab.
+    "javelin_turret": {"javelin_silo": ({"iron_block": 3, "dispenser": 1, "piston": 2}, LARGE_PART),
+                       "javelin_radar": ({"diamond": 1, "observer": 2, "copper_block": 1}, LARGE_PART),
+                       "javelin_mount": ({"iron_ingot": 6, "copper_ingot": 2, "redstone_block": 1}, LARGE_PART)},
+    "brood_cannon_turret": {"brood_barrel": ({"iron_block": 3, "blast_furnace": 1}, LARGE_PART),
+                            "brood_chamber": ({"diamond": 1, "glass": 4, "copper_block": 2}, LARGE_PART),
+                            "brood_mount": ({"iron_ingot": 6, "copper_ingot": 2, "redstone_block": 1}, LARGE_PART)},
+    "hive_carrier_turret": {"hive_hangar": ({"iron_block": 4, "copper_block": 2}, LARGE_PART),
+                            "hive_relay": ({"diamond": 1, "observer": 2, "lightning_rod": 1}, LARGE_PART),
+                            "hive_bays": ({"iron_ingot": 6, "piston": 3, "redstone_block": 1}, LARGE_PART)},
 }
 LARGE = {"large_turret_base", "missile_launcher_turret", "tesla_turret", "railgun_turret", "mortar_turret", "repulsor_dome_turret", "plasma_cannon_turret"}
+HUGE = {"javelin_turret", "brood_cannon_turret", "hive_carrier_turret"}  # Fortress Turret Base modules: a longer, costlier assembly
 PART_COUNT = {"missile_pod": 2}  # the launcher has two pods
 
 # Module Workstation: the old crafting recipes as ingredient counts; ammo likewise at the Ammo Workstation.
@@ -124,6 +135,9 @@ AMMO = {  # result: (ingredients, time, energy, count, tab)
     "empty_plasma_cell": ({"iron_ingot": 2, "glass": 1, "glowstone_dust": 1}, 40, 400, 4, "laser_cell"),
     "rail_slugs": ({"iron_ingot": 2, "copper_ingot": 1, "redstone": 1}, 60, 800, 4, "kinetic_rounds"),
     "mortar_shells": ({"iron_ingot": 2, "gunpowder": 2, "#minecraft:coals": 1}, 60, 600, 4, "rockets"),
+    "javelin_missile": ({"iron_ingot": 4, "tnt": 2, "firework_rocket": 1, "redstone": 2}, 100, 2000, 1, "rockets"),
+    "brood_capsule": ({"iron_ingot": 3, "copper_ingot": 1, "redstone": 2, "spider_eye": 1}, 80, 1500, 1, "rockets"),
+    "hive_drone": ({"iron_ingot": 2, "copper_ingot": 2, "redstone": 1, "feather": 1}, 100, 2500, 1, "rockets"),
 }
 # Charging Station: ammo that stores energy.
 CHARGE = {"laser_cell": ({B + "empty_laser_cell": 1}, 60, 3000, 1), "plasma_cell": ({B + "empty_plasma_cell": 1}, 80, 4000, 1)}
@@ -167,8 +181,8 @@ def main():
         for part, (ingredients, (time, energy)) in parts.items():
             write(out / "part_workstation" / f"{part}.json", recipe("part_workstation", B + target, B + part, ingredients, time, energy))
             n += 1
-        tab = "turret_base" if target.endswith("base") else "missile_launcher_turret" if target in LARGE else "gun_turret"
-        time, energy = (300, 15000) if target in LARGE else (160, 5000) if target == "turret_base" else (200, 8000)
+        tab = "turret_base" if target.endswith("base") else "missile_launcher_turret" if target in LARGE | HUGE else "gun_turret"
+        time, energy = (400, 25000) if target in HUGE else (300, 15000) if target in LARGE else (160, 5000) if target == "turret_base" else (200, 8000)
         write(out / "part_assembler" / f"{target}.json", recipe("part_assembler", B + tab, B + target,
                                                                 {B + p: PART_COUNT.get(p, 1) for p in parts}, time, energy))
         n += 1
@@ -176,6 +190,15 @@ def main():
                                                                          {B + "damaged_turret_base": 1, B + "repair_kit": 1}, 160, 4000))
     write(out / "part_assembler" / "large_turret_base_from_damaged.json", recipe("part_assembler", B + "turret_base", B + "large_turret_base",
                                                                                {B + "damaged_large_turret_base": 1, B + "repair_kit": 2}, 240, 8000))
+    # Fortress Turret Base (0.5.0): its own frame (listed under the Large Base tab: no new tab) plus Large Base parts.
+    write(out / "part_workstation" / "fortress_frame.json", recipe("part_workstation", B + "large_turret_base", B + "fortress_frame",
+                                                                  {"iron_block": 4, "diamond": 1, "redstone_block": 1}, 200, 8000))
+    write(out / "part_assembler" / "fortress_turret_base.json", recipe("part_assembler", B + "turret_base", B + "fortress_turret_base",
+                                                                     {B + "fortress_frame": 1, B + "large_base_plating": 2, B + "large_base_housing": 1,
+                                                                      B + "large_base_turntable": 1}, 400, 25000))
+    write(out / "part_assembler" / "fortress_turret_base_from_damaged.json", recipe("part_assembler", B + "turret_base", B + "fortress_turret_base",
+                                                                                  {B + "damaged_fortress_turret_base": 1, B + "repair_kit": 3}, 300, 12000))
+    n += 3
     for module, core in MODULE.items():
         write(out / "module_workstation" / f"{module}.json", recipe("module_workstation", B + "range_module", B + module,
                                                                   {"iron_nugget": 4, "redstone": 2, "copper_ingot": 2, core: 1}, 80, 2000))

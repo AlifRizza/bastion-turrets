@@ -6,6 +6,10 @@ import dev.bastion.client.overwatch.OverwatchHud;
 import dev.bastion.client.particle.VfxParticle;
 import dev.bastion.client.particle.VfxParticle.Behavior;
 import dev.bastion.client.render.BakedTurretBaseModel;
+import dev.bastion.client.render.BroodCapsuleRenderer;
+import dev.bastion.client.render.BroodSpiderRenderer;
+import dev.bastion.client.render.EmissiveLayer;
+import dev.bastion.client.render.HiveDroneRenderer;
 import dev.bastion.client.render.RocketRenderer;
 import dev.bastion.client.render.SatelliteUplinkRenderer;
 import dev.bastion.client.render.TurretBaseRenderer;
@@ -84,8 +88,12 @@ public final class BastionClient {
         event.registerBlockEntityRenderer(BastionBlockEntities.SATELLITE_UPLINK.get(), context -> new SatelliteUplinkRenderer());
         event.registerEntityRenderer(BastionEntities.TURRET_HITBOX.get(), NoopRenderer::new);
         event.registerEntityRenderer(BastionEntities.TURRET_ROCKET.get(), RocketRenderer::new);
-        event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer(context, "turret_missile"));
-        event.registerEntityRenderer(BastionEntities.TURRET_MORTAR_SHELL.get(), context -> new RocketRenderer(context, "turret_mortar_shell"));
+        event.registerEntityRenderer(BastionEntities.TURRET_MISSILE.get(), context -> new RocketRenderer<>(context, "turret_missile"));
+        event.registerEntityRenderer(BastionEntities.TURRET_MORTAR_SHELL.get(), context -> new RocketRenderer<>(context, "turret_mortar_shell"));
+        event.registerEntityRenderer(BastionEntities.TURRET_BROOD_CAPSULE.get(), BroodCapsuleRenderer::new);
+        event.registerEntityRenderer(BastionEntities.BROOD_SPIDER.get(), BroodSpiderRenderer::new);
+        event.registerEntityRenderer(BastionEntities.HIVE_DRONE.get(), HiveDroneRenderer::new);
+        event.registerEntityRenderer(BastionEntities.TURRET_JAVELIN.get(), context -> new RocketRenderer<>(context, "turret_javelin", EmissiveLayer.MODEL_GLOW));
         // The vanilla arrow (PLAN early-game exception), plain or tipped; one made from a spectral arrow looks like one.
         event.registerEntityRenderer(BastionEntities.TURRET_ARROW.get(), context -> new TippableArrowRenderer(context) {
             @Override

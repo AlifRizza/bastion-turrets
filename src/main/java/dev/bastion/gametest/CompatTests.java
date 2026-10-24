@@ -214,7 +214,7 @@ public class CompatTests {
         done(helper, player);
     }
 
-    private static List<String> lines(BlockEntity entity, boolean details) {
+    static List<String> lines(BlockEntity entity, boolean details) {
         return BlockInfo.lines(BlockInfo.write(entity), details).stream().map(CompatTests::text).toList();
     }
 

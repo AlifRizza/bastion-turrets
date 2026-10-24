@@ -36,13 +36,13 @@ import org.jetbrains.annotations.Nullable;
 public class TurretHitboxEntity extends LivingEntity implements IEntityAdditionalSpawnData {
     /** How far out from the attached face the target point sits: just past the armed shape (1.5 blocks). */
     private static final double REACH = 1.6;
-    /** A large base: 2x2 across and its launcher stands higher. */
-    private static final float LARGE_WIDTH = 1.95f, LARGE_REACH = 2.3f;
+    /** Multiblock bases (floor only): across their 2x2 or 3x3, and their weapons stand higher. */
+    private static final float LARGE_WIDTH = 1.95f, LARGE_REACH = 2.3f, FORTRESS_WIDTH = 2.95f, FORTRESS_REACH = 2.6f;
 
     @Nullable
     private BlockPos base;
     private Direction facing = Direction.UP;
-    private boolean large;
+    private BaseKind kind = BaseKind.STANDARD;
 
     public TurretHitboxEntity(EntityType<? extends TurretHitboxEntity> type, Level level) {
         super(type, level);
@@ -62,19 +62,27 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
      * the armed shape, so the turret's own collision never hides it: on top for a floor turret, at the bottom for
      * a ceiling one, in front of the gun for a wall one.
      */
-    public void bind(BlockPos base, Vec3 center, Direction facing, boolean large) {
+    public void bind(BlockPos base, Vec3 center, Direction facing, BaseKind kind) {
         this.base = base.immutable();
         this.facing = facing;
-        this.large = large;
+        this.kind = kind;
         refreshDimensions();
-        Vec3 eye = center.add(Vec3.atLowerCornerOf(facing.getNormal()).scale((large ? LARGE_REACH : REACH) - 0.5));
+        double reach = switch (kind) {
+            case LARGE -> LARGE_REACH;
+            case FORTRESS -> FORTRESS_REACH;
+            case STANDARD, MAKESHIFT -> REACH;
+        };
+        Vec3 eye = center.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(reach - 0.5));
         setPos(eye.x, eye.y - getEyeHeight(), eye.z);
     }
 
     @Override
     public EntityDimensions getDimensions(Pose pose) {
-        if (large) return EntityDimensions.fixed(LARGE_WIDTH, LARGE_REACH); // floor only
-        return facing == null || facing.getAxis().isVertical() ? EntityDimensions.fixed(0.9f, (float) REACH) : EntityDimensions.fixed(1.2f, 1.0f);
+        return switch (kind == null ? BaseKind.STANDARD : kind) { // kind is still null while the super constructor sizes the entity
+            case LARGE -> EntityDimensions.fixed(LARGE_WIDTH, LARGE_REACH); // floor only
+            case FORTRESS -> EntityDimensions.fixed(FORTRESS_WIDTH, FORTRESS_REACH); // floor only
+            case STANDARD, MAKESHIFT -> facing == null || facing.getAxis().isVertical() ? EntityDimensions.fixed(0.9f, (float) REACH) : EntityDimensions.fixed(1.2f, 1.0f);
+        };
     }
 
     @Nullable
@@ -200,14 +208,14 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
         buffer.writeBoolean(base != null);
         if (base != null) buffer.writeBlockPos(base);
         buffer.writeEnum(facing);
-        buffer.writeBoolean(large);
+        buffer.writeEnum(kind);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf buffer) {
         if (buffer.readBoolean()) base = buffer.readBlockPos();
         facing = buffer.readEnum(Direction.class);
-        large = buffer.readBoolean();
+        kind = buffer.readEnum(BaseKind.class);
         refreshDimensions();
     }
 

@@ -38,9 +38,9 @@ import java.util.Set;
  * faces (their back on the hub), and ammo piped, belted or armed into it goes to those turrets whose weapon takes it,
  * always the one with the least of it first, so they fill evenly. It only takes ammo one of its armed turrets can use.
  * Hubs placed together merge (FeedHubStructure, PLAN "Feed Hub" multiblock): the structure shares its slots, its FE
- * and its turrets, large bases standing on top included, through any of its blocks; each block still keeps its own 9
- * slots and FE, so breaking one drops only its share (its FE is lost). FE comes in from cables on any side and goes out
- * only to the energy turrets.
+ * and its turrets, large and fortress bases standing on top included, through any of its blocks; each block still keeps
+ * its own 9 slots and FE, so breaking one drops only its share (its FE is lost). FE comes in from cables on any side and
+ * goes out only to the energy turrets.
  */
 public class FeedHubBlockEntity extends BlockEntity implements MenuProvider {
     public static final int SLOTS = 9;
@@ -260,20 +260,24 @@ public class FeedHubBlockEntity extends BlockEntity implements MenuProvider {
         return new Group(level, FeedHubStructure.Box.single(worldPosition), this, now);
     }
 
-    /** Standard bases on the structure's outer faces (back on it) and large bases standing with all four blocks on top. */
+    /**
+     * Standard bases on the structure's outer faces (back on it), and large and fortress bases standing with all their
+     * blocks (four, nine) on top.
+     */
     private static List<Feed> findFeeds(Level level, FeedHubStructure.Box box, List<FeedHubBlockEntity> members) {
         List<Feed> feeds = new ArrayList<>();
-        Set<TurretBaseBlockEntity> large = new HashSet<>();
+        Set<TurretBaseBlockEntity> multiblocks = new HashSet<>();
         for (FeedHubBlockEntity member : members) {
             for (Direction side : Direction.values()) {
                 BlockPos at = member.worldPosition.relative(side);
                 if (box.contains(at) || !level.isLoaded(at)) continue;
                 BlockState state = level.getBlockState(at);
-                if (state.getBlock() instanceof LargeTurretBaseBlock) {
-                    boolean onTop = side == Direction.UP && LargeTurretBaseBlock.footprint(LargeTurretBaseBlock.footprintMin(state, at)).stream()
-                            .allMatch(p -> box.contains(p.below()));
+                List<BlockPos> footprint = state.getBlock() instanceof Multiblock && state.getBlock() instanceof TurretBaseBlock base
+                        ? base.footprint(state, at) : null; // a 1x1 base, or no base
+                if (footprint != null) {
+                    boolean onTop = side == Direction.UP && footprint.stream().allMatch(p -> box.contains(p.below()));
                     TurretBaseBlockEntity core = onTop ? TurretBaseBlock.core(level, at) : null;
-                    if (core != null && large.add(core)) Feed.of(core, Direction.DOWN).ifPresent(feeds::add);
+                    if (core != null && multiblocks.add(core)) Feed.of(core, Direction.DOWN).ifPresent(feeds::add);
                 } else if (state.getBlock() instanceof TurretBaseBlock && state.getValue(TurretBaseBlock.FACING) == side
                         && level.getBlockEntity(at) instanceof TurretBaseBlockEntity turret) {
                     Feed.of(turret, side.getOpposite()).ifPresent(feeds::add);

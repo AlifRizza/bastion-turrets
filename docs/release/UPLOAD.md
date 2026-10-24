@@ -1,10 +1,13 @@
-# Upload sheet: 0.4.0
+# Upload sheet: 0.5.0
 
 Icon: [icon.png](icon.png) (512 px, rendered in game: `-Pshowcase=icon` + `tools/make_icon.py`).
 Project page text: [DESCRIPTION.md](DESCRIPTION.md) (Modrinth, Markdown) or
 [DESCRIPTION.curseforge.html](DESCRIPTION.curseforge.html) (CurseForge editor: Source code view, links to CurseForge pages;
 swap each `[IMAGE: ...]` line for that picture). Gallery images: [screenshots/](screenshots/); in-description images
 under 850 px wide: [screenshots-840/](screenshots-840/).
+Ready-to-upload folders (local, git-ignored; built 2026-10-23): `build/upload/0.3.2/` and `build/upload/0.4.0/`, each
+with the jar, `changelog.txt`, the store text of that version and `LANGKAH.md` (steps in Indonesian). The 0.3.2 jar
+there is rebuilt from commit 2cacf9d: the one first left in `build/libs` was built mid-0.4.0 and held early-game files.
 
 ## Project fields
 
@@ -26,9 +29,9 @@ under 850 px wide: [screenshots-840/](screenshots-840/).
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.4.0.jar` (`./gradlew build`) |
-| Version number         | 0.4.0                                                     |
-| Version name           | Bastion Turrets 0.4.0                                     |
+| File                   | `build/libs/bastion-1.20.1-0.5.0.jar` (`./gradlew build`) |
+| Version number         | 0.5.0                                                     |
+| Version name           | Bastion Turrets 0.5.0                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -47,6 +50,86 @@ the user: 0.3.2 a few days after 2026-10-22, 0.4.0 about a week after that. Deve
 0.4.0 (user 2026-10-22 22:00): the early game turrets, a big update, so the middle number. Prepared on 2026-10-23
 (changelog below, store text in `DESCRIPTION_UPDATE_0.4.0.md`), committed 2026-10-23, not pushed or uploaded yet: the user uploads it
 about a week after 0.3.2.
+0.5.0 (user roadmap 2026-10-23): the Fortress Turret Base, with the first 3x3 turrets the user designs later. This build has
+the base only. Prepared on 2026-10-23 (changelog below, store text in `DESCRIPTION_UPDATE_0.5.0.md`), not committed yet.
+
+## Changelog: 0.5.0
+
+```
+New: Fortress Turret Base
+- A 3x3 base for huge weapon modules, on the floor only. It takes the 3x3 around the block you click; the hologram
+  shows the spot, red where something is in the way. Breaking any of its nine blocks takes the whole base and drops
+  it once.
+- T1 to T3 with the same Tier Upgrade Kits: slots, regeneration and turn speed as on every base, 500 / 1,250 / 2,500
+  HP. Its glow strips show the HP like the other bases' lights. T2 adds vented side blocks, T3 cooling fins.
+- Destroyed, it blasts a little wider than the Large base; the modules drop, plus a Damaged Fortress Turret Base that
+  the Part Assembler restores with three Repair Kits, at the tier it had. Mined, it keeps its contents.
+- Made at the Part Assembler: a new part, the Fortress Frame (Part Workstation: 4 iron blocks, a diamond and a redstone
+  block), two Heavy Base Plating, a Heavy Base Housing and a Heavy Servo Turntable.
+- A Feed Hub feeds it when all nine blocks stand on the same 3x3 hub. Control Hub, Overwatch Link, the
+  Turret Configurator, Jade and JEI work with it as with the Large base.
+
+New: Javelin Missile Turret
+- The first huge weapon, for the Fortress Turret Base: an armoured launch silo and a radar mast. Every 8 seconds it
+  fires one big missile: gas pushes it half out of the silo, it waits there a moment, its engine lights and it climbs, slow
+  at first, then faster and faster until it is gone. A few seconds later it drops straight down out of the sky on the
+  thickest crowd of ground enemies in range (8 to 48 blocks) that stand under open sky. The target is marked from launch to impact: a hologram chevron
+  over it and a ring on the ground that shrinks to the impact, red in the last second.
+- The missile follows its target while it stays under open sky; if it ducks under a roof, the missile comes down on its
+  last open spot. The blast: 40 damage in the middle down to 15 at 6 blocks, only to what the turret may shoot, no
+  block damage.
+- Each shot takes a Javelin Missile (Ammo Workstation: 4 iron ingots, 2 TNT, a firework rocket and 2 redstone) and
+  10,000 FE. It never fires under a roof, underground or in the Nether, and never at flying mobs.
+- Made at the Part Assembler from three new parts: Javelin Silo, Javelin Radar Mast and Javelin Mount.
+- Overwatch: aim at open ground and fire; the mark shows where the missile will come down, red where it can't.
+
+New: Brood Cannon Turret
+- The second huge weapon, for the Fortress Turret Base: a short fat cannon over a round brood chamber whose lit windows
+  show folded spiders. Every 6 seconds it lobs an armoured capsule on a high arc (over walls, like the Mortar) onto
+  enemies on the ground 6 to 32 blocks away. The capsule lands, opens like a flower, and three robot spiders climb out;
+  one that comes down on an enemy's head deals it 10 damage. Against a crowd the capsules spread over it.
+- The spiders (16 HP) hunt only what the turret may shoot, on the ground and within reach, spreading over a crowd: a
+  bite of 8 every second. With nothing left to hunt for 10 seconds they self-destruct, so none pile up after a fight. Hostile mobs go after them, so they also
+  draw attackers off your base. When one dies its eyes blink red and it bursts: 15 damage within 4 blocks, again only
+  to valid targets. They keep fighting if their turret is destroyed; they are not saved when the area unloads.
+- Up to 12 spiders per turret (capsules in the air count): at the cap it waits and spends nothing. The server config
+  maxTurretUnits (96) caps all turret units in a dimension.
+- Each shot takes a Brood Capsule (Ammo Workstation: 3 iron ingots, a copper ingot, 2 redstone and a spider eye) and
+  4,000 FE. Made at the Part Assembler from three new parts: Brood Barrel, Brood Chamber and Brood Mount.
+- Overwatch: aims like the Mortar (the arc shows where the capsule lands); press to fire.
+
+New: Hive Carrier Turret
+- The third huge weapon, for the Fortress Turret Base: a big hollow hive of honeycomb plating with a relay mast on
+  top. While enemies are within 32 blocks it sends out a wave of three combat drones every 15 seconds; they fly out
+  of the doorways in its side and climb away, and come home through the same doorways.
+- Drones (20 HP, 120 bullets) shoot whatever the turret may shoot within 16 blocks, flyers too: 2 damage, 4 shots a
+  second. They patrol round the carrier. Out of bullets or below a quarter HP with an enemy in reach they dive
+  kamikaze: 15 damage within 4.5 blocks, again only to valid targets. With nothing left to shoot they fly home, dock
+  and wait; the next wave launches them again with fresh bullets for 1,000 FE each. Hostile mobs go after them
+  (skeletons shoot them down). They keep fighting if the carrier is destroyed. Docked drones are saved with the
+  carrier (mining the base keeps them, taking the module off gives them back as Hive Drone items); drones in flight are
+  gone when the area unloads, and the next wave replaces them with new Hive Drones.
+- Up to 9 drones per carrier, docked ones included: at the cap it waits and spends nothing. Each new drone takes a
+  Hive Drone (Ammo Workstation: 2 iron ingots, 2 copper ingots, a redstone and a feather) and 2,000 FE. Made at the
+  Part Assembler from three new parts: Hive Hangar, Hive Relay Mast and Hive Launch Bays.
+- Overwatch: the carrier can be watched, not steered.
+
+Changes
+- The server config has fortressBaseHealthMultiplier (5.0: a Fortress has five times a standard base's HP) and
+  maxTurretUnits (96: turret units, spiders and drones, alive at once in one dimension).
+
+Fixes
+- The Turret Configurator now copies and pastes settings on any block of a Large (or Fortress) Turret Base; before,
+  only one of the Large base's four blocks worked.
+- Glow on some base faces flickered with dark lines (the Large base's side panels); it is solid now.
+- A comparator beside any block of a Large (or Fortress) Turret Base now updates when its ammo changes; before, only
+  one beside the right block did.
+- Damage sparks on a Large Turret Base come off all four sides, not only two.
+
+Note
+- The Javelin Missile, Brood Cannon and Hive Carrier Turrets' sounds are placeholders for now.
+- Clients need this version to join a 0.5.0 server (new blocks and items).
+```
 
 ## Changelog: 0.4.0
 
@@ -63,10 +146,10 @@ New: early game turrets, made at the crafting table, no FE needed
 - Potato Shotgun: a spud gun. 5 chunks of 2 damage in a wide cone every 1.5 s, 10 blocks. Poisonous potatoes work
   too (no poison).
 - Arrow Launcher (floor base only): a hwacha, an arrow box on a wheeled cart, always tilted up. One arrow fires a
-  volley of 6 every 2.5 s on a high arc over walls, one onto the
-  target and five around it, 3 damage each. Mobs on the ground 6 to 32 blocks away, never flyers. Any arrow: tipped
-  arrows keep their effect, spectral arrows make the target glow; Creative Ammo fires plain arrows. The arrows fly
-  through what the turret may not shoot, can't be picked up and vanish 10 s after they stick.
+  volley of 6 every 2.5 s on a high arc over walls, one onto the target and five around it, 3 damage each. Mobs on
+  the ground 6 to 32 blocks away, never flyers. Any arrow: tipped arrows keep their effect, spectral arrows make the
+  target glow; Creative Ammo fires plain arrows. The arrows fly through what the turret may not shoot, can't be
+  picked up and vanish 10 s after they stick.
 - The four have their own rustic models, shots, impacts and sounds, with no glow or light.
 - Hoppers and pipes load them like any turret. An empty Makeshift Turret Base takes only early ammo, and the other
   bases never take it.
@@ -354,6 +437,11 @@ First public beta.
 | 10_part_assembler_gui | Part Assembler   | Recipe list, 3D preview, have/need, energy and progress.                     |
 | 11_repulsor_dome      | Repulsor Dome    | A dome of force throws every mob within 9 blocks away from your turrets.     |
 | 12_railgun_charge     | Railgun charging | The coils light up, then electricity crawls over the barrel before the shot. |
+| 13_early_turrets      | Early turrets    | Four rustic turrets for the Makeshift Turret Base, made at a crafting table. |
+| 14_arrow_launcher     | Arrow Launcher   | A hwacha: one arrow fires a volley of six high over walls.                   |
+| 15_spectral_volley    | Spectral volley  | One arrow at the feet, five around; spectral arrows make the target glow.    |
+| 16_makeshift_mounts   | Makeshift bases  | Makeshift Turret Bases on a floor, a wall and a ceiling.                     |
+| 17_fortress_base      | Fortress base    | The 3x3 Fortress Turret Base, built for the huge turrets to come.            |
 
 
 Featured image: `01_laser_rifle_beam` (or the generated banner below).

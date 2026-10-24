@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
+import java.util.List;
 
 /** Per-weapon fire logic, entries of registry bastion:weapon_type (PLAN 4.3). Server side only. */
 public abstract class WeaponType {
@@ -72,6 +73,14 @@ public abstract class WeaponType {
         return byFilter;
     }
 
+    /**
+     * The valid candidates in the order to try them, best first, with the turret at hand ({@code candidates} arrive
+     * sorted by targetOrder): the Javelin puts the densest cluster first.
+     */
+    public List<LivingEntity> rank(TurretBaseBlockEntity turret, List<LivingEntity> candidates, StatSheet stats) {
+        return candidates;
+    }
+
     /** Ticks until the next shot; Machine Gun shortens it with spin. */
     public float fireInterval(StatSheet stats, WeaponState state) {
         return stats.fireInterval();
@@ -97,6 +106,11 @@ public abstract class WeaponType {
     /** Weapons that lob shells on an arc (Mortar): the Overwatch view draws their trajectory (Ballistics). */
     public boolean ballistic() {
         return false;
+    }
+
+    /** Overwatch: a crosshair on a creature picks its feet, not where the ray meets it (weapons that come down on a spot). */
+    public boolean picksFeet() {
+        return ballistic();
     }
 
     /**

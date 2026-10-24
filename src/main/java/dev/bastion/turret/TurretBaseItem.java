@@ -37,11 +37,6 @@ public class TurretBaseItem extends BlockItem implements GeoItem {
         return BaseKind.of(getBlock());
     }
 
-    /** The 2x2 Large Turret Base rather than the standard one. */
-    public boolean large() {
-        return kind() == BaseKind.LARGE;
-    }
-
     /** A fresh base of that tier, as a placed one would drop it (BlockEntityTag Tier; T1 has no tag). */
     public static ItemStack withTier(Item item, TurretTier tier) {
         ItemStack stack = new ItemStack(item);
@@ -63,8 +58,13 @@ public class TurretBaseItem extends BlockItem implements GeoItem {
         if (stored > 0) {
             tooltip.add(Component.translatable("tooltip.bastion.turret_base.stored", stored).withStyle(ChatFormatting.GRAY));
         }
-        if (large()) tooltip.add(Component.translatable("tooltip.bastion.large_turret_base").withStyle(ChatFormatting.DARK_GRAY));
-        if (kind() == BaseKind.MAKESHIFT) tooltip.add(Component.translatable("tooltip.bastion.makeshift_turret_base").withStyle(ChatFormatting.DARK_GRAY));
+        String size = switch (kind()) {
+            case STANDARD -> null;
+            case LARGE -> "tooltip.bastion.large_turret_base";
+            case FORTRESS -> "tooltip.bastion.fortress_turret_base";
+            case MAKESHIFT -> "tooltip.bastion.makeshift_turret_base";
+        };
+        if (size != null) tooltip.add(Component.translatable(size).withStyle(ChatFormatting.DARK_GRAY));
     }
 
     // Only ever called on the client, so the client-package renderer is never loaded on a server.

@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:brood_barrel",
+      "count": 1
+    },
+    {
+      "item": "bastion:brood_chamber",
+      "count": 1
+    },
+    {
+      "item": "bastion:brood_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:brood_cannon_turret"
+  },
+  "time": 400,
+  "energy": 25000
+}

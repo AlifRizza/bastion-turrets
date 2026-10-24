@@ -57,6 +57,14 @@ public class WeaponAnimatable implements GeoAnimatable {
      * model glow has shifted to {@code chargeColor} (0..1, fades back after the shot).
      */
     public float coilFill = -1, chargeGlow;
+    /** Javelin blast doors, this and last tick: 0 shut, 1 open (ClientTurret opens them while it engages; a launch kicks them open). */
+    public float doors, prevDoors;
+    /**
+     * Hive Carrier: drones docked on its racks (server-synced), and how far the new drones on its empty pads are built
+     * over the wait between waves (0: none being built, else 0..1).
+     */
+    public int parked;
+    public float build;
     public int chargeColor;
     private final int[] tubeDelay = new int[4];
     private static final int RELOAD_DELAY = 8, RELOAD_TICKS = RocketLauncherWeapon.SLIDE_TICKS;

@@ -5,6 +5,8 @@ import dev.bastion.Bastion;
 import dev.bastion.client.BurnEffects;
 import dev.bastion.client.ClientTurret;
 import dev.bastion.client.ControlHubEffects;
+import dev.bastion.client.HiveEffects;
+import dev.bastion.client.JavelinEffects;
 import dev.bastion.client.MortarEffects;
 import dev.bastion.client.overwatch.OverwatchArc;
 import dev.bastion.client.RepulsorEffects;
@@ -129,6 +131,7 @@ public final class VfxManager {
         if (Minecraft.getInstance().level != null) FlameJetRenderer.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) TurretHolograms.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         if (Minecraft.getInstance().level != null) OverwatchArc.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
+        if (Minecraft.getInstance().level != null) JavelinEffects.render(poseStack, buffers, camera, partialTick, Minecraft.getInstance().level);
         buffers.endBatch();
     }
 
@@ -137,6 +140,8 @@ public final class VfxManager {
     public static void onLevelUnload(LevelEvent.Unload event) {
         if (!event.getLevel().isClientSide()) return;
         ClientTurret.clear();
+        JavelinEffects.clear();
+        HiveEffects.clear();
         ControlHubEffects.clear();
         TracerRenderer.clear();
         SmokeTrailRenderer.clear();

@@ -66,6 +66,8 @@ public final class BastionRenderTypes extends RenderType {
     /**
      * GeckoLib emissive layer: vanilla entity_translucent_emissive without the per-frame quad sort. The glow lies on the
      * model's own faces, so the order never shows, while sorting every turret's glow each frame was a top render cost.
+     * Pulled a hair towards the camera (decal offset): a base's faces are also in the chunk mesh (BakedTurretBaseModel),
+     * whose float rounding differs from this pass, so sloped glow faces (the Fortress's buttress strips) z-fought it.
      */
     private static final Function<ResourceLocation, RenderType> MODEL_GLOW = Util.memoize(texture -> create("bastion_model_glow",
             DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false,
@@ -76,6 +78,7 @@ public final class BastionRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setWriteMaskState(COLOR_WRITE)
                     .setOverlayState(OVERLAY)
+                    .setLayeringState(POLYGON_OFFSET_LAYERING)
                     .createCompositeState(false)));
 
     private BastionRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,

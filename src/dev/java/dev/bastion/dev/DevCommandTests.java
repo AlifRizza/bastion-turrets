@@ -106,6 +106,7 @@ public class DevCommandTests {
             Item expected = switch (module.kind()) {
                 case MAKESHIFT -> BastionItems.MAKESHIFT_TURRET_BASE.get();
                 case LARGE -> BastionItems.LARGE_TURRET_BASE.get();
+                case FORTRESS -> BastionItems.FORTRESS_TURRET_BASE.get();
                 case STANDARD -> BastionItems.TURRET_BASE.get();
             };
             helper.assertTrue(base.is(expected), module + " on the wrong base");

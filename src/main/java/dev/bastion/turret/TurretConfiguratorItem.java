@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Turret Configurator (PLAN 4.7): sneak-use on a base copies its targeting settings into the tool, use on
- * another base pastes them. Both need owner/trusted access when protection is on.
+ * Turret Configurator (PLAN 4.7): sneak-use on a base (any of its blocks) copies its targeting settings into the tool,
+ * use on another base pastes them. Both need owner/trusted access when protection is on.
  */
 public class TurretConfiguratorItem extends Item {
     private static final String KEY = "Filter";
@@ -29,9 +29,8 @@ public class TurretConfiguratorItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        if (player == null || !(level.getBlockEntity(context.getClickedPos()) instanceof TurretBaseBlockEntity turret)) {
-            return InteractionResult.PASS;
-        }
+        TurretBaseBlockEntity turret = TurretBaseBlock.core(level, context.getClickedPos()); // any block of a multiblock base
+        if (player == null || turret == null) return InteractionResult.PASS;
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (!turret.canConfigure(player)) {
             player.displayClientMessage(Component.translatable("message.bastion.turret.not_owner"), true);

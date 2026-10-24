@@ -5,6 +5,7 @@ import dev.bastion.client.render.SmokeTrailRenderer;
 import dev.bastion.client.render.TracerRenderer;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
+import dev.bastion.client.vfx.VfxPreset;
 import dev.bastion.client.vfx.VfxPresets;
 import dev.bastion.menu.ControlHubMenu;
 import dev.bastion.network.BulletImpact;
@@ -50,7 +51,7 @@ public final class ClientPacketHandler {
      * The blast itself, then (when there is a surface: the face hit, else the ground just below) its scorch mark
      * and, on floors, the dust ring. Debris and dust take the colour of the block that was hit.
      */
-    private static void rocketBlast(ClientLevel level, TurretImpactEvent event, boolean missile) {
+    private static void rocketBlast(ClientLevel level, TurretImpactEvent event, VfxPreset blast, boolean dust) {
         Vec3 at = event.pos();
         Vec3 surface = null, normal = event.normal();
         if (normal.lengthSqr() > 0.5) {
@@ -68,11 +69,11 @@ public final class ClientPacketHandler {
             blockColor = 0xFF000000 | level.getBlockState(block).getMapColor(level, block).col;
         }
         VfxParams params = VfxParams.of().scale(event.scale()).color(0xFFFF7A2E).blockColor(blockColor).seed(at.hashCode());
-        VfxManager.play(missile ? VfxPresets.MISSILE_EXPLOSION : VfxPresets.ROCKET_EXPLOSION, at, new Vec3(0, 1, 0), params);
+        VfxManager.play(blast, at, new Vec3(0, 1, 0), params);
         if (surface != null) {
             VfxParams onSurface = VfxParams.of().scale(event.scale()).color(0xFFFF7A2E).blockColor(blockColor).normal(normal).seed(at.hashCode() + 1);
             VfxManager.play(VfxPresets.ROCKET_SCORCH, surface, normal, onSurface);
-            if (normal.y > 0.7 && !missile) VfxManager.play(VfxPresets.ROCKET_DUST, surface.add(0, 0.06, 0), normal, onSurface);
+            if (normal.y > 0.7 && dust) VfxManager.play(VfxPresets.ROCKET_DUST, surface.add(0, 0.06, 0), normal, onSurface);
         }
     }
 
@@ -99,9 +100,25 @@ public final class ClientPacketHandler {
             MortarEffects.firePatch(level, at, event.source(), Math.round(event.scale() * 20));
             return;
         }
+        if (event.kind() == TurretImpactEvent.DRONE_SHOT || event.kind() == TurretImpactEvent.DRONE_KAMIKAZE) {
+            HiveEffects.impact(level, event);
+            return;
+        }
+        if (event.kind() == TurretImpactEvent.BROOD_LAND || event.kind() == TurretImpactEvent.BROOD_OPEN || event.kind() == TurretImpactEvent.SPIDER_BURST) {
+            BroodEffects.impact(level, event);
+            return;
+        }
+        if (event.kind() == TurretImpactEvent.JAVELIN_BLAST) {
+            SmokeTrailRenderer.end(JavelinEffects.diveTrail(event.source()), at, level.getGameTime());
+            rocketBlast(level, event, VfxPresets.JAVELIN_EXPLOSION, true);
+            level.playLocalSound(at.x, at.y, at.z, BastionSounds.JAVELIN_EXPLODE.get(), SoundSource.HOSTILE, 3f,
+                    0.94f + level.random.nextFloat() * 0.12f, false);
+            return;
+        }
         if (event.kind() == TurretImpactEvent.MORTAR_BLAST) { // a small blast; the fire patch follows as its own event
             SmokeTrailRenderer.end(event.source(), at, level.getGameTime());
-            rocketBlast(level, new TurretImpactEvent(at, event.kind(), event.scale() * 1.6f, event.normal(), event.source()), true);
+            rocketBlast(level, new TurretImpactEvent(at, event.kind(), event.scale() * 1.6f, event.normal(), event.source()),
+                    VfxPresets.MISSILE_EXPLOSION, false);
             level.playLocalSound(at.x, at.y, at.z, BastionSounds.ROCKET_EXPLODE.get(), SoundSource.HOSTILE, 1.6f,
                     1.05f + level.random.nextFloat() * 0.12f, false);
             return;
@@ -109,7 +126,7 @@ public final class ClientPacketHandler {
         if (event.kind() == TurretImpactEvent.ROCKET_BLAST || event.kind() == TurretImpactEvent.MISSILE_BLAST) {
             boolean missile = event.kind() == TurretImpactEvent.MISSILE_BLAST;
             SmokeTrailRenderer.end(event.source(), at, level.getGameTime());
-            rocketBlast(level, event, missile);
+            rocketBlast(level, event, missile ? VfxPresets.MISSILE_EXPLOSION : VfxPresets.ROCKET_EXPLOSION, !missile);
             level.playLocalSound(at.x, at.y, at.z, (missile ? BastionSounds.MISSILE_EXPLODE : BastionSounds.ROCKET_EXPLODE).get(),
                     SoundSource.HOSTILE, missile ? 1.4f : 2.2f, 0.94f + level.random.nextFloat() * 0.12f, false);
             return;

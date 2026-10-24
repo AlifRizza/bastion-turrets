@@ -6,6 +6,7 @@ import dev.bastion.hub.HubInterfaceBlock;
 import dev.bastion.hub.HubPowerPortBlock;
 import dev.bastion.hub.SatelliteUplinkBlock;
 import dev.bastion.turret.FeedHubBlock;
+import dev.bastion.turret.FortressTurretBaseBlock;
 import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.MakeshiftTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
@@ -39,6 +40,10 @@ public final class BastionBlocks {
                             () -> SoundEvents.WOOD_HIT, () -> SoundEvents.WOOD_FALL))));
     /** 2x2x1 multiblock for big weapon modules; pistons cannot split it. */
     public static final RegistryObject<LargeTurretBaseBlock> LARGE_TURRET_BASE = REGISTER.register("large_turret_base", () -> new LargeTurretBaseBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5f, 9f).sound(SoundType.METAL).noOcclusion().dynamicShape()
+                    .pushReaction(PushReaction.BLOCK)));
+    /** 3x3x1 multiblock for huge weapon modules (BaseKind.FORTRESS); pistons cannot split it. */
+    public static final RegistryObject<FortressTurretBaseBlock> FORTRESS_TURRET_BASE = REGISTER.register("fortress_turret_base", () -> new FortressTurretBaseBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5f, 9f).sound(SoundType.METAL).noOcclusion().dynamicShape()
                     .pushReaction(PushReaction.BLOCK)));
 

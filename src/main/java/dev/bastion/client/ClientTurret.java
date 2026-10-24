@@ -8,6 +8,7 @@ import dev.bastion.client.vfx.VfxPreset;
 import dev.bastion.client.vfx.VfxPresets;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.registry.BastionWeaponTypes;
+import dev.bastion.weapon.StatSheet;
 import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
@@ -36,6 +37,8 @@ import java.util.Map;
  */
 public final class ClientTurret {
     /** Barrel cluster speed at full spin: 4 barrels x 3 turns/s = 12 shots/s, in radians per tick. */
+    /** How far the Javelin blast doors swing per tick (fully in ~8 ticks). */
+    private static final float DOOR_SPEED = 0.125f;
     private static final float MAX_SPIN_SPEED = (float) (Math.PI * 2 * 3 / 20);
     private static final Map<Long, ClientTurret> ALL = new HashMap<>();
 
@@ -171,14 +174,22 @@ public final class ClientTurret {
         }
         if (turret.clientDamaged() && level.random.nextInt(turret.clientCritical() ? 8 : 40) == 0) {
             // Damaged: short-circuit sparks off a random side of the base, often once it is critical (PLAN 4.1); a
-            // makeshift base sheds wood splinters instead.
+            // makeshift base sheds wood splinters instead. They leave the hull's rim around the mount centre: from the
+            // core block alone they would start inside a multiblock's hull (and stop in the next cell's collision box).
             float angle = level.random.nextFloat() * Mth.TWO_PI;
             Vec3 side = new Vec3(Mth.cos(angle), 0.4, Mth.sin(angle));
             VfxPreset damage = turret.kind() == BaseKind.MAKESHIFT ? VfxPresets.WOOD_SPLINTERS : VfxPresets.DAMAGED_SPARK;
-            VfxManager.play(damage, Vec3.atBottomCenterOf(pos).add(side.x * 0.45, 0.35, side.z * 0.45), side,
+            double rim = switch (turret.kind()) {
+                case STANDARD, MAKESHIFT -> 0.45;
+                case LARGE -> 1.0;
+                case FORTRESS -> 1.3; // the octagonal hull's flats are ~1.22 blocks out
+            };
+            double height = turret.kind() == BaseKind.FORTRESS ? 0.55 : 0.35; // over the corner buttress plates (~0.48)
+            Vec3 centre = turret.mountCenter();
+            VfxManager.play(damage, new Vec3(centre.x + side.x * rim, pos.getY() + height, centre.z + side.z * rim), side,
                     VfxParams.of().seed(level.random.nextLong()));
         }
-        weaponTick(level, state, data);
+        weaponTick(level, turret, state, data);
         // The early weapons on a makeshift base (wood and springs) neither hum nor smoke after a burst.
         boolean makeshift = turret.kind() == BaseKind.MAKESHIFT;
         loopSounds(level, data, !makeshift);
@@ -224,7 +235,7 @@ public final class ClientTurret {
     }
 
     /** Per-tick looks of weapons that live between shots: Tesla and Railgun arcs while charging, the Flamethrower's pilot light. */
-    private void weaponTick(ClientLevel level, TurretState state, @Nullable WeaponData data) {
+    private void weaponTick(ClientLevel level, TurretBaseBlockEntity turret, TurretState state, @Nullable WeaponData data) {
         if (data == null || weapon == null) return;
         int color = 0xFF000000 | data.energyColor();
         if (data.type().equals(BastionWeaponTypes.TESLA.getId())) {
@@ -271,6 +282,20 @@ public final class ClientTurret {
             // The glow turns teal as the barrel heats; above half heat the usual overheat red takes over (glowColor).
             weapon.chargeColor = color & 0xFFFFFF;
             weapon.chargeGlow = Math.min(1, weapon.heat * 2) * (1 - Mth.clamp((weapon.heat - 0.5f) / 0.5f, 0, 1));
+        } else if (data.type().equals(BastionWeaponTypes.JAVELIN.getId())) {
+            // Blast doors: they swing open once it has a target and stay open between shots; idle, they shut.
+            boolean open = state == TurretState.ACQUIRING || state == TurretState.AIMING || state == TurretState.CHARGING
+                    || state == TurretState.FIRING || state == TurretState.COOLDOWN;
+            weapon.prevDoors = weapon.doors;
+            weapon.doors = Mth.approach(weapon.doors, open ? 1 : 0, DOOR_SPEED);
+        } else if (data.type().equals(BastionWeaponTypes.HIVE_CARRIER.getId())) {
+            // Docked drones stand on the racks; over the wait between waves a new drone takes shape on each empty pad.
+            weapon.parked = turret.weaponState().dockedDrones;
+            float interval = Math.max(1, StatSheet.of(data, turret.tier(), turret.inventory().modifierEffect()).fireInterval());
+            float progress = lastShotTick < 0 ? 1 : (level.getGameTime() - lastShotTick) / interval;
+            boolean working = state != TurretState.NO_AMMO && state != TurretState.DISABLED;
+            weapon.build = working && progress > 0 && progress < 1 ? progress : 0;
+            if (weapon.build > 0 && weapon.build < 0.85f && level.getGameTime() % 4 == 0) HiveEffects.weld(level, this, turret, weapon.parked);
         } else if (data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && !flaming(level)
                 && state != TurretState.DISABLED && state != TurretState.NO_AMMO) {
             FlameEffects.pilot(level, this);

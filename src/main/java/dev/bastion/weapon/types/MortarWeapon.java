@@ -51,7 +51,7 @@ public class MortarWeapon extends WeaponType {
     }
 
     /** Walking, swimming or between two steps; never a flyer, which a shell falling from above cannot catch. */
-    static boolean grounded(Entity entity) {
+    public static boolean grounded(Entity entity) {
         if (entity instanceof FlyingMob || entity instanceof FlyingAnimal || entity instanceof AmbientCreature || entity instanceof Blaze
                 || entity instanceof Vex || entity instanceof Allay || entity instanceof WitherBoss || entity instanceof EnderDragon
                 || entity.isNoGravity()) return false;
@@ -98,16 +98,24 @@ public class MortarWeapon extends WeaponType {
         return true;
     }
 
+    /**
+     * The launch velocity for this shot: from the real muzzle at the moment of firing (so the barrel's aim tolerance costs
+     * no accuracy), at the creature it was fired at, else (Overwatch) the spot under the controller's crosshair.
+     */
+    protected static Vec3 launchVelocity(FireContext context) {
+        WeaponData data = context.stats().data();
+        double speed = data.param("shell_speed"), gravity = data.param("gravity");
+        Vec3 to = context.target() != null ? context.target().position() : context.manualPoint();
+        Vec3 velocity = to != null ? Ballistics.highArc(context.muzzle(), to, speed, gravity) : null;
+        return velocity != null ? velocity : context.direction().scale(speed);
+    }
+
     @Override
     public void onFire(FireContext context) {
         StatSheet stats = context.stats();
         WeaponData data = stats.data();
-        double speed = data.param("shell_speed"), gravity = data.param("gravity");
-        // From the real muzzle at the moment of firing, so the barrel's aim tolerance costs no accuracy.
-        // At the creature it was fired at, else (Overwatch) the spot under the controller's crosshair.
-        Vec3 to = context.target() != null ? context.target().position() : context.manualPoint();
-        Vec3 velocity = to != null ? Ballistics.highArc(context.muzzle(), to, speed, gravity) : null;
-        if (velocity == null) velocity = context.direction().scale(speed);
+        double gravity = data.param("gravity");
+        Vec3 velocity = launchVelocity(context);
         double flight = 2 * Math.max(velocity.y, 0.1) / gravity;
         TurretRocketEntity shell = new TurretRocketEntity(BastionEntities.TURRET_MORTAR_SHELL.get(), context.level(), context.turret().getBlockPos(),
                 0, stats.damage(), data.param("blast_radius"), data.param("knockback"), (int) flight + 60)

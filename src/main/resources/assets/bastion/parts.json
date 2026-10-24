@@ -50,6 +50,14 @@
       "weapon_mount"
     ]
   },
+  "fortress_frame": {
+    "model": "fortress_turret_base",
+    "texture": "block/fortress_turret_base",
+    "bones": [
+      "plinth",
+      "buttress"
+    ]
+  },
   "gun_barrel": {
     "model": "gun_turret",
     "texture": "item/gun_turret",
@@ -535,6 +543,95 @@
       "dome",
       "rivets",
       "glow_strips"
+    ]
+  },
+  "javelin_silo": {
+    "model": "javelin_turret",
+    "texture": "item/javelin_turret",
+    "bones": [
+      "silo",
+      "well",
+      "glow_strips",
+      "door_l",
+      "door_r",
+      "vent_l",
+      "vent_r",
+      "round"
+    ]
+  },
+  "javelin_radar": {
+    "model": "javelin_turret",
+    "texture": "item/javelin_turret",
+    "bones": [
+      "yaw_pivot",
+      "sensor",
+      "glow_lens"
+    ]
+  },
+  "javelin_mount": {
+    "model": "javelin_turret",
+    "texture": "item/javelin_turret",
+    "bones": [
+      "deck"
+    ]
+  },
+  "brood_barrel": {
+    "model": "brood_cannon_turret",
+    "texture": "item/brood_cannon_turret",
+    "bones": [
+      "body",
+      "barrel_0",
+      "glow_barrel",
+      "bore"
+    ]
+  },
+  "brood_chamber": {
+    "model": "brood_cannon_turret",
+    "texture": "item/brood_cannon_turret",
+    "bones": [
+      "yaw_pivot",
+      "glow_windows",
+      "brood",
+      "glow_strips",
+      "vent_l",
+      "vent_r"
+    ]
+  },
+  "brood_mount": {
+    "model": "brood_cannon_turret",
+    "texture": "item/brood_cannon_turret",
+    "bones": [
+      "axle",
+      "loader",
+      "loader_capsule",
+      "sensor",
+      "glow_lens"
+    ]
+  },
+  "hive_hangar": {
+    "model": "hive_carrier_turret",
+    "texture": "item/hive_carrier_turret",
+    "bones": [
+      "hive",
+      "hive_frame",
+      "glow_strips"
+    ]
+  },
+  "hive_relay": {
+    "model": "hive_carrier_turret",
+    "texture": "item/hive_carrier_turret",
+    "bones": [
+      "relay",
+      "sensor",
+      "glow_antenna"
+    ]
+  },
+  "hive_bays": {
+    "model": "hive_carrier_turret",
+    "texture": "item/hive_carrier_turret",
+    "bones": [
+      "bays",
+      "glow_bays"
     ]
   }
 }

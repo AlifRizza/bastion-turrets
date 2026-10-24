@@ -45,7 +45,7 @@ public final class TurretStatsConfig {
     /** The built-in weapons (data/bastion/turret_weapons/<id>.json), in the order of the store description's weapon table. */
     public static final List<String> WEAPONS = List.of("gun", "machine_gun", "shotgun", "sniper", "rocket_launcher",
             "flamethrower", "laser_rifle", "repulsor", "ion_rifle", "plasma_repeater", "missile_launcher", "tesla", "railgun",
-            "mortar", "repulsor_dome", "plasma_cannon", "cobblestone", "snowball", "potato", "arrow_launcher");
+            "mortar", "repulsor_dome", "plasma_cannon", "cobblestone", "snowball", "potato", "arrow_launcher", "javelin", "brood_cannon", "hive_carrier");
 
     private static final Map<String, String> NAMES = Map.ofEntries(
             Map.entry("gun", "Gun Turret"), Map.entry("machine_gun", "Machine Gun Turret"), Map.entry("shotgun", "Shotgun Turret"),
@@ -56,7 +56,7 @@ public final class TurretStatsConfig {
             Map.entry("tesla", "Tesla Coil Turret"), Map.entry("railgun", "Railgun Turret"), Map.entry("mortar", "Mortar Turret"),
             Map.entry("repulsor_dome", "Repulsor Dome"), Map.entry("plasma_cannon", "Plasma Cannon Turret"),
             Map.entry("cobblestone", "Cobblestone Turret"), Map.entry("snowball", "Snowball Repeater"), Map.entry("potato", "Potato Shotgun"),
-            Map.entry("arrow_launcher", "Arrow Launcher"));
+            Map.entry("arrow_launcher", "Arrow Launcher"), Map.entry("javelin", "Javelin Missile Turret"), Map.entry("brood_cannon", "Brood Cannon Turret"), Map.entry("hive_carrier", "Hive Carrier Turret"));
 
     private static final String[] HEADER = {
             "Bastion Turrets: weapon stats. Each value starts at the mod's own number (\"Mod default\" in its comment).",
@@ -87,9 +87,12 @@ public final class TurretStatsConfig {
     /** Every weapon-specific param a built-in weapon JSON uses (a GameTest checks the list against the JSON). */
     public static final Map<String, Key> PARAMS = Map.ofEntries(
             Map.entry("acceleration", new Key("Missile: speed gained per tick, in blocks per tick per tick.", 0, 10)),
+            Map.entry("apex", new Key("Javelin: blocks it climbs above the silo before it dives (less under the build limit).", 4, 256)),
             Map.entry("arrows", new Key("Arrows per volley; one arrow item fires one volley.", 1, 64)),
             Map.entry("base_pierce", new Key("Extra targets each round passes through.", 0, 64)),
+            Map.entry("bite_interval", new Key("Brood Cannon: ticks between a spider's bites (damage is the bite).", 1, 1200)),
             Map.entry("blast_damage", new Key("Blast damage at the centre (half at the edge).", 0, 10000)),
+            Map.entry("blast_edge_damage", new Key("Javelin: blast damage at the edge of blast_radius (damage is the centre's).", 0, 10000)),
             Map.entry("blast_radius", new Key("Blast radius in blocks.", 0, 64)),
             Map.entry("bolt_speed", new Key("Bolt speed in blocks per tick.", 0.01, 100)),
             Map.entry("bolts", new Key("Lightning bolts per discharge.", 1, 64)),
@@ -99,10 +102,21 @@ public final class TurretStatsConfig {
             Map.entry("burn_damage", new Key("Damage per second while burning.", 0, 10000)),
             Map.entry("burn_ticks", new Key("Ticks a target keeps burning.", 0, 12000)),
             Map.entry("charge_ticks", new Key("Ticks it charges before each shot.", 0, 12000)),
+            Map.entry("climb_ticks", new Key("Javelin: ticks it climbs straight up once its engine lights (slow, then faster and faster).", 1, 1200)),
             Map.entry("cone_angle", new Key("Half-angle of its cone in degrees.", 0, 180)),
             Map.entry("cruise_speed", new Key("Missile: top speed in blocks per tick.", 0.01, 100)),
+            Map.entry("death_damage", new Key("Brood Cannon: damage a spider's burst deals when it dies.", 0, 10000)),
+            Map.entry("death_radius", new Key("Brood Cannon: reach of a dying spider's burst in blocks.", 0, 16)),
+            Map.entry("dive_ticks", new Key("Javelin: ticks it dives straight down.", 1, 1200)),
+            Map.entry("hang_ticks", new Key("Javelin: ticks it waits out of sight at the top before it dives.", 0, 1200)),
+            Map.entry("hold_ticks", new Key("Javelin: ticks it waits over its silo before its engine lights.", 0, 1200)),
             Map.entry("drag", new Key("Share of its speed an arrow keeps each tick in the air (vanilla arrows 0.99; below 1).", 0.5, 0.999)),
+            Map.entry("drone_ammo", new Key("Hive Carrier: bullets a drone carries (refilled when it docks and relaunches).", 1, 10000)),
+            Map.entry("drone_health", new Key("Hive Carrier: a drone's HP.", 1, 10000)),
+            Map.entry("drone_speed", new Key("Hive Carrier: a drone's flying speed in blocks per tick.", 0.01, 4)),
+            Map.entry("drones_per_wave", new Key("Hive Carrier: drones in one wave.", 1, 64)),
             Map.entry("energy_capacity", new Key("FE the turret's capacitor holds.", 0, 3000000)),
+            Map.entry("energy_per_drone", new Key("Hive Carrier: FE for each new drone (with a Hive Drone item).", 0, 10000000)),
             Map.entry("energy_per_shot", new Key("FE per shot.", 0, 10000000)),
             Map.entry("falloff_end", new Key("Distance in blocks where pellet damage bottoms out.", 0, 256)),
             Map.entry("falloff_min", new Key("Share of pellet damage left at falloff_end (0 to 1).", 0, 1)),
@@ -114,10 +128,16 @@ public final class TurretStatsConfig {
             Map.entry("fuel_ticks", new Key("Missile: ticks of flight before its fuel runs out.", 0, 12000)),
             Map.entry("glow_ticks", new Key("Ticks of Glowing a spectral arrow gives its target.", 0, 1200)),
             Map.entry("gravity", new Key("Shell or arrow gravity in blocks per tick per tick.", 0.001, 1)),
+            Map.entry("capsule_damage", new Key("Brood Cannon: damage to the creature a capsule comes down on (it alone, no area).", 0, 10000)),
+            Map.entry("self_destruct_ticks", new Key("Brood Cannon: ticks a spider with nothing to hunt waits before it bursts (it waits again once it sees one).", 1, 12000)),
             Map.entry("headshot_multiplier", new Key("Damage multiplier on a headshot.", 0, 100)),
             Map.entry("homing_delay", new Key("Missile: ticks after launch before it starts steering.", 0, 200)),
             Map.entry("hot_spread", new Key("Spread in degrees while hot.", 0, 90)),
             Map.entry("hot_spread_threshold", new Key("Share of max heat (0 to 1) above which hot_spread applies.", 0, 1)),
+            Map.entry("idle_ticks", new Key("Hive Carrier: ticks a drone flies with nothing to shoot before it heads home.", 1, 12000)),
+            Map.entry("kamikaze_damage", new Key("Hive Carrier: damage of a drone's kamikaze burst.", 0, 10000)),
+            Map.entry("kamikaze_health", new Key("Hive Carrier: share of its HP (0 to 1) below which a drone dives kamikaze.", 0, 1)),
+            Map.entry("kamikaze_radius", new Key("Hive Carrier: reach of a kamikaze burst in blocks.", 0, 16)),
             Map.entry("knockback", new Key("Knockback strength (Repulsor: about how many blocks a target is thrown; Repulsor Dome: that at the edge of its reach, +1 block per block closer).", 0, 100)),
             Map.entry("launch_speed", new Key("Missile: speed out of the tube in blocks per tick.", 0.01, 100)),
             Map.entry("lead_accuracy", new Key("How well it aims ahead of moving targets (0 = not at all, 1 = perfectly).", 0, 1)),
@@ -126,11 +146,14 @@ public final class TurretStatsConfig {
             Map.entry("max_targets", new Key("Most targets one burst pushes.", 1, 1024)),
             Map.entry("min_range", new Key("Closest distance in blocks it fires at.", 0, 256)),
             Map.entry("min_spin_to_fire", new Key("Barrel spin (0 to 1) needed before it fires.", 0, 1)),
+            Map.entry("open_ticks", new Key("Brood Cannon: ticks a landed capsule waits before it opens.", 0, 1200)),
             Map.entry("orb_speed", new Key("Plasma ball speed in blocks per tick.", 0.01, 100)),
             Map.entry("patch_size", new Key("Side of the fire patch in blocks.", 1, 15)),
+            Map.entry("patrol_radius", new Key("Hive Carrier: blocks round the carrier its drones patrol (they circle at half of it).", 1, 256)),
             Map.entry("pellets", new Key("Pellets per shot.", 1, 64)),
             Map.entry("precision_lock_multiplier", new Key("Damage multiplier of the shot after holding a target for precision_lock_ticks.", 0, 100)),
             Map.entry("precision_lock_ticks", new Key("Ticks on one target before the precision shot.", 0, 12000)),
+            Map.entry("reload_energy", new Key("Hive Carrier: FE to refill and relaunch a docked drone.", 0, 10000000)),
             Map.entry("reload_ticks", new Key("Ticks to reload one tube.", 1, 12000)),
             Map.entry("ring_radius", new Key("Radius in blocks of the ring the volley lands on around the target.", 0, 16)),
             Map.entry("rocket_speed", new Key("Rocket speed in blocks per tick.", 0.01, 100)),
@@ -138,15 +161,22 @@ public final class TurretStatsConfig {
             Map.entry("shell_speed", new Key("Shell or arrow launch speed in blocks per tick.", 0.01, 100)),
             Map.entry("shock_knockback", new Key("How hard the impact's shockwave throws mobs.", 0, 100)),
             Map.entry("shock_radius", new Key("Reach of the impact's shockwave in blocks.", 0, 64)),
+            Map.entry("shot_interval", new Key("Hive Carrier: ticks between a drone's shots.", 1, 1200)),
+            Map.entry("shot_range", new Key("Hive Carrier: blocks a drone shoots (and looks for prey).", 1, 128)),
             Map.entry("slowness_amplifier", new Key("Level of the Slowness its hits apply (0 = Slowness I).", 0, 10)),
             Map.entry("slowness_ticks", new Key("Ticks of Slowness per hit.", 0, 12000)),
             Map.entry("slug_speed", new Key("Slug speed in blocks per tick.", 0.01, 100)),
+            Map.entry("spider_health", new Key("Brood Cannon: a spider's HP.", 1, 10000)),
+            Map.entry("spider_sight", new Key("Brood Cannon: blocks a spider looks for prey.", 1, 64)),
+            Map.entry("spider_speed", new Key("Brood Cannon: a spider's movement speed (a zombie is 0.23).", 0.01, 2)),
             Map.entry("spin_down_ticks", new Key("Ticks the barrels take to spin down.", 1, 12000)),
             Map.entry("spin_up_ticks", new Key("Ticks the barrels take to spin up.", 1, 12000)),
             Map.entry("splash_damage", new Key("Splash damage to targets around the impact.", 0, 10000)),
             Map.entry("splash_radius", new Key("Splash radius in blocks.", 0, 64)),
             Map.entry("stuck_ticks", new Key("Ticks an arrow stays stuck in a block before it vanishes (vanilla's 1200 at most).", 0, 1200)),
-            Map.entry("turn_rate", new Key("Missile: degrees it can turn per tick while homing.", 0, 180)));
+            Map.entry("turn_rate", new Key("Missile: degrees it can turn per tick while homing.", 0, 180)),
+            Map.entry("unit_cap", new Key("Brood Cannon: most spiders (and unopened capsules' spiders) one turret has out; it waits at the cap.", 1, 256)),
+            Map.entry("units_per_capsule", new Key("Brood Cannon: spiders in one capsule.", 1, 64)));
 
     /** ammo_per_shot of a weapon that takes no ammo items: any number above 0 would leave it waiting for items forever. */
     private static final Key NO_AMMO_ITEMS = new Key("This weapon uses no ammo items (it runs on FE or loads its own rounds), so this stays 0.", 0, 0);

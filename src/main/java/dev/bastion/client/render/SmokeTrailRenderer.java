@@ -66,6 +66,11 @@ public final class SmokeTrailRenderer {
         add(id, tail, gameTime, missile ? 28 : 50, missile ? 0.32f : 0.62f, missile ? 0.2f : 0.32f, missile ? 0xE2E5E9 : 0xA4A8AE);
     }
 
+    /** The Javelin missile {@code id} passed {@code tail} climbing: a thick column of smoke that hangs for seconds. */
+    public static void addColumn(int id, Vec3 tail, long gameTime) {
+        add(id, tail, gameTime, 120, 1.3f, 0.4f, 0xA4A8AE);
+    }
+
     /** The turret arrow {@code id} passed {@code tail} this tick: a short, thin, pale streak of air, no glow (early game). */
     public static void addWind(int id, Vec3 tail, long gameTime) {
         add(id, tail, gameTime, 7, 0.08f, 0, 0xE8ECEF);

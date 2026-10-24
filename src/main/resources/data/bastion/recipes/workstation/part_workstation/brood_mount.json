@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:brood_cannon_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 6
+    },
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 2
+    },
+    {
+      "item": "minecraft:redstone_block",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:brood_mount"
+  },
+  "time": 160,
+  "energy": 6000
+}

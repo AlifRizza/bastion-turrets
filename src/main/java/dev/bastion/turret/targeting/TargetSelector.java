@@ -45,8 +45,9 @@ public final class TargetSelector {
             case LOWEST_HEALTH -> Comparator.<LivingEntity>comparingDouble(LivingEntity::getHealth).thenComparing(nearest);
             case HIGHEST_THREAT -> Comparator.<LivingEntity>comparingDouble(e -> -threat(e, turret)).thenComparing(nearest);
         });
-        return turret.getLevel().getEntitiesOfClass(LivingEntity.class, area, e -> isCandidate(turret, e, stats, type)).stream()
-                .sorted(order)
+        List<LivingEntity> sorted = turret.getLevel().getEntitiesOfClass(LivingEntity.class, area, e -> isCandidate(turret, e, stats, type)).stream()
+                .sorted(order).toList();
+        return type.rank(turret, sorted, stats).stream()
                 .filter(e -> type.sight(turret, e, stats) != null)
                 .limit(limit)
                 .toList();

@@ -36,7 +36,7 @@ public class TurretPlacementTests {
     private static final BlockPos FLOOR = new BlockPos(4, 1, 4);
 
     /** A fake player north of the spot looking along {@code yaw} with {@code item} in hand, clicking {@code face} of FLOOR. */
-    private static BlockPlaceContext click(GameTestHelper helper, Item item, float yaw, Direction face) {
+    static BlockPlaceContext click(GameTestHelper helper, Item item, float yaw, Direction face) {
         FakePlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
         BlockPos floor = helper.absolutePos(FLOOR);
         player.moveTo(floor.getX() + 0.5, floor.getY() + 1, floor.getZ() - 2.5, yaw, 30);
@@ -47,7 +47,7 @@ public class TurretPlacementTests {
     }
 
     /** Absolute positions of {@code block} within 3 blocks of the spot. */
-    private static Set<BlockPos> placed(GameTestHelper helper, Block block) {
+    static Set<BlockPos> placed(GameTestHelper helper, Block block) {
         Set<BlockPos> found = new HashSet<>();
         BlockPos.betweenClosed(helper.absolutePos(FLOOR).offset(-3, 1, -3), helper.absolutePos(FLOOR).offset(3, 3, 3))
                 .forEach(p -> { if (helper.getLevel().getBlockState(p).is(block)) found.add(p.immutable()); });

@@ -52,10 +52,6 @@ public class WeaponModuleItem extends Item implements GeoItem {
         return kind;
     }
 
-    public boolean large() {
-        return kind == BaseKind.LARGE;
-    }
-
     public ResourceLocation weaponId() {
         return weaponId;
     }
@@ -87,9 +83,12 @@ public class WeaponModuleItem extends Item implements GeoItem {
         tooltip.add(Component.translatable("tooltip.bastion.weapon.fire_rate", fmt(20f / data.fireInterval())).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bastion.weapon.range", fmt(data.range())).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bastion.weapon." + modelName() + ".ability").withStyle(ChatFormatting.DARK_AQUA));
-        tooltip.add(Component.translatable(large() ? "tooltip.bastion.weapon.fits_large"
-                : kind == BaseKind.MAKESHIFT ? "tooltip.bastion.weapon.fits_makeshift" : "tooltip.bastion.weapon.fits_small")
-                .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable(switch (kind) {
+            case STANDARD -> "tooltip.bastion.weapon.fits_small";
+            case LARGE -> "tooltip.bastion.weapon.fits_large";
+            case FORTRESS -> "tooltip.bastion.weapon.fits_fortress";
+            case MAKESHIFT -> "tooltip.bastion.weapon.fits_makeshift";
+        }).withStyle(ChatFormatting.DARK_GRAY));
     }
 
     private static String fmt(float value) {

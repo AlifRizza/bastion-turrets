@@ -386,6 +386,7 @@ public class TurretSystemsTests {
         for (TurretTier tier : List.of(TurretTier.T2, TurretTier.T3)) { // ready-made T2/T3 bases (user 2026-10-07)
             helper.assertTrue(BastionItems.TAB.get().contains(TurretBaseItem.withTier(BastionItems.TURRET_BASE.get(), tier)), tier + " base missing");
             helper.assertTrue(BastionItems.TAB.get().contains(TurretBaseItem.withTier(BastionItems.LARGE_TURRET_BASE.get(), tier)), tier + " large base missing");
+            helper.assertTrue(BastionItems.TAB.get().contains(TurretBaseItem.withTier(BastionItems.FORTRESS_TURRET_BASE.get(), tier)), tier + " Fortress missing");
         }
         helper.succeed();
     }

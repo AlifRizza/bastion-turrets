@@ -14,6 +14,7 @@ import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.turret.targeting.TargetSelector;
 import dev.bastion.modifier.ModifierEffect;
+import dev.bastion.unit.TurretUnit;
 import dev.bastion.weapon.FireContext;
 import dev.bastion.weapon.ManualAim;
 import dev.bastion.weapon.StatSheet;
@@ -66,12 +67,13 @@ import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Turret base: inventory, targeting, rotation, the fire cycle, HP and ownership (PLAN 4.1-4.7). The server
  * decides everything; clients receive state through {@link TurretStateSync} and only interpolate and animate.
- * Serves both the one-block base and the core block of a 2x2 {@link LargeTurretBaseBlock}.
+ * Serves the one-block base and the core block of a 2x2 {@link LargeTurretBaseBlock} or a 3x3 {@link FortressTurretBaseBlock}.
  */
 public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity, MenuProvider {
     /** Height of the base: the weapon mounts this far out from the attached face. */
@@ -160,11 +162,6 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         return BaseKind.of(getBlockState().getBlock());
     }
 
-    /** A 2x2 large base (big weapon modules) rather than the standard one-block base. */
-    public boolean large() {
-        return kind() == BaseKind.LARGE;
-    }
-
     public TurretTier tier() {
         return tier;
     }
@@ -185,6 +182,30 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     /** True for an empty T1 base, the state that drops as a plain stackable item. */
     public boolean isDefault() {
         return tier == TurretTier.T1 && inventory.isEmpty();
+    }
+
+    /** Last comparator level the multiblock cells' neighbours heard (see setChanged). */
+    private int lastComparatorLevel = -1;
+
+    /** Every block of this base: the core alone for a 1x1 base, the whole footprint for a multiblock one. */
+    public List<BlockPos> footprint() {
+        return getBlockState().getBlock() instanceof TurretBaseBlock block ? block.footprint(getBlockState(), worldPosition) : List.of(worldPosition);
+    }
+
+    /**
+     * Comparators read any block of a multiblock base (each forwards to the core), but vanilla only tells the core's
+     * neighbours: when the level changes, tell every cell's neighbours too.
+     */
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        if (level == null || level.isClientSide) return;
+        int signal = comparatorLevel();
+        if (signal == lastComparatorLevel) return;
+        lastComparatorLevel = signal;
+        for (BlockPos cell : footprint()) {
+            if (!cell.equals(worldPosition)) level.updateNeighbourForOutputSignal(cell, getBlockState().getBlock());
+        }
     }
 
     /** Comparator output 0-15 from how full the unlocked ammo slots are (PLAN 4.2), or the capacitor for energy weapons. */
@@ -369,6 +390,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
      * controller they were fired under, so letting go mid-flight does not change what they hit (review 2026-10-20).
      */
     public boolean hits(LivingEntity entity, @Nullable UUID controller) {
+        if (entity instanceof TurretUnit) return false; // turret units (spiders, drones) are never anyone's target
         if (controller == null) return filter.test(entity, owner);
         if (!(entity instanceof Player player)) return true;
         if (player.isCreative() || player.isSpectator()) return false; // as with player attacks: no hits on creative or spectating players
@@ -387,7 +409,11 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     /** HP of a base of this tier and size with these modules (the Info tab, JEI's weapon pages). */
     public static float maxHealth(TurretTier tier, BaseKind kind, ModifierEffect effect) {
         if (kind == BaseKind.MAKESHIFT) return BastionConfig.makeshiftBaseHealth(); // no tier, no modules
-        float size = kind == BaseKind.LARGE ? BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue() : 1;
+        float size = switch (kind) {
+            case LARGE -> BastionConfig.LARGE_HEALTH_MULTIPLIER.get().floatValue();
+            case FORTRESS -> BastionConfig.FORTRESS_HEALTH_MULTIPLIER.get().floatValue();
+            case STANDARD, MAKESHIFT -> 1;
+        };
         return BastionConfig.maxHealth(tier) * size * Math.max(0.1f, 1 + effect.maxHealth());
     }
 
@@ -427,16 +453,25 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
 
     /**
      * 0 HP (PLAN 4.1, user 2026-10-07): a custom blast without block damage. The weapon and the ammo are lost, the modules
-     * drop, the base drops damaged and keeps its tier (the Part Assembler restores it), and the block is removed (a large
+     * drop, the base drops damaged and keeps its tier (the Part Assembler restores it), and the block is removed (a multiblock
      * base takes its parts with it). Mining a base is not this: that keeps everything (shulker-style).
      */
     private void destroy(ServerLevel server) {
         Vec3 center = alongMount(0.6);
         BaseKind kind = kind();
-        if (kind != BaseKind.MAKESHIFT) BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f); // planks fall apart, no blast (user 2026-10-23)
-        // The client picks the sound by this scale: 0.8 is the makeshift wood crunch.
-        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED,
-                kind == BaseKind.LARGE ? 1.6f : kind == BaseKind.MAKESHIFT ? 0.8f : 1f));
+        switch (kind) {
+            case STANDARD, LARGE -> BastionExplosion.detonate(server, center, 3.5f, 6f, 1.2f);
+            case FORTRESS -> BastionExplosion.detonate(server, center, 4.5f, 6f, 1.4f);
+            case MAKESHIFT -> {} // planks fall apart, no blast (user 2026-10-23)
+        }
+        // The client picks the sound by this scale: 0.8 is the makeshift wood crunch, above 1.2 the large base's.
+        BastionNetwork.sendNear(server, worldPosition, new TurretImpactEvent(center, TurretImpactEvent.DESTROYED, switch (kind) {
+            case STANDARD -> 1f;
+            case LARGE -> 1.6f;
+            case FORTRESS -> 2f;
+            case MAKESHIFT -> 0.8f;
+        }));
+        weaponState.dockedDrones = 0; // lost with the weapon and the ammo
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (i >= TurretInventory.MODIFIER_START) Containers.dropItemStack(server, center.x, center.y, center.z, inventory.getStackInSlot(i));
             inventory.setStackInSlot(i, ItemStack.EMPTY);
@@ -448,7 +483,11 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             server.removeBlock(worldPosition, false);
             return;
         }
-        ItemStack base = new ItemStack(large() ? BastionItems.DAMAGED_LARGE_TURRET_BASE.get() : BastionItems.DAMAGED_TURRET_BASE.get());
+        ItemStack base = new ItemStack(switch (kind) {
+            case LARGE -> BastionItems.DAMAGED_LARGE_TURRET_BASE.get();
+            case FORTRESS -> BastionItems.DAMAGED_FORTRESS_TURRET_BASE.get();
+            case STANDARD, MAKESHIFT -> BastionItems.DAMAGED_TURRET_BASE.get(); // makeshift returned above
+        });
         if (tier != TurretTier.T1) base.getOrCreateTagElement("BlockEntityTag").putString("Tier", tier.name());
         Containers.dropItemStack(server, center.x, center.y, center.z, base);
         server.removeBlock(worldPosition, false);
@@ -468,16 +507,14 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         if (server.getGameTime() % 20 != Math.floorMod(worldPosition.asLong(), 20)) return;
         TurretHitboxEntity entity = BastionEntities.TURRET_HITBOX.get().create(server);
         if (entity == null) return;
-        entity.bind(worldPosition, mountCenter(), facing(), large());
+        entity.bind(worldPosition, mountCenter(), facing(), kind());
         server.addFreshEntity(entity);
         hitbox = entity;
     }
 
-    /** Disabled by its own switch or by redstone (PLAN 4.4); inverted mode needs a signal instead. Any block of a large base counts. */
+    /** Disabled by its own switch or by redstone (PLAN 4.4); inverted mode needs a signal instead. Any block of a multiblock base counts. */
     private boolean active(ServerLevel server) {
-        boolean powered = large()
-                ? LargeTurretBaseBlock.footprint(LargeTurretBaseBlock.footprintMin(getBlockState(), worldPosition)).stream().anyMatch(server::hasNeighborSignal)
-                : server.hasNeighborSignal(worldPosition);
+        boolean powered = footprint().stream().anyMatch(server::hasNeighborSignal);
         return enabled && powered == redstoneInverted;
     }
 
@@ -525,9 +562,12 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         return mountCenter().add(toWorld(new Vec3(x, y - 0.5, z)));
     }
 
-    /** Centre of the base the turret turns around: this block's centre, or the middle of a 2x2 large base. */
+    /** Centre of the base the turret turns around: this block's centre (a Fortress's core is its middle), or the middle of a 2x2 large base. */
     public Vec3 mountCenter() {
-        return large() ? LargeTurretBaseBlock.center(getBlockState(), worldPosition) : Vec3.atCenterOf(worldPosition);
+        return switch (kind()) {
+            case LARGE -> LargeTurretBaseBlock.center(getBlockState(), worldPosition);
+            case STANDARD, MAKESHIFT, FORTRESS -> Vec3.atCenterOf(worldPosition);
+        };
     }
 
     /** The point {@code height} blocks out along the mount axis from the attached face. */
@@ -772,6 +812,12 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         }
     }
 
+    /** Drops the target: a new search this tick (Brood Cannon: each capsule goes to the least-claimed target). */
+    public void retarget() {
+        target = null;
+        searchTimer = 0;
+    }
+
     private void updateTarget(StatSheet stats, WeaponType type) {
         if (target != null && (!TargetSelector.isCandidate(this, target, stats, type) || type.sight(this, target, stats) == null)) {
             target = null;
@@ -895,6 +941,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         if (slot == TurretInventory.WEAPON && level != null && !level.isClientSide) {
             energy = energy(); // the charge is the weapon's: a smaller (or no) capacitor keeps only what fits
             target = null;
+            returnDockedDrones();
             weaponState = new WeaponState();
             lastSync = null;
             if (manual != null) { // presses and locks were for the weapon that left
@@ -903,6 +950,19 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
             }
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
+    }
+
+    /**
+     * A Hive Carrier taken off (or swapped) with drones docked: they come back as Hive Drone items, into the ammo slots
+     * where the new weapon takes them, the rest dropped on the base (user 2026-10-24: no crafted drone lost).
+     */
+    private void returnDockedDrones() {
+        if (weaponState.dockedDrones <= 0) return;
+        ItemStack rest = new ItemStack(BastionItems.HIVE_DRONE.get(), weaponState.dockedDrones);
+        weaponState.dockedDrones = 0;
+        for (int i = 0; i < inventory.ammoSlots() && !rest.isEmpty(); i++) rest = inventory.insertItem(TurretInventory.AMMO_START + i, rest, false);
+        Vec3 top = alongMount(BASE_HEIGHT + 0.5);
+        if (!rest.isEmpty()) Containers.dropItemStack(level, top.x, top.y, top.z, rest);
     }
 
     // --- client --------------------------------------------------------------------------------
@@ -1001,7 +1061,11 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     /** Barrels reach past the block; keep rendering while any part of the turret is on screen. */
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).inflate(large() ? 6 : 2.5); // the Railgun's barrel reaches ~5 blocks
+        return new AABB(worldPosition).inflate(switch (kind()) { // the Railgun's barrel reaches ~5 blocks
+            case STANDARD, MAKESHIFT -> 2.5;
+            case LARGE -> 6;
+            case FORTRESS -> 8;
+        });
     }
 
     // --- persistence & sync --------------------------------------------------------------------
@@ -1044,6 +1108,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         if (health >= 0) tag.putFloat("Health", health);
         if (salvo) tag.putBoolean("Salvo", true);
         if (weaponState.tubes != 0) tag.putInt("Tubes", weaponState.tubes);
+        if (weaponState.dockedDrones > 0) tag.putInt("DockedDrones", weaponState.dockedDrones);
         if (energy > 0) tag.putInt("Energy", energy);
     }
 
@@ -1074,6 +1139,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         salvo = tag.getBoolean("Salvo");
         energy = tag.getInt("Energy");
         weaponState.tubes = weaponState.syncedTubes = clientTubes = tag.getInt("Tubes");
+        weaponState.dockedDrones = tag.getInt("DockedDrones");
         if (tag.contains("State")) { // only in the client update tag
             clientState = TurretState.byId(tag.getByte("State"));
             clientHealth = tag.getFloat("HealthFraction");

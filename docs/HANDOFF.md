@@ -7,6 +7,162 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**2026-10-24 01:45: 0.5.0 built: Javelin Missile and Brood Cannon done (final reviews + fix passes, showcases checked);
+Hive Carrier done too (final review + fix pass, showcase checked 05:56; 366/366). Committed 2026-10-24 13:25 as 0.5.0
+after the user's adjustments below and a second final review (390/390); not pushed, no tag (user: push/tag only on request)**
+
+**2026-10-24 06:33–07:20, user adjustments** (ledger `.superpowers/sdd/2026-10-24-0.5.0-adjustments/progress.md`, every
+Ruling there): (1) Javelin flight COLD (pushed out, still `hold_ticks` 10) → CLIMB (engine, height ∝ e^(4t)−1: crawls,
+then ~6 blocks/tick) → HIDDEN (`hang_ticks` 60, invisible, over the drop point) → DIVE; RocketRenderer skips invisible
+rockets and points a still one by its pitch; ignition burst + rocket.launch at pitch 0.7. (2) Bursts 15: spider radius 4,
+drone 4.5 (VFX scale with the radius; run/config's 4 lines set with the user's OK). (3) Hive model rebuilt: hollow
+wasp-nest hive on a pedestal, doorways N/SE/SW; pads inside at 10 px (over the armed base's solid top, 8 px); drones
+LAUNCH level out of the doorway then up 3, RETURN high → down in front of the doorway (settled) → level in; door bones
+gone (fire clip spins the sensor). 372/372, build green. Showcases `-Pshowcase=javelin` and `-Pshowcase=hive` (retimed/re-aimed
+for this) run and checked 10:48–10:53 (user "continuw" after the 07:12 locked screen). Final review (Opus xhigh) + fix
+pass 11:00–11:15: the held missile was drawn upside down (client lerpMotion; fixed) and now holds half out of the silo
+(user); docking marks the turret dirty; the Fortress loot table copies DockedDrones; taking the Hive module off gives
+the docked drones back as items (user), destruction loses them; the Javelin puts clusters a live missile is already on
+last (user). 378/378, build green; Javelin showcase rerun 11:17 (nose up, half out, still). Deferred minors in the
+ledger (launch puff now hidden inside the hive, blocked doorways, docked count vs a lowered cap). Those minors fixed
+11:20–11:30 (383/383). Trailer for the user's friends (no sound, <10 MB for Discord): `-Pshowcase=trailer
+-PshowcaseWorld=showcase_fx -PnoDevMods` (src/dev TrailerShowcase, one take with a scripted camera) then
+`python3 tools/make_trailer.py` → `build/trailer/bastion-0.5.0-trailer.mp4` (53.9 s, 720p30, 9.7 MB). Inside the hive
+(user 12:03): docked drones on racks (geo `dock_0..8`, pads then two shelves) and new drones built on empty pads over the
+wait between waves (`build_p_0..2` + `glow_build_p(_lit)`), driven by WeaponAnimatable.parked/build (ClientTurret: docked
+count synced by block updates on dock and launch; build = time since the last wave / fire interval), sparks
+HiveEffects.weld; checked with `-Pshowcase=hivedock` (src/dev HiveDockShowcase). The trailer predates this.
+(the Fortress below, the Javelin, and the 0.4.0 release docs/gallery images from earlier today all sit in the working
+tree; the user commits). 0.5.0 = Fortress Turret Base + **three** 3x3 turrets (user 22:14): **Javelin Missile → Brood
+Cannon → Hive Carrier**, one at a time, executed **native** (superpowers:executing-plans; user 21:34), each with its own
+plan; upload waits for the Hive Carrier. Spec (approved "Setuju" 22:16): PLAN §8 "Turret 3x3: Javelin Missile, Brood
+Cannon, Hive Carrier". **User 23:47: they sleep while the Brood Cannon and Hive Carrier are built; at a locked screen
+skip the showcase (never bypass the lock), finish the rest, and list the skipped scenes: they ask to run them after
+waking.**
+
+**Javelin Missile** (plan `docs/superpowers/plans/2026-10-23-javelin-missile.md`, ledger with every Ruling
+`.superpowers/sdd/2026-10-23-javelin-missile/progress.md`, `big-weapon-map.md` = file:line map of how the big weapons
+are built, `snap.sh`/`package.sh` for snapshot-tree review packages, `preview.py`/`sheet.py`, showcase picks in `t5/`).
+Server: `weapon/types/JavelinWeapon.java` (ground-only via `MortarWeapon.grounded`, outside min_range, target eye under
+open sky, silo sees the sky; `rank()` = densest cluster; item + FE per shot; `manualAim` for Overwatch: in reach,
+outside min_range, the block over the point under open sky; `picksFeet()`), new hooks `WeaponType#rank` (in
+`TargetSelector.findAll`) and `WeaponType#picksFeet` (Overwatch pick; default `ballistic()`);
+`projectile/JavelinMissileEntity.java` (flight from `SEAT` 0.25 above the turntable: climb t² to `min(apex, build limit
+− 4 − y)` in climb_ticks, moved over the drop point, linear dive in dive_ticks; the drop point follows the target every
+tick while it stands under open sky, else stays on its last open spot; sidestep ≤ 1 block/tick; hits valid targets or
+blocks; Splash blast lerp damage → blast_edge_damage, turret's filter or `Enemy` once the turret is gone; synced
+target id, drop point, phase, ticks to impact, radius; never saved; discarded without a blast when it missed its flight
+time, i.e. its chunk was unloaded and loaded again; render distance 160). **Open sky = the MOTION_BLOCKING heightmap and
+never in a ceiling dimension** (`JavelinWeapon.openSky`; the Nether's heightmap stops at its roof). `turret_weapons/
+javelin.json` (range 48, fire_interval 160, damage 40, min_range 8, blast_radius 6, blast_edge_damage 15, energy
+10000/shot of 30000, max_input 4000, apex 60, climb_ticks 40, dive_ticks 20). `TurretImpactEvent.JAVELIN_BLAST`.
+Client: model `design_weapons.py` `javelin_turret` (Kit 256; silo on root, still; radar mast = `yaw_pivot` turning about
+its own axis `JV_MAST`; `door_l`/`door_r` **procedural**: `WeaponAnimatable.doors`, opened by `ClientTurret` while
+engaged, kicked open by a launch in `TurretFireEffects`, eased in `WeaponModel`; `round` = the loaded missile, hidden by
+the fire clip until the next rises, and by no_ammo) and entity `turret_javelin` (cyan nose via `RocketRenderer<T>`,
+now generic with a glow colour); `client/JavelinEffects.java` (climb flame + `SmokeTrailRenderer.addColumn`, dive trail
+under `diveTrail(id)`, roar and rising whistle `Follow` sounds, the mark: hologram double chevron `vfx/chevron.png` +
+a flat alpha-blended ring band (orb texture) shrinking from the blast radius, cyan → red blinking in the last 20
+ticks; Overwatch drop marker at the crosshair); presets `JAVELIN_LAUNCH/TRAIL/EXPLOSION`; `ClientPacketHandler.
+rocketBlast(level, event, preset, dust)`; sounds `javelin.launch/fly/dive/explode` (placeholders, SOUND_SHEET 77–80).
+Parts `javelin_silo/radar/mount` (`gen_recipes.py` `HUGE` set: assembler 400 ticks / 25,000 FE, Missile Launcher tab),
+ammo recipe 4 iron + 2 TNT + 1 firework rocket + 2 redstone (100 ticks, 2,000 FE). Tests `JavelinTests` (17). Showcase
+`-Pshowcase=javelin` (`JavelinShowcase`, event-driven by launches; module mounted at tick 70 once the camera is set).
+Final review findings fixed (RED→GREEN): drop point frozen during the climb, the Nether roof counted as open sky,
+Overwatch refused slabs/paths, a missile in an unloaded chunk resumed later. Deferred minors (ledger "Final: minor"):
+float drop point far out, the climb column's head lingers during the dive, peak particles at impact ~210/s, cluster
+ranking counts only candidates, Overwatch on a wall face / sky miss, no "no open sky" hint, `affects()` may load the
+turret's chunk, per-frame entity scan. Open, the user's eye: the module icon's dish pokes ~2 px above the hotbar slot;
+the cold-launch gas is modest; the Overwatch drop marker was not seen in a scene. How to test: `docs/TESTING.md`
+"Javelin Missile (0.5.0)".
+
+**Brood Cannon** (2026-10-24 00:10–00:58; plan `docs/superpowers/plans/2026-10-23-brood-cannon.md`, ledger with every
+Ruling `.superpowers/sdd/2026-10-23-brood-cannon/progress.md`; Tasks 1–4 + showcase done, 339/339; final review next).
+Shared unit layer in `unit/` for the Hive Carrier too: `TurretUnit` (home, unitWeight), `TurretUnits` (counts a unit
+only while it ticks; a unit that skipped ticks, i.e. came back from an unloaded chunk, discards itself: non-saved
+entities are neither saved nor removed on unload; units register at spawn; cleared on server stop),
+`TurretBaseBlockEntity.hits` never hits a unit, `TurretAggro` adds a
+unit target goal (priority 3), server config `maxTurretUnits` 96. `BroodSpiderEntity` (PathfinderMob, GeoEntity; stats
+from `SpiderStats.of(StatSheet)`; a NearestAttackableTargetGoal (randomInterval 10, mustSee) whose findTarget takes the
+nearest candidate a path reaches (≤ 3 path searches: 1.20.1 ignores mustReach there) over `canAttack` = super + filter
+copy + grounded; Chase repaths every 20 ticks, drops a target two short paths in a row, bites with a pounce; GoHome +
+restricted stroll; `.noSave()` types, no portals, no leads (else a boat's passengers or a portal clone them);
+owner/trusted hurt it only with trustedCanDamage; death: 10 ticks of red blink, then a flat burst, no vanilla poof).
+`BroodCannonWeapon extends MortarWeapon` (arc, ground-only, min range, Overwatch from the Mortar; item + FE; `ready()`
+over `WeaponState.unitsFull`); `BroodCapsuleEntity` (Mortar's half-step gravity path, ignores creatures, rests on the
+first upward face or water, opens after open_ticks, releases min(units, room) spiders, unitWeight until open);
+`brood_cannon.json` (range 32, interval 120, damage 4 = bite, energy 4000/16000, cap 12, 3 per capsule, spider 16 HP,
+speed 0.27, sight 16, burst 6 r 2.5, home 6). Client: models `brood_cannon_turret`, `turret_brood_capsule`
+(petal_i/leaf_i), `brood_spider`; `BroodSpiderRenderer` (health glow, red blink dying, no tip-over),
+`BroodCapsuleRenderer`, `BroodEffects` (`TurretImpactEvent` BROOD_LAND 7, BROOD_OPEN 8, SPIDER_BURST 9), presets
+BROOD_LAUNCH/LAND/OPEN, SPIDER_BURST; sounds 81–85 (placeholders). Lesson: **`GameTestHelper.onEachTick` keeps its
+runnables in a hash map, so their order changes every tick: never key a test on an exact counter seen by two
+runnables** (it caused the javelinFollowsThroughTheClimb flake). How to test: `docs/TESTING.md` "Brood Cannon (0.5.0)".
+
+**Hive Carrier** (2026-10-24 01:20–01:45; plan `docs/superpowers/plans/2026-10-24-hive-carrier.md`, ledger
+`.superpowers/sdd/2026-10-24-hive-carrier/progress.md`; Tasks 1–5 done, 366/366; showcase `-Pshowcase=hive` run and
+checked 2026-10-24 05:56 at the user's word: launch, drones up close, sky fight with the phantom, kamikaze, docking,
+night relaunch, GUI, icons). `HiveDroneEntity`
+(PathfinderMob, no gravity, no navigation: per-state desired point + velocity lerp through vanilla move, which keeps it
+out of blocks; LAUNCH/PATROL/ENGAGE/RETURN/KAMIKAZE synced; target goal searches a full cube (vanilla looks ±4 blocks
+vertically); hitscan bullets from the chin, valid targets only, flyers too; kamikaze below 25 % HP or out of bullets
+with a target; docks at its bay; shot down: falls, no blast); `DroneStats.of`; `HiveCarrierWeapon` (turn_speed 0 =
+Overwatch watch-only; ammo_per_shot 0, onFire pays per drone: docked first for reload_energy, then new for a Hive Drone
++ energy_per_drone; `WeaponState.dockedDrones` saved as DockedDrones (and copied by the Fortress loot table), given back as Hive Drone items when the module comes off, lost when the base is destroyed; bays `BAYS` = design HC_BAYS; `dock()`);
+`hive_carrier.json` (range 32, interval 600, damage 2 = bullet, 3 per wave, cap 9, 2000/500 FE, drone 20 HP, 60
+bullets, shot every 5 ticks, reach 16, patrol 32, kamikaze 25 % / 10 / 3, speed 0.45, idle 100). `TurretImpactEvent`
+DRONE_SHOT 10, DRONE_KAMIKAZE 11; client `HiveDroneRenderer`, `HiveEffects` (tracers, kamikaze trail and blast, fan
+hum ≤ 3), presets HIVE_LAUNCH, DRONE_MUZZLE/TRAIL/KAMIKAZE; sounds 86–89; parts hive_hangar/relay/bays;
+`WeaponStatRows` Hive branch (energy/drone, drones/wave) and two-decimal fire rates under 0.1/s. Final review (Opus
+xhigh) fixed: a kamikaze bursting on the previous tick's collision (under ceilings, in leaves), drones stuck in LAUNCH
+under a low roof (give up after 40 ticks or a roof), drones docking into another module (home must hold a Hive
+Carrier), drones stuck over the roof above their bay (dock after 40 ticks without progress within 4 blocks), bullet
+impacts over the particle budget (lean DRONE_IMPACT, none on mid-air misses). Docked drones are saved with the
+turret (`DockedDrones` in its NBT; the user chose this 2026-10-24 06:02, test `dockedDronesAreSaved`); flying ones are
+not. Homeless-drone tests use `HiveTests.NEAR` (patrol radius 8, home 6-8 blocks off the husk): on the wide circle a
+drone that missed its husk early could hover out of reach (one flake, 06:04).
+How to test: `docs/TESTING.md` "Hive Carrier (0.5.0)".
+
+**2026-10-23: 0.5.0 "Fortress Turret Base" built, NOT committed, not tested by the user in game** (spec PLAN §8
+"Fortress Turret Base 3x3", plan `docs/superpowers/plans/2026-10-23-fortress-turret-base.md`, 4 subagent tasks; every
+ruling in the ledger `.superpowers/sdd/2026-10-23-fortress-turret-base/progress.md`, task reports beside it). Everything
+sits in the working tree; the user commits. `mod_version=0.5.0`, changelog `UPLOAD.md` "0.5.0", store text
+`DESCRIPTION_UPDATE_0.5.0.md` (already applied to both DESCRIPTION files), gallery `17_fortress_base`. **Only the base**:
+no huge (3x3) weapon exists yet, the user designs the first ones (roadmap: 0.5.0 = base + 1–2 such turrets); until
+then a Fortress stays empty and every current module is refused on it. **0.5.0 ships the Fortress with all three 3x3 turrets (user 22:14): do not upload before the Hive Carrier is done** (final review; user 21:34–21:47: Javelin Missile → Brood Cannon → Hive Carrier, one at a time, native execution; spiders/drones have HP, attack animations, and draw mob aggro). Final review (Opus xhigh): ready with fixes, all done 21:50–22:10 (tests RED→GREEN, 301/301): comparator change notices reach every cell's neighbours (`TurretBaseBlockEntity.setChanged`, also fixes Large), a stray Fortress cell leads to no core (`FortressTurretBaseBlock.corePos` checks a real core), one `TurretBaseBlock#footprint(state, pos)` used by redstone and the Feed Hub, an explosion test (one drop), damage sparks from the hull's rim per kind (`ClientTurret`; only armed bases have a ClientTurret, so a Fortress sparks once a 3x3 weapon exists), weapon glows re-checked after the MODEL_GLOW polygon offset (default scene, no bleed). What it is: `BaseKind.FORTRESS` (last ordinal:
+it goes over the wire); `FortressTurretBaseBlock` (`CELL` 0–8, the core is cell 4 in the middle and holds the
+`TurretBaseBlockEntity`, the 8 parts are `TurretPartBlockEntity`; `corePosOf` is arithmetic; `placeAt(level, core,
+block)`; floor only, the 3x3 centred on the clicked block); every former `large()` ternary is an exhaustive switch per
+kind (HP, blast, damaged drop, `TurretHitboxEntity` kind field, redstone over all 9 blocks, mount centre, render box,
+tooltips, Overwatch camera, muzzle fallback; the `large()` shims are gone); HP from server config
+`fortressBaseHealthMultiplier` 5.0; loot table `cell: "4"`; model `tools/blockout/design_fortress_base.py` (bones plinth,
+body, buttress, `glow_windows`/`status_light` = the corner plates' strips, deck, energy_ring, weapon_mount, armor_t2 +
+vents_t2, fins_t3 + glow_fins_t3), textures generated one at a time; the Fortress Frame part (`parts.json`: bones plinth
++ buttress) and the recipes in `tools/gen_recipes.py` `main()`; Feed Hub `findFeeds` takes each multiblock's own
+footprint (all 9 blocks on one structure); the Turret Configurator finds the core through `TurretBaseBlock.core` (this
+also fixes the Large base, where only its core block worked); a JEI info page. Tests: `FortressBaseTests` (14), 298 in
+all. Showcase `-Pshowcase=fortress` (`FortressShowcase`, 2026-10-23 21:10–21:20): tiers distinct, health colours,
+hologram 3x3 on the crosshair block, Feed Hub, wreck and drop, items, night not fullbright. **Fixed from it**: glow
+z-fighting. A base's faces are in the chunk mesh (`BakedTurretBaseModel`) and the glow pass redraws its glow faces
+through GeckoLib, whose float rounding differs; on sloped faces (the Fortress strips and T3 spines) the glow lost every
+other pixel row (dark hatching). `BastionRenderTypes` MODEL_GLOW now has `POLYGON_OFFSET_LAYERING` (a decal offset).
+That also cleared the same hatching on the Large base's side panels (visible in the 2026-10-08 `showcase_health_large`);
+a `-Pshowcase=health` rerun showed the standard and Large bases and the Tesla Coil otherwise unchanged. Before/after
+crops: `.superpowers/sdd/2026-10-23-fortress-turret-base/task4-previews/`. My calls (controller; the user may change
+them): core in the centre, the footprint centred on the clicked block; HP ×5.0 (500/1,250/2,500); 3 Repair Kits; blast
+`detonate(4.5f, 6f, 1.4f)` and DESTROYED scale 2.0 (the large destroy sound); hitbox 2.95 wide, reach 2.6; Overwatch
+camera 5 above / 8 behind; render box inflate 8; muzzle fallback 100 (squared); Fortress Frame = 4 iron blocks + 1
+diamond + 1 redstone block (200 ticks, 8,000 FE, Large Turret Base tab); Fortress = frame + 2 Heavy Base Plating + Heavy
+Base Housing + Heavy Servo Turntable (400 ticks, 25,000 FE); repair 300 ticks, 12,000 FE; the centre cell is checked
+for mobs in the hologram (Large skips its clicked block); `status_light` = the two front plates' strips; the Fortress
+Frame item shows no glow; id_id "Base Turret Benteng" / "Rangka Benteng"; the decal offset on every model glow;
+`BastionNetwork.PROTOCOL` stays 13. Open, the user's eye: the T3 fin banks read as spiky combs side-on; the turntable
+top shows a radial star (as on the other bases); the hand view shows mostly the core top (same fit as Large); T1 and T2
+hotbar icons differ little; the Fortress Frame icon is a flat ring. Parked minors (reviews): a direct "a huge module
+fits only a Fortress" test once one exists; creative `playerWillDestroy` on a part untested and no build-height or
+world-border check (both as Large); configurator PASS/denied paths untested. How to test: `docs/TESTING.md` "Fortress
+Turret Base (0.5.0)".
+
 **2026-10-23: 0.4.0 "early game turrets" built, NOT committed, not tested by the user in game** (spec PLAN §8 "Turret
 early game", plan `docs/superpowers/plans/2026-10-22-early-game-turrets.md`, 7 subagent tasks; every ruling in the
 ledger `.superpowers/sdd/2026-10-22-early-game-turrets/progress.md`). Everything sits in the working tree; the user
@@ -34,7 +190,7 @@ shader, same vertex format, reads the lightmap, fogs) for both; before/after nig
 scale 0.5 → 2 (0.05 → 0.2 blocks), life 14 → 18: the tipped mist was invisible from 15 blocks; now faint green puffs.
 (c) `EarlyShowcase` landed frames follow the stuck volley (the launcher shoots the nearest husk past min range, not its
 own). Open, the user's eye: the heaviest crack stage (15 % HP) reads as near-black blotches, not cracks; proposed
-thinner 1-px jagged lines in dark brown. (3) Committed 2026-10-23 as 0.4.0 (user "commit" 13:32); not pushed, not uploaded. User decisions: design 2026-10-14 (a separate locked base, every
+thinner 1-px jagged lines in dark brown. (3) Committed 2026-10-23 as 0.4.0 (69c08c1, user "commit" 13:32); not pushed, not uploaded. Upload folders `build/upload/{0.3.2,0.4.0}` (jar, changelog, store text, gallery, LANGKAH.md); the 0.3.2 jar was rebuilt from 2cacf9d because the old `build/libs` one held 0.4.0 work. Gallery 13–16 from a `-PnoDevMods` showcase run. User decisions: design 2026-10-14 (a separate locked base, every
 arrow with its effect, iron in every recipe, the spec's numbers); 2026-10-22 22:00 version 0.4.0, 22:03 models by
 script, 22:15 scrap drop (1 iron ingot + 2 planks), floor/wall/ceiling with the Arrow Launcher on floors only, subagent
 execution. My calls (controller; the user may change them): bullet speeds 2.0/2.5/1.8 with lead 0.9; Arrow Launcher

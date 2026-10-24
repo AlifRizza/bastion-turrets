@@ -29,6 +29,8 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
      * so its icon reads as a volley thrown up, not a level crossbow (user 2026-10-23). fit_item_display.py HELD_PITCH matches.
      */
     private static final Map<String, Float> HELD_PITCH = Map.of("arrow_launcher", 40f);
+    /** How far the Javelin's blast doors swing up about their outer hinges, radians. */
+    private static final float DOOR_OPEN = 115 * Mth.DEG_TO_RAD;
 
     private static String name(GeoAnimatable animatable) {
         return animatable instanceof WeaponAnimatable weapon ? weapon.item().modelName() : ((WeaponModuleItem) animatable).modelName();
@@ -77,6 +79,29 @@ public class WeaponModel<T extends GeoAnimatable> extends GeoModel<T> {
         for (int i = 0; i < MissileLauncherWeapon.TUBES; i++) {
             boolean loaded = (missiles & 1 << i) != 0;
             getBone("missile_" + i).ifPresent(bone -> bone.setHidden(!loaded));
+        }
+        // Javelin: the blast doors (procedural, so a launch can kick them open whatever the pose; shut in hand), eased.
+        float door = animatable instanceof WeaponAnimatable weapon ? Mth.lerp(animationState.getPartialTick(), weapon.prevDoors, weapon.doors) : 0;
+        float swing = door * door * (3 - 2 * door) * DOOR_OPEN;
+        getBone("door_l").ifPresent(bone -> bone.setRotZ(swing));
+        getBone("door_r").ifPresent(bone -> bone.setRotZ(-swing));
+        // Hive Carrier: as many docked drones as there are stand on the racks, pads first; over the wait between waves a
+        // new drone takes shape on each empty pad: legs, body, rotors, then its lights (none in hand).
+        int parked = animatable instanceof WeaponAnimatable weapon ? weapon.parked : 0;
+        float build = animatable instanceof WeaponAnimatable weapon ? weapon.build : 0;
+        for (int i = 0; i < 9; i++) {
+            boolean docked = i < parked;
+            getBone("dock_" + i).ifPresent(bone -> bone.setHidden(!docked));
+        }
+        for (int p = 0; p < 3; p++) {
+            boolean building = build > 0 && p >= parked;
+            getBone("build_" + p).ifPresent(bone -> bone.setHidden(!building)); // first: it hides or shows its parts too
+            if (!building) continue;
+            for (int n = 0; n < 3; n++) {
+                boolean made = build >= 0.3f * n;
+                getBone("build_" + p + "_" + n).ifPresent(bone -> bone.setHidden(!made));
+            }
+            getBone("glow_build_" + p + "_lit").ifPresent(bone -> bone.setHidden(build < 0.85f));
         }
         // Railgun: while it charges, each coil band stays dark until the light reaches it (always lit in hand).
         float coilFill = animatable instanceof WeaponAnimatable weapon ? weapon.coilFill : -1;

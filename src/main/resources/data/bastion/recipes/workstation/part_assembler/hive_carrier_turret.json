@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:hive_hangar",
+      "count": 1
+    },
+    {
+      "item": "bastion:hive_relay",
+      "count": 1
+    },
+    {
+      "item": "bastion:hive_bays",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:hive_carrier_turret"
+  },
+  "time": 400,
+  "energy": 25000
+}

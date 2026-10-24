@@ -43,6 +43,8 @@ public final class BastionItems {
             () -> new TurretBaseItem(BastionBlocks.TURRET_BASE.get(), new Item.Properties()));
     public static final RegistryObject<TurretBaseItem> LARGE_TURRET_BASE = REGISTER.register("large_turret_base",
             () -> new TurretBaseItem(BastionBlocks.LARGE_TURRET_BASE.get(), new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<TurretBaseItem> FORTRESS_TURRET_BASE = REGISTER.register("fortress_turret_base",
+            () -> new TurretBaseItem(BastionBlocks.FORTRESS_TURRET_BASE.get(), new Item.Properties().stacksTo(16)));
     public static final RegistryObject<TurretBaseItem> MAKESHIFT_TURRET_BASE = REGISTER.register("makeshift_turret_base",
             () -> new TurretBaseItem(BastionBlocks.MAKESHIFT_TURRET_BASE.get(), new Item.Properties()));
 
@@ -88,6 +90,13 @@ public final class BastionItems {
     /** A big slow plasma ball that bursts into a ring of twelve small ones; Plasma Cells. */
     public static final RegistryObject<WeaponModuleItem> PLASMA_CANNON_TURRET = REGISTER.register("plasma_cannon_turret",
             () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("plasma_cannon"), true));
+    /** One big missile straight up, then straight down on the densest crowd under open sky; Fortress Turret Base. */
+    public static final RegistryObject<WeaponModuleItem> JAVELIN_TURRET = REGISTER.register("javelin_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("javelin"), BaseKind.FORTRESS));
+    public static final RegistryObject<WeaponModuleItem> BROOD_CANNON_TURRET = REGISTER.register("brood_cannon_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("brood_cannon"), BaseKind.FORTRESS));
+    public static final RegistryObject<WeaponModuleItem> HIVE_CARRIER_TURRET = REGISTER.register("hive_carrier_turret",
+            () -> new WeaponModuleItem(new Item.Properties().stacksTo(1), Bastion.id("hive_carrier"), BaseKind.FORTRESS));
 
     // Ammo, PLAN 7.4; tagged bastion:ammo/kinetic and bastion:ammo/scatter.
     public static final RegistryObject<Item> KINETIC_ROUNDS = REGISTER.register("kinetic_rounds", () -> new Item(new Item.Properties()));
@@ -107,6 +116,12 @@ public final class BastionItems {
     /** One Railgun shot (plus FE from the base). */
     public static final RegistryObject<Item> RAIL_SLUGS = REGISTER.register("rail_slugs", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> MORTAR_SHELLS = REGISTER.register("mortar_shells", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** One Javelin shot (plus FE from the base). */
+    public static final RegistryObject<Item> JAVELIN_MISSILE = REGISTER.register("javelin_missile", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** One Brood Cannon shot: a capsule of spiders (plus FE from the base). */
+    public static final RegistryObject<Item> BROOD_CAPSULE = REGISTER.register("brood_capsule", () -> new Item(new Item.Properties().stacksTo(16)));
+    /** One Hive Carrier drone, spent when it first leaves (plus FE from the base); a docked drone relaunches for FE only. */
+    public static final RegistryObject<Item> HIVE_DRONE = REGISTER.register("hive_drone", () -> new Item(new Item.Properties().stacksTo(16)));
     /** Creative-only (no recipe): fits every weapon and is never used up. */
     public static final RegistryObject<Item> CREATIVE_AMMO = REGISTER.register("creative_ammo",
             () -> hinted(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), "creative_ammo"));
@@ -137,6 +152,8 @@ public final class BastionItems {
     public static final RegistryObject<Item> DAMAGED_TURRET_BASE = REGISTER.register("damaged_turret_base", () -> damaged(new Item.Properties(), "damaged_turret_base"));
     public static final RegistryObject<Item> DAMAGED_LARGE_TURRET_BASE = REGISTER.register("damaged_large_turret_base",
             () -> damaged(new Item.Properties().stacksTo(16), "damaged_large_turret_base"));
+    public static final RegistryObject<Item> DAMAGED_FORTRESS_TURRET_BASE = REGISTER.register("damaged_fortress_turret_base",
+            () -> damaged(new Item.Properties().stacksTo(16), "damaged_fortress_turret_base"));
 
     // Workstations (PLAN Fase 9): the only way to make turret items in survival.
     public static final RegistryObject<WorkstationItem> PART_WORKSTATION = workstation(BastionBlocks.PART_WORKSTATION);
@@ -174,12 +191,14 @@ public final class BastionItems {
             () -> new BlockItem(BastionBlocks.CREATIVE_POWER_SOURCE.get(), new Item.Properties().rarity(Rarity.EPIC)));
 
     /**
-     * Parts, a set of three per base and weapon (the Missile Launcher takes two pods), made at the Part Workstation and
-     * assembled at the Part Assembler. Which bones of which model each one shows: assets/bastion/parts.json.
+     * Parts, a set of three per base and weapon (the Missile Launcher takes two pods; the Fortress has one, its frame, plus
+     * Large Base parts), made at the Part Workstation and assembled at the Part Assembler. Which bones of which model each
+     * one shows: assets/bastion/parts.json.
      */
     public static final List<RegistryObject<PartItem>> PARTS = Stream.of(
             "turret_base_plating", "turret_base_housing", "turret_base_turntable",
             "large_base_plating", "large_base_housing", "large_base_turntable",
+            "fortress_frame",
             "gun_barrel", "gun_receiver", "gun_mount",
             "machine_gun_barrels", "machine_gun_receiver", "machine_gun_mount",
             "shotgun_barrels", "shotgun_receiver", "shotgun_mount",
@@ -195,8 +214,13 @@ public final class BastionItems {
             "dome_core", "dome_pylons", "dome_mount",
             "ion_barrel", "ion_capacitor", "ion_mount",
             "plasma_barrel", "plasma_chamber", "repeater_mount",
-            "plasma_cannon_core", "plasma_cannon_barrel", "plasma_cannon_mount"
+            "plasma_cannon_core", "plasma_cannon_barrel", "plasma_cannon_mount",
+            "javelin_silo", "javelin_radar", "javelin_mount",
+            "brood_barrel", "brood_chamber", "brood_mount",
+            "hive_hangar", "hive_relay", "hive_bays"
     ).map(id -> REGISTER.register(id, () -> new PartItem(new Item.Properties().stacksTo(16)))).toList();
+    /** The Fortress Turret Base's own part; the rest of its recipe is Large Base parts. */
+    public static final RegistryObject<PartItem> FORTRESS_FRAME = PARTS.stream().filter(p -> p.getId().getPath().equals("fortress_frame")).findFirst().orElseThrow();
 
     private static RegistryObject<WorkstationItem> workstation(RegistryObject<WorkstationBlock> block) {
         return REGISTER.register(block.getId().getPath(), () -> new WorkstationItem(block.get(), new Item.Properties()));

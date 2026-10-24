@@ -1,0 +1,30 @@
+{
+  "type": "bastion:javelin",
+  "ammo": "bastion:ammo/javelin_missile",
+  "energy_color": "#FF8C3A",
+  "range": 48,
+  "fire_interval": 160,
+  "damage": 40,
+  "spread": 0,
+  "ammo_per_shot": 1,
+  "turn_speed": 4,
+  "aim_tolerance": 20,
+  "aim_lock_ticks": 10,
+  "min_pitch": 0,
+  "max_pitch": 0,
+  "pivot_height": 0.5,
+  "muzzle_length": 1.375,
+  "params": {
+    "min_range": 8,
+    "blast_radius": 6,
+    "blast_edge_damage": 15,
+    "energy_per_shot": 10000,
+    "energy_capacity": 30000,
+    "max_input": 4000,
+    "apex": 60,
+    "hold_ticks": 10,
+    "climb_ticks": 40,
+    "hang_ticks": 60,
+    "dive_ticks": 20
+  }
+}

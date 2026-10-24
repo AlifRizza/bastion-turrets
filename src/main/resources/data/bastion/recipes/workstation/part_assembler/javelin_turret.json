@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:missile_launcher_turret",
+  "ingredients": [
+    {
+      "item": "bastion:javelin_silo",
+      "count": 1
+    },
+    {
+      "item": "bastion:javelin_radar",
+      "count": 1
+    },
+    {
+      "item": "bastion:javelin_mount",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:javelin_turret"
+  },
+  "time": 400,
+  "energy": 25000
+}

@@ -10,13 +10,14 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.model.GeoModel;
 
-/** Base model files (PLAN 6.5 layout), shared by the block and item renderers: turret_base, large_turret_base or makeshift_turret_base. */
+/** Base model files (PLAN 6.5 layout), shared by the block and item renderers: turret_base, large_turret_base, fortress_turret_base or makeshift_turret_base. */
 public class TurretBaseModel<T extends GeoAnimatable> extends GeoModel<T> {
     private static String name(Object animatable) {
         BaseKind kind = animatable instanceof TurretBaseBlockEntity base ? base.kind() : animatable instanceof TurretBaseItem item ? item.kind() : BaseKind.STANDARD;
         return switch (kind) {
             case STANDARD -> "turret_base";
             case LARGE -> "large_turret_base";
+            case FORTRESS -> "fortress_turret_base";
             case MAKESHIFT -> "makeshift_turret_base";
         };
     }

@@ -64,11 +64,13 @@ public final class OverwatchClient {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.bastion");
     /**
      * Third person: a "sky view" (user 2026-10-21), raised this far over the pivot along the mount (a ceiling turret's view
-     * hangs below it) and this far back; a large base's weapons are bigger. First person: a sight over the barrel, at most
-     * SIGHT_AHEAD out (the Railgun's 4.7-block barrel put it in the ground), so the shots fly out from under the crosshair
-     * (user 2026-10-20: from the barrel's line the Gun's tracers could not be seen). Never inside a block (CLEARANCE).
+     * hangs below it) and this far back; a large base's weapons are bigger, a Fortress's bigger still. First person: a sight
+     * over the barrel, at most SIGHT_AHEAD out (the Railgun's 4.7-block barrel put it in the ground), so the shots fly out
+     * from under the crosshair (user 2026-10-20: from the barrel's line the Gun's tracers could not be seen). Never inside a
+     * block (CLEARANCE).
      */
-    private static final double ABOVE = 3, ABOVE_LARGE = 4, BEHIND = 4, BEHIND_LARGE = 6, SIGHT_UP = 0.45, SIGHT_AHEAD = 1.2, CLEARANCE = 0.3;
+    private static final double ABOVE = 3, ABOVE_LARGE = 4, ABOVE_FORTRESS = 5, BEHIND = 4, BEHIND_LARGE = 6, BEHIND_FORTRESS = 8,
+            SIGHT_UP = 0.45, SIGHT_AHEAD = 1.2, CLEARANCE = 0.3;
     private static final int MAX_ZOOM = 4;
     /** Vanilla HUD parts the CCTV view replaces (OverwatchHud): no hotbar, hearts, hand-held crosshair or helmet overlays. */
     private static final Set<ResourceLocation> HIDDEN = Set.of(VanillaGuiOverlay.HOTBAR.id(), VanillaGuiOverlay.CROSSHAIR.id(),
@@ -201,8 +203,18 @@ public final class OverwatchClient {
             Vec3 sight = clear(mc, pivot, pivot.add(up.scale(SIGHT_UP)));
             return new View(clear(mc, sight, sight.add(ahead.scale(reach))), yRot, xRot, 0);
         }
-        Vec3 raised = clear(mc, pivot, pivot.add(base.toWorld(new Vec3(0, base.large() ? ABOVE_LARGE : ABOVE, 0))));
-        return new View(raised, yRot, xRot, base.large() ? BEHIND_LARGE : BEHIND);
+        double above = switch (base.kind()) {
+            case STANDARD, MAKESHIFT -> ABOVE;
+            case LARGE -> ABOVE_LARGE;
+            case FORTRESS -> ABOVE_FORTRESS;
+        };
+        double behind = switch (base.kind()) {
+            case STANDARD, MAKESHIFT -> BEHIND;
+            case LARGE -> BEHIND_LARGE;
+            case FORTRESS -> BEHIND_FORTRESS;
+        };
+        Vec3 raised = clear(mc, pivot, pivot.add(base.toWorld(new Vec3(0, above, 0))));
+        return new View(raised, yRot, xRot, behind);
     }
 
     /** {@code from} toward {@code to}, stopping CLEARANCE short of the first block in between: the camera never sits inside one. */
@@ -232,7 +244,7 @@ public final class OverwatchClient {
         }
         StatSheet own = StatSheet.of(data, base.tier(), base.inventory().modifierEffect()), stats = own.withRange(own.range() * rangeScale);
         Vec3 from = camera.getPosition(), look = new Vec3(camera.getLookVector());
-        ManualAim.Pick pick = ManualAim.pick(mc.player, from, from.add(look.scale(from.distanceTo(base.pivot(data)) + stats.range())), type.ballistic());
+        ManualAim.Pick pick = ManualAim.pick(mc.player, from, from.add(look.scale(from.distanceTo(base.pivot(data)) + stats.range())), type.picksFeet());
         aimPoint = pick.point();
         aimEntity = pick.entity() == null ? -1 : pick.entity().getId();
         // The server's lock rule on this side: in the controlled reach, in the launcher's sight, not the owner or this player

@@ -5,6 +5,9 @@ import dev.bastion.weapon.WeaponType;
 import dev.bastion.weapon.types.ArrowLauncherWeapon;
 import dev.bastion.weapon.types.GunWeapon;
 import dev.bastion.weapon.types.IonRifleWeapon;
+import dev.bastion.weapon.types.BroodCannonWeapon;
+import dev.bastion.weapon.types.HiveCarrierWeapon;
+import dev.bastion.weapon.types.JavelinWeapon;
 import dev.bastion.weapon.types.MachineGunWeapon;
 import dev.bastion.weapon.types.PlasmaCannonWeapon;
 import dev.bastion.weapon.types.PlasmaRepeaterWeapon;
@@ -48,6 +51,9 @@ public final class BastionWeaponTypes {
     public static final RegistryObject<WeaponType> ION_RIFLE = REGISTER.register("ion_rifle", IonRifleWeapon::new);
     public static final RegistryObject<WeaponType> PLASMA_REPEATER = REGISTER.register("plasma_repeater", PlasmaRepeaterWeapon::new);
     public static final RegistryObject<WeaponType> PLASMA_CANNON = REGISTER.register("plasma_cannon", PlasmaCannonWeapon::new);
+    public static final RegistryObject<WeaponType> JAVELIN = REGISTER.register("javelin", JavelinWeapon::new);
+    public static final RegistryObject<WeaponType> BROOD_CANNON = REGISTER.register("brood_cannon", BroodCannonWeapon::new);
+    public static final RegistryObject<WeaponType> HIVE_CARRIER = REGISTER.register("hive_carrier", HiveCarrierWeapon::new);
     // The early flingers share one implementation; each JSON names its own type id.
     public static final RegistryObject<WeaponType> COBBLESTONE = REGISTER.register("cobblestone", SlingWeapon::new);
     public static final RegistryObject<WeaponType> SNOWBALL = REGISTER.register("snowball", SlingWeapon::new);

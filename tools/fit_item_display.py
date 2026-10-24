@@ -19,10 +19,11 @@ CONTEXTS = {  # rotation (deg), longest side in blocks
 MODELS = {"turret_base": "turret_base", "gun_turret": "gun_turret", "machine_gun_turret": "machine_gun_turret",
           "shotgun_turret": "shotgun_turret", "sniper_turret": "sniper_turret",
           "rocket_launcher_turret": "rocket_launcher_turret", "large_turret_base": "large_turret_base",
+          "fortress_turret_base": "fortress_turret_base",
           "missile_launcher_turret": "missile_launcher_turret", "flamethrower_turret": "flamethrower_turret",
           "tesla_turret": "tesla_turret", "laser_rifle_turret": "laser_rifle_turret", "railgun_turret": "railgun_turret", "mortar_turret": "mortar_turret",
           "repulsor_turret": "repulsor_turret", "repulsor_dome_turret": "repulsor_dome_turret",
-          "ion_rifle_turret": "ion_rifle_turret", "plasma_repeater_turret": "plasma_repeater_turret", "plasma_cannon_turret": "plasma_cannon_turret",
+          "ion_rifle_turret": "ion_rifle_turret", "plasma_repeater_turret": "plasma_repeater_turret", "plasma_cannon_turret": "plasma_cannon_turret", "javelin_turret": "javelin_turret", "brood_cannon_turret": "brood_cannon_turret", "hive_carrier_turret": "hive_carrier_turret",
           "part_workstation": "part_workstation", "part_assembler": "part_assembler",
           "module_workstation": "module_workstation", "ammo_workstation": "ammo_workstation", "charging_station": "charging_station",
           "satellite_uplink_t1": "satellite_uplink_t1", "satellite_uplink_t2": "satellite_uplink_t2", "satellite_uplink_t3": "satellite_uplink_t3",
@@ -30,7 +31,7 @@ MODELS = {"turret_base": "turret_base", "gun_turret": "gun_turret", "machine_gun
           "snowball_repeater": "snowball_repeater", "potato_shotgun": "potato_shotgun", "arrow_launcher": "arrow_launcher"}
 # Parts (PLAN Fase 9) show some bones of a weapon or base model: fit each to just those bones.
 PARTS = json.loads((ASSETS / "parts.json").read_text())  # item model -> geo
-SIZE_FACTOR = {"turret_base": 0.68, "makeshift_turret_base": 0.68, "large_turret_base": 0.8, "part_workstation": 0.8, "part_assembler": 0.8,
+SIZE_FACTOR = {"turret_base": 0.68, "makeshift_turret_base": 0.68, "large_turret_base": 0.8, "fortress_turret_base": 0.85, "part_workstation": 0.8, "part_assembler": 0.8,
                "module_workstation": 0.75, "ammo_workstation": 0.75, "charging_station": 0.68,
                "satellite_uplink_t1": 0.8, "satellite_uplink_t2": 0.8, "satellite_uplink_t3": 0.8}  # a block-sized model reads right a bit smaller, like vanilla's 0.625 blocks
 

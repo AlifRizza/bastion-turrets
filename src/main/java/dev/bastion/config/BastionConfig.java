@@ -16,6 +16,8 @@ public final class BastionConfig {
     public static final ForgeConfigSpec.IntValue TURRET_HURT_SOUND_INTERVAL;
     public static final ForgeConfigSpec.DoubleValue TURRET_HURT_SOUND_VOLUME;
     public static final ForgeConfigSpec.DoubleValue LARGE_HEALTH_MULTIPLIER;
+    public static final ForgeConfigSpec.DoubleValue FORTRESS_HEALTH_MULTIPLIER;
+    private static final ForgeConfigSpec.IntValue MAX_TURRET_UNITS;
     private static final ForgeConfigSpec.DoubleValue MAKESHIFT_HEALTH;
     public static final ForgeConfigSpec.IntValue WORKSTATION_ENERGY_CAPACITY;
     public static final ForgeConfigSpec.IntValue WORKSTATION_MAX_INPUT;
@@ -55,6 +57,12 @@ public final class BastionConfig {
         LARGE_HEALTH_MULTIPLIER = b
                 .comment("Max HP of a Large Turret Base (2x2) relative to a standard base of the same tier.")
                 .defineInRange("largeBaseHealthMultiplier", 2.5, 0.1, 100);
+        FORTRESS_HEALTH_MULTIPLIER = b
+                .comment("Max HP of a Fortress Turret Base (3x3) relative to a standard base of the same tier.")
+                .defineInRange("fortressBaseHealthMultiplier", 5.0, 0.1, 100);
+        MAX_TURRET_UNITS = b
+                .comment("Most turret units (Brood Cannon spiders, Hive Carrier drones) alive at once in one dimension, all turrets together.")
+                .defineInRange("maxTurretUnits", 96, 0, 1024);
         MAKESHIFT_HEALTH = b
                 .comment("Max HP of a Makeshift Turret Base (the early-game base; it has no tiers and no modules).")
                 .defineInRange("makeshiftBaseHealth", 50.0, 1, 100000);
@@ -118,6 +126,11 @@ public final class BastionConfig {
     private static float tierValue(ForgeConfigSpec.ConfigValue<List<? extends Double>> list, TurretTier tier, double fallback) {
         List<? extends Double> values = list.get();
         return (float) (tier.ordinal() < values.size() ? values.get(tier.ordinal()) : fallback);
+    }
+
+    /** The per-dimension total of turret units (TurretUnits.room). */
+    public static int maxTurretUnits() {
+        return MAX_TURRET_UNITS.get();
     }
 
     public static float makeshiftBaseHealth() {

@@ -50,7 +50,12 @@ public final class TurretFireEffects {
 
         Vec3 muzzle = client.muzzles[Math.floorMod(event.muzzle(), client.muzzles.length)];
         Vec3 firstEnd = event.shots().isEmpty() ? null : event.shots().get(0).end();
-        if (muzzle == null || muzzle.distanceToSqr(Vec3.atCenterOf(event.pos())) > (turret.large() ? 49 : 9)) { // Railgun: ~5 blocks out
+        double reach = switch (turret.kind()) { // squared; the Railgun's muzzle is ~5 blocks out
+            case STANDARD, MAKESHIFT -> 9;
+            case LARGE -> 49;
+            case FORTRESS -> 100;
+        };
+        if (muzzle == null || muzzle.distanceToSqr(Vec3.atCenterOf(event.pos())) > reach) {
             muzzle = turret.alongMount(1.45); // not drawn yet: near the pivot, whichever way the turret is mounted
         }
         // No shot to follow (rockets fly as entities): the barrel's own direction.
@@ -76,6 +81,22 @@ public final class TurretFireEffects {
         // Weapons with their own delivery: lightning bolts and a flame stream instead of tracers.
         if (fx == WeaponFx.TESLA) {
             TeslaEffects.discharge(level, event, muzzle, color);
+            return;
+        }
+        if (fx == WeaponFx.JAVELIN) { // cold launch straight up; the missile itself flies as an entity (JavelinEffects)
+            if (weapon != null) weapon.doors = 1; // a launch the doors were not yet open for kicks them open
+            VfxManager.play(fx.muzzle(), muzzle, new Vec3(0, 1, 0), VfxParams.of().color(color).seed(event.seed()));
+            playShot(level, event, muzzle, fx, random);
+            return;
+        }
+        if (fx == WeaponFx.HIVE_CARRIER) { // a puff out of each doorway (muzzle_0..2); the drones fly as entities (HiveEffects)
+            for (int i = 0; i < 3; i++) {
+                Vec3 door = client.muzzles[i];
+                if (door != null && door.distanceToSqr(Vec3.atCenterOf(event.pos())) <= reach) {
+                    VfxManager.play(fx.muzzle(), door, new Vec3(0, 1, 0), VfxParams.of().color(color).seed(event.seed() + i));
+                }
+            }
+            playShot(level, event, muzzle, fx, random);
             return;
         }
         if (fx == WeaponFx.RAILGUN) {

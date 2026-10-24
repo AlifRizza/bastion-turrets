@@ -74,6 +74,18 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
     public static final WeaponFx PLASMA_CANNON = new WeaponFx(VfxPresets.PLASMA_CANNON_MUZZLE, VfxPresets.PLASMA_BURST, VfxPresets.PLASMA_BURST,
             0.6f, 1f, 110f, false, false, BastionSounds.PLASMA_CANNON_FIRE, BastionSounds.PLASMA_CANNON_FIRE);
 
+    /** No tracer and no recoil: a still silo cold-launches a missile that flies as an entity (JavelinEffects). */
+    public static final WeaponFx JAVELIN = new WeaponFx(VfxPresets.JAVELIN_LAUNCH, v -> {}, v -> {},
+            0, 1f, 0f, false, false, BastionSounds.JAVELIN_LAUNCH, BastionSounds.ROCKET_LAUNCH_TAIL);
+
+    /** No tracer: the capsule is an entity (BroodEffects); the barrel slams back like the Mortar's. */
+    public static final WeaponFx BROOD_CANNON = new WeaponFx(VfxPresets.BROOD_LAUNCH, v -> {}, v -> {},
+            0, 1f, 35f, false, false, BastionSounds.BROOD_FIRE, BastionSounds.MORTAR_FIRE_TAIL);
+
+    /** A wave of drones (entities: HiveEffects); it never moves, so no recoil. */
+    public static final WeaponFx HIVE_CARRIER = new WeaponFx(VfxPresets.HIVE_LAUNCH, v -> {}, v -> {},
+            0, 1f, 0f, false, false, BastionSounds.HIVE_LAUNCH, BastionSounds.HIVE_LAUNCH);
+
     // Early game (PLAN "Turret early game", EarlyEffects): rustic, nothing glows. The sling shots fly as lit sprites
     // (tracerWidth = their size across); the Arrow Launcher's arrows are entities, so it has no impact of its own.
     public static final WeaponFx COBBLESTONE = new WeaponFx(VfxPresets.COBBLE_MUZZLE, VfxPresets.COBBLE_IMPACT, VfxPresets.COBBLE_IMPACT,
@@ -95,7 +107,8 @@ public record WeaponFx(VfxPreset muzzle, VfxPreset impact, VfxPreset lockImpact,
             Map.entry(Bastion.id("ion_rifle"), ION_RIFLE), Map.entry(Bastion.id("plasma_repeater"), PLASMA_REPEATER),
             Map.entry(Bastion.id("plasma_cannon"), PLASMA_CANNON), Map.entry(Bastion.id("cobblestone"), COBBLESTONE),
             Map.entry(Bastion.id("snowball"), SNOWBALL), Map.entry(Bastion.id("potato"), POTATO),
-            Map.entry(Bastion.id("arrow_launcher"), ARROW_LAUNCHER));
+            Map.entry(Bastion.id("arrow_launcher"), ARROW_LAUNCHER), Map.entry(Bastion.id("javelin"), JAVELIN),
+            Map.entry(Bastion.id("brood_cannon"), BROOD_CANNON), Map.entry(Bastion.id("hive_carrier"), HIVE_CARRIER));
 
     /** An early weapon (EarlyEffects): no glow, light, casing or heat haze. */
     public boolean early() {

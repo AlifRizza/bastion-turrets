@@ -20,8 +20,15 @@ public record TurretImpactEvent(Vec3 pos, int kind, float scale, Vec3 normal, in
         this(pos, kind, scale, Vec3.ZERO, -1);
     }
 
-    /** FIRE_PATCH: a Mortar's fire patch centred on pos (on the ground); scale = seconds it burns, source = its width in blocks. */
-    public static final int DESTROYED = 0, TIER_UP = 1, ROCKET_BLAST = 2, MISSILE_BLAST = 3, MORTAR_BLAST = 4, FIRE_PATCH = 5;
+    /**
+     * FIRE_PATCH: a Mortar's fire patch centred on pos (on the ground); scale = seconds it burns, source = its width in blocks.
+     * JAVELIN_BLAST: a Javelin missile landing; scale = blast radius / 3.5 as for rockets. BROOD_LAND / BROOD_OPEN: a
+     * Brood capsule coming to rest / opening (source = the capsule); SPIDER_BURST: a Brood spider's death burst, scale = its radius.
+     * DRONE_SHOT: a Hive drone's bullet ending at pos (source = the drone, scale 1 on a hit else 0, normal = the face hit);
+     * DRONE_KAMIKAZE: a drone's dive bursting at pos, scale = its radius.
+     */
+    public static final int DESTROYED = 0, TIER_UP = 1, ROCKET_BLAST = 2, MISSILE_BLAST = 3, MORTAR_BLAST = 4, FIRE_PATCH = 5, JAVELIN_BLAST = 6,
+            BROOD_LAND = 7, BROOD_OPEN = 8, SPIDER_BURST = 9, DRONE_SHOT = 10, DRONE_KAMIKAZE = 11;
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeDouble(pos.x);

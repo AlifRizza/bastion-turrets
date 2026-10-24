@@ -111,7 +111,7 @@ public class EarlyTurretTests {
             ItemStack stack = new ItemStack(module.get());
             helper.assertTrue(makeshift.inventory().isItemValid(TurretInventory.WEAPON, stack), stack + " does not fit a makeshift base");
         }
-        for (Block block : List.of(BastionBlocks.TURRET_BASE.get(), BastionBlocks.LARGE_TURRET_BASE.get())) {
+        for (Block block : List.of(BastionBlocks.TURRET_BASE.get(), BastionBlocks.LARGE_TURRET_BASE.get(), BastionBlocks.FORTRESS_TURRET_BASE.get())) {
             TurretBaseBlockEntity other = base(helper, block, null, null, 0);
             for (Supplier<? extends Item> module : EARLY_MODULES) {
                 helper.assertTrue(!other.inventory().isItemValid(TurretInventory.WEAPON, new ItemStack(module.get())),

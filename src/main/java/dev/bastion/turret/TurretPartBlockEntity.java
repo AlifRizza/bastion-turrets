@@ -10,7 +10,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Stands in a non-core block of a large base so hoppers and pipes on any side reach the turret's ammo slots
+ * Stands in a non-core block of a multiblock base (Large, Fortress) so hoppers and pipes on any side reach the turret's ammo slots
  * (PLAN 4.2): every capability is the core's.
  */
 public class TurretPartBlockEntity extends BlockEntity {

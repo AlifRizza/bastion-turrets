@@ -27,10 +27,13 @@ The muzzle flashes, beams, lightning arcs and explosions were all made for this 
 | Mortar Turret | Large | Lobs shells over walls at mobs on the ground. Where one lands, a 3x3 fire patch burns for 5 seconds and sets everyone standing in it on fire, you and your animals too. Burnable blocks catch real fire (a server config switch turns that off). |
 | Repulsor Dome | Large | No damage: a dome of force bursts out and throws every enemy within 9 blocks away, through walls: 6 blocks from the edge of its reach, one more per block closer (heavy mobs 60% less). Runs on FE. |
 | Plasma Cannon Turret | Large | Charges, then fires a big slow plasma ball that explodes like a BFG: every enemy within 4 blocks of the impact takes heavy damage, more near the middle. One Plasma Cell per shot. |
+| Javelin Missile Turret | Fortress | One big missile every 8 seconds: out of its silo, a moment's pause, then its engine lights and it climbs faster and faster until it is gone; a few seconds later it drops straight down onto the thickest crowd of ground enemies under open sky, marked from launch to impact. Its 6-block blast hurts only what the turret may shoot. Each shot takes a Javelin Missile and FE; under a roof, underground or in the Nether it does not fire. |
+| Brood Cannon Turret | Fortress | Lobs an armoured capsule over walls onto enemies on the ground; it opens like a flower and three robot spiders climb out to hunt and bite whatever the turret may shoot, and blow up when they die or after 10 seconds with nothing to hunt. Hostile mobs go after them. Up to 12 spiders per turret: it waits while they are out. Each shot takes a Brood Capsule and FE. |
+| Hive Carrier Turret | Fortress | A big hollow hive: while enemies are in reach it sends out waves of three combat drones every 15 seconds through the doorways in its side. They shoot whatever the turret may shoot, flyers too, patrol round the carrier, dive kamikaze when out of bullets or badly hurt, and fly home to dock and reload. Hostile mobs go after them. Up to 9 drones per carrier; each new drone takes a Hive Drone and FE, a docked one only FE. Docked drones are saved with the carrier; drones in flight are gone when the area unloads. |
 | Cobblestone Turret | Makeshift | A spring cannon that flings cobblestone (or cobbled deepslate): 3 damage per stone, 16 block range. |
 | Snowball Repeater | Makeshift | A crank drum that fires five snowballs a second, 1.5 damage each. One snowball is four shots. |
 | Potato Shotgun | Makeshift | A spud gun: 5 potato chunks of 2 damage in a wide cone, 10 block range. Poisonous potatoes work too (no poison). |
-| Arrow Launcher | Makeshift | One arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only. |
+| Arrow Launcher | Makeshift | A hwacha, an arrow box on a wheeled cart: one arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only. |
 
 The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire real shots with travel time. Turrets aim ahead of moving targets, and a bullet flies through anything the turret isn't allowed to shoot, so the villager walking past your wall stays alive.
 
@@ -38,16 +41,18 @@ The Gun, Machine Gun, Shotgun, Sniper, Ion Rifle and both plasma turrets fire re
 <!-- screenshot: 12_railgun_charge.png -->
 <!-- screenshot: 11_repulsor_dome.png -->
 <!-- screenshot: 05_missile_salvo.png -->
+<!-- screenshot: 14_arrow_launcher.png -->
 
 ## Turret bases
 
-The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar, Repulsor Dome and Plasma Cannon) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
+The standard Turret Base is one block and mounts on floors, walls or ceilings. For the heavy weapons (Missile Launcher, Tesla Coil, Railgun, Mortar, Repulsor Dome and Plasma Cannon) there's the Large Turret Base, which takes a 2x2 spot on the floor and has more HP. The Fortress Turret Base takes a 3x3 spot on the floor and has the most HP of all; it carries the huge weapons: the Javelin Missile, Brood Cannon and Hive Carrier Turrets. Hold one (or a multi-block workstation) and a hologram shows exactly which blocks it will take, red where something is in the way.
 
 Upgrade kits take a base from T1 up to T3. Each tier adds HP, regeneration, turn speed and slots for ammo and modules, and you can see it happen as armor plates and cooling fins bolt onto the base. Turrets take damage too. Hostile mobs walk up and attack them, modded ones too (Fungal Infection: Spore works out of the box), and bullets from gun mods like TaCZ hit them as well: a turret's lights turn yellow below half HP and blink red when it's about to go, and a Repair Kit puts back 40% HP. Let one get destroyed and the weapon and its ammo are gone for good: only the modules drop, plus a Damaged Turret Base that the Part Assembler restores with a Repair Kit, at the tier it had. Mining a base works like breaking a shulker box, so tier and contents stay with the item.
 
 The Makeshift Turret Base is the early one: a crate of wood, stone and iron made at a crafting table, before you have FE or any workstation. It mounts on floors, walls or ceilings and takes only the four early turrets (the Arrow Launcher only on a floor), which fit no other base. It has 50 HP (a T1 Turret Base has 100) and no tiers, module slots, FE or Connector slot. Nothing on it glows: cracks show its damage. Destroyed, it falls apart into an iron ingot and two planks, and the weapon and its ammo are lost; mined, it keeps its contents like the other bases.
 
 <!-- screenshot: 07_floor_wall_ceiling.png -->
+<!-- screenshot: 13_early_turrets.png -->
 
 ## Targeting and control
 
@@ -61,7 +66,7 @@ The Makeshift Turret Base is the early one: a crate of wood, stone and iron made
 
 Build a 3x3x3 cube: a Hub Interface in the middle of one side at eye level, Hub Casings with at least one Hub Power Port, and a Satellite Uplink on top. Right-click an unfinished Interface and a hologram shows what is missing. Link Hub Connectors to the hub and put one in each turret you want on it: once the hub has FE, its screen shows those turrets within 1, 3x3 or 7x7 chunks (Satellite Uplink T1, T2, T3) on a map and a list, coloured by health, with their ammo and state. Click one to open its own screen from the hub: swap modules, top up ammo or change its targeting without walking over. Or select many and change their categories, priority, mob rules, trusted players or on/off all at once.
 
-**Overwatch Link**: take control of a turret from the Control Hub. Put this Hub Connector with a camera in a turret, select it on the hub's map and press Take control: you see from the turret (a raised view, or F5 for a sight over the barrel), aim with the mouse with no turn-speed limit and fire yourself, 1.5x farther than the turret reaches on its own, even when it is switched off. Mortar shots show their arc; Tesla Coils and Repulsor Domes can be watched.
+**Overwatch Link**: take control of a turret from the Control Hub. Put this Hub Connector with a camera in a turret, select it on the hub's map and press Take control: you see from the turret (a raised view, or F5 for a sight over the barrel), aim with the mouse with no turn-speed limit and fire yourself, 1.5x farther than the turret reaches on its own, even when it is switched off. Mortar and Brood Cannon shots show their arc and the Javelin marks the spot its missile will hit; Tesla Coils, Repulsor Domes and Hive Carriers can be watched.
 
 Under control, Rocket and Missile Launchers fire one shot per click while a tube is loaded, and R switches between Single and Salvo. The Missile Launcher locks the mob under your crosshair; in Salvo you click mobs to place 12 locks (one mob can take several) and the salvo leaves once all twelve tubes are loaded. The camera HUD shows HP, ammo, FE and loaded tubes as numbers.
 
@@ -84,7 +89,7 @@ Every module comes in Mk1, Mk2 and Mk3 (one and a half and twice the Mk1 effect)
 
 ## Ammo and automation
 
-Ammo comes in ten kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells and Plasma Cells), and the early turrets fire what you already have: cobblestone or cobbled deepslate, snowballs, potatoes and any arrow. Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
+Ammo comes in thirteen kinds (Kinetic Rounds, Scatter Shells, Sniper Rounds, Rockets, Missiles, Fuel Canisters, Laser Cells, Rail Slugs, Mortar Shells, Plasma Cells, Javelin Missiles, Brood Capsules and Hive Drones), and the early turrets fire what you already have: cobblestone or cobbled deepslate, snowballs, potatoes and any arrow. Hoppers, Create belts, funnels and chutes or item pipes from other mods can all load a turret, and they can't put anything else in. Got Create installed? Then Mechanical Arms load turrets directly as well. Or mount turrets on the faces of a Feed Hub and feed just the hub: it hands the ammo out to every turret whose weapon takes it, evenly, and holds what doesn't fit yet. Place hubs together and they merge, up to 3x3x3, into one block with shared storage and an FE bank: Tesla Coils and Railguns standing on top charge from it, and large turrets on top get their ammo too.
 
 <!-- screenshot: 08_create_automation.png -->
 

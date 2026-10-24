@@ -186,6 +186,107 @@ public final class VfxPresets {
     /** The burn left on the struck face: glows in the blast colour, cools to black, fades after ~20 s. */
     public static final VfxPreset ROCKET_SCORCH = v -> v.scorch(1.5f * v.params().scale(), 400);
 
+    // --- Javelin Missile, fire orange (flight, mark and blast: JavelinEffects) ---------------------------
+
+    /** Cold launch out of the silo: a thick cloud of gas bursts up and rolls off the deck, a dull flash, a thump. */
+    public static final VfxPreset JAVELIN_LAUNCH = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 14, UP, 70, 0.12f, 3.2f, 50, Curve.EASE_OUT, 0xC0D4D8DC)
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), UP, 0.08f, 4f, 14, Curve.EASE_OUT, 0xB0E0E4E8)
+            .burst(BastionParticles.BLAST_SMOKE.get(), 8, UP, 100, 0.16f, 3.6f, 60, Curve.BILLOW, 0xA0B4B8BE)
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 3f, 3, Curve.PULSE, v.params().color())
+            .light(12, 4)
+            .shake(0.3f, 16);
+
+    /** Every tick under a climbing missile: a long flame tongue, thick smoke round the column, the odd ember (5 a tick). */
+    public static final VfxPreset JAVELIN_TRAIL = v -> v
+            .burst(BastionParticles.FLAME.get(), 2, v.direction(), 8, 0.3f, 2.4f, 5, Curve.LINEAR, v.params().color())
+            .burst(BastionParticles.BLAST_SMOKE.get(), 2, v.direction(), 30, 0.03f, 3.0f, 70, Curve.BILLOW, 0xB0A6AAB0)
+            .burst(BastionParticles.EMBER.get(), 1, v.direction(), 25, 0.08f, 0.6f, 16, Curve.FLICKER, v.params().color());
+
+    /** Impact: the rocket blast at the Javelin's scale, plus a ground shockwave, a big fireball with a rising core, a smoke column, a hard shake. */
+    public static final VfxPreset JAVELIN_EXPLOSION = v -> {
+        ROCKET_EXPLOSION.play(v);
+        float s = v.params().scale();
+        v.ring(BastionParticles.SHOCKWAVE_RING.get(), v.origin().add(0, 0.2, 0), UP, 0, 26f * s, 16, Curve.EASE_OUT, 0xC0FFE0B0)
+                .burst(BastionParticles.FIREBALL.get(), 14, UP, 110, 0.2f * s, 12f * s, 32, Curve.BILLOW, v.params().color())
+                .burst(BastionParticles.FIREBALL.get(), 6, UP, 25, 0.32f * s, 9f * s, 36, Curve.BILLOW, v.params().color())
+                .burst(BastionParticles.BLAST_SMOKE.get(), 8, UP, 20, 0.25f * s, 10f * s, 130, Curve.BILLOW, 0xD0303236)
+                .shake(0.9f, 24)
+                .flash(0.5f, 16);
+    };
+
+    // --- Brood Cannon, brood green (capsule, spiders: BroodEffects) -------------------------------------------
+
+    /** Launch: a deep pneumatic thump, a pale ring of gas blown up the barrel, a green flash, a little smoke. */
+    public static final VfxPreset BROOD_LAUNCH = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 3.2f, 3, Curve.PULSE, v.params().color())
+            .ring(BastionParticles.MUZZLE_RING.get(), v.origin(), v.direction(), 0.1f, 2.8f, 12, Curve.EASE_OUT, 0xC0D8E0D8)
+            .burst(BastionParticles.SMOKE_PUFF.get(), 6, v.direction(), 30, 0.1f, 2.4f, 40, Curve.EASE_OUT, 0xB0A8B0A8)
+            .light(11, 3)
+            .shake(0.3f, 14);
+
+    /** A capsule coming to rest: a dust ring sweeping out over the ground, a few clods thrown up. */
+    public static final VfxPreset BROOD_LAND = v -> v
+            .ring(BastionParticles.DUST_RING.get(), v.origin(), v.params().normal(), 0, 5f, 18, Curve.EASE_OUT, 0xB0000000 | (v.params().blockColor() & 0xFFFFFF))
+            .burst(BastionParticles.DEBRIS.get(), 5, UP, 60, 0.25f, 0.6f, 24, Curve.LINEAR, v.params().blockColor())
+            .shake(0.15f, 10);
+
+    /** The petals opening: a hiss of pale gas from the seams and a soft green glow from the core. */
+    public static final VfxPreset BROOD_OPEN = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 8, UP, 80, 0.07f, 1.8f, 35, Curve.EASE_OUT, 0xA0D8E0D8)
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 2.4f, 6, Curve.PULSE, v.params().color())
+            .light(9, 8);
+
+    /** A spider's death burst: a small fireball, sparks and its pieces thrown out. Scale = its radius / 2.5. */
+    public static final VfxPreset SPIDER_BURST = v -> {
+        float s = v.params().scale();
+        v.single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 4.5f * s, 3, Curve.PULSE, 0xFFFFF2D0)
+                .burst(BastionParticles.FIREBALL.get(), 5, UP, 180, 0.08f * s, 3.2f * s, 14, Curve.BILLOW, v.params().color())
+                .burst(BastionParticles.SPARK.get(), 8, UP, 170, 0.45f, 0.7f, 10, Curve.LINEAR, v.params().color())
+                .burst(BastionParticles.DEBRIS.get(), 5, UP, 120, 0.3f, 0.5f, 22, Curve.LINEAR, 0xFF3A3F46)
+                .burst(BastionParticles.BLAST_SMOKE.get(), 3, UP, 60, 0.05f, 2.4f * s, 40, Curve.BILLOW, 0xC0303236)
+                .light(12, 4)
+                .shake(0.12f, 8);
+    };
+
+    // --- Hive Carrier, honey amber (drones: HiveEffects) -----------------------------------------------------
+
+    /** A wave leaving: soft puffs out of each doorway of the hive (muzzle_0..2) and a short amber glow. */
+    public static final VfxPreset HIVE_LAUNCH = v -> v
+            .burst(BastionParticles.SMOKE_PUFF.get(), 8, UP, 70, 0.08f, 2.0f, 30, Curve.EASE_OUT, 0xA0D8DCE0)
+            .light(9, 4);
+
+    /** A new drone being welded together inside the hive between waves: a few hot sparks and a blink of light. */
+    public static final VfxPreset HIVE_WELD = v -> v
+            .burst(BastionParticles.SPARK.get(), 4, UP, 80, 0.12f, 0.35f, 6, Curve.LINEAR, v.params().color())
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 0.35f, 2, Curve.PULSE, v.params().color())
+            .light(6, 1);
+
+    /** A drone's shot: a small flash at the chin. */
+    public static final VfxPreset DRONE_MUZZLE = v -> v
+            .single(BastionParticles.MUZZLE_FLASH.get(), v.origin(), 0.9f, 2, Curve.PULSE, v.params().color())
+            .light(7, 1);
+
+    /** A drone bullet striking a creature: two sparks (lean: up to nine drones fire four times a second). */
+    public static final VfxPreset DRONE_IMPACT = v -> v
+            .burst(BastionParticles.SPARK.get(), 2, v.params().normal(), 50, 0.2f, 0.5f, 6, Curve.LINEAR, v.params().color());
+
+    /** A drone bullet striking a block: two sparks and a small short-lived mark. */
+    public static final VfxPreset DRONE_IMPACT_BLOCK = v -> v
+            .burst(BastionParticles.SPARK.get(), 2, v.params().normal(), 50, 0.2f, 0.5f, 6, Curve.LINEAR, v.params().color())
+            .decal(0.1f, 30);
+
+    /** Behind a diving drone: red-hot smoke and the odd spark. */
+    public static final VfxPreset DRONE_TRAIL = v -> v
+            .burst(BastionParticles.BLAST_SMOKE.get(), 1, v.direction(), 20, 0.02f, 1.2f, 30, Curve.BILLOW, 0xC0402020)
+            .burst(BastionParticles.SPARK.get(), 1, v.direction(), 30, 0.2f, 0.5f, 6, Curve.LINEAR, v.params().color());
+
+    /** A drone's kamikaze: a missile blast (scale = its radius / 3). */
+    public static final VfxPreset DRONE_KAMIKAZE = v -> {
+        MISSILE_EXPLOSION.play(v);
+        v.burst(BastionParticles.DEBRIS.get(), 6, UP, 140, 0.35f, 0.6f, 26, Curve.LINEAR, 0xFF3A3F46);
+    };
+
     // --- Tesla Coil, electric blue (bolts: ArcRenderer, TeslaEffects) -------------------------------
 
     /** Discharge at the terminal: a white-hot flash in a coloured halo, a crackling ring, sparks thrown off, a hard light. */

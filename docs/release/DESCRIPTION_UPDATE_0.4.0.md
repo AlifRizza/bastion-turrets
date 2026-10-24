@@ -1,8 +1,8 @@
 # Store description: what changed since the 0.3.2 text
 
-Only these 5 parts changed; everything else (and every image) stays as it is. Each part has the Modrinth text
+Only these 6 parts changed; everything else (and every old image) stays as it is. Each part has the Modrinth text
 (Markdown) and the CurseForge text (HTML, editor in Source code view). Full files: `DESCRIPTION.md` (Modrinth),
-`DESCRIPTION.curseforge.html` (CurseForge). No new pictures yet: the early turrets have not been captured in game. The
+`DESCRIPTION.curseforge.html` (CurseForge). Two new pictures in the text and four new gallery images (part 6). The
 0.4.0 changelog is in `UPLOAD.md`.
 
 Not uploaded yet (user 2026-10-22): 0.3.2 goes up a few days after 2026-10-22, 0.4.0 about a week after that.
@@ -31,7 +31,7 @@ Modrinth:
 | Cobblestone Turret | Makeshift | A spring cannon that flings cobblestone (or cobbled deepslate): 3 damage per stone, 16 block range. |
 | Snowball Repeater | Makeshift | A crank drum that fires five snowballs a second, 1.5 damage each. One snowball is four shots. |
 | Potato Shotgun | Makeshift | A spud gun: 5 potato chunks of 2 damage in a wide cone, 10 block range. Poisonous potatoes work too (no poison). |
-| Arrow Launcher | Makeshift | One arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only. |
+| Arrow Launcher | Makeshift | A hwacha, an arrow box on a wheeled cart: one arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only. |
 ```
 
 CurseForge (after the Plasma Cannon Turret `</tr>`):
@@ -55,7 +55,7 @@ CurseForge (after the Plasma Cannon Turret `</tr>`):
 <tr>
 <td>Arrow Launcher</td>
 <td>Makeshift</td>
-<td>One arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only.</td>
+<td>A hwacha, an arrow box on a wheeled cart: one arrow fires a volley of 6 on a high arc over walls, onto and around a mob on the ground 6 to 32 blocks away, 3 damage each. Takes any arrow: tipped ones keep their effect, spectral ones make the target glow. Floor bases only.</td>
 </tr>
 ```
 
@@ -108,3 +108,14 @@ with:
 ```markdown
 The crafting table makes only the stations and the early gear (the Makeshift Turret Base and its four turrets).
 ```
+
+## 6. Pictures
+
+Upload these two and put each one in the text (CurseForge: the editor's image button, from `screenshots-840/`; Modrinth:
+upload to the gallery, then link it):
+
+- `14_arrow_launcher` right after the Missile Salvo picture (end of the Weapons section).
+- `13_early_turrets` right after the floor/wall/ceiling picture (end of the Turret bases section).
+
+Gallery (both sites, from `screenshots/`, captions in `UPLOAD.md` "Gallery captions"): `13_early_turrets`,
+`14_arrow_launcher`, `15_spectral_volley`, `16_makeshift_mounts`.

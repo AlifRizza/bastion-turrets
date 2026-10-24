@@ -502,6 +502,350 @@ def mortar_shell(path):
 
 
 
+# Javelin Missile (Fortress Turret Base): muzzle_0 = the silo mouth, JavelinWeapon.MOUTH = JV_MOUTH / 16; the loaded
+# missile's tail sits at JV_SEAT, where the flying one starts (JavelinWeapon.SEAT = JV_SEAT / 16).
+JV_MOUTH, JV_SEAT, JV_TOP, JV_WELL = 30.0, 4.0, 28.0, 5.0
+JV_MAST = (-17.0, 10.0)  # radar mast axis (x, z) on the weapon's right rear: the yaw_pivot turns about it
+
+
+def javelin_turret(path):
+    """Javelin Missile for the Fortress Turret Base (PLAN "Turret 3x3"): an armoured vertical launch silo that stands
+    still on a deck plate, tapering in steps, with two blast doors over its well (they open while it aims) and the loaded
+    missile's nose in the well under them; beside it a radar mast that turns to face the target (yaw_pivot about the
+    mast), its dish sweeping while idle, lens glowing. muzzle_0 = the silo mouth; vents = the uptake hatches."""
+    k = Kit(256)  # a 2.5-block deck plate: its faces do not fit a 128 sheet
+    mx, mz = JV_MAST
+    k.bone("root")
+    k.bone("deck", "root", cubes=k.octagon("deckplate", 20, 0, 1.6) + k.octagon("skirt", 18.5, -3, 0))
+    silo = k.chamfer("plinth", 14, 3, 1.6, 4) + k.chamfer("lower", 13, 3, 4, 15) + k.chamfer("upper", 12, 2.6, 15, 21)
+    w = JV_WELL
+    silo += [k.box("rimn", -10.5, 21, -10.5, 10.5, JV_TOP, -w), k.box("rimn", -10.5, 21, w, 10.5, JV_TOP, 10.5),
+             k.box("rimw", -10.5, 21, -w, -w, JV_TOP, w), k.box("rimw", w, 21, -w, 10.5, JV_TOP, w)]
+    # Sloped glacis plates on the lower body's four sides, leaning in toward the top (a thick armoured trapezoid).
+    silo += [k.box("glacis", -11, 3.5, -15.2, 11, 15, -14.0, rot=[-16, 0, 0], pivot=[0, 3.5, -14.6]),
+             k.box("glacis", -11, 3.5, 14.0, 11, 15, 15.2, rot=[16, 0, 0], pivot=[0, 3.5, 14.6]),
+             k.box("glacisx", -15.2, 3.5, -11, -14.0, 15, 11, rot=[0, 0, 16], pivot=[-14.6, 3.5, 0]),
+             k.box("glacisx", 14.0, 3.5, -11, 15.2, 15, 11, rot=[0, 0, -16], pivot=[14.6, 3.5, 0])]
+    k.bone("silo", "root", cubes=silo)
+    k.bone("well", "silo", pivot=(0, 21, 0), cubes=[k.box("well", -w, 20.95, -w, w, 21.05, w)])
+    k.bone("glow_strips", "silo", pivot=(0, 17, 0), cubes=k.faces4("gstrip", 12, 17.2, 17.8, 12, 0.1))
+    # Blast doors: each covers half the well and laps onto the rim, hinged at its outer edge (aim swings them up).
+    for side, name in ((1, "door_l"), (-1, "door_r")):
+        x0, x1 = sorted((0, side * (w + 1.2)))
+        r0, r1 = sorted((side * 1.2, side * (w - 0.6)))
+        k.bone(name, "silo", pivot=(side * (w + 1.2), JV_TOP, 0), cubes=[
+            k.box("door", x0, JV_TOP, -w - 1.2, x1, JV_TOP + 1.4, w + 1.2),
+            k.box("doorrib", r0, JV_TOP + 1.4, -1.0, r1, JV_TOP + 1.9, 1.0)])
+    # Uptake hatches over the rim's front corners: they pop open as the missile leaves (exhaust gas).
+    for side, name in ((1, "vent_l"), (-1, "vent_r")):
+        x0, x1 = sorted((side * 7.0, side * 10.0))
+        k.bone(name, "silo", pivot=(side * 8.5, JV_TOP, -7.0), cubes=[k.box("vent", x0, JV_TOP, -10.0, x1, JV_TOP + 0.6, -7.0)])
+    # The loaded missile: only its top shows, in the well; the fire clip sends it up, the next one rises from below.
+    k.bone("round", "silo", pivot=(0, JV_SEAT, 0), cubes=[
+        k.box("rbody", -1.7, 14.0, -1.7, 1.7, 23.5, 1.7), k.box("rnose", -1.3, 23.5, -1.3, 1.3, 26.0, 1.3),
+        k.box("rtip", -0.7, 26.0, -0.7, 0.7, 27.2, 0.7),
+        k.box("rcanard", -2.8, 18.5, -0.15, 2.8, 20.0, 0.15), k.box("rcanardx", -0.15, 18.5, -2.8, 0.15, 20.0, 2.8)])
+    k.bone("muzzle_0", "root", pivot=(0, JV_MOUTH, 0))
+    # Radar mast: turns with the aim about its own axis.
+    k.bone("yaw_pivot", "root", pivot=(mx, 0, mz), cubes=k.octagon("collar", 3.4, 1.6, 3.4, cx=mx, cz=mz) + [
+        k.box("mast", mx - 1.4, 3.4, mz - 1.4, mx + 1.4, 29.0, mz + 1.4),
+        k.box("mastrib", mx - 0.5, 5.0, mz - 2.0, mx + 0.5, 27.0, mz + 2.0),
+        k.box("head", mx - 2.4, 29.0, mz - 2.4, mx + 2.4, 32.0, mz + 2.4)])
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(mx, 34, mz))
+    # The dish faces forward (-Z), tilted back 20 degrees to the sky; it sweeps round the mast while idle.
+    tilt = dict(rot=[20, 0, 0], pivot=[mx, 34, mz])
+    k.bone("sensor", "yaw_pivot", pivot=(mx, 34, mz), cubes=[
+        k.box("dish", mx - 5.5, 29.5, mz - 1.2, mx + 5.5, 38.5, mz - 0.2, **tilt),
+        k.box("dishrim", mx - 6.0, 29.0, mz - 2.0, mx + 6.0, 29.6, mz - 0.2, **tilt),
+        k.box("dishrim", mx - 6.0, 38.4, mz - 2.0, mx + 6.0, 39.0, mz - 0.2, **tilt),
+        k.box("dishside", mx - 6.0, 29.6, mz - 2.0, mx - 5.4, 38.4, mz - 0.2, **tilt),
+        k.box("dishside", mx + 5.4, 29.6, mz - 2.0, mx + 6.0, 38.4, mz - 0.2, **tilt),
+        k.box("feed", mx - 0.4, 33.6, mz - 5.0, mx + 0.4, 34.4, mz - 1.2, **tilt),
+        k.box("dishback", mx - 1.6, 32.4, mz - 0.2, mx + 1.6, 35.6, mz + 1.6)])
+    k.bone("glow_lens", "sensor", pivot=(mx, 34, mz - 5.2), cubes=[k.box("lens", mx - 0.9, 33.1, mz - 5.6, mx + 0.9, 34.9, mz - 4.8, **tilt)])
+    k.write("javelin_turret", path, bounds=(5, 4), offset=(0, 1, 0))
+
+
+def javelin_missile(path):
+    """Javelin missile in flight: origin at its centre, nose north (-Z), ~1.4 blocks long; four tail fins, small
+    canards, a glowing sensor nose."""
+    k = Kit(64)
+    k.bone("root")
+    k.bone("body", "root", cubes=k.rod_z("jbody", 0, 0, -7.5, 9.0, 3.4, 2.6) + [
+        k.box("band", -1.9, -1.9, -2.6, 1.9, 1.9, -1.6), k.box("band", -1.9, -1.9, 5.0, 1.9, 1.9, 6.0)])
+    k.bone("nose", "body", pivot=(0, 0, -7.5), cubes=[k.box("nose", -1.3, -1.3, -10.0, 1.3, 1.3, -7.5),
+                                                       k.box("cone", -0.8, -0.8, -11.2, 0.8, 0.8, -10.0)])
+    k.bone("glow_nose", "nose", pivot=(0, 0, -11.2), cubes=[k.box("tip", -0.45, -0.45, -11.9, 0.45, 0.45, -11.2)])
+    k.bone("fins", "body", pivot=(0, 0, 8.0), cubes=[k.box("finh", -3.6, -0.15, 6.0, 3.6, 0.15, 9.6),
+                                                      k.box("finv", -0.15, -3.6, 6.05, 0.15, 3.6, 9.55),
+                                                      k.box("canard", -2.6, -0.12, -5.6, 2.6, 0.12, -4.0),
+                                                      k.box("canardv", -0.12, -2.6, -5.55, 0.12, 2.6, -4.05)])
+    k.bone("nozzle", "body", pivot=(0, 0, 9.3), cubes=[k.box("nozzle", -1.1, -1.1, 9.0, 1.1, 1.1, 10.2)])
+    k.write("turret_javelin", path, bounds=(2, 2), offset=(0, 0, 0))
+
+
+# Brood Cannon (Fortress Turret Base): brood_cannon.json pivot_height = BC_P / 16, muzzle_length = -BC_TIP / 16.
+BC_P, BC_TIP = 18.0, -17.5
+
+
+def brood_cannon_turret(path):
+    """Brood Cannon for the Fortress Turret Base (PLAN "Turret 3x3"): a short fat wide-bore cannon on trunnions over a
+    round armoured brood chamber; lit windows in the chamber show folded spiders waiting; a loader arm at the back swings
+    a capsule into the breech after each shot. The barrel pitches 45-85 degrees up like the Mortar's. muzzle_0 = the bore."""
+    k = Kit(256)  # a 2-block deck plate: its faces do not fit a 128 sheet
+    P = BC_P
+    k.bone("root")
+    yaw = k.octagon("turn", 16, 0, 1.6) + k.octagon("chamber", 11, 1.6, 13.2) + k.octagon("chambercap", 9.5, 13.2, 14.6)
+    yaw += k.ring8("band", 11, 3.0, 4.2, 0.6) + k.ring8("band", 11, 10.6, 11.8, 0.6)
+    for side in (-1, 1):  # trunnion cheeks on the chamber's top
+        x0, x1 = sorted((side * 6.0, side * 9.0))
+        yaw.append(k.box("cheek", x0, 14.6, -4.0, x1, P + 3.0, 4.0))
+    k.bone("yaw_pivot", "root", cubes=yaw)
+    # Windows on the four diagonals: a lit back plate in a recess, a folded spider in front of it.
+    windows, spiders = [], []
+    for a in (45, 135, 225, 315):
+        windows.append(k.box("window", -2.6, 5.2, -11.15, 2.6, 9.8, -11.05, rot=[0, a, 0], pivot=[0, 5.2, 0]))
+        spiders += [k.box("fold", -1.6, 6.0, -11.3, 1.6, 8.0, -11.15, rot=[0, a, 0], pivot=[0, 6.0, 0]),
+                    k.box("foldleg", -2.2, 6.6, -11.35, 2.2, 7.2, -11.2, rot=[0, a, 0], pivot=[0, 6.6, 0])]
+    k.bone("glow_windows", "yaw_pivot", pivot=(0, 7.5, 0), cubes=windows)
+    k.bone("brood", "yaw_pivot", pivot=(0, 7.0, 0), cubes=spiders)
+    k.bone("glow_strips", "yaw_pivot", pivot=(0, 12.4, 0), cubes=k.ring8("gstrip", 11.6, 12.2, 12.6, 0.1, width=6))
+    k.bone("vent_l", "yaw_pivot", pivot=(-4.0, 14.6, 6.0), cubes=[k.box("vent", -6.5, 14.6, 4.0, -1.5, 15.2, 8.0)])
+    k.bone("vent_r", "yaw_pivot", pivot=(4.0, 14.6, 6.0), cubes=[k.box("vent", 1.5, 14.6, 4.0, 6.5, 15.2, 8.0)])
+    k.bone("sensor", "yaw_pivot", pivot=(9.8, 17.0, -2.0), cubes=[k.box("scope", 9.0, 15.2, -4.5, 11.4, 18.4, 1.0)])
+    k.bone("glow_lens", "sensor", pivot=(10.2, 16.8, -4.55), cubes=[k.box("lens", 9.4, 15.8, -4.6, 11.0, 17.8, -4.5)])
+    # Loader arm at the back: it swings a capsule up into the breech (fire clip).
+    k.bone("loader", "yaw_pivot", pivot=(0, 14.6, 9.0), cubes=[
+        k.box("loaderbase", -2.0, 13.8, 8.0, 2.0, 15.6, 10.6), k.box("loaderarm", -0.9, 15.6, 8.6, 0.9, 22.0, 10.0),
+        k.box("loaderclaw", -2.2, 21.4, 7.4, 2.2, 22.6, 10.0)])
+    k.bone("loader_capsule", "loader", pivot=(0, 23.5, 8.7), cubes=[
+        k.box("lcap", -1.8, 22.6, 7.0, 1.8, 26.4, 10.4), k.box("lcaptip", -1.1, 26.4, 7.7, 1.1, 27.2, 9.7)])
+    k.bone("axle", "yaw_pivot", pivot=(0, P, 0), cubes=k.rod_x("axle", P, 0, -9.4, 9.4, 3.6))
+    k.bone("pitch_pivot", "yaw_pivot", pivot=(0, P, 0))
+    k.bone("body", "pitch_pivot", pivot=(0, P, 0), cubes=[k.box("breech", -5.2, P - 5.2, -2.0, 5.2, P + 5.2, 6.0),
+                                                          k.box("breechcap", -4.0, P - 4.0, 6.0, 4.0, P + 4.0, 7.4)])
+    # Short fat barrel with a wide bore; it slides back into the breech on each shot (fire clip).
+    k.bone("barrel_0", "body", pivot=(0, P, -2.0), cubes=k.rod_z("bbarrel", 0, P, BC_TIP + 1.5, -2.0, 10.0, 8.0) + [
+        k.box("collar", -5.8, P - 5.8, -6.0, 5.8, P + 5.8, -3.6), k.box("lip", -5.6, P - 5.6, BC_TIP, 5.6, P + 5.6, BC_TIP + 1.5)])
+    k.bone("glow_barrel", "barrel_0", pivot=(0, P, -4.8), cubes=[k.box("collarglow", -5.9, P - 5.9, -5.1, 5.9, P + 5.9, -4.5)])
+    k.bone("bore", "barrel_0", pivot=(0, P, BC_TIP), cubes=[k.box("bore", -3.8, P - 3.8, BC_TIP - 0.05, 3.8, P + 3.8, BC_TIP + 0.05)])
+    k.bone("muzzle_0", "barrel_0", pivot=(0, P, BC_TIP - 0.3))
+    k.write("brood_cannon_turret", path, bounds=(4, 4), offset=(0, 1, 0))
+
+
+def brood_capsule(path):
+    """Brood capsule: an armoured pod on a round foot, closed by three petals that open like a flower (petal_0..2 turn
+    each to its third; the open clip tips leaf_0..2 out about their foot), a glowing core inside. Origin at its foot."""
+    k = Kit(64)
+    k.bone("root")
+    k.bone("base", "root", cubes=k.octagon("foot", 4.6, 0, 2.2) + k.octagon("rim", 5.0, 2.2, 3.0))
+    k.bone("glow_core", "root", pivot=(0, 3, 0), cubes=[k.box("core", -2.0, 3.0, -2.0, 2.0, 8.0, 2.0)])
+    for i in range(3):  # petal_i turns its third about the axis; leaf_i is the petal, hinged at its foot
+        k.bone(f"petal_{i}", "root", pivot=(0, 3.0, 0), rotation=[0, 120 * i, 0])
+        k.bone(f"leaf_{i}", f"petal_{i}", pivot=(0, 3.0, -4.8), cubes=[
+            k.box("petal", -4.0, 3.0, -4.8, 4.0, 9.0, -3.2), k.box("petaltop", -3.0, 9.0, -4.0, 3.0, 11.0, -2.0),
+            k.box("petaltip", -1.6, 11.0, -2.8, 1.6, 12.2, -0.6)])
+    k.write("turret_brood_capsule", path, bounds=(1, 1), offset=(0, 0.4, 0))
+
+
+def brood_spider(path):
+    """Brood spider (~0.6 block): a robot hexapod, segmented body (abdomen, thorax, head), a cluster of glowing eyes, two
+    needle fangs, six two-segment legs (leg_l0..2, leg_r0..2, pivots at the thorax). Origin at its feet, facing north."""
+    k = Kit(64)
+    k.bone("root")
+    k.bone("body", "root", pivot=(0, 5.0, 0), cubes=[
+        k.box("abdomen", -2.8, 3.6, 0.5, 2.8, 7.4, 6.5), k.box("abdomenplate", -2.2, 7.4, 1.2, 2.2, 8.0, 5.8),
+        k.box("thorax", -2.2, 3.8, -3.5, 2.2, 6.6, 0.5)])
+    k.bone("head", "body", pivot=(0, 5.2, -3.5), cubes=[k.box("headbox", -1.6, 4.0, -6.2, 1.6, 6.4, -3.5)])
+    k.bone("glow_eyes", "head", pivot=(0, 5.6, -6.25), cubes=[
+        k.box("eye", -1.2, 5.4, -6.3, -0.4, 6.0, -6.2), k.box("eye", 0.4, 5.4, -6.3, 1.2, 6.0, -6.2),
+        k.box("eyesmall", -0.3, 4.7, -6.3, 0.3, 5.2, -6.2), k.box("eyesmall", -0.3, 5.9, -6.3, 0.3, 6.4, -6.2)])
+    k.bone("fangs", "head", pivot=(0, 4.4, -6.0), cubes=[
+        k.box("fang", -1.1, 2.6, -7.4, -0.6, 4.4, -6.2, rot=[-20, 0, 0], pivot=[0, 4.4, -6.2]),
+        k.box("fang", 0.6, 2.6, -7.4, 1.1, 4.4, -6.2, rot=[-20, 0, 0], pivot=[0, 4.4, -6.2])])
+    k.bone("glow_strip", "body", pivot=(0, 7.4, 3.5), cubes=[k.box("strip", -0.4, 7.4, 1.0, 0.4, 8.1, 6.0)])
+    for side, name in ((1, "l"), (-1, "r")):
+        for i, z in enumerate((-2.8, -1.0, 0.8)):
+            x0 = side * 2.2
+            upper0, upper1 = sorted((x0, side * 6.0))
+            low0, low1 = sorted((side * 5.6, side * 6.6))
+            k.bone(f"leg_{name}{i}", "body", pivot=(x0, 5.4, z), cubes=[
+                k.box("legup", upper0, 5.0, z - 0.4, upper1, 6.6, z + 0.4, rot=[0, 0, side * 25], pivot=[x0, 5.4, z]),
+                k.box("legdown", low0, 0.0, z - 0.35, low1, 6.4, z + 0.35)])
+    k.write("brood_spider", path, bounds=(1.2, 1), offset=(0, 0.3, 0))
+
+
+# Hive Carrier (Fortress Turret Base): its landing pads, px over the turntable; MUST match HiveCarrierWeapon.BAYS (x, y, z).
+# The floor stands over the armed base's solid top (8 px, FortressTurretBaseBlock.ARMED); each pad sits behind a hole.
+HC_FLOOR = 10.0
+HC_BAYS = ((0.0, -12.0), (10.392, 6.0), (-10.392, 6.0))
+HC_HOLE = (16.0, HC_FLOOR, 20.0)  # width, bottom, top (a drone is ~14 px wide, ~5.5 high)
+# Where docked drones stand: on the pad, then on two shelves over it (feet heights); slot i = pad i % 3, level i // 3.
+HC_SHELVES = (HC_FLOOR + 0.3, HC_FLOOR + 6.6, HC_FLOOR + 13.1)
+
+
+def drone_cubes(k, ox, oy, oz):
+    """A docked or half-built Hive drone inside the hive (hive_drone() made lighter: ducts as plates), feet at
+    (ox, oy, oz), nose north. Returns (legs, body, rotors, glow): the stages it is built in, then its lights."""
+    def b(tag, x0, y0, z0, x1, y1, z1, **kw):
+        return k.box(tag, ox + x0, oy + y0, oz + z0, ox + x1, oy + y1, oz + z1, **kw)
+    legs = [b("dskid", -2.4, 0, -2.6, -1.9, 0.5, 2.6), b("dskid", 1.9, 0, -2.6, 2.4, 0.5, 2.6),
+            b("dstrut", -2.4, 0.5, -0.4, -1.9, 2.0, 0.4), b("dstrut", 1.9, 0.5, -0.4, 2.4, 2.0, 0.4)]
+    body = [b("dhull", -2.6, 2.0, -3.2, 2.6, 4.4, 3.2), b("dtop", -1.8, 4.4, -2.4, 1.8, 5.0, 2.0), b("dgun", -0.8, 1.2, -3.6, 0.8, 2.0, -1.6)]
+    rotors = []
+    for x, z in ((-4.6, -4.6), (4.6, -4.6), (4.6, 4.6), (-4.6, 4.6)):
+        rotors += [b("darm", min(0, x) - 0.4 if x < 0 else -0.4, 3.2, -0.4, max(0, x) + 0.4 if x > 0 else 0.4, 3.8, 0.4,
+                     rot=[0, 45 if x * z > 0 else -45, 0], pivot=[ox, oy + 3.2, oz]),
+                   b("dduct", x - 2.3, 3.0, z - 2.3, x + 2.3, 3.6, z + 2.3), b("dblade", x - 1.9, 3.6, z - 0.25, x + 1.9, 3.75, z + 0.25)]
+    glow = [b("dstatus", -0.6, 5.0, 1.0, 0.6, 5.4, 2.2), b("deye", -1.2, 3.0, -3.25, 1.2, 3.8, -3.2)]
+    return legs, body, rotors, glow
+
+
+def hexagon(k, tag, r, y0, y1, cx=0.0, cz=0.0):
+    """Regular hexagon prism, flats at distance r (three overlapping boxes turned 0/60/120 degrees about its axis)."""
+    w = 2 * r * math.tan(math.radians(30))
+    return [k.box(tag, cx - w / 2, y0 + 0.01 * i, cz - r, cx + w / 2, y1 + 0.01 * i, cz + r, rot=[0, 60 * i, 0], pivot=[cx, y0, cz],
+                  hide=("north", "south")) for i in range(3)]
+
+
+def hex_face(j):
+    """Unit outward normal (x, z) of hexagon face j (rot 60 j about +Y, as GeckoLib turns a cube: Ry(+y), preview.py)."""
+    b = math.radians(60 * j)
+    return -math.sin(b), -math.cos(b)
+
+
+def hex_wall(k, tag, r, y0, y1, t, holes=()):
+    """A hollow hexagonal wall, flats at distance r (outside), t thick: six panels; on the faces in holes a doorway of
+    HC_HOLE (two pillars and a lintel) instead of the panel."""
+    w = 2 * r * math.tan(math.radians(30))
+    hw, hb, ht = HC_HOLE
+    out = []
+    for j in range(6):
+        rot, piv = [0, 60 * j, 0], [0, y0, 0]
+        if j in holes:
+            out += [k.box(tag + "pl", -w / 2, y0, -r, -hw / 2, y1, -r + t, rot=rot, pivot=piv),
+                    k.box(tag + "pl", hw / 2, y0, -r, w / 2, y1, -r + t, rot=rot, pivot=piv),
+                    k.box(tag + "li", -hw / 2, ht, -r, hw / 2, y1, -r + t, rot=rot, pivot=piv)]
+        else:
+            out.append(k.box(tag, -w / 2, y0, -r, w / 2, y1, -r + t, rot=rot, pivot=piv))
+    return out
+
+
+def hex_shelf(k, tag, r_out, r_in, y0, y1):
+    """A flat hexagonal ring between flats r_in and r_out (six trapezoid-ish panels): the ledge where the nest narrows."""
+    w = 2 * r_out * math.tan(math.radians(30))
+    return [k.box(tag, -w / 2, y0, -r_out, w / 2, y1, -r_in, rot=[0, 60 * j, 0], pivot=[0, y0, 0]) for j in range(6)]
+
+
+def hive_carrier_turret(path):
+    """Hive Carrier for the Fortress Turret Base (PLAN "Turret 3x3", user 2026-10-24): a big hollow wasp-nest hive nearly
+    as wide as the 3x3 on a slim pedestal: honeycomb-plated layers (hex material), each with an overhanging lip, swelling
+    out above the doorways and narrowing to a cap. Three doorways in its lowest layer (north, south-east, south-west)
+    lead into the hollow, where a landing pad with cyan lights waits behind each (bays, glow_bays); drones fly level out
+    of a doorway and in again. A relay mast rises out of the cap, its antenna pulsing while it controls its drones. It
+    never turns (everything hangs off root)."""
+    k = Kit(256)
+    k.bone("root")
+    holes = [j for j in range(6) if any(abs(hex_face(j)[0] - bx / 12) < 0.05 and abs(hex_face(j)[1] - bz / 12) < 0.05 for bx, bz in HC_BAYS)]
+    assert len(holes) == 3, holes
+    f = HC_FLOOR
+    # Honeycomb layers, (wall radius, bottom, top); the lowest carries the doorways. Between layers: a lip, then a ledge in.
+    layers = ((21.0, f, 20.5), (22.0, 22.0, 26.5), (20.5, 27.6, 31.0), (17.0, 31.8, 34.5), (12.8, 35.2, 37.2))
+    walls = []
+    for i, (r, y0, y1) in enumerate(layers):
+        walls += hex_wall(k, f"wall_{i}", r, y0, y1, 1.5, holes if i == 0 else ())
+    k.bone("hive", "root", cubes=walls)
+    # Armoured frame: the pedestal, the underside, the lips and ledges between the layers, the cap.
+    frame = (hexagon(k, "foot", 18.0, 0.0, 1.5) + hexagon(k, "pedestal", 13.0, 1.5, 7.0)
+             + hexagon(k, "under", 17.0, 7.0, 8.6) + hexagon(k, "floor", 20.6, 8.6, f)
+             + hex_wall(k, "lip_0", 22.6, 20.5, 22.0, 2.6) + hex_shelf(k, "step_1", 22.6, 20.0, 20.5, 21.2)
+             + hex_wall(k, "lip_1", 22.8, 26.5, 27.6, 2.4) + hex_shelf(k, "step_2", 22.0, 19.0, 27.0, 27.6)
+             + hex_wall(k, "lip_2", 21.2, 31.0, 31.8, 2.0) + hex_shelf(k, "step_3", 20.5, 15.5, 31.0, 31.8)
+             + hex_wall(k, "lip_3", 17.6, 34.5, 35.2, 1.8) + hex_shelf(k, "step_4", 17.0, 11.3, 34.5, 35.2)
+             + hexagon(k, "cap", 13.2, 37.2, 38.6) + hexagon(k, "crown", 7.0, 38.6, 40.0))
+    for j in holes:  # a hood over each doorway
+        frame.append(k.box("hood", -HC_HOLE[0] / 2 - 1.2, HC_HOLE[2], -22.4, HC_HOLE[0] / 2 + 1.2, HC_HOLE[2] + 0.5, -20.6,
+                           rot=[0, 60 * j, 0], pivot=[0, f, 0]))
+    k.bone("hive_frame", "root", cubes=frame)
+    pads, lights, rims = [], [], []
+    for bx, bz in HC_BAYS:
+        pads += hexagon(k, "pad", 4.6, f, f + 0.3, bx, bz)
+        for c in range(6):
+            ang = math.radians(60 * c)
+            lx, lz = bx + math.cos(ang) * 5.4, bz + math.sin(ang) * 5.4
+            lights.append(k.box("padlight", lx - 0.35, f, lz - 0.35, lx + 0.35, f + 0.4, lz + 0.35))
+    hw, hb, ht = HC_HOLE
+    for j in holes:  # cyan frame round each doorway, on the wall's face
+        rot, piv = [0, 60 * j, 0], [0, f, 0]
+        rims += [k.box("rimv", -hw / 2 - 0.6, hb, -21.15, -hw / 2, ht, -20.9, rot=rot, pivot=piv),
+                 k.box("rimv", hw / 2, hb, -21.15, hw / 2 + 0.6, ht, -20.9, rot=rot, pivot=piv),
+                 k.box("rimh", -hw / 2 - 0.6, ht - 0.6, -21.15, hw / 2 + 0.6, ht, -20.9, rot=rot, pivot=piv)]
+    # Racks: two shelves over each pad, on two posts at its back (docked drones stand three deep, bottoms first).
+    pad_faces = [next(j for j in holes if abs(hex_face(j)[0] - bx / 12) < 0.05 and abs(hex_face(j)[1] - bz / 12) < 0.05) for bx, bz in HC_BAYS]
+    racks = []
+    for (bx, bz), j in zip(HC_BAYS, pad_faces):
+        for y in HC_SHELVES[1:]:
+            racks += hexagon(k, "shelf", 4.6, y - 0.4, y, bx, bz)
+        dx, dz = hex_face(j)
+        for side in (-1, 1):
+            cx, cz = bx - dx * 4.2 - dz * 3.0 * side, bz - dz * 4.2 + dx * 3.0 * side
+            racks.append(k.box("rackpost", cx - 0.4, f, cz - 0.4, cx + 0.4, HC_SHELVES[2], cz + 0.4))
+    k.bone("racks", "root", pivot=(0, f, 0), cubes=racks)
+    # Docked drones, one bone per slot (WeaponModel shows as many as are docked), nose out to its doorway.
+    for i in range(9):
+        (bx, bz), j, y = HC_BAYS[i % 3], pad_faces[i % 3], HC_SHELVES[i // 3]
+        legs, body, rotors, glow = drone_cubes(k, bx, y, bz)
+        k.bone(f"dock_{i}", "root", pivot=(bx, y, bz), rotation=[0, 60 * j, 0], cubes=legs + body + rotors)
+        k.bone(f"glow_dock_{i}", f"dock_{i}", pivot=(bx, y, bz), cubes=glow)
+    # A new drone being built on each empty pad between waves: legs, body, rotors, then its lights over a lit plate.
+    for p, ((bx, bz), j) in enumerate(zip(HC_BAYS, pad_faces)):
+        y = HC_SHELVES[0]
+        stages = drone_cubes(k, bx, y, bz)
+        k.bone(f"build_{p}", "root", pivot=(bx, y, bz), rotation=[0, 60 * j, 0])
+        for n in range(3):
+            k.bone(f"build_{p}_{n}", f"build_{p}", pivot=(bx, y, bz), cubes=stages[n])
+        k.bone(f"glow_build_{p}", f"build_{p}", pivot=(bx, y, bz), cubes=hexagon(k, "buildplate", 4.2, y + 0.02, y + 0.12, bx, bz))
+        k.bone(f"glow_build_{p}_lit", f"build_{p}", pivot=(bx, y, bz), cubes=stages[3])
+    k.bone("bays", "root", pivot=(0, f, 0), cubes=pads)
+    k.bone("glow_bays", "root", pivot=(0, f, 0), cubes=lights + rims)
+    k.bone("glow_strips", "root", pivot=(0, 26.0, 0), cubes=hex_wall(k, "gstrip", 22.1, 25.8, 26.2, 0.3))
+    # The middle of each doorway's mouth, 1.4 blocks past its pad (HiveDroneEntity.EXIT): a wave's puffs play there.
+    for i, (bx, bz) in enumerate(HC_BAYS):
+        r = math.hypot(bx, bz)
+        k.bone(f"muzzle_{i}", "root", pivot=(bx * (r + 22.4) / r, f + 4.0, bz * (r + 22.4) / r))
+    # Relay mast: from the floor up through the cap; it rises a little further on deploy; its antenna pulses.
+    k.bone("relay", "root", pivot=(0, 40.0, 0), cubes=hexagon(k, "mastfoot", 2.6, f, f + 2.0) + [
+        k.box("mast", -1.2, f + 2.0, -1.2, 1.2, 49.0, 1.2),
+        k.box("mastring", -2.6, 42.0, -2.6, 2.6, 42.8, 2.6), k.box("mastring", -2.6, 45.4, -2.6, 2.6, 46.2, 2.6)])
+    k.bone("sensor", "relay", pivot=(0, 50.0, 0), cubes=[k.box("masthead", -1.8, 49.0, -1.8, 1.8, 51.2, 1.8),
+                                                         k.box("antenna", -0.3, 51.2, -0.3, 0.3, 55.0, 0.3)])
+    k.bone("glow_antenna", "sensor", pivot=(0, 55.5, 0), cubes=[k.box("antennatip", -0.7, 55.0, -0.7, 0.7, 56.4, 0.7)])
+    k.write("hive_carrier_turret", path, bounds=(4, 4), offset=(0, 1.5, 0))
+
+
+def hive_drone(path):
+    """Hive drone: a compact quadcopter, four ducted fans on short arms (fan_0..3 spin), a small gun under the chin, a
+    status light on its back, two skids. Origin at its feet, nose north (-Z)."""
+    k = Kit(64)
+    k.bone("root")
+    body = [k.box("hull", -2.6, 2.0, -3.2, 2.6, 4.4, 3.2), k.box("hulltop", -1.8, 4.4, -2.4, 1.8, 5.0, 2.0),
+            k.box("skid", -2.4, 0.0, -2.6, -1.9, 0.5, 2.6), k.box("skid", 1.9, 0.0, -2.6, 2.4, 0.5, 2.6),
+            k.box("strut", -2.4, 0.5, -0.4, -1.9, 2.0, 0.4), k.box("strut", 1.9, 0.5, -0.4, 2.4, 2.0, 0.4)]
+    for i, (x, z) in enumerate(((-4.6, -4.6), (4.6, -4.6), (4.6, 4.6), (-4.6, 4.6))):
+        body.append(k.box("arm", min(0, x) - 0.4 if x < 0 else -0.4, 3.2, -0.4, max(0, x) + 0.4 if x > 0 else 0.4, 3.8, 0.4,
+                          rot=[0, 45 if x * z > 0 else -45, 0], pivot=[0, 3.2, 0]))
+        body += [k.box("ductwall", x - 2.3, 2.9, z - 2.3, x + 2.3, 4.1, z - 1.9), k.box("ductwall", x - 2.3, 2.9, z + 1.9, x + 2.3, 4.1, z + 2.3),
+                 k.box("ductwallx", x - 2.3, 2.9, z - 1.9, x - 1.9, 4.1, z + 1.9), k.box("ductwallx", x + 1.9, 2.9, z - 1.9, x + 2.3, 4.1, z + 1.9)]
+        k.bone(f"fan_{i}", "root", pivot=(x, 3.5, z), cubes=[k.box("blade", x - 1.9, 3.4, z - 0.25, x + 1.9, 3.6, z + 0.25),
+                                                             k.box("bladex", x - 0.25, 3.42, z - 1.9, x + 0.25, 3.58, z + 1.9)])
+    k.bone("body", "root", pivot=(0, 3.0, 0), cubes=body)
+    k.bone("gun", "body", pivot=(0, 1.6, -2.6), cubes=[k.box("gunbox", -0.8, 1.2, -3.6, 0.8, 2.0, -1.6),
+                                                        k.box("gunbarrel", -0.3, 1.4, -5.4, 0.3, 1.8, -3.6)])
+    k.bone("glow_status", "body", pivot=(0, 5.0, 1.6), cubes=[k.box("status", -0.6, 5.0, 1.0, 0.6, 5.4, 2.2),
+                                                               k.box("eye", -1.2, 3.0, -3.25, 1.2, 3.8, -3.2)])
+    k.write("hive_drone", path, bounds=(1, 1), offset=(0, 0.3, 0))
+
+
 def square_frame(k, tag, cy, z0, z1, half, t):
     """A square ring around the Z axis: four bars `t` thick, outer half-width `half`."""
     h, v = tag + "h", tag + "v"  # the top/bottom bars and the side bars differ in size: their own UV regions
@@ -935,3 +1279,10 @@ cobblestone_turret(f"{out}/cobblestone_turret.geo.json")
 snowball_repeater(f"{out}/snowball_repeater.geo.json")
 potato_shotgun(f"{out}/potato_shotgun.geo.json")
 arrow_launcher(f"{out}/arrow_launcher.geo.json")
+javelin_turret(f"{out}/javelin_turret.geo.json")
+javelin_missile(f"{out}/entity/turret_javelin.geo.json")
+brood_cannon_turret(f"{out}/brood_cannon_turret.geo.json")
+brood_capsule(f"{out}/entity/turret_brood_capsule.geo.json")
+brood_spider(f"{out}/entity/brood_spider.geo.json")
+hive_carrier_turret(f"{out}/hive_carrier_turret.geo.json")
+hive_drone(f"{out}/entity/hive_drone.geo.json")

@@ -1384,6 +1384,174 @@ tidak hilang di antara tick, gambar braket di layar (proyeksi hitbox) atau di du
 **Di luar cakupan**: perubahan mode otomatis (tanpa kendali), tembak per klik untuk senjata lain, lock untuk senjata selain
 Missile, suara baru, nomor versi rilis (diputuskan user saat commit).
 
+### Fortress Turret Base 3x3 (permintaan user 2026-10-23 14:59, desain 15:05–15:10) — **rilis 0.5.0**
+
+**Status**: roadmap user 2026-10-23: 0.5.0 = base 3x3 + 1–2 turret yang butuh base itu (turretnya diriset user sendiri,
+menyusul), 0.6.0 = riset + wiki tech tree, 0.7.0 = upgrade Mk2/Mk3 (Augment Core) dan hybrid (Fusion Core); catatan
+roadmap di memory, spec masing-masing ditulis saat disetujui. Bagian ini **hanya base-nya**. User 15:05: "lanjut dulu aja,
+gw review dan komen kalau udah jadi": keputusan yang ditandai *(controller)* adalah tebakan saya, untuk direview user.
+**Dibangun 2026-10-23 (4 task subagent + review akhir Opus xhigh), belum di-commit, belum dites user di game**; GameTest
+301/301. Perbaikan dari review akhir: comparator di samping blok mana pun (juga Large), blok Fortress nyasar tidak
+meneruskan ke base lain, percikan dari tepi lambung (baru terlihat setelah ada senjata 3x3). Jangan diupload sebelum
+turret 3x3 pertama ada (rencana user: Javelin Missile → Brood Cannon → Hive Carrier, satu per satu, eksekusi native).
+User 22:14: rilis 0.5.0 = Fortress + **ketiga** turret, jadi upload menunggu Hive Carrier.
+
+**Latar belakang**: rumah untuk turret 3x3 (ditentukan user nanti) dan untuk Mk3 dari semua turret 2x2 di 0.7.0 (turret 1x1
+→ Mk3 butuh 2x2, turret 2x2 → Mk3 butuh 3x3).
+
+**Keputusan user** (2026-10-23 15:10): hanya senjata **ukuran 3x3** yang muat (base kosong sampai turret 3x3 pertama
+ada); nama sementara **Fortress Turret Base**; resep di Part Assembler dari **campuran part Large Base yang sudah ada + part
+baru khusus**. Tampilan mengikuti referensi user "Weapons Platform Large" (15:05, "mirip mirip kaya gini").
+
+**Gameplay** (mengikuti Large Turret Base kecuali disebut lain)
+- Multiblock 3x3x1, **hanya di permukaan atas blok** (lantai), blok inti di tengah *(controller)*; hologram penempatan
+  (cyan/merah) seperti Large Base. Merusak salah satu dari 9 blok = merusak base.
+- Kelas ukuran senjata baru **huge** (3x3): hanya muat di Fortress; senjata standar, large, dan early ditolak di Fortress,
+  senjata huge ditolak di base lain. Pesan penolakan seperti yang sudah ada.
+- Tier T1–T3 dengan Tier Upgrade Kit yang sama; slot ammo/modul, regen, dan multiplier turn speed sama dengan tabel 4.1.
+  **HP = base standar × `fortressBaseHealthMultiplier` 5,0** (config server; 500 / 1250 / 2500) *(controller: Large 2,5)*.
+- Lampu HP sama (cyan sehat, kuning < 50 %, merah berkedip < 25 %, percikan), lewat garis glow di model.
+- Hancur: senjata dan ammo hilang, modul drop, drop **Damaged Fortress Turret Base** yang ingat tier; Part Assembler +
+  **3 Repair Kit** memulihkannya *(controller: Large 2, standar 1)*. Ledakan custom sedikit lebih besar dari Large
+  *(controller)*. Ditambang: isi tetap ikut (gaya shulker).
+- Feed Hub: Fortress di atas struktur Feed Hub bila kesembilan bloknya berdiri di atas struktur yang sama (aturan yang
+  sudah ditulis di §8 Feed Hub). Control Hub (Hub Connector), Overwatch Link, Turret Configurator, otomasi hopper,
+  comparator, save/load, sync: seperti Large Base.
+
+**Resep** *(controller, angka di `tools/gen_recipes.py`)*
+- Part baru **Fortress Frame** (Part Workstation): 4 iron block, 1 diamond, 1 redstone block.
+- Fortress Turret Base (Part Assembler): 1 Fortress Frame + 2 Heavy Base Plating + 1 Heavy Base Housing + 1 Heavy Servo
+  Turntable.
+
+**Tampilan** (gunmetal, satu glow cyan seperti base modern; model lewat `tools/blockout`)
+- Platform lebar dan rendah setinggi ~1 blok di atas 3x3 blok; turntable `weapon_mount` di y 16 seperti base lain.
+- Inti segi delapan di tengah yang sedikit menonjol dengan penutup bulat; empat penopang lapis baja di sudut yang miring
+  turun ke tanah; garis glow di tepi penopang = lampu HP (yang depan = `status_light`).
+- T1: platform, inti, penopang polos. T2: blok samping berventilasi di antara penopang + plat armor. T3: deretan sirip
+  pendingin di penopang + trim glow (bentuk paling mirip referensi).
+
+**Integrasi**: Jade (tier, HP, info blok inti dari 9 blok); JEI (halaman info Fortress, base huge di kategori Turret
+Weapons bila nanti ada senjata huge); lang en_us + id_id; config stats tetap bekerja.
+
+**Test** (GameTest dulu, gagal dulu): pemasangan mengisi tepat 9 blok dan gagal bila terhalang; kunci ukuran untuk semua
+kombinasi base × kelas senjata; HP per tier dari config; hancur → Damaged Fortress dengan tier, perbaikan 3 Repair Kit;
+merusak blok luar menghancurkan base; ditambang menyimpan isi; Feed Hub 3x3 mengisi ammo-nya, struktur 2x2 tidak; resep
+ada; save/load. Visual: scene `-Pshowcase=fortress` (T1/T2/T3, HP kuning/merah, hologram, di atas Feed Hub, item di
+tangan, siang dan malam); checklist di `TESTING.md`.
+
+**Di luar cakupan**: turret 3x3 (user), Mk3 turret 2x2 (0.7.0), riset (0.6.0), suara baru (pakai suara Large Base).
+
+### Turret 3x3: Javelin Missile, Brood Cannon, Hive Carrier (ide user 2026-10-23 21:34–22:10) — **rilis 0.5.0**
+
+**Status**: desain dari tanya-jawab 21:34–22:10; user 22:10 "coba desain sendiri yang bagus dan keren" untuk tampilan
+(tanpa referensi). Dibangun **satu per satu** (urutan Javelin → Brood Cannon → Hive Carrier), eksekusi **native**, tiap
+turret plan sendiri. **Rilis 0.5.0 = Fortress + ketiga turret** (user 22:14): upload menunggu Hive Carrier selesai.
+**Javelin**: plan `docs/superpowers/plans/2026-10-23-javelin-missile.md`; Task 1–5 dibangun 2026-10-23/24, review akhir
+(Opus xhigh) + fix pass, 319/319 GameTest; showcase `-Pshowcase=javelin` dicek. **Brood Cannon**: plan
+`docs/superpowers/plans/2026-10-23-brood-cannon.md`; Task 1–5 dibangun 2026-10-24, showcase `-Pshowcase=brood` dicek, review
+akhir (Opus xhigh) + fix pass, 344/344. **Hive Carrier**: plan `docs/superpowers/plans/2026-10-24-hive-carrier.md`; Task 1–5 dibangun 2026-10-24, review akhir (Opus xhigh) +
+fix pass, 366/366; showcase `-Pshowcase=hive` dicek 2026-10-24 05:56. **Penyesuaian user 2026-10-24 06:33** (ledger
+`.superpowers/sdd/2026-10-24-0.5.0-adjustments/progress.md`): terbang Javelin (diam → nyala → akselerasi → hilang 3 dtk →
+menukik), ledakan unit 15 (laba-laba radius 4, drone 4,5), model Hive sarang berongga dengan pintu samping; lalu isi sarang
+terlihat, Hive 15 dtk + 120 peluru, Brood (gigitan 8, kapsul kena kepala 10, hancur sendiri 10 dtk, serangan disebar);
+review akhir kedua + fix pass, 390/390. Di-commit 2026-10-24 sebagai 0.5.0 (belum di-push).
+Angka *(controller)* = usulan saya, semuanya di JSON/config. Ketiganya modul **huge**
+(`BaseKind.FORTRESS`), hanya di Fortress Turret Base.
+
+**Aturan bersama** (keputusan user)
+- Tiap tembakan / kapsul / drone memakai **1 item amunisi khusus + FE** (keduanya; seperti Railgun). Item dibuat di Ammo
+  Workstation, otomasi hopper/Feed Hub seperti ammo lain; FE lewat kabel/Feed Hub seperti Tesla/Railgun.
+- Semua ledakan (Javelin, kamikaze laba-laba dan drone) **hanya melukai target sah** (filter turret), tanpa merusak blok.
+- Laba-laba dan drone adalah **entity dengan HP**; **mob musuh mengincar mereka** (umpan). Mereka hanya menyerang target sah
+  menurut filter turret pemiliknya (filter disalin saat keluar). Pemain melukai mereka dengan aturan yang sama seperti
+  melukai turret (`trustedCanDamage`) *(controller)*.
+- Turret hancur / mati / dibongkar: unit yang masih hidup **lanjut bertarung sampai mati** (drone tanpa rumah kamikaze saat
+  pelurunya habis). Chunk di-unload / world ditutup: unit **hilang, tidak disimpan** (tidak ada entity yatim).
+- Model, animasi, efek, suara custom (NO-VANILLA), gunmetal + glow cyan seperti turret modern; lampu unit ikut warna
+  status (cyan sehat, merah saat HP rendah) *(controller)*.
+
+**Javelin Missile**
+- Target: **titik musuh terpadat** di darat: dari target sah dalam jangkauan yang **berdiri di bawah langit terbuka**
+  (`canSeeSky`), pilih yang punya target sah terbanyak dalam radius ledakan (seri: total HP terbesar); tidak menembak mob
+  terbang. Target itu diberi **tanda** sejak peluncuran sampai tumbukan.
+- Terbang: gas mendorong rudal keluar silo, rudal **diam** sebentar di atas silo (`hold_ticks` 10), mesin menyala lalu
+  naik **tegak lurus** dengan **percepatan**: pelan dulu, makin lama makin cepat sampai hilang dari pandangan (~2 dtk,
+  ~60 blok di atas); **tak terlihat** beberapa detik di atas (`hang_ticks` 60 = 3 dtk; user 2026-10-24), lalu muncul dan
+  menukik **tegak lurus** ke target (~1 dtk), mengikuti posisi target selama target di bawah langit terbuka; bila target
+  tertutup atap, rudal jatuh di titik terbuka terakhirnya *(controller)*. Di Nether, gua, atau di bawah atap Javelin
+  **tidak menembak** sama sekali (user 22:14: senjata langit; tidak ada mode cadangan).
+- Angka *(controller)*: jangkauan 8–48, `fire_interval` 160 (8 dtk), ledakan radius 6, damage 40 di tengah turun linear
+  ke 15 di tepi, 1 Javelin Missile + 10.000 FE per tembakan.
+- Overwatch: crosshair memilih titik jatuh (tanda muncul di titik itu), klik = tembak; HUD reload.
+- **Tampilan**: silo peluncur vertikal (VLS) lapis baja di atas turntable: kotak tebal miring dengan **dua pintu
+  ledakan** di atasnya yang membuka sebelum peluncuran; di sampingnya **mast radar** dengan piringan yang berputar
+  menghadap target dan lensa glow. Peluncuran: pintu terbuka, rudal "didorong" keluar (cold launch, kepulan gas), mesin
+  menyala di atas silo, lidah api + kolom asap tebal naik; reload: rudal baru naik dari bawah ke silo, pintu menutup.
+  Rudal: ~1,5 blok, badan ramping, 4 sirip ekor, hidung sensor glow cyan. **Tanda**: chevron hologram melayang di atas
+  kepala target + lingkaran di tanah yang **menyusut** sampai tumbukan, cyan lalu merah berkedip di detik terakhir.
+  Tumbukan: bola api besar, cincin kejut, debu, serpihan, cahaya dinamis, guncangan kamera. Suara: dentum peluncuran,
+  raungan mesin yang menjauh ke atas, siulan jatuh yang meninggi, ledakan.
+
+**Brood Cannon**
+- Tembak: **kapsul** dengan lintasan **lengkung tinggi** (solver Mortar), lewat atas tembok, ke target sah di darat;
+  kapsul mendarat, **terbuka**, keluar **3 laba-laba robot**. Kapsul yang jatuh tepat di kepala musuh memberi 10 damage ke
+  musuh itu saja, bukan area (user 2026-10-24).
+- Laba-laba **menumpuk sampai batas config** per turret; saat batas penuh turret menunggu. Tanpa musuh dalam pandangan
+  selama 10 dtk laba-laba **meledak sendiri** (timer mulai lagi begitu ada musuh), jadi tidak menumpuk setelah perang
+  (user 2026-10-24; awalnya kembali dan menunggu di sekitar turret: dengan banyak meriam, laba-laba yang menunggu
+  memenuhi batas dan tak melihat musuh yang ditembak meriam). Serangan disebar: tiap kapsul ke target yang paling sedikit
+  laba-laba/kapsulnya, tiap laba-laba ke musuh yang paling sedikit diserang laba-laba lain.
+- Angka *(controller)*: jangkauan 6–32, `fire_interval` 120 (6 dtk), 1 Brood Capsule + 4.000 FE per kapsul; laba-laba HP
+  16, gigitan 8 damage / 1 dtk (user 2026-10-24; awalnya 4), lari sedikit lebih cepat dari zombie, batas 12 per turret; mati = **meledak** 15 damage
+  radius 4 (user 2026-10-24; awalnya 6 radius 2,5).
+- Overwatch: membidik seperti Mortar (garis lengkung), klik = tembak kapsul.
+- **Tampilan**: meriam pendek gemuk berlaras lebar (pitch 45–85 seperti Mortar) di atas **ruang induk** silinder dengan
+  jendela kaca tempat terlihat laba-laba terlipat; lengan pemuat menyelipkan kapsul ke sungsang. Kapsul: pod lapis baja
+  dengan **tiga kelopak** yang membuka seperti bunga saat mendarat. Laba-laba: robot heksapod kecil (~0,6 blok), badan
+  bersegmen, kluster mata glow, sepasang taring jarum. Animasi: keluar dari kapsul (kaki membuka), jalan (kaki bergantian),
+  **menerkam + menusuk**, mati: mata merah berkedip ~0,5 dtk lalu meledak.
+
+**Hive Carrier**
+- Tiap **15 dtk** keluar **3 drone** (menumpuk sampai batas config); tiap drone 1 Hive Drone + FE. (User 2026-10-24: awalnya 30 dtk
+  dan 60 peluru; drone habis/mati sebelum gelombang berikutnya, batas 9 tak pernah tercapai.)
+- Drone: **120 peluru**, menembak target sah dari jauh, berpatroli di sekitar carrier; peluru habis **atau** HP rendah →
+  **menukik kamikaze** ke musuh. Tanpa musuh: **pulang, mendarat, isi ulang** peluru (FE) lalu menunggu di dalam carrier.
+- Angka *(controller)*: drone 2.000 FE, batas 9 per carrier, HP 20, peluru 2 damage, 4 tembakan/dtk, jarak tembak 16,
+  jarak patroli 32 dari carrier, kamikaze saat HP < 25 %: 15 damage radius 4,5 (user 2026-10-24; awalnya 10 radius 3), isi ulang 120 peluru = 1.000 FE.
+- Overwatch: hanya melihat.
+- **Tampilan** (user 2026-10-24: lebih besar, berongga seperti sarang, lubang untuk keluar-masuk drone di samping): sarang
+  besar berongga hampir selebar 3x3 di atas pedestal, berlapis-lapis pelat sarang lebah dengan bibir di tiap lapis,
+  menggembung lalu menyempit ke tutup; **tiga pintu di dinding samping** (utara, tenggara, barat daya) berbingkai cyan,
+  di baliknya landasan berlampu cyan di dalam rongga; **mast relay** keluar dari tutup dengan antena yang berdenyut saat
+  mengendalikan drone. Drone keluar mendatar lewat pintunya lalu naik; pulang turun di depan pintu lalu masuk mendatar.
+  Di dalam (user 2026-10-24): drone yang parkir terlihat di rak (landasan dulu, lalu dua rak di atasnya, maks 9); selama
+  jeda 15 dtk antar gelombang, drone baru terlihat dirakit di landasan kosong (kaki, badan, rotor, lampu) dengan percikan las. Drone: quadcopter ringkas dengan 4 kipas berselubung, senjata kecil di dagu (kilatan + tracer
+  custom), lampu status (cyan → merah). Animasi: lepas landas dari ruang, melayang (kipas berputar, badan bergoyang
+  halus), menembak (recoil), masuk ke landasan, kamikaze (miring, berputar, jejak merah, ledakan).
+
+**Detail builder** (pemeriksaan builder 22:12; semua *(controller)*)
+- Aggro: unit memakai mekanisme `TurretAggro` yang sama (mob `Enemy` non-neutral dapat target goal untuk unit, prioritas 3
+  di bawah pemain, config `mobsAttackTurrets` ikut). Skeleton boleh menembak drone.
+- Hitungan: drone yang parkir di carrier ikut batas 9; item Hive Drone habis saat drone keluar, mendarat memakai drone yang
+  sama (isi ulang hanya FE); saat batas penuh timer menunggu tanpa memakai item/FE; hitungan unit mulai dari 0 setelah
+  chunk dimuat (unit lama sudah hilang), kecuali drone yang parkir: jumlahnya disimpan di carrier (keputusan user
+  2026-10-24); laba-laba yang menunggu ikut batas 12.
+- Sasaran: unit hanya menyerang yang diizinkan filter turretnya (pemain hanya bila filter memuat Players); turret lain
+  tidak pernah membidik unit, unit tidak saling menyerang; laba-laba hanya menggigit target yang bisa dijangkau di darat,
+  drone juga menembak mob terbang.
+- Entity: laba-laba `PathfinderMob` dengan navigasi darat vanilla (NO-VANILLA soal visual, bukan AI), `MobCategory.MISC`,
+  tidak spawn alami, tidak despawn; drone pengendali terbang custom tanpa gravitasi.
+- Performa: batas per turret + batas unit satu dunia di config (default 96); unit mencari target tiap 10 tick seperti
+  turret; jalur laba-laba dihitung ulang paling sering tiap 20 tick.
+- Javelin naik sampai min(60, batas tinggi dunia − 4 − y); menembak hanya bila atap silo melihat langit.
+
+**Test** (per turret, GameTest dulu, gagal dulu): pemilihan target (titik terpadat di langit terbuka / darat saja),
+konsumsi item + FE, batas unit, unit hanya melukai target sah, mob musuh mengincar unit, unit bertahan setelah turret
+hancur, unit hilang saat chunk di-unload tanpa entity yatim, kamikaze saat peluru habis/HP rendah, drone pulang dan isi
+ulang, Overwatch (Javelin, Brood). Visual: scene showcase per turret (siang/malam, peluncuran, tanda, tumbukan, unit).
+
+**Di luar cakupan**: Mk2/Mk3 dan hybrid (0.7.0), riset (0.6.0), kendali Overwatch untuk Hive Carrier.
+
 ---
 
 ## 9. Aturan Kerja untuk Claude Code

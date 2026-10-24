@@ -63,6 +63,12 @@ public final class Showcase {
             && !System.getProperty("bastion.showcase").equals("placement")
             && !System.getProperty("bastion.showcase").equals("modules")
             && !System.getProperty("bastion.showcase").equals("early")
+            && !System.getProperty("bastion.showcase").equals("fortress")
+            && !System.getProperty("bastion.showcase").equals("javelin")
+            && !System.getProperty("bastion.showcase").equals("brood")
+            && !System.getProperty("bastion.showcase").equals("hive")
+            && !System.getProperty("bastion.showcase").equals("trailer")
+            && !System.getProperty("bastion.showcase").equals("hivedock")
             && !System.getProperty("bastion.showcase").equals("ion") && !System.getProperty("bastion.showcase").equals("plasma")
             && !System.getProperty("bastion.showcase").equals("hub") && !System.getProperty("bastion.showcase").startsWith("video");
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0);

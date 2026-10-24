@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "bastion:fortress_turret_base",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                {
+                  "source": "Inventory",
+                  "target": "BlockEntityTag.Inventory",
+                  "op": "replace"
+                },
+                {
+                  "source": "Tier",
+                  "target": "BlockEntityTag.Tier",
+                  "op": "replace"
+                },
+                {
+                  "source": "DockedDrones",
+                  "target": "BlockEntityTag.DockedDrones",
+                  "op": "replace"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "bastion:fortress_turret_base",
+          "properties": {
+            "cell": "4"
+          }
+        }
+      ]
+    }
+  ]
+}

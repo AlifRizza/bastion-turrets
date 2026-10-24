@@ -19,7 +19,9 @@ public final class WeaponStatRows {
     public static List<Row> left(WeaponData data, StatSheet stats) {
         return List.of(
                 new Row("damage", fmt(stats.damage())),
-                new Row("fire_rate", fmt(20f / stats.fireInterval()) + "/s"),
+                // Slow weapons (a Hive Carrier wave every 15 s) would read 0.1/s with one decimal.
+                new Row("fire_rate", (20f / stats.fireInterval() < 0.1f ? String.format(Locale.ROOT, "%.2f", 20f / stats.fireInterval())
+                        : fmt(20f / stats.fireInterval())) + "/s"),
                 new Row("range", fmt(stats.range())),
                 new Row("turn_speed", fmt(stats.turnSpeed() * 20) + "°/s"),
                 // The Laser Rifle passes through every valid target on its line.
@@ -29,6 +31,15 @@ public final class WeaponStatRows {
     }
 
     public static List<Row> right(WeaponData data, StatSheet stats, float maxHealth, float regenPerSecond) {
+        if (data.params().containsKey("energy_per_drone")) { // Hive Carrier: FE per new drone, drones per wave, no heat
+            return List.of(
+                    new Row("energy_per_drone", fe(data.param("energy_per_drone")) + " FE"),
+                    new Row("energy_capacity", fe(data.param("energy_capacity")) + " FE"),
+                    new Row("max_input", fe(data.param("max_input")) + " FE/t"),
+                    new Row("max_hp", fmt(maxHealth)),
+                    new Row("regen", fmt(regenPerSecond) + "/s"),
+                    new Row("drones", String.valueOf(Math.round(data.param("drones_per_wave")))));
+        }
         if (data.params().containsKey("energy_per_shot")) { // energy weapons: capacitor, no heat
             return List.of(
                     new Row("energy_per_shot", fe(data.param("energy_per_shot")) + " FE"),

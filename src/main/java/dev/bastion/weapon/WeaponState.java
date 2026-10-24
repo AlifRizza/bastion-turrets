@@ -1,9 +1,9 @@
 package dev.bastion.weapon;
 
 /**
- * Per-turret runtime state a weapon type keeps between ticks (server side; only the loaded tubes are saved): Machine
- * Gun spin, Precision Lock progress, which barrel fires next, Missile Launcher tubes. Owned by the turret, reset when
- * the weapon changes.
+ * Per-turret runtime state a weapon type keeps between ticks (server side; only the loaded tubes and docked drones are
+ * saved): Machine Gun spin, Precision Lock progress, which barrel fires next, Missile Launcher tubes. Owned by the
+ * turret, reset when the weapon changes.
  */
 public final class WeaponState {
     /** Machine Gun barrel spin, 0 (still) .. 1 (full rate). */
@@ -41,6 +41,11 @@ public final class WeaponState {
     public final int[] slideTicks = new int[4];
     /** Ticks until the last reloaded rocket has slid home and clanked (a salvo waits for it). */
     public int seatTimer;
+
+    // Brood Cannon: its spiders and capsules out fill its cap (it waits, spending nothing).
+    public boolean unitsFull;
+    // Hive Carrier: drones docked in it (saved with the turret; flying ones are not).
+    public int dockedDrones;
 
     // Mortar: whether the shell's arc to a target is clear of blocks, re-checked every few ticks (it is ~30 ray casts).
     public int arcTarget = -1;

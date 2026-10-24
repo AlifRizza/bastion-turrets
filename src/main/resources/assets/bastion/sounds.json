@@ -661,5 +661,150 @@
     "sounds": [
       "bastion:makeshift_base/destroyed"
     ]
+  },
+  "javelin.launch": {
+    "subtitle": "subtitles.bastion.javelin.launch",
+    "sounds": [
+      {
+        "name": "bastion:javelin/launch_0",
+        "attenuation_distance": 64
+      },
+      {
+        "name": "bastion:javelin/launch_1",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "javelin.fly": {
+    "subtitle": "subtitles.bastion.javelin.fly",
+    "sounds": [
+      {
+        "name": "bastion:javelin/fly",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "javelin.dive": {
+    "subtitle": "subtitles.bastion.javelin.dive",
+    "sounds": [
+      {
+        "name": "bastion:javelin/dive",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "javelin.explode": {
+    "subtitle": "subtitles.bastion.javelin.explode",
+    "sounds": [
+      {
+        "name": "bastion:javelin/explode_0",
+        "attenuation_distance": 96
+      },
+      {
+        "name": "bastion:javelin/explode_1",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "brood.fire": {
+    "subtitle": "subtitles.bastion.brood.fire",
+    "sounds": [
+      {
+        "name": "bastion:brood/fire_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:brood/fire_1",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "brood.capsule_land": {
+    "subtitle": "subtitles.bastion.brood.capsule_land",
+    "sounds": [
+      {
+        "name": "bastion:brood/capsule_land",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "brood.capsule_open": {
+    "subtitle": "subtitles.bastion.brood.capsule_open",
+    "sounds": [
+      {
+        "name": "bastion:brood/capsule_open",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "brood_spider.bite": {
+    "subtitle": "subtitles.bastion.brood_spider.bite",
+    "sounds": [
+      {
+        "name": "bastion:brood/spider_bite_0",
+        "attenuation_distance": 16
+      },
+      {
+        "name": "bastion:brood/spider_bite_1",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "brood_spider.burst": {
+    "subtitle": "subtitles.bastion.brood_spider.burst",
+    "sounds": [
+      {
+        "name": "bastion:brood/spider_burst_0",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "bastion:brood/spider_burst_1",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "hive.launch": {
+    "subtitle": "subtitles.bastion.hive.launch",
+    "sounds": [
+      {
+        "name": "bastion:hive/launch",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "hive_drone.hum": {
+    "subtitle": "subtitles.bastion.hive_drone.hum",
+    "sounds": [
+      {
+        "name": "bastion:hive/drone_hum",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "hive_drone.shot": {
+    "subtitle": "subtitles.bastion.hive_drone.shot",
+    "sounds": [
+      {
+        "name": "bastion:hive/drone_shot_0",
+        "attenuation_distance": 24
+      },
+      {
+        "name": "bastion:hive/drone_shot_1",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "hive_drone.kamikaze": {
+    "subtitle": "subtitles.bastion.hive_drone.kamikaze",
+    "sounds": [
+      {
+        "name": "bastion:hive/drone_kamikaze_0",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "bastion:hive/drone_kamikaze_1",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

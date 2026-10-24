@@ -530,6 +530,99 @@ def hub_ui_select():
     L = 0.12
     return fade_out(norm(np.sin(2 * np.pi * 1320 * t(L)) * env(L, 0.002, 0.03), 0.7))
 
+# --- Javelin Missile (PLAN "Turret 3x3"): one big missile every 8 seconds --------------------------
+def javelin_launch(v):
+    """Cold launch: a deep gas thump out of the silo and a long hiss, then the engine catching with a ragged roar."""
+    j = jitter(1700 + v); L = 2.2
+    tt = t(L)
+    thump = sweep(L, 55 * j, 28) * env(L, 0.003, 0.2)
+    gas = bp(noise(L, 1701 + v), 300, 4000) * env(L, 0.02, 0.5) * np.linspace(1.3, 0.3, n(L))
+    ignite = bp(noise(L, 1702 + v), 120, 2400) * np.clip((tt - 0.25) / 0.15, 0, 1) * np.exp(-np.maximum(tt - 0.4, 0) * 1.6)
+    return fade_out(norm(1.3 * thump + gas + 0.9 * ignite), 0.3)
+def javelin_fly():
+    L = 1.0  # loop: a heavy, low engine roar with a slow flutter
+    tt = t(L + 0.05)
+    roar = bp(noise(L + 0.05, 1710), 70, 1800) * (0.8 + 0.2 * np.sin(2 * np.pi * 7 * tt))
+    return norm(loopable(roar), 0.55)
+def javelin_dive():
+    """The dive (~1 s): a falling whistle that rises and swells; the client raises its pitch as well."""
+    L = 1.1
+    whistle = sweep(L, 650, 1500) * np.linspace(0.2, 1.0, n(L))
+    air = bp(noise(L, 1720), 800, 5000) * np.linspace(0.1, 0.8, n(L)) * 0.5
+    return fade_out(norm(whistle + air, 0.7), 0.05)
+def javelin_explode(v):
+    """The rocket blast, bigger and deeper, with a long rolling tail."""
+    j = jitter(1730 + v); L = 3.8
+    boom = sweep(L, 50 * j, 18) * env(L, 0.004, 0.8)
+    blast = onepole_lp(noise(L, 1731 + v), 1800) * env(L, 0.002, 0.45)
+    crack = hp(noise(L, 1732 + v), 2800) * env(L, 0.0005, 0.05)
+    rumble = onepole_lp(noise(L, 1733 + v), 150) * env(L, 0.1, 1.6) * 1.1
+    return fade_out(norm(1.4 * boom + blast + crack + rumble), 0.4)
+
+# --- Brood Cannon (PLAN "Turret 3x3"): a capsule every 6 seconds, spiders that bite and burst ----------
+def brood_fire(v):
+    """A deep pneumatic thump out of a fat barrel, a short hiss of gas."""
+    j = jitter(1800 + v); L = 1.2
+    thump = sweep(L, 70 * j, 32) * env(L, 0.003, 0.18)
+    gas = bp(noise(L, 1801 + v), 400, 4500) * env(L, 0.01, 0.3) * np.linspace(1.2, 0.2, n(L))
+    return fade_out(norm(1.4 * thump + 0.7 * gas), 0.15)
+def brood_capsule_land():
+    """A heavy metal pod hitting the ground: a dull thud and a short clank."""
+    L = 0.7
+    thud = sweep(L, 90, 40) * env(L, 0.002, 0.12)
+    clank = hp(noise(L, 1810), 1800) * env(L, 0.001, 0.05) * 0.5
+    return fade_out(norm(thud + clank), 0.1)
+def brood_capsule_open():
+    """Hydraulic petals: a hiss of gas, then three clicks as they lock open."""
+    L = 0.9
+    out = bp(noise(L, 1820), 900, 6000) * env(L, 0.02, 0.35) * 0.6
+    for k, at in enumerate((0.3, 0.38, 0.46)):
+        c = hp(noise(0.05, 1821 + k), 2500) * env(0.05, 0.0005, 0.012)
+        s0 = n(at); out[s0:s0 + len(c)] += c
+    return fade_out(norm(out, 0.7))
+def spider_bite(v):
+    """A needle stab: a quick metallic click and a wet thunk."""
+    j = jitter(1830 + v); L = 0.3
+    click = hp(noise(L, 1831 + v), 3000) * env(L, 0.0005, 0.015)
+    thunk = sweep(L, 260 * j, 120) * env(L, 0.002, 0.05) * 0.6
+    return fade_out(norm(click + thunk, 0.7))
+def spider_burst(v):
+    """A small sharp blast with a rattle of parts."""
+    j = jitter(1840 + v); L = 1.0
+    boom = sweep(L, 110 * j, 40) * env(L, 0.003, 0.15)
+    crack = hp(noise(L, 1841 + v), 2800) * env(L, 0.0005, 0.03)
+    rattle = hp(noise(L, 1842 + v), 2000) * env(L, 0.05, 0.2) * 0.3
+    return fade_out(norm(boom + crack + rattle), 0.15)
+
+# --- Hive Carrier (PLAN "Turret 3x3"): waves of drones, their fans, guns and dives ------------------------
+def hive_launch():
+    """Bay doors sliding and three drones lifting off: a hydraulic slide, then rising fan whines."""
+    L = 1.6
+    tt = t(L)
+    slide = bp(noise(L, 1900), 300, 3000) * env(L, 0.02, 0.25) * 0.6
+    whine = sum(sweep(L, 300 + 60 * k, 900 + 80 * k) * np.clip((tt - 0.3 - 0.15 * k) / 0.3, 0, 1) * np.exp(-np.maximum(tt - 1.0, 0) * 3) for k in range(3))
+    return fade_out(norm(slide + 0.4 * whine, 0.7), 0.2)
+def drone_hum():
+    L = 1.0  # loop: four small fans, a buzzing whir with a slow beat
+    tt = t(L + 0.05)
+    whir = bp(noise(L + 0.05, 1910), 300, 3500) * (0.85 + 0.15 * np.sin(2 * np.pi * 6 * tt))
+    tone = np.sin(2 * np.pi * 180 * tt) * 0.25
+    return norm(loopable(whir + tone), 0.45)
+def drone_shot(v):
+    """A small fast gun: a sharp crack, very short."""
+    j = jitter(1920 + v); L = 0.25
+    crack = hp(noise(L, 1921 + v), 2200) * env(L, 0.0005, 0.03)
+    thump = sweep(L, 300 * j, 120) * env(L, 0.001, 0.04) * 0.5
+    return fade_out(norm(crack + thump, 0.7))
+def drone_kamikaze(v):
+    """A rising whine as it dives, then a sharp blast."""
+    j = jitter(1930 + v); L = 1.6
+    tt = t(L)
+    whine = sweep(L, 600 * j, 1800) * np.clip(0.45 - tt, 0, 1) * 1.5
+    boom = np.concatenate([np.zeros(n(0.4)), sweep(L - 0.4, 100 * j, 35) * env(L - 0.4, 0.003, 0.25)])
+    crack = np.concatenate([np.zeros(n(0.4)), hp(noise(L - 0.4, 1931 + v), 2800) * env(L - 0.4, 0.0005, 0.03)])
+    return fade_out(norm(0.4 * whine + boom + crack), 0.2)
+
 SOUNDS = {
     "debug/ping.ogg": debug_ping,
     **{f"gun/fire_{v}.ogg": (lambda v=v: gun_fire(v)) for v in range(3)},
@@ -574,6 +667,13 @@ SOUNDS = {
     **{f"potato/fire_{v}.ogg": (lambda v=v: potato_fire(v)) for v in range(2)},
     **{f"arrow_launcher/fire_{v}.ogg": (lambda v=v: arrow_launcher_fire(v)) for v in range(2)},
     "makeshift_base/place.ogg": makeshift_place, "makeshift_base/destroyed.ogg": makeshift_destroyed,
+    **{f"javelin/launch_{v}.ogg": (lambda v=v: javelin_launch(v)) for v in range(2)}, "javelin/fly.ogg": javelin_fly,
+    "javelin/dive.ogg": javelin_dive, **{f"javelin/explode_{v}.ogg": (lambda v=v: javelin_explode(v)) for v in range(2)},
+    **{f"brood/fire_{v}.ogg": (lambda v=v: brood_fire(v)) for v in range(2)}, "brood/capsule_land.ogg": brood_capsule_land,
+    "brood/capsule_open.ogg": brood_capsule_open, **{f"brood/spider_bite_{v}.ogg": (lambda v=v: spider_bite(v)) for v in range(2)},
+    **{f"brood/spider_burst_{v}.ogg": (lambda v=v: spider_burst(v)) for v in range(2)},
+    "hive/launch.ogg": hive_launch, "hive/drone_hum.ogg": drone_hum, **{f"hive/drone_shot_{v}.ogg": (lambda v=v: drone_shot(v)) for v in range(2)},
+    **{f"hive/drone_kamikaze_{v}.ogg": (lambda v=v: drone_kamikaze(v)) for v in range(2)},
 }
 
 if __name__ == "__main__":

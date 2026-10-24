@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_assembler",
+  "category": "bastion:turret_base",
+  "ingredients": [
+    {
+      "item": "bastion:fortress_frame",
+      "count": 1
+    },
+    {
+      "item": "bastion:large_base_plating",
+      "count": 2
+    },
+    {
+      "item": "bastion:large_base_housing",
+      "count": 1
+    },
+    {
+      "item": "bastion:large_base_turntable",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:fortress_turret_base"
+  },
+  "time": 400,
+  "energy": 25000
+}

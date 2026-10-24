@@ -1,0 +1,24 @@
+{
+  "type": "bastion:workstation",
+  "station": "part_workstation",
+  "category": "bastion:hive_carrier_turret",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 6
+    },
+    {
+      "item": "minecraft:piston",
+      "count": 3
+    },
+    {
+      "item": "minecraft:redstone_block",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "bastion:hive_bays"
+  },
+  "time": 160,
+  "energy": 6000
+}

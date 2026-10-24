@@ -10,6 +10,9 @@
     "#bastion:ammo/laser",
     "#bastion:ammo/rail",
     "#bastion:ammo/mortar",
-    "#bastion:ammo/plasma"
+    "#bastion:ammo/plasma",
+    "#bastion:ammo/javelin_missile",
+    "#bastion:ammo/brood_capsule",
+    "#bastion:ammo/hive_drone"
   ]
 }

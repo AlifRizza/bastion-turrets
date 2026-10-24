@@ -1,0 +1,28 @@
+{
+  "type": "bastion:workstation",
+  "station": "ammo_workstation",
+  "category": "bastion:rockets",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 4
+    },
+    {
+      "item": "minecraft:tnt",
+      "count": 2
+    },
+    {
+      "item": "minecraft:firework_rocket",
+      "count": 1
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "bastion:javelin_missile"
+  },
+  "time": 100,
+  "energy": 2000
+}

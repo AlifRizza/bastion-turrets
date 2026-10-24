@@ -127,6 +127,11 @@ public class LargeTurretBaseBlock extends TurretBaseBlock implements Multiblock 
     }
 
     @Override
+    public List<BlockPos> footprint(BlockState state, BlockPos pos) {
+        return footprint(footprintMin(state, pos));
+    }
+
+    @Override
     public BlockPos corePos(BlockState state, BlockGetter level, BlockPos pos) {
         if (state.getValue(CORE)) return pos;
         for (BlockPos p : footprint(footprintMin(state, pos))) {

@@ -122,7 +122,7 @@ public class TurretFeedHubTests {
     }
 
     /** Hubs on every block of a box {@code width} wide and {@code height} tall from {@code min}. */
-    private static void hubs(GameTestHelper helper, BlockPos min, int width, int height) {
+    static void hubs(GameTestHelper helper, BlockPos min, int width, int height) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 for (int z = 0; z < width; z++) helper.setBlock(min.offset(x, y, z), BastionBlocks.FEED_HUB.get());

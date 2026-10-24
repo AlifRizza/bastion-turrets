@@ -118,12 +118,31 @@ MODEL_MATERIALS = {
     "entity/turret_rocket": {"body": "armor", "nose": "steel", "fins": "frame", "glow_nozzle": "emitter"},
     "entity/turret_missile": {"body": "steel", "nose": "armor", "fins": "frame", "glow_nozzle": "emitter"},
     "entity/turret_mortar_shell": {"body": "armor", "nose": "steel", "fins": "frame", "glow_nozzle": "emitter"},
+    "entity/turret_javelin": {"body": "steel", "nose": "armor", "glow_nose": "emitter", "fins": "frame", "nozzle": "bore"},
+    "entity/turret_brood_capsule": {"base": "frame", "glow_core": "emitter", "leaf_0": "armor", "leaf_1": "armor", "leaf_2": "armor"},
+    "entity/hive_drone": {"body": "armor", "gun": "steel", "glow_status": "emitter", **{f"fan_{i}": "frame" for i in range(4)}},
+    "hive_carrier_turret": {"hive": "hex", "hive_frame": "armor", "bays": "bore", "glow_bays": "emitter", "glow_strips": "emitter",
+                            "relay": "steel", "sensor": "frame", "glow_antenna": "emitter", "racks": "frame",
+                            **{f"dock_{i}": "armor" for i in range(9)}, **{f"glow_dock_{i}": "emitter" for i in range(9)},
+                            **{f"build_{p}": "armor" for p in range(3)}, **{f"build_{p}_{n}": "armor" for p in range(3) for n in range(3)},
+                            **{f"glow_build_{p}": "emitter" for p in range(3)}, **{f"glow_build_{p}_lit": "emitter" for p in range(3)}},
+    "entity/brood_spider": {"body": "armor", "head": "steel", "glow_eyes": "emitter", "fangs": "steel", "glow_strip": "emitter",
+                            **{f"leg_{s}{i}": "frame" for s in "lr" for i in range(3)}},
+    "brood_cannon_turret": {"yaw_pivot": "armor", "glow_windows": "emitter", "brood": "steel", "glow_strips": "emitter", "vent_l": "vent",
+                            "vent_r": "vent", "sensor": "steel", "glow_lens": "emitter", "loader": "frame", "loader_capsule": "steel",
+                            "axle": "steel", "body": "frame", "barrel_0": "steel", "glow_barrel": "emitter", "bore": "bore"},
+    "javelin_turret": {"deck": "hex", "silo": "armor", "well": "bore", "glow_strips": "emitter", "door_l": "frame",
+                       "door_r": "frame", "vent_l": "vent", "vent_r": "vent", "round": "steel", "yaw_pivot": "armor",
+                       "sensor": "steel", "glow_lens": "emitter"},
     "mortar_turret": {"yaw_pivot": "armor", "glow_strips": "emitter", "vent_l": "vent", "vent_r": "vent", "sensor": "steel",
                       "glow_lens": "emitter", "axle": "steel", "body": "frame", "barrel_0": "steel", "glow_barrel": "emitter",
                       "bore": "bore"},
     "large_turret_base": {"plinth": "hex", "body": "armor", "glow_windows": "status", "status_light": "status",
                           "deck": "frame", "energy_ring": "status", "weapon_mount": "steel", "armor_t2": "hex",
                           "fins_t3": "frame", "glow_fins_t3": "status"},
+    "fortress_turret_base": {"plinth": "hex", "body": "armor", "buttress": "armor", "glow_windows": "status",
+                             "status_light": "status", "deck": "frame", "energy_ring": "status", "weapon_mount": "steel",
+                             "armor_t2": "hex", "vents_t2": "vent", "fins_t3": "frame", "glow_fins_t3": "status"},
     "missile_launcher_turret": {"yaw_pivot": "armor", "axle": "steel", "body": "armor", "pod_l": "armor", "pod_r": "armor",
                                 "pod_l_bores": "bore", "pod_r_bores": "bore", "glow_pod_l": "emitter", "glow_pod_r": "emitter",
                                 **{f"missile_{i}": "steel" for i in range(12)}, "sensor": "steel", "glow_lens": "emitter",
@@ -509,6 +528,15 @@ def damaged_large_base():
     return outline(img, OUTLINE)
 
 
+def damaged_fortress_base():
+    """The small damaged base, three times: a broken stepped platform, the 2x2 band with a narrower core band on top."""
+    img = np.zeros((16, 16, 4))
+    stamp(img, Sprite(["gggggggggggg", "gPPkPPPPkPPg", "gggggggggggg"], DAMAGED_BASE.palette), 2, 0)
+    stamp(img, Sprite(["gggggggggggggggg", "gPPPkPPPPPPkPPPg", "gPPPPkPPPPkPPPPg", "gggggggggggggggg"], DAMAGED_BASE.palette), 0, 2)
+    stamp(img, Sprite(DAMAGED_BASE.rows, DAMAGED_BASE.palette), 0, 5)
+    return outline(img, OUTLINE)
+
+
 RAIL_SLUG = Sprite([
     ".M.",
     "MMm",
@@ -553,6 +581,71 @@ def mortar_shells():
     img = np.zeros((16, 16, 4))
     for x, y in ((3, 2), (9, 4)):
         stamp(img, MORTAR_SHELL, x, y)
+    return outline(img, OUTLINE)
+
+
+JAVELIN_MISSILE = Sprite([
+    "..c..",
+    ".cCc.",
+    ".MMm.",
+    ".WWs.",
+    ".OOo.",
+    ".WWs.",
+    ".WWs.",
+    ".WWs.",
+    ".WWs.",
+    "GWWsG",
+    "GWWsG",
+    "GGgkG",
+    "G.k.G",
+], {"c": rgb("4FD8FF") * 0.85, "C": rgb("BFF4FF"), "M": METAL * 1.25, "m": METAL, "W": GUNMETAL * 1.5, "s": GUNMETAL,
+    "O": rgb("FF8C3A"), "o": rgb("B5561C"), "G": GRAPHITE * 1.7, "g": GRAPHITE * 1.25, "k": GRAPHITE * 0.8})
+
+
+BROOD_CAPSULE = Sprite([
+    "..MMm..",
+    ".MAAas.",
+    "MAAAaas",
+    "MAGcGas",
+    "MAGcGas",
+    "MAAAaas",
+    ".MAAas.",
+    ".kkkkk.",
+    "kkkkkkk",
+], {"M": METAL * 1.25, "m": METAL, "A": GUNMETAL * 1.5, "a": GUNMETAL * 1.1, "s": GUNMETAL * 0.8, "G": rgb("9DFF6A") * 0.7, "c": rgb("BFF4FF"),
+    "k": GRAPHITE * 1.1})
+
+
+def brood_capsule():
+    """Brood Cannon ammo: an armoured three-petal pod on its round foot, green light in the seams, a cyan core."""
+    img = np.zeros((16, 16, 4))
+    stamp(img, BROOD_CAPSULE, 4, 3)
+    return outline(img, OUTLINE)
+
+
+HIVE_DRONE = Sprite([
+    "kk.....kk",
+    "kMk...kMk",
+    ".kAAAAAk.",
+    "..AaCaA..",
+    "..AaaaA..",
+    ".kAAAAAk.",
+    "kMk.g.kMk",
+    "kk..g..kk",
+], {"M": METAL * 1.25, "A": GUNMETAL * 1.5, "a": GUNMETAL * 1.1, "C": rgb("4FD8FF"), "g": GRAPHITE * 1.6, "k": GRAPHITE * 1.1})
+
+
+def hive_drone():
+    """Hive Carrier ammo: a small quadcopter seen from above, four fans, a cyan light, its gun."""
+    img = np.zeros((16, 16, 4))
+    stamp(img, HIVE_DRONE, 3, 4)
+    return outline(img, OUTLINE)
+
+
+def javelin_missile():
+    """Javelin ammo: one big finned missile, sensor nose glowing cyan, an orange band (the Javelin's VFX colour)."""
+    img = np.zeros((16, 16, 4))
+    stamp(img, JAVELIN_MISSILE, 5, 1)
     return outline(img, OUTLINE)
 
 
@@ -1501,6 +1594,15 @@ def reticle():
     dot = soft(r / 0.07, 2)
     return white(outer + inner + ticks * 0.9 + dot)
 
+def chevron():
+    """Javelin target mark: two stacked chevrons pointing down, the lower one brighter."""
+    x, y = grid(64)
+    out = np.zeros_like(x)
+    for top, a in ((-0.55, 0.55), (0.0, 1.0)):
+        d = np.abs(y - top - 0.55 * (1 - np.abs(x) / 0.8)) * (np.abs(x) < 0.8)
+        out = np.maximum(out, a * np.exp(-(d / 0.07) ** 2) * (np.abs(x) < 0.8))
+    return white(out)
+
 def scanlines():
     """Tiling hologram scanline mask (multiplied over hologram quads)."""
     y = np.arange(16)[:, None] * np.ones((1, 16))
@@ -1532,7 +1634,7 @@ VFX_SPRITES = {
     "particle/muzzle_ring.png": muzzle_ring,
     **{f"particle/impact_splash_{i}.png": (lambda i=i: impact_splash(i)) for i in range(3)},
     **{f"particle/smoke_wisp_{i}.png": (lambda i=i: smoke_wisp(i)) for i in range(3)},
-    "vfx/tracer.png": tracer, "vfx/reticle.png": reticle, "vfx/scanlines.png": scanlines,
+    "vfx/tracer.png": tracer, "vfx/reticle.png": reticle, "vfx/chevron.png": chevron, "vfx/scanlines.png": scanlines,
     "vfx/decal.png": decal, "vfx/casing.png": casing, "vfx/scorch.png": scorch,
     **{f"particle/fireball_{i}.png": (lambda i=i: fireball(i)) for i in range(6)},
     **{f"particle/blast_smoke_{i}.png": (lambda i=i: blast_smoke(500 + i)) for i in range(4)},
@@ -1564,10 +1666,20 @@ TEXTURES = {
     "item/rocket_launcher_turret.png": lambda: paint_model("rocket_launcher_turret")[0],
     "item/rocket_launcher_turret_e.png": lambda: paint_model("rocket_launcher_turret")[1],
     "entity/turret_rocket.png": lambda: paint_model("entity/turret_rocket")[0],
+    "entity/turret_brood_capsule.png": lambda: paint_model("entity/turret_brood_capsule")[0],
+    "entity/turret_brood_capsule_e.png": lambda: paint_model("entity/turret_brood_capsule")[1],
+    "entity/hive_drone.png": lambda: paint_model("entity/hive_drone")[0],
+    "entity/hive_drone_e.png": lambda: paint_model("entity/hive_drone")[1],
+    "entity/brood_spider.png": lambda: paint_model("entity/brood_spider")[0],
+    "entity/brood_spider_e.png": lambda: paint_model("entity/brood_spider")[1],
+    "entity/turret_javelin.png": lambda: paint_model("entity/turret_javelin")[0],
+    "entity/turret_javelin_e.png": lambda: paint_model("entity/turret_javelin")[1],
     "entity/turret_missile.png": lambda: paint_model("entity/turret_missile")[0],
     "entity/turret_missile_e.png": lambda: paint_model("entity/turret_missile")[1],
     "block/large_turret_base.png": lambda: paint_model("large_turret_base")[0],
     "block/large_turret_base_e.png": lambda: paint_model("large_turret_base")[1],
+    "block/fortress_turret_base.png": lambda: paint_model("fortress_turret_base")[0],
+    "block/fortress_turret_base_e.png": lambda: paint_model("fortress_turret_base")[1],
     "item/missile_launcher_turret.png": lambda: paint_model("missile_launcher_turret")[0],
     "item/missile_launcher_turret_e.png": lambda: paint_model("missile_launcher_turret")[1],
     "item/missiles.png": missiles,
@@ -1587,6 +1699,7 @@ TEXTURES = {
     "item/laser_rifle_turret_e.png": lambda: paint_model("laser_rifle_turret")[1],
     "item/rail_slugs.png": rail_slugs,
     "item/mortar_shells.png": mortar_shells,
+    "item/javelin_missile.png": javelin_missile, "item/hive_drone.png": hive_drone, "item/brood_capsule.png": brood_capsule,
     "item/mortar_turret.png": lambda: paint_model("mortar_turret")[0],
     "item/mortar_turret_e.png": lambda: paint_model("mortar_turret")[1],
     "item/repulsor_turret.png": lambda: paint_model("repulsor_turret")[0],
@@ -1598,9 +1711,16 @@ TEXTURES = {
     "entity/turret_mortar_shell_e.png": lambda: paint_model("entity/turret_mortar_shell")[1],
     **{f"item/{name}{suffix}.png": (lambda name=name, i=i: paint_model(name)[i])
        for name in ("ion_rifle_turret", "plasma_repeater_turret", "plasma_cannon_turret") for i, suffix in ((0, ""), (1, "_e"))},
+    "item/hive_carrier_turret.png": lambda: paint_model("hive_carrier_turret")[0],
+    "item/hive_carrier_turret_e.png": lambda: paint_model("hive_carrier_turret")[1],
+    "item/brood_cannon_turret.png": lambda: paint_model("brood_cannon_turret")[0],
+    "item/brood_cannon_turret_e.png": lambda: paint_model("brood_cannon_turret")[1],
+    "item/javelin_turret.png": lambda: paint_model("javelin_turret")[0],
+    "item/javelin_turret_e.png": lambda: paint_model("javelin_turret")[1],
     "item/railgun_turret.png": lambda: paint_model("railgun_turret")[0],
     "item/railgun_turret_e.png": lambda: paint_model("railgun_turret")[1],
     "item/damaged_large_turret_base.png": damaged_large_base,
+    "item/damaged_fortress_turret_base.png": damaged_fortress_base,
     "entity/turret_rocket_e.png": lambda: paint_model("entity/turret_rocket")[1],
     **{f"item/{name}.png": (lambda name=name: modifier_chip(name)) for name in MODIFIER_GLYPHS},
     **{f"item/{name}_mk{mk}.png": (lambda name=name, mk=mk: modifier_chip(name, mk)) for name in MODIFIER_GLYPHS for mk in (2, 3)},

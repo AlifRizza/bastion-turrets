@@ -106,6 +106,28 @@ public final class BastionSounds {
     /** A makeshift base destroyed: wood crunching apart. */
     public static final RegistryObject<SoundEvent> MAKESHIFT_BASE_DESTROYED = register("makeshift_base.destroyed");
 
+    // Javelin Missile (PLAN "Turret 3x3")
+    public static final RegistryObject<SoundEvent> JAVELIN_LAUNCH = register("javelin.launch");
+    /** The engine's roar riding the missile up (a loop). */
+    public static final RegistryObject<SoundEvent> JAVELIN_FLY = register("javelin.fly");
+    /** The dive's falling whistle; the client raises its pitch as it comes down. */
+    public static final RegistryObject<SoundEvent> JAVELIN_DIVE = register("javelin.dive");
+    public static final RegistryObject<SoundEvent> JAVELIN_EXPLODE = register("javelin.explode");
+
+    // Brood Cannon (PLAN "Turret 3x3")
+    public static final RegistryObject<SoundEvent> BROOD_FIRE = register("brood.fire");
+    public static final RegistryObject<SoundEvent> BROOD_CAPSULE_LAND = register("brood.capsule_land");
+    public static final RegistryObject<SoundEvent> BROOD_CAPSULE_OPEN = register("brood.capsule_open");
+    public static final RegistryObject<SoundEvent> SPIDER_BITE = register("brood_spider.bite");
+    public static final RegistryObject<SoundEvent> SPIDER_BURST = register("brood_spider.burst");
+
+    // Hive Carrier (PLAN "Turret 3x3")
+    public static final RegistryObject<SoundEvent> HIVE_LAUNCH = register("hive.launch");
+    /** A drone's fans (a loop, at most a few at once). */
+    public static final RegistryObject<SoundEvent> DRONE_HUM = register("hive_drone.hum");
+    public static final RegistryObject<SoundEvent> DRONE_SHOT = register("hive_drone.shot");
+    public static final RegistryObject<SoundEvent> DRONE_KAMIKAZE = register("hive_drone.kamikaze");
+
     private static RegistryObject<SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(Bastion.id(name)));
     }

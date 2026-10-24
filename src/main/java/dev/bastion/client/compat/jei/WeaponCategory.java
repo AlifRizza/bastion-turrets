@@ -82,6 +82,7 @@ final class WeaponCategory implements IRecipeCategory<WeaponModuleItem> {
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 23)
                 .addItemStack(new ItemStack(switch (weapon.kind()) {
                     case LARGE -> BastionItems.LARGE_TURRET_BASE.get();
+                    case FORTRESS -> BastionItems.FORTRESS_TURRET_BASE.get();
                     case MAKESHIFT -> BastionItems.MAKESHIFT_TURRET_BASE.get();
                     case STANDARD -> BastionItems.TURRET_BASE.get();
                 }));

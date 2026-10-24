@@ -27,8 +27,9 @@ public class TurretBaseRenderer extends GeoBlockRenderer<TurretBaseBlockEntity> 
      */
     @Override
     protected void rotateBlock(Direction facing, PoseStack poseStack) {
-        // A large base renders from its core block but turns around the middle of its 2x2.
-        if (animatable != null && animatable.large()) {
+        // A base renders from its core block but turns around its mount centre: the middle of a large base's 2x2, the core
+        // block itself for every other kind (a Fortress's core is its middle).
+        if (animatable != null) {
             Vec3 offset = animatable.mountCenter().subtract(Vec3.atCenterOf(animatable.getBlockPos()));
             poseStack.translate(offset.x, 0, offset.z);
         }

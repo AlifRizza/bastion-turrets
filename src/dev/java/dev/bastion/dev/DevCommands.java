@@ -146,7 +146,8 @@ public final class DevCommands {
     }
 
     /**
-     * One base per weapon module (a Large Turret Base for the big ones, a tierless Makeshift Turret Base for the early ones)
+     * One base per weapon module (a Large Turret Base for the big ones, a Fortress for the huge ones, a tierless Makeshift
+     * Turret Base for the early ones)
      * at {@code tier}, holding the weapon and Creative Ammo (which also pays energy weapons' shots), into the player's
      * inventory: placed, it fires.
      */
@@ -156,8 +157,12 @@ public final class DevCommands {
         for (RegistryObject<Item> entry : BastionItems.REGISTER.getEntries()) {
             if (!(entry.get() instanceof WeaponModuleItem module)) continue;
             boolean early = module.kind() == BaseKind.MAKESHIFT;
-            ItemStack base = early ? new ItemStack(BastionItems.MAKESHIFT_TURRET_BASE.get())
-                    : TurretBaseItem.withTier((module.large() ? BastionItems.LARGE_TURRET_BASE : BastionItems.TURRET_BASE).get(), tier);
+            ItemStack base = switch (module.kind()) {
+                case MAKESHIFT -> new ItemStack(BastionItems.MAKESHIFT_TURRET_BASE.get());
+                case LARGE -> TurretBaseItem.withTier(BastionItems.LARGE_TURRET_BASE.get(), tier);
+                case FORTRESS -> TurretBaseItem.withTier(BastionItems.FORTRESS_TURRET_BASE.get(), tier);
+                case STANDARD -> TurretBaseItem.withTier(BastionItems.TURRET_BASE.get(), tier);
+            };
             TurretInventory inventory = new TurretInventory(() -> tier, module::kind, () -> true, slot -> {});
             inventory.setStackInSlot(TurretInventory.WEAPON, new ItemStack(module));
             inventory.setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.CREATIVE_AMMO.get()));

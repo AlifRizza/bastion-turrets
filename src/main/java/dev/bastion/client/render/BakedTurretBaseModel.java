@@ -3,6 +3,8 @@ package dev.bastion.client.render;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.bastion.turret.BaseKind;
+import dev.bastion.turret.FortressTurretBaseBlock;
 import dev.bastion.turret.LargeTurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlockEntity;
@@ -56,6 +58,8 @@ import java.util.function.Function;
 public final class BakedTurretBaseModel implements IDynamicBakedModel {
     /** Bones TurretBaseRenderer still draws every frame, with their children (the base's idle animation moves only these). */
     public static final Set<String> ANIMATED = Set.of("energy_ring");
+    /** Key quadrants besides a large base's 0-3: a base drawn about its own block's centre, a part block that draws nothing. */
+    private static final int CENTRED = -1, NOT_DRAWN = -2;
 
     private final ResourceLocation geo;
     private final TextureAtlasSprite sprite;
@@ -73,10 +77,15 @@ public final class BakedTurretBaseModel implements IDynamicBakedModel {
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data,
                                     @Nullable RenderType renderType) {
         if (side != null || state == null || !state.hasProperty(TurretBaseBlock.FACING)) return List.of();
-        boolean large = state.hasProperty(LargeTurretBaseBlock.QUADRANT);
-        if (large && !state.getValue(LargeTurretBaseBlock.CORE)) return List.of(); // the core block draws the whole 2x2
+        // A multiblock's core draws the whole model: a large base's turns around its 2x2 middle, a Fortress's is that middle.
+        int quadrant = switch (BaseKind.of(state.getBlock())) {
+            case STANDARD, MAKESHIFT -> CENTRED;
+            case LARGE -> state.getValue(LargeTurretBaseBlock.CORE) ? state.getValue(LargeTurretBaseBlock.QUADRANT) : NOT_DRAWN;
+            case FORTRESS -> state.getValue(FortressTurretBaseBlock.CELL) == FortressTurretBaseBlock.CORE_CELL ? CENTRED : NOT_DRAWN;
+        };
+        if (quadrant == NOT_DRAWN) return List.of();
         TurretTier tier = Objects.requireNonNullElse(data.get(TurretBaseBlockEntity.MODEL_TIER), TurretTier.T1);
-        Key key = new Key(state.getValue(TurretBaseBlock.FACING), tier, large ? state.getValue(LargeTurretBaseBlock.QUADRANT) : -1);
+        Key key = new Key(state.getValue(TurretBaseBlock.FACING), tier, quadrant);
         List<BakedQuad> list = quads.computeIfAbsent(key, this::build); // null (GeckoLib not loaded yet) is not cached
         return list == null ? List.of() : list;
     }
@@ -87,7 +96,7 @@ public final class BakedTurretBaseModel implements IDynamicBakedModel {
         if (model == null) return null;
         // GeoBlockRenderer's placement, then TurretBaseRenderer#rotateBlock: a large base turns around its 2x2 middle.
         PoseStack pose = new PoseStack();
-        if (key.quadrant < 0) pose.translate(0.5, 0, 0.5);
+        if (key.quadrant == CENTRED) pose.translate(0.5, 0, 0.5);
         else pose.translate(1 - (key.quadrant & 1), 0, 1 - (key.quadrant >> 1));
         pose.translate(0, 0.5, 0);
         pose.mulPose(key.facing.getRotation());

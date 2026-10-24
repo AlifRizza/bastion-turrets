@@ -22,12 +22,13 @@ public final class BastionBlockEntities {
     @SuppressWarnings("DataFlowIssue") // null data fixer type is the standard for modded block entities
     public static final RegistryObject<BlockEntityType<TurretBaseBlockEntity>> TURRET_BASE = REGISTER.register("turret_base",
             () -> BlockEntityType.Builder.of(TurretBaseBlockEntity::new, BastionBlocks.TURRET_BASE.get(), BastionBlocks.LARGE_TURRET_BASE.get(),
-                    BastionBlocks.MAKESHIFT_TURRET_BASE.get())
+                    BastionBlocks.MAKESHIFT_TURRET_BASE.get(), BastionBlocks.FORTRESS_TURRET_BASE.get())
                     .build(null));
-    /** The three non-core blocks of a large base; they forward automation to the core. */
+    /** The non-core blocks of a multiblock base (three of a large one, eight of a fortress); they forward automation to the core. */
     @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<TurretPartBlockEntity>> TURRET_PART = REGISTER.register("turret_part",
-            () -> BlockEntityType.Builder.of(TurretPartBlockEntity::new, BastionBlocks.LARGE_TURRET_BASE.get()).build(null));
+            () -> BlockEntityType.Builder.of(TurretPartBlockEntity::new, BastionBlocks.LARGE_TURRET_BASE.get(),
+                    BastionBlocks.FORTRESS_TURRET_BASE.get()).build(null));
 
     /** The core block of every workstation. */
     @SuppressWarnings("DataFlowIssue")

@@ -474,3 +474,224 @@ Setup: a world with a few Makeshift Turret Bases, the four early turrets and the
 22. **Bahasa Indonesia**: Base Turret Darurat, Turret Batu, Pelontar Bola Salju, Shotgun Kentang, Pelontar Panah.
 23. **Dedicated server** (`runServer` + a client): the four turrets fire, arrows draw (spectral ones yellow), no errors
     in either log.
+
+## Fortress Turret Base (0.5.0)
+
+The Fortress takes only huge (3x3) weapon modules: the Javelin Missile Turret (next section) is the first; the Brood
+Cannon and Hive Carrier follow in 0.5.0. Weapon steps (firing, sparks, the Overwatch fire) are in the Javelin section.
+Visual reference: `-Pshowcase=fortress` (`run/screenshots/showcase_fortress_*`).
+
+Setup: creative world; the bastion tab has the Fortress Turret Base as T1, T2 and T3 after the Large ones.
+
+1. **Recipes** (JEI R on each item):
+   - Fortress Frame, Part Workstation, Large Turret Base tab: 4 Iron Block + 1 Diamond + 1 Redstone Block, 10 s,
+     8,000 FE. It sits next to the Large Base parts in the parts tab.
+   - Fortress Turret Base, Part Assembler, Turret Base tab: 1 Fortress Frame + 2 Heavy Base Plating + 1 Heavy Base
+     Housing + 1 Heavy Servo Turntable, 20 s, 25,000 FE. The Large Turret Base still takes one of each heavy part.
+   - Fortress Turret Base from 1 Damaged Fortress Turret Base + 3 Repair Kits, 15 s, 12,000 FE.
+2. **Items**: in the hotbar the Fortress is a small 3D platform with cyan strips (T3 shows its fins); the Fortress
+   Frame shows the octagonal foot and the four corner plates; the Damaged Fortress Turret Base is a flat stepped sprite.
+   Hold the Fortress: the hand shows part of the platform, like the Large base. Tooltips: "3x3, floor only. For huge
+   weapon modules"; the damaged one names the three Repair Kits and keeps its tier line.
+3. **Hologram**: hold it and point at the top of a floor block. The 3x3 is centred on the block under the crosshair,
+   cyan boxes with the platform inside. Put a block or a mob (a cow) in any of the 9 cells: that box turns red and the
+   platform too; placing does nothing. A wall or ceiling face shows nothing and places nothing.
+4. **Placing**: one model on the 3x3, centred on the middle block; the 8 outer blocks draw nothing of their own. The
+   foot and the sloped corner plates sit on the floor, nothing floats, and the plates run into the core with no gap.
+   Placed on a ledge, the underside is closed.
+5. **Tiers**: a Tier Upgrade Kit on any of the 9 blocks (an outer corner too) upgrades it. T1: plain corner plates,
+   core and hull. T2: a vented block with four slots and a sloped plate on each side. T3: a bank of cooling fins with
+   a glowing spine on each corner plate.
+6. **HP and lights**: Jade or the Info tab: 500 HP at T1, 1,250 at T2, 2,500 at T3 (server config
+   `fortressBaseHealthMultiplier` 5.0 in `bastion-common.toml`; 2.0 gives 200/500/1,000). Damage it (mobs, or a
+   player with `trustedCanDamage`): the strips, fins and the seam round the core turn yellow below 50 % and blink red
+   below 25 %. Look at a strip on a sloped plate from close and from above: solid colour, no flickering dark lines.
+   A Repair Kit puts 40 % back. With a Javelin on it, damage sparks leave the hull's rim on every side, above the
+   corner plates (a base without a weapon never sparks).
+7. **Night**: the gunmetal goes dark like the world around it, the glow stays bright.
+8. **One block**: break any outer block with a pickaxe: the whole base goes and drops one Fortress Turret Base; never
+   nine. A piston cannot push it.
+9. **Destroyed**: at 0 HP a blast a little bigger than the Large base's (custom, no block damage), the large-base
+   destroy sound, metal debris; one Damaged Fortress Turret Base drops, its tooltip shows the tier it had; modules drop,
+   the ammo is gone. Restore it at the Part Assembler (step 1): the base comes back at that tier.
+10. **Mined**: put ammo and a module in a T2 Fortress and mine it: the item keeps the tier and the contents; placing it
+    puts them back.
+11. **Locks**: every current module is refused on a Fortress with the message of the base it fits ("This module fits a
+    standard Turret Base only", "This module needs a Large Turret Base", "This module fits a Makeshift Turret Base
+    only").
+11b. **Comparator** (also a 0.5.0 fix for the Large base): a comparator reading an outer corner block of an empty
+    Fortress, then shift-click Kinetic Rounds into its ammo: the comparator lights up without a block update. On a
+    Large base, a comparator beside any of its four blocks does the same.
+12. **Feed Hub**: a Fortress on a 3x3x1 Feed Hub: Jade on the hub counts it in "Feeds N turrets". A Fortress on a 2x2
+    hub, standing partly off it, does not count. The Feed Hub tooltip and JEI page mention fortress bases on a 3x3.
+13. **Turret Configurator** (also a 0.5.0 fix for the Large base): sneak-right-click a configured standard base to copy,
+    then right-click an outer block of a Fortress: its Targeting tab shows the pasted settings. Do the same on a
+    non-core block of a Large base (before, only one of its four blocks worked). Copying from an outer block works too.
+14. **Control Hub**: a Hub Connector linked to a formed hub in the Fortress's Connector slot: it shows on the hub's Map
+    and List; clicking it opens its screen.
+15. **Overwatch**: an Overwatch Link in its Connector slot, then Take control: the camera sits higher and further back
+    than on a Large base (firing: the Javelin section).
+16. **Jade and JEI**: Jade on any of the 9 blocks shows the core's lines (tier, HP). JEI U on the Fortress Turret Base:
+    its information page.
+17. **Bahasa Indonesia**: Base Turret Benteng, Base Turret Benteng Rusak, Rangka Benteng; tooltips and the JEI page
+    translated.
+18. **Save and reload**, then a dedicated server (`runServer` + a client): the base, its tier and HP come back; no
+    errors in either log.
+
+## Javelin Missile (0.5.0)
+
+The first 3x3 turret, on a Fortress Turret Base only. Visual reference: `-Pshowcase=javelin`
+(`run/screenshots/showcase_jv_*`). Its sounds are placeholders (`docs/SOUND_SHEET.md` 77–80).
+
+Setup: creative world, a flat open area outdoors by day; a Fortress Turret Base (T1 is fine), a Javelin Missile Turret,
+Javelin Missiles, and FE into the base (a Feed Hub under it, or any FE cable). Spawn husks with `/summon husk ~ ~ ~
+{NoAI:1b}` for still targets.
+
+1. **Recipes** (JEI R): Javelin Silo, Javelin Radar Mast, Javelin Mount at the Part Workstation (Large Base sizes);
+   the Javelin Missile Turret at the Part Assembler under the Missile Launcher tab, 20 s, 25,000 FE; the Javelin
+   Missile at the Ammo Workstation under the Rockets tab: 4 iron ingots, 2 TNT, 1 firework rocket, 2 redstone, 5 s,
+   2,000 FE, makes one.
+2. **Items**: the module icon is a grey armoured silo with cyan strips and a small radar mast; the missile is a white
+   missile sprite with a cyan nose; the three parts show the silo, the mast and the deck plate. Tooltip: the ability
+   line ("Fires one big missile straight up ..."), "Fits: Fortress Turret Base". A standard or Large base refuses it
+   with "This module needs a Fortress Turret Base".
+3. **Model**: on the Fortress, a sloped armoured silo standing still in the middle, two blast doors on top, a radar
+   mast at the back right whose dish sweeps round while idle. Mounting it: the silo rises out of the deck and the dish
+   unfolds. JEI: FE per shot 10k, capacity 30k, input 4k FE/t, ammo 1.
+4. **Ammo and FE**: missiles but no FE: it does not fire; FE but no missiles: it does not fire (the well under the
+   doors is empty). Both: each shot takes one missile and 10,000 FE (Info tab: FE bar).
+5. **Targets**: a lone husk 12 blocks out and three husks bunched 20 blocks out: it picks the bunch. With a Rapid Cycler
+   (the next shot comes before the first lands) the second missile goes to the lone husk, not the bunch already marked. A husk under a
+   roof (a block over its head), a phantom, a husk closer than 8 blocks: never. A cow or villager next to the bunch is
+   never hurt.
+6. **Launch**: once it has a target the doors swing open, the dish turns to the target; a burst of grey gas, the
+   missile is pushed half out of the silo (its tail still inside) and stays still there, nose up, for half a second;
+   then the engine lights with a blast of flame and smoke out of the silo mouth and it climbs straight up, crawling at first, then faster and faster
+   until it shoots out of sight (~60 blocks, 2 s) leaving a thick smoke column; a roar follows it up and stops there. The doors stay open while it has a
+   target and shut when it has none; after a shot a new missile rises into the well.
+7. **The mark**: from the launch, a cyan double chevron floats over the target's head and a cyan ring on the ground
+   shrinks from 6 blocks wide to the impact; in the last second both blink red.
+8. **Dive and blast**: about 3 s after it vanished (the column still hangs there) the missile appears high over the
+   target and comes straight down onto it with a rising whistle and a thin trail, then a
+   big fireball, a ground shockwave, dust, debris, a scorch, smoke, a hard camera shake and flash. With damage numbers
+   (or Jade): about 40 on the target, about 20 on one 5 blocks away, nothing past 6 blocks. No block is broken.
+9. **Moving target**: push the target a few blocks while the missile is up: it still lands on it. Lead it under a roof
+   during the climb: the missile lands where it last stood in the open.
+10. **No sky**: a block right above the silo: it holds fire (remove it: it fires). Underground, in a cave, under a roof
+    or in the Nether: it never fires.
+11. **Turret gone mid-flight**: break the Fortress while a missile climbs: the missile still comes down and hurts
+    hostile mobs. Leave the area (unload the chunk) with one in flight and come back: no missile is left.
+12. **Overwatch**: an Overwatch Link in the Fortress's Connector slot, Take control: aim at open ground 8–72 blocks
+    out: a cyan ring (blast size) and chevron mark the spot; press attack: the missile comes down there (on a creature
+    under the crosshair, it follows that creature). Closer than 8 blocks, under a roof or out of reach: the mark is red
+    and nothing fires. The HUD shows the FE bar and the reload.
+13. **Night**: the silo goes dark like the world; the strips, lens and missile nose glow; the launch and the blast
+    light the ground; the smoke column is dark, not glowing.
+14. **Far away**: watch from 60–100 blocks: the missile stays drawn on the whole climb and dive.
+15. **Bahasa Indonesia**: Turret Rudal Javelin, Rudal Javelin, Silo Javelin, Tiang Radar Javelin, Dudukan Javelin;
+    tooltip and subtitles translated.
+16. **Save and reload** with a missile in flight, then a dedicated server (`runServer` + a client): the turret works,
+    no missile is left over, no errors in either log.
+
+## Brood Cannon (0.5.0)
+
+The second 3x3 turret, on a Fortress Turret Base only. Visual reference: `-Pshowcase=brood`
+(`run/screenshots/showcase_bc_*`). Its sounds are placeholders (`docs/SOUND_SHEET.md` 81–85).
+
+Setup: creative world, a flat open area; a Fortress Turret Base, a Brood Cannon Turret, Brood Capsules, and FE into the
+base. A stone wall 4 high between the turret and the targets helps. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`.
+
+1. **Recipes** (JEI R): Brood Barrel, Brood Chamber, Brood Mount at the Part Workstation; the Brood Cannon Turret at
+   the Part Assembler under the Missile Launcher tab, 20 s, 25,000 FE; the Brood Capsule at the Ammo Workstation under
+   the Rockets tab: 3 iron ingots, 1 copper ingot, 2 redstone, 1 spider eye, 4 s, 1,500 FE, makes one.
+2. **Items**: the module is a fat cannon on a round chamber with cyan-lit windows; the capsule is a dark round pod with
+   green light in its seams; the parts show the barrel, the chamber and the loader arm. Tooltip: the ability line,
+   "Fits: Fortress Turret Base"; other bases refuse it.
+3. **Model**: the barrel pitches up (45–85°) and turns with the chamber; through each window a folded spider. Firing:
+   the barrel slams back, the hatches puff, a loader arm at the back swings the next capsule in. No capsules: the loader
+   holds none.
+4. **Ammo and FE**: no shot without a capsule or without 4,000 FE; each shot takes one of each.
+5. **Targets**: husks on the ground 6–32 blocks out, behind the wall: it lobs over the wall. A phantom or a husk closer
+   than 6 blocks: never.
+6. **Capsule**: it spins on its arc, lands at the target's feet (on water it floats), a dust ring and a thump; a second
+   later the three petals open with a hiss and a green glow, and three spiders unfold their legs and climb out. The
+   empty pod goes after two seconds. A capsule that comes down on a husk's head takes ~10 off that husk only (Jade).
+7. **Spiders**: grey robot spiders with cyan lights. They walk (alternating legs) to a valid target on the ground, the
+   one fewest other spiders are on (three husks: three spiders spread over them), and bite (pounce, fangs) for 8 every
+   second; a husk they cannot reach (across lava, up a ledge) is passed over
+   for one they can. A cow or villager among the husks is never bitten; spiders never
+   attack each other or a turret, and no turret shoots them. A player is bitten only if the turret's filter has
+   Players. With nothing to hunt for 10 s a spider bursts by itself (a husk showing up first starts the wait over), so
+   none pile up after a fight. Many cannons (16) against a crowd: every spider fights, none stands idle by its turret,
+   and the capsules spread over the crowd instead of piling on one husk. Their lights turn yellow
+   below half HP and blink red below a quarter.
+8. **Mobs go for them**: a zombie or skeleton near a spider attacks it (`mobsAttackTurrets` on). Hit a spider yourself:
+   its owner and trusted players only hurt it with `trustedCanDamage` on; others always can.
+9. **Death**: a spider at 0 HP blinks red for half a second, then bursts (fireball, sparks, pieces, bigger than before): about 15 to
+   valid targets within 4 blocks, nothing to the cow beside them, no blocks broken.
+10. **Cap**: keep firing: at 12 spiders (capsules in the air count) it stops with ammo and FE untouched (state Aiming);
+    kill three and it fires again. `maxTurretUnits` in `bastion-common.toml` (96) caps all spiders in the dimension.
+11. **Turret gone**: break the Fortress while spiders fight: they keep fighting, then burst 10 s after their last target. Leave the
+    area (unload it) and come back, or rejoin the world: no spiders or capsules are left, and the count starts at 0.
+12. **Overwatch**: an Overwatch Link in the Fortress, Take control: the arc shows where the capsule lands (red inside
+    6 blocks or out of reach); press attack: the capsule comes down there and opens.
+13. **Night**: the cannon and spiders go dark like the world; their lights, the capsule core and the windows glow.
+14. **Bahasa Indonesia**: Turret Meriam Induk, Kapsul Induk, Laba-laba Induk, Laras Induk, Ruang Induk, Dudukan Induk;
+    tooltip and subtitles translated.
+15. **Save and reload** with spiders out, then a dedicated server (`runServer` + a client): no spiders come back, the
+    turret fires again, no errors in either log.
+
+## Hive Carrier (0.5.0)
+
+The third 3x3 turret, on a Fortress Turret Base only. Visual reference: `-Pshowcase=hive`
+(`run/screenshots/showcase_hc_*`, checked 2026-10-24). Its sounds are
+placeholders (`docs/SOUND_SHEET.md` 86–89).
+
+Setup: creative world, a flat open area; a Fortress Turret Base, a Hive Carrier Turret, Hive Drones, and FE into the
+base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~ ~5 ~ {NoAI:1b}`.
+
+1. **Recipes** (JEI R): Hive Hangar, Hive Relay Mast, Hive Launch Bays at the Part Workstation; the Hive Carrier
+   Turret at the Part Assembler under the Missile Launcher tab, 20 s, 25,000 FE; the Hive Drone at the Ammo Workstation
+   under the Rockets tab: 2 iron ingots, 2 copper ingots, 1 redstone, 1 feather, 5 s, 2,500 FE, makes one.
+2. **Items and JEI**: the module is a big layered hive with doorways and a mast; the Hive Drone is a small quadcopter
+   seen from above. JEI and the Info tab show Energy/drone 2k FE, capacity 12k, Drones/wave 3, fire rate 0.07/s.
+3. **Model**: a big hollow wasp-nest hive (nearly the width of the 3x3) on a slim pedestal, never turning: honeycomb
+   plated layers with lips, swelling out above three doorways (north, south-east, south-west) with hoods and cyan
+   frames; through each doorway a landing pad with cyan lights inside; a relay mast out of the cap whose antenna tip
+   pulses. Mounting it: the mast rises out of the cap. A wave: the mast head spins and the antenna flashes.
+4. **Waves**: with a husk within 32 blocks, three drones fly level out of the three doorways, then climb (three Hive Drones and
+   6,000 FE spent); the next wave 15 s later. No FE, or no Hive Drone and none docked: no wave.
+5. **Drones**: small quadcopters with ducted fans (spinning) and a cyan light; they climb, patrol round the carrier
+   about 8 blocks up, hover off a target and shoot it (amber tracers, a chin flash, sparks on hits, about 4 shots a
+   second each); a phantom is shot too. A cow or villager among the husks is never hit; drones never shoot each other,
+   spiders or turrets, and no turret shoots them. Their light turns yellow below half HP and blinks red below a quarter.
+6. **Kamikaze**: a drone out of bullets, or below a quarter HP, with an enemy in reach noses down, rolls, trails red
+   smoke and bursts on it (a bigger blast than before): about 15 to valid targets within 4.5 blocks, nothing to the
+   cow, no blocks broken.
+7. **Home**: kill or remove the targets: after about 5 s each drone comes back high, drops down in front of its
+   doorway, flies in level and vanishes on its pad (docked); none passes through the hive's walls or roof. Bring a husk
+   back: the next wave relaunches the docked drones for 1,000 FE each, no Hive Drone spent.
+7b. **Inside the hive**: look in through a doorway. Docked drones stand on the racks, as many as are docked (the three
+   pads first, then the shelves over them, up to 9); they leave the racks as a wave takes them. In the 15 s after a wave
+   a new drone takes shape on each empty pad (lit plate, legs, body, rotors, then its lights) with welding sparks.
+8. **Cap**: keep it busy: never more than 9 drones flying plus docked; at the cap it waits with items and FE untouched.
+9. **Mobs go for them**: a skeleton shoots drones; a zombie targets a low one. Shot down, a drone drops and is gone
+   (no blast). Hit one yourself: owner and trusted players only with `trustedCanDamage` on.
+10. **Carrier gone**: break the Fortress mid-fight: the drones keep fighting and dive when their bullets run out; with
+    nothing left they hover where they are. Leave the area or rejoin the world: no flying drones are left (docked ones
+    stay docked, item 14).
+10b. **Docked drones are never lost by moving the carrier**: with drones docked, take the module off (sneak + empty
+    hand, or the GUI): the docked drones come back as Hive Drone items in the base's ammo slots (dropped on the base when
+    full). Mine the Fortress with drones docked and place it again: they are still docked. Let it be destroyed (0 HP):
+    they are lost with the weapon and the ammo.
+11. **Overwatch**: Take control of the Fortress: you can watch it; it keeps sending waves on its own.
+11b. **Roof and trees**: put the carrier in a room with a roof two blocks over the base and the husk walled in: the
+    drones fly out of their doorways, bump the roof, give up the climb, patrol under it and come home through their
+    doorways after about 5 s. In a forest: a drone out of bullets dives at the husk, not into the leaves next to it.
+12. **Night**: the hive goes dark like the world; the doorway frames, pad lights, antenna and drone lights glow;
+    tracers read.
+13. **Bahasa Indonesia**: Turret Kapal Induk Sarang, Drone Sarang, Hanggar Sarang, Tiang Relay Sarang, Ruang Luncur
+    Sarang; tooltip, JEI rows and subtitles translated.
+14. **Save and reload** with drones out and docked, then a dedicated server (`runServer` + a client): the flying ones
+    are gone, the docked ones are still there (the next wave relaunches them for 1,000 FE each, no Hive Drone taken),
+    no errors in either log.
