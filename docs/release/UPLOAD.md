@@ -75,7 +75,8 @@ New: Javelin Missile Turret
   fires one big missile: gas pushes it half out of the silo, it waits there a moment, its engine lights and it climbs, slow
   at first, then faster and faster until it is gone. A few seconds later it drops straight down out of the sky on the
   thickest crowd of ground enemies in range (8 to 48 blocks) that stand under open sky. The target is marked from launch to impact: a hologram chevron
-  over it and a ring on the ground that shrinks to the impact, red in the last second.
+  over it and a ring on the ground that shrinks to the impact, red in the last second. A crowd a missile (any
+  Javelin's) is already coming down on is passed over for the next shot while another crowd is in range.
 - The missile follows its target while it stays under open sky; if it ducks under a roof, the missile comes down on its
   last open spot. The blast: 40 damage in the middle down to 15 at 6 blocks, only to what the turret may shoot, no
   block damage.
@@ -102,7 +103,8 @@ New: Brood Cannon Turret
 New: Hive Carrier Turret
 - The third huge weapon, for the Fortress Turret Base: a big hollow hive of honeycomb plating with a relay mast on
   top. While enemies are within 32 blocks it sends out a wave of three combat drones every 15 seconds; they fly out
-  of the doorways in its side and climb away, and come home through the same doorways.
+  of the doorways in its side and climb away, and come home through the same doorways. Look in through a doorway:
+  docked drones stand on racks inside, and between waves a new drone is welded together on each empty pad.
 - Drones (20 HP, 120 bullets) shoot whatever the turret may shoot within 16 blocks, flyers too: 2 damage, 4 shots a
   second. They patrol round the carrier. Out of bullets or below a quarter HP with an enemy in reach they dive
   kamikaze: 15 damage within 4.5 blocks, again only to valid targets. With nothing left to shoot they fly home, dock
