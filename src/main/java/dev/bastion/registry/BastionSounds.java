@@ -127,6 +127,8 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> DRONE_HUM = register("hive_drone.hum");
     public static final RegistryObject<SoundEvent> DRONE_SHOT = register("hive_drone.shot");
     public static final RegistryObject<SoundEvent> DRONE_KAMIKAZE = register("hive_drone.kamikaze");
+    /** A research done in the Turret Codex (PLAN 8 "Riset & Turret Codex"), to the researcher only. */
+    public static final RegistryObject<SoundEvent> RESEARCH_COMPLETE = register("research.complete");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(Bastion.id(name)));

@@ -1552,6 +1552,202 @@ ulang, Overwatch (Javelin, Brood). Visual: scene showcase per turret (siang/mala
 
 **Di luar cakupan**: Mk2/Mk3 dan hybrid (0.7.0), riset (0.6.0), kendali Overwatch untuk Hive Carrier.
 
+### Riset & Turret Codex (brainstorm user 2026-10-23 14:00–14:34 dan 2026-10-24 14:05–14:21) — **rilis 0.6.0**
+
+**Status**: spec ditulis dan disetujui user 2026-10-24 14:28 ("setuju"). Dibangun 2026-10-24 (plan `docs/superpowers/plans/2026-10-24-research-codex.md`, ledger `.superpowers/sdd/2026-10-24-research-codex/progress.md`), 414 GameTest lolos (413 juga dengan `-PwithCompatMods`), showcase `-Pshowcase=codex` dicek, review akhir (Opus xhigh) + fix pass, 9 minor juga diperbaiki (user 15:55); belum dites user di game, belum di-commit. Perubahan saat dibangun (keputusan saya, ada di ledger): tab Modul jadi **dua pita lima kolom** (baris 0–2 dan 4–6) supaya muat di GUI scale 3; jarak sel tree 28x27 px. Eksekusi **native** (superpowers:executing-plans; user
+2026-10-24 14:23). User 14:21: "gas dulu aja, kalau ada perubahan nanti setelah jadi": poin yang belum dibahas (biaya,
+tampilan, tempat Mk2/Mk3) diisi usulan saya, ditandai *(usulan)*, dan diubah setelah user mencobanya.
+
+**Tujuan**: pemain survival membuka turret, base, stasiun dan modul selangkah demi selangkah lewat riset, dan punya satu
+buku (Turret Codex) yang menjelaskan semua isi mod beserta tree-nya. Tree ini juga kerangka untuk Mk2/Mk3 dan hybrid
+0.7.0.
+
+**Keputusan user**
+- Semua butuh riset **kecuali** jalur early: Cobblestone Turret, Snowball Repeater, Potato Shotgun, Arrow Launcher,
+  Makeshift Turret Base (dan Codex sendiri). Riset early murah (10-23).
+- Riset = membayar item dari inventory dengan tombol **Research**. Item dan jumlah per node ada di **config** (10-23).
+- Yang dikunci **hanya resep**: barang yang didapat dengan cara lain (loot, creative, perintah, mod lain) tetap bisa dipasang
+  dan berfungsi (10-23).
+- Riset **dipakai bersama satu world** (untuk sekarang). World lama dianggap sudah riset semua; switch config mematikan
+  riset (10-23).
+- Wiki dibuka dari **item** bernama **Turret Codex** (id_id "Kodeks Turret", 10-24 14:11).
+- Layout **B** (10-23): dua panel, tree di kiri tumbuh dari bawah ke atas (gaya Mindustry), halaman node terpilih di kanan
+  (model 3D, bar stat, teks, ukuran base, upgrade, tombol resep JEI); merah = belum diriset. Hybrid 0.7.0 menggantung di
+  antara kedua induknya dengan garis putus-putus emas.
+- JEI: halaman Research per node dengan biayanya dan potongan tree-nya (10-23).
+- Node baru bisa diriset setelah **induknya** diriset; turret early selalu terbuka (10-24 14:12).
+- Tree turret dari diagram user (`~/Downloads/Untitled Diagram.png`) plus 5 perubahan yang disetujui 10-24 14:11 (di bawah).
+- **Ammo, parts dan Charging Station** tidak punya node: ikut terbuka bersama turretnya; ammo yang dipakai beberapa turret
+  terbuka dengan turret mana pun yang pertama diriset (10-24 14:13).
+- Turret butuh **base seukurannya** sudah diriset (10-24 14:13).
+- Tiga tab: **Turret**, **Workshop**, **Modul** (10-24 14:19). Modul khusus (Choke Module, Autoloader) punya node sendiri
+  di tab Modul dan **tidak bisa diriset sebelum senjatanya** (14:17–14:18).
+- Tab Modul: **satu kolom per modul** Mk1 → Mk2 → Mk3 (opsi 1, 14:20).
+- Module Workstation digabung ke node Workstations (koreksi saya 14:19, user tidak keberatan): stasiun itu juga membuat Repair
+  Kit, Tier Kit, Configurator, part hub dan Overwatch Link.
+
+**Aturan riset**
+- Satu **node** = satu kartu di tree. Node punya: tab, posisi (kolom, baris), item ikon, `parents` (induk di tab yang sama,
+  digambar sebagai garis), `requires` (syarat dari tab lain, digambar sebagai ikon kecil di pojok kartu selama belum
+  diriset), daftar item yang dibuka, dan biaya.
+- Node bisa diriset bila: riset aktif, node belum diriset, **semua** `parents` dan `requires` sudah diriset, dan pemain
+  membawa semua item biaya (creative: gratis). Server memeriksa semuanya; client hanya menampilkan.
+- Sebuah item **terbuka** bila salah satu node yang membukanya sudah diriset, atau item itu tidak dibuka node mana pun.
+  Resep **terkunci** bila item hasilnya tidak terbuka. Jadi parts, ammo, Mk2/Mk3 dan restore Damaged Base ikut aturan
+  yang sama tanpa daftar resep terpisah.
+- Riset tidak bisa dibatalkan di survival (hanya lewat perintah admin).
+- Node gratis (early, Makeshift Base, Codex) selalu tampil sudah diriset.
+
+**Tab Turret** (dari diagram user; tiap turret `requires` base seukurannya: 1x1 → Turret Base, 2x2 → Large Turret Base,
+3x3 → Fortress Turret Base)
+```
+Cobblestone → Gun ─┬→ Sniper → Laser Rifle → Railgun
+                   └→ Ion Rifle → Tesla Coil
+Snowball    → Machine Gun → Plasma Repeater → Plasma Cannon
+Potato      → Shotgun ─┬→ Flamethrower
+                       └→ Repulsor → Repulsor Dome
+Arrow       ─┬→ Rocket Launcher → Missile Launcher → Javelin
+             └→ Mortar → Brood Cannon → Hive Carrier
+```
+Lima perubahan dari diagram user (disetujui): Shotgun → Flamethrower dan Repulsor (jarak dekat, kerucut, knockback →
+dorongan); Arrow Launcher → Rocket Launcher (crossbow juga menembak firework rocket); Arrow Launcher → Mortar (lengkung lewat
+atas tembok, jarak minimum, area; dulu di bawah Flamethrower); Mortar → Brood Cannon (lintasan dan kode Mortar); Brood Cannon →
+Hive Carrier (sistem unit yang sama).
+
+Posisi *(usulan)*: baris = tingkat (0 early, 1 turret 1x1 pertama, 2–3 turret 1x1 lanjut, 4 semua 2x2, 5–6 semua 3x3),
+kolom per jalur supaya garis tidak bersilang:
+
+| Kolom | Baris 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| 0 | | | | Ion Rifle | Tesla Coil | | |
+| 1 | Cobblestone | Gun | Sniper | Laser Rifle | Railgun | | |
+| 2 | Snowball | Machine Gun | | Plasma Repeater | Plasma Cannon | | |
+| 3 | | | Flamethrower | | | | |
+| 4 | Potato | Shotgun | | | | | |
+| 5 | | | Repulsor | | Repulsor Dome | | |
+| 6 | | Rocket Launcher | | | Missile Launcher | Javelin | |
+| 7 | Arrow | | | | Mortar | Brood Cannon | Hive Carrier |
+
+Yang ikut terbuka bersama turret: weapon module, semua part-nya, ammo-nya. Kinetic Rounds = Gun atau Machine Gun;
+Plasma Cell (+ kosong) = Plasma Repeater atau Plasma Cannon; Laser Cell (+ kosong) = Laser Rifle; **Charging Station** =
+Laser Rifle atau Plasma Repeater (stasiun pengisi sel). Turret FE (Ion, Tesla, Repulsor, Dome) tidak membuka ammo.
+
+**Tab Workshop**
+```
+Turret Codex   Makeshift Turret Base                    (gratis, crafting table)
+                └→ Workstations  (Part Workstation + Part Assembler + Ammo Workstation + Module Workstation)
+                    └→ Turret Base (+ Repair Kit, Turret Configurator, restore Damaged Base)
+                        ├→ Large Turret Base (+ restore) → Fortress Turret Base (+ Fortress Frame, restore)
+                        ├→ Tier Upgrade Kit T2 → Tier Upgrade Kit T3
+                        ├→ Feed Hub                                                       (usulan: di bawah Turret Base)
+                        └→ Control Hub (Interface, Casing, Power Port, Uplink T1–T3, Hub Connector) → Overwatch Link
+```
+Posisi *(usulan)*: Codex (0,0), Makeshift (1,0), Workstations (1,1), Turret Base (1,2), Large (0,3), Fortress (0,4), Kit T2
+(1,3), Kit T3 (1,4), Feed Hub (2,3), Control Hub (3,3), Overwatch Link (3,4).
+
+**Tab Modul**: satu kolom per modul, baris Mk1 → Mk2 → Mk3 ke atas, dalam dua pita lima kolom (baris 0–2 lalu 4–6; dibangun begitu, awalnya 10 kolom); tiap Mk2 induknya Mk1-nya, Mk3 induknya Mk2-nya. Urutan kolom:
+Range Module, Damage Amplifier, Overclock, Rapid Cycler, Targeting AI, Penetrator, Ammo Recycler, Coolant Loop, Choke Module,
+Autoloader. Mk1 modul umum `requires` Workstations; Choke Module Mk1 `requires` Shotgun; Autoloader Mk1 `requires` Rocket
+Launcher.
+
+**Biaya default** *(usulan; semua di config, item vanilla saja)*
+
+| Tingkat | Biaya | Node |
+|---|---|---|
+| R1 | 8 iron ingot, 8 copper ingot, 4 redstone | Workstations, Turret Base, Gun, Machine Gun, Shotgun, Rocket Launcher, 10 modul Mk1 |
+| R2 | 16 iron ingot, 8 redstone, 4 gold ingot | Sniper, Ion Rifle, Laser Rifle, Plasma Repeater, Flamethrower, Repulsor, Large Turret Base, Kit T2, Feed Hub, 10 modul Mk2 |
+| R3 | 4 iron block, 8 gold ingot, 4 diamond | Railgun, Tesla Coil, Plasma Cannon, Missile Launcher, Mortar, Repulsor Dome, Fortress Turret Base, Kit T3, Control Hub, Overwatch Link, 10 modul Mk3 |
+| R4 | 8 iron block, 8 diamond, 2 netherite scrap | Javelin, Brood Cannon, Hive Carrier |
+
+**Config** `config/bastion-research.toml` (`ModConfig.Type.COMMON`, global seperti `bastion-turrets.toml`):
+- `enabled` (true): false = semua resep terbuka, Codex tetap jadi wiki (tombol Research disembunyikan).
+- `giveCodexOnFirstJoin` (true) *(usulan)*: tiap pemain dapat satu Codex saat pertama masuk world (sekali per pemain,
+  ditandai di data persisten pemain), supaya pemain baru tahu kenapa resep terkunci.
+- `[costs]`: satu key per node yang bisa diriset (id node), nilai daftar teks `"namespace:item jumlah"`, awalnya angka mod
+  (komentar per key: nama node + `Mod default`). Item yang tidak dikenal atau jumlah di luar 1–4096: entri itu diabaikan +
+  peringatan di log. Daftar kosong = riset gratis (tetap satu klik).
+- Berlaku saat file disimpan (`ModConfigEvent.Reloading`): server mengirim ulang data riset ke semua pemain online.
+
+**Penyimpanan & sinkron**
+- `ResearchData` (SavedData di overworld, `bastion_research`): set id node yang sudah diriset.
+- **World lama** *(usulan)*: saat `ResearchData` dibuat pertama kali di server start, kalau `getGameTime()` overworld > 0
+  (world itu sudah pernah jalan sebelum 0.6.0), semua node yang ada saat itu langsung dicatat sudah diriset. Node yang
+  ditambah versi berikutnya (0.7.0) tetap harus diriset di world itu. GameTest memastikan world baru mulai dari 0.
+- Paket baru S→C `ResearchSync` (enabled, set node, biaya efektif) saat login, setelah riset, setelah reload config; paket
+  C→S `ResearchRequest(node)`. `BastionNetwork.PROTOCOL` naik satu.
+- Riset berhasil: item diambil, node dicatat, semua pemain dapat `ResearchSync`, pesan chat ke semua pemain
+  ("<pemain> researched <node>", en_us + id_id), suara custom `research.complete` (placeholder `gen_sounds.py`,
+  `docs/SOUND_SHEET.md`).
+
+**Kunci resep**
+- Workstation: daftar resep di GUI tetap menampilkan resep terkunci, digambar gelap + ikon gembok, tooltip "Research <node>
+  in the Turret Codex"; tidak bisa dipilih (`selectRecipe` menolak). Resep yang terkunci setelah dipilih (config dinyalakan
+  lagi) tidak diproses (`tickServer`, `instantCraft`). `WorkstationFill` (tombol + JEI) menolak resep terkunci.
+- Crafting table: resep kelima stasiun memakai serializer baru `bastion:research_shaped` (turunan
+  `ShapedRecipe`) yang `matches` hanya bila item hasilnya terbuka di world itu (data riset per world, jadi cukup `Level`,
+  tanpa pemain). Resep early, Makeshift Base dan Codex tetap `minecraft:crafting_shaped`.
+- Tooltip item Bastion yang belum terbuka *(usulan)*: satu baris merah "Not researched: <node>".
+
+**Turret Codex**
+- Item (`stacksTo(1)`), tekstur dari `gen_textures.py` (buku gunmetal dengan glyph cyan); resep crafting table *(usulan)*:
+  shapeless 1 book + 1 iron ingot + 1 redstone. Klik kanan membuka layar Codex (client, lewat `DistExecutor`).
+- **Layar** digambar kode dengan palet GUI yang ada (`FlatButton`), tanpa tekstur vanilla; mengisi jendela dengan margin 8 px,
+  minimal 320x200 px GUI (muat di 1080p GUI scale 4). Panel kiri ~60 % lebar, panel kanan sisanya.
+- **Panel kiri**: tiga tombol tab di atas; tree digeser dengan drag mouse dan scroll (tanpa zoom). Kartu node 22x22 dengan
+  ikon item (node gabungan: Workstations = Part Workstation, Control Hub = Hub Interface). Warna *(usulan)*: sudah diriset = bingkai cyan; belum = bingkai merah; belum tapi bisa diriset sekarang =
+  merah berdenyut. Garis induk → anak siku-siku seperti diagram user, cyan bila induknya sudah diriset, merah redup bila
+  belum. Hover = tooltip nama + status. Klik = pilih node. Posisi tampilan awal: baris 0 di bawah. **Item bawaan** (keputusan user
+  2026-10-24 16:24, pilihan "kiri-kanan, tanpa part"): yang ikut terbuka bersama sebuah node (ammo, sel, stasiun, tool, blok hub,
+  Hub Connector; bukan part) tampil sebagai kartu kecil 18 px di kanan kartu utamanya, disambung garis pendek, warnanya ikut
+  kartu utama (tidak diriset sendiri; klik = pilih node itu; tooltip "Ikut bersama …"); kolom melebar sesuai grup terlebar,
+  jadi tab Turret perlu digeser. Part tetap di daftar "Membuka" halaman kanan.
+- **Panel kanan** (node terpilih): nama; model 3D item yang berputar pelan (drag untuk memutar); untuk turret: ukuran base dan
+  permukaan (mis. "2x2 · Large Turret Base · lantai"), ikon ammo, tiga bar stat (Damage per tembakan, tembakan per detik,
+  Range) dibandingkan dengan nilai tertinggi di antara turret bawaan dari data senjata client (config/datapack ikut terlihat;
+  turret tanpa damage seperti Repulsor menampilkan "—"); teks deskripsi; daftar item yang dibuka node (ikon + tooltip);
+  "Butuh:" induk/syarat yang belum diriset; blok **Research** (daftar biaya dengan jumlah dibawa/dibutuhkan, merah bila
+  kurang, tombol Research aktif bila bisa) atau tanda "Researched"; tombol **Recipe** yang membuka resep item itu di JEI
+  (hanya bila JEI terpasang).
+- Teks deskripsi memakai tooltip yang sudah ada (weapon module, modul, base, stasiun, hub); hanya node gabungan
+  (Workstations, Control Hub) dan Codex yang dapat teks baru, en_us + id_id.
+- Bagian **Upgrades** (Mk2/Mk3 turret) dikosongkan untuk 0.7.0.
+
+**JEI**
+- Kategori baru **Research**: satu halaman per node yang bisa diriset: slot biaya (input), slot item yang dibuka (output),
+  baris "Needs" (ikon induk + syarat) dan "Leads to" (ikon anak) sebagai potongan tree, status diriset/belum di world ini.
+  U pada item = node yang membukanya; R pada bahan = node yang memakainya sebagai biaya.
+- Halaman station yang resepnya terkunci: ikon gembok + tooltip node-nya (resep tetap terlihat untuk rencana).
+- Halaman info untuk Turret Codex.
+
+**Perintah admin** *(usulan, level op 2)*: `/bastion research grant <node>|all`, `/bastion research revoke <node>|all`,
+`/bastion research list`. Untuk admin server dan tes manual.
+
+**Persiapan 0.7.0** (tidak dibangun sekarang): `parents` boleh lebih dari satu (hybrid butuh keduanya; garis putus-putus
+emas ditambah di 0.7.0); Mk2/Mk3 turret tampil di bagian Upgrades halaman turretnya, bukan sebagai kartu baru *(usulan)*.
+
+**Acceptance**
+- GameTest (gagal dulu): (1) tree utuh: semua `parents`/`requires` ada, tanpa siklus, posisi unik per tab, setiap item
+  Bastion yang punya resep dibuka minimal satu node atau sengaja gratis; (2) riset menolak tanpa induk/syarat, tanpa item
+  cukup, dan node yang sudah diriset, lalu mengambil item tepat sejumlah biaya (creative gratis); (3) Workstation menolak
+  memilih dan memproses resep terkunci, menerima setelah diriset; `WorkstationFill` menolak resep terkunci; (4) resep
+  crafting stasiun tidak cocok sebelum riset, cocok sesudahnya; (5) ammo bersama terbuka lewat salah satu turret; (6)
+  world baru mulai kosong, world dengan `getGameTime()` > 0 dapat semua node; (7) `enabled = false` membuka semua resep;
+  (8) parse biaya config: entri salah diabaikan, daftar kosong = gratis; (9) Codex diberikan sekali saat pertama masuk;
+  (10) `ResearchSync` encode/decode sama. Data riset dipakai bersama seluruh world, jadi test riset mengubahnya lalu memulihkannya di `finally`
+  (tiap test punya batch sendiri dan batch jalan berurutan); world GameTest mulai dengan semua riset terbuka, jadi semua
+  GameTest lama tetap lolos.
+- Showcase `-Pshowcase=codex` di world salinan: layar Codex tiap tab, halaman turret/workshop/modul, riset satu node
+  (denyut → cyan).
+- Manual (checklist `docs/TESTING.md` "Riset & Turret Codex (0.6.0)"): world baru survival (Codex di inventory, resep
+  terkunci, riset Workstations → Turret Base → Gun), multiplayer LAN (riset satu pemain terlihat pemain lain), world lama
+  (semua terbuka), `enabled = false`, ubah biaya saat game jalan, JEI R/U dan halaman Research, tanpa JEI tidak crash,
+  dedicated server.
+- `./gradlew build` lolos, semua GameTest lama lolos (juga `-PwithCompatMods`).
+- Dokumen: changelog 0.6.0 dan deskripsi store (`docs/release/`), `HANDOFF.md`, `docs/SOUND_SHEET.md`.
+
+**Di luar cakupan**: riset per pemain atau per tim, riset dengan waktu/eksperimen, zoom dan kotak cari di Codex, tag
+(`#forge:...`) di biaya config, plugin EMI/REI native, Mk2/Mk3 turret dan hybrid (0.7.0), Patchouli.
+
 ---
 
 ## 9. Aturan Kerja untuk Claude Code

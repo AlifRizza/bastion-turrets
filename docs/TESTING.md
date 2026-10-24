@@ -697,3 +697,57 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
 14. **Save and reload** with drones out and docked, then a dedicated server (`runServer` + a client): the flying ones
     are gone, the docked ones are still there (the next wave relaunches them for 1,000 FE each, no Hive Drone taken),
     no errors in either log.
+
+## Research & Turret Codex (0.6.0)
+
+Research per world, the Turret Codex, recipe locks, JEI. Visual reference: `-Pshowcase=codex`
+(`run/screenshots/showcase_codex_*`, checked 2026-10-24). The research sound is a placeholder (`docs/SOUND_SHEET.md` 90).
+
+Setup: a **new** survival world (research on, the default). Give yourself iron, copper, redstone, gold, diamonds and
+netherite scrap when a step needs them.
+
+1. **First join**: a Turret Codex is in your inventory. Leave and rejoin (or die and respawn): no second one.
+2. **Locked**: the crafting table makes no Part Workstation (the pattern gives no result); the Codex, the Makeshift
+   Turret Base and the four early turrets still craft. A Bastion item's tooltip (in JEI or creative) says
+   "Not researched: …" in red.
+3. **Codex**: right-click it. Three tabs; the Turrets tab is the tree from the user's diagram (Cobblestone → Gun →
+   Sniper / Ion…, Arrow → Rocket / Mortar…), row 0 at the bottom; free cards cyan, the rest red; a card that can be
+   researched now pulses; small base icons on turret cards until that base is researched. Hover a card: name and
+   state. Drag (and scroll) pans when the tab is bigger than the panel, also a drag that starts on a card (a plain click
+   picks it); small arrows show more off an edge. The page (a turret: "1x1 · Turret Base · floor, wall or ceiling"):
+   the item turning (drag turns it), base and ammo, three bars, text, Unlocks, Needs, the costs with how many you carry
+   (red when short). The Modules tab: two bands of five columns, Mk1 → Mk2 → Mk3 upward. What a card brings along sits
+   beside it as smaller cards in its colour (Gun → Kinetic Rounds; Laser Rifle → Laser Cell, Empty Laser Cell, Charging
+   Station; Control Hub → Casing, Power Port, Uplinks T1-T3, Hub Connector; Turret Base → Repair Kit, Configurator); no
+   parts there (they are in the page's Unlocks). Hover one: its name and "Comes with …"; clicking it picks its card.
+4. **First research**: Workshop tab, Workstations, with 8 iron + 8 copper + 4 redstone: press Research: the card
+   flashes cyan, a chime, a chat line "<you> researched Workstations", the items are gone. Now the crafting table makes
+   the stations. Without the items the button stays grey.
+5. **Chain**: Turret Base, then Gun (Turrets tab): the Gun card pulses only after the Turret Base. At the Part
+   Workstation the Gun Barrel row loses its padlock; a locked row (Sniper Barrel) is dim with a padlock, clicking it
+   does nothing, its tooltip says "Research Sniper Turret in the Turret Codex". Kinetic Rounds open with the Gun or the
+   Machine Gun; the Charging Station with the Laser Rifle or the Plasma Repeater.
+   The Part Workstation's tab row stays inside its screen: 11 tabs between < and > (click them or scroll the wheel
+   over the tabs; the dim arrow is the end); the open recipe's tab is in view when the screen opens.
+6. **Modules**: Choke Module Mk1 shows a small Shotgun icon and stays locked until the Shotgun is researched; Mk2 needs
+   Mk1, Mk3 needs Mk2; the Module Workstation's Mk2 rows open only after the Mk2 card.
+7. **Creative**: switch to creative: Research needs no items.
+8. **LAN / second player**: open to LAN, join with a second client: they get their own Codex; when one player
+   researches, the other's open Codex turns that card cyan at once and both see the chat line.
+9. **Old world**: open a world last played with 0.5.0 or older: every card is cyan, every recipe works as before.
+10. **Config while playing**: in `config/bastion-research.toml` set `enabled = false` and save: the Codex says
+    research is off, the Research button is gone, every recipe opens. Back to `true`: locks return (a station that had a
+    locked recipe picked stops). Change `gun`'s cost (for example to `["minecraft:dirt 2"]`) and save: the Gun page shows
+    it at once; a typo (`"minecraft:dirtt 2"`) is skipped with a warning in the log. Put the file back.
+11. **JEI**: R on an iron ingot: the Research pages that cost iron; U on the Gun Turret: its Research page (cost, what
+    it unlocks, Needs, Leads to, researched or not). A locked station recipe shows a small padlock bottom-right with
+    the same hint on hover, and its + button is red with "Research … in the Turret Codex". The Codex's Recipe button
+    opens JEI on the selected item. With `gun`'s cost changed to `["minecraft:dirt 2"]` (step 10): R on dirt finds the Gun
+    page, R on copper no longer does.
+12. **Commands** (op): `/bastion research list` (free cards left out), `/bastion research grant gun`, `/bastion research revoke all`,
+    `/bastion research revoke cobblestone` (refused: always researched)
+    (an open Codex follows at once). `/bastion vfx <preset>` still works (it shares the `/bastion` root on the client).
+13. **Without JEI** (`-PnoDevMods`): no Recipe button, nothing breaks.
+14. **Dedicated server**: `runServer` + a client: the Codex opens, research syncs, costs from the server's config.
+15. **Bahasa Indonesia**: Kodeks Turret, tabs Turret / Workshop / Modul, "Siap diriset", "Belum diriset: …", the chat
+    line "<pemain> meriset …", the JEI page "Riset".

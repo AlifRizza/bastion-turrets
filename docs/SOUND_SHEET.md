@@ -1,6 +1,6 @@
 # Sound Sheet: Bastion Turrets
 
-Semua SFX di mod (88 sound event, termasuk 8 milik Ion Rifle dan Plasma, 4 milik Turret Control Hub, 6 milik turret early game, 4 milik Javelin Missile, 5 milik Brood Cannon dan 4 milik Hive Carrier). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
+Semua SFX di mod (89 sound event, termasuk 8 milik Ion Rifle dan Plasma, 4 milik Turret Control Hub, 6 milik turret early game, 4 milik Javelin Missile, 5 milik Brood Cannon, 4 milik Hive Carrier dan 1 milik Turret Codex). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
 
 ## Mulai dari sini
 
@@ -444,6 +444,7 @@ P1 = terdengar terus, ganti duluan · P2 = biasa · P3 = jarang atau versi jauh 
 | 87 | [`hive_drone.hum`](#87) | Hive Carrier | P2 | 1 dtk | 1 | ya |
 | 88 | [`hive_drone.shot`](#88) | Hive Carrier | P2 | 0,25 dtk | 2 |  |
 | 89 | [`hive_drone.kamikaze`](#89) | Hive Carrier | P2 | 1,6 dtk | 2 |  |
+| 90 | [`research.complete`](#90) | Turret Codex | P2 | 0,8 dtk | 1 |  |
 | 7 | [`gun.fire_tail`](#7) | Gun Turret | P3 | 1,2 dtk | 2 |  |
 | 10 | [`machine_gun.fire_tail`](#10) | Machine Gun | P3 | 1,2 dtk | 2 |  |
 | 16 | [`shotgun.fire_tail`](#16) | Shotgun | P3 | 1,2 dtk | 2 |  |
@@ -1826,4 +1827,18 @@ Drone menukik ke musuh: desing yang meninggi, lalu ledakan tajam.
 
 ```text
 A small drone diving into its target: a short rising whine of its fans, then a sharp compact explosion with a rattle of debris. 1.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="90"></a>
+### 90. `research.complete`
+
+**P2** · 0,8 dtk · 1 varian · `research/complete.ogg` · hanya untuk pemain yang meriset (tanpa jarak)  
+Riset selesai di Turret Codex: denting naik dua nada yang lembut.
+
+**Cari:** `ui unlock chime` · `tech unlocked` · `research complete`
+
+**Prompt AI:**
+
+```text
+A soft futuristic interface chime for unlocking a new technology: two quick rising notes with a light digital shimmer, clean and satisfying, not loud. 0.8 seconds. Dry, isolated sound effect, mono, no music, no voices.
 ```

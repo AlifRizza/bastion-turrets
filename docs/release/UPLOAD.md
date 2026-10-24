@@ -29,9 +29,9 @@ there is rebuilt from commit 2cacf9d: the one first left in `build/libs` was bui
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.5.0.jar` (`./gradlew build`) |
-| Version number         | 0.5.0                                                     |
-| Version name           | Bastion Turrets 0.5.0                                     |
+| File                   | `build/libs/bastion-1.20.1-0.6.0.jar` (`./gradlew build`) |
+| Version number         | 0.6.0                                                     |
+| Version name           | Bastion Turrets 0.6.0                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -53,6 +53,43 @@ about a week after 0.3.2.
 0.5.0 (user roadmap 2026-10-23): the Fortress Turret Base and the first three 3x3 turrets (Javelin Missile, Brood Cannon,
 Hive Carrier), with the user's adjustments of 2026-10-24. Changelog below, store text in `DESCRIPTION_UPDATE_0.5.0.md`;
 committed 2026-10-24, not pushed or uploaded yet. Upload folder: `build/upload/0.5.0/`.
+0.6.0 (user roadmap 2026-10-23, spec approved 2026-10-24): research and the Turret Codex, a big update, so the middle
+number. Changelog below, store text in `DESCRIPTION_UPDATE_0.6.0.md` (new gallery image `23_turret_codex`); not committed
+yet (the user commits), uploaded after 0.5.0.
+
+## Changelog: 0.6.0
+
+```
+New: Research and the Turret Codex
+- The Turret Codex: every player gets one the first time they join a world (it is also crafted from a book, an iron
+  ingot and redstone). Right-click it: on the left the research tree in three tabs (Turrets, Workshop, Modules),
+  growing from the early turrets up to the 3x3 ones, with what each card brings along (ammo, stations, tools) beside it;
+  on the right a page for the card you pick: the item in 3D, its base
+  and ammo, bars for damage, fire rate and range, its description, what it unlocks and what it still needs.
+- Most recipes now need research first: the workstations, every turret but the four early ones, the bases, the tier
+  kits, the modules (Mk1, Mk2 and Mk3 each), the Feed Hub, the Control Hub and the Overwatch Link. A turret opens its
+  parts and its ammo with it. A card needs the cards below it, and a turret also the base of its size.
+- Press Research on a card to pay its cost from your inventory: iron, copper and redstone for the first steps, gold
+  for the later 1x1 turrets, diamonds for the 2x2 ones, diamonds and netherite scrap for the 3x3 ones. Creative players
+  research for free.
+- Research is shared by everyone in the world; a chat line tells everyone what was researched. Gear you got another
+  way (loot, creative, another mod) still places and works.
+- Worlds that ran before 0.6.0 start with everything researched; new worlds start from the early turrets.
+- A locked recipe shows a padlock in its workstation (and in JEI, where its + button says why) and says what to
+  research; a locked item's tooltip says so too.
+- JEI: a Research page for every card with its cost, what it unlocks, what it needs and what it leads to (R on an iron
+  ingot, U on a turret). The Codex's Recipe button opens JEI on the item.
+- config/bastion-research.toml: every card's cost, research on or off, and the first-join Codex. Admins:
+  /bastion research grant <card|all>, /bastion research revoke <card|all>, /bastion research list.
+
+Fixes
+- The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many
+  as fit with arrows at both ends (click them, or scroll the mouse wheel over the tabs).
+
+Note
+- The research sound is a placeholder for now.
+- Clients need this version to join a 0.6.0 server.
+```
 
 ## Changelog: 0.5.0
 

@@ -797,6 +797,31 @@ def configurator():
     return outline(img, OUTLINE)
 
 
+CODEX = Sprite([
+    "................",
+    "..gggggggggggg..",
+    "..gSGGGGGGGGGg..",
+    "..gSGGGGGGGbGg..",
+    "..gSGGGGGGbGGg..",
+    "..gSGGGbbbGGGg..",
+    "..gSGGbbbbbGGg..",
+    "..gSGGbbbbbGGg..",
+    "..gSGGGGbGGGGg..",
+    "..gSGGbbbbbGGg..",
+    "..gSGbbbbbbbGg..",
+    "..gSGGGGGGGGGg..",
+    "..gSPPPPPPPPPg..",
+    "..gggggggggggg..",
+], {"g": GRAPHITE * 0.8, "S": METAL * 0.7, "G": GRAPHITE * 1.35, "P": PANEL, "b": rgb("4FD8FF")})
+
+
+def codex():
+    """The Turret Codex (0.6.0): a gunmetal book with a metal spine, its page edge, and a cyan turret glyph on the cover."""
+    img = np.zeros((16, 16, 4))
+    stamp(img, CODEX, 0, 1)
+    return outline(img, OUTLINE)
+
+
 DAMAGED_BASE = Sprite([
     "....gggggggg....",
     "...gPPPkPPPPg...",
@@ -1728,6 +1753,7 @@ TEXTURES = {
     "item/tier_upgrade_kit_t2.png": lambda: upgrade_kit(2),
     "item/tier_upgrade_kit_t3.png": lambda: upgrade_kit(3),
     "item/turret_configurator.png": configurator,
+    "item/turret_codex.png": codex,
     "item/damaged_turret_base.png": damaged_base,
     "block/makeshift_turret_base.png": lambda: paint_model("makeshift_turret_base")[0],
     "block/makeshift_turret_base_e.png": lambda: paint_model("makeshift_turret_base")[1],  # all transparent: no glow

@@ -1,5 +1,8 @@
 package dev.bastion.client.compat.jei;
 
+import dev.bastion.client.screen.WorkstationScreen;
+import dev.bastion.research.Research;
+import dev.bastion.research.ResearchTree;
 import dev.bastion.weapon.WeaponStatRows;
 import dev.bastion.workstation.WorkstationRecipe;
 import dev.bastion.workstation.WorkstationType;
@@ -12,12 +15,14 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import java.util.Arrays;
+import java.util.List;
 
 /** One workstation's recipes in JEI: the counted ingredients, the result, time and FE (PLAN "Compat JEI & Jade"). */
 final class StationCategory implements IRecipeCategory<WorkstationRecipe> {
@@ -97,5 +102,19 @@ final class StationCategory implements IRecipeCategory<WorkstationRecipe> {
         graphics.drawString(font, Component.translatable("jei.bastion.station.cost", WeaponStatRows.fmt(recipe.time() / 20f), recipe.energy(),
                 recipe.energyPerTick()), 0, y, TEXT, false);
         if (station.instant) graphics.drawString(font, Component.translatable("jei.bastion.station.instant"), 0, y + 11, TEXT, false);
+        if (locked(recipe)) WorkstationScreen.padlock(graphics, WIDTH - 5, HEIGHT - 6); // research not done in this world
+    }
+
+    private static boolean locked(WorkstationRecipe recipe) {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null && !Research.unlocked(mc.level, recipe.result().getItem());
+    }
+
+    @Override
+    @SuppressWarnings({"deprecation", "removal"})
+    public List<Component> getTooltipStrings(WorkstationRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+        if (!locked(recipe) || mouseX < WIDTH - 8 || mouseY < HEIGHT - 8) return List.of();
+        return List.of(Component.translatable("gui.bastion.workstation.locked", ResearchTree.unlocking(recipe.result().getItem()).get(0).name())
+                .withStyle(ChatFormatting.RED));
     }
 }

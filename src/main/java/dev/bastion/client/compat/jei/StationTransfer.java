@@ -3,6 +3,8 @@ package dev.bastion.client.compat.jei;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.WorkstationFill;
 import dev.bastion.registry.BastionMenus;
+import dev.bastion.research.Research;
+import dev.bastion.research.ResearchTree;
 import dev.bastion.workstation.WorkstationBlockEntity;
 import dev.bastion.workstation.WorkstationMenu;
 import dev.bastion.workstation.WorkstationRecipe;
@@ -51,6 +53,10 @@ record StationTransfer(IRecipeTransferHandlerHelper helper, RecipeType<Workstati
     public IRecipeTransferError transferRecipe(WorkstationMenu menu, WorkstationRecipe recipe, IRecipeSlotsView slots, Player player,
                                                boolean maxTransfer, boolean doTransfer) {
         if (menu.type() != station) return helper.createInternalError();
+        if (!Research.unlocked(player.level(), recipe.result().getItem())) { // the station refuses a locked recipe anyway
+            return helper.createUserErrorWithTooltip(Component.translatable("gui.bastion.workstation.locked",
+                    ResearchTree.unlocking(recipe.result().getItem()).get(0).name()));
+        }
         List<ItemStack> stacks = new ArrayList<>();
         for (int i = 0; i < WorkstationBlockEntity.INPUTS; i++) stacks.add(menu.getSlot(i).getItem());
         stacks.addAll(player.getInventory().items);

@@ -806,5 +806,11 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "research.complete": {
+    "subtitle": "subtitles.bastion.research.complete",
+    "sounds": [
+      "bastion:research/complete"
+    ]
   }
 }

@@ -623,6 +623,14 @@ def drone_kamikaze(v):
     crack = np.concatenate([np.zeros(n(0.4)), hp(noise(L - 0.4, 1931 + v), 2800) * env(L - 0.4, 0.0005, 0.03)])
     return fade_out(norm(0.4 * whine + boom + crack), 0.2)
 
+def research_complete():
+    """Research done in the Turret Codex (0.6.0): a soft rising two-note chime with a short shimmer."""
+    L = 0.8
+    tt = t(L)
+    note = lambda f, start: np.sin(2 * np.pi * f * tt) * np.clip((tt - start) / 0.01, 0, 1) * np.exp(-np.maximum(tt - start, 0) * 5) * (tt >= start)
+    shimmer = bp(noise(L, 1940), 3000, 8000) * env(L, 0.15, 0.3) * 0.08
+    return fade_out(norm(note(660, 0) + note(990, 0.14) + 0.3 * note(1980, 0.14) + shimmer, 0.6), 0.1)
+
 SOUNDS = {
     "debug/ping.ogg": debug_ping,
     **{f"gun/fire_{v}.ogg": (lambda v=v: gun_fire(v)) for v in range(3)},
@@ -674,6 +682,7 @@ SOUNDS = {
     **{f"brood/spider_burst_{v}.ogg": (lambda v=v: spider_burst(v)) for v in range(2)},
     "hive/launch.ogg": hive_launch, "hive/drone_hum.ogg": drone_hum, **{f"hive/drone_shot_{v}.ogg": (lambda v=v: drone_shot(v)) for v in range(2)},
     **{f"hive/drone_kamikaze_{v}.ogg": (lambda v=v: drone_kamikaze(v)) for v in range(2)},
+    "research/complete.ogg": research_complete,
 }
 
 if __name__ == "__main__":

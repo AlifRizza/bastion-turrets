@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import dev.bastion.compat.create.CreateCompat;
 import dev.bastion.config.BastionClientConfig;
 import dev.bastion.config.BastionConfig;
+import dev.bastion.config.ResearchConfig;
 import dev.bastion.config.TurretStatsConfig;
 import dev.bastion.modifier.ModifierDataLoader;
 import dev.bastion.network.BastionNetwork;
@@ -60,6 +61,8 @@ public final class Bastion {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BastionClientConfig.SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TurretStatsConfig.SPEC, TurretStatsConfig.FILE);
         modBus.addListener(TurretStatsConfig::onReloading);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ResearchConfig.SPEC, ResearchConfig.FILE);
+        modBus.addListener(ResearchConfig::onReloading);
 
         BastionNetwork.register();
         MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> {

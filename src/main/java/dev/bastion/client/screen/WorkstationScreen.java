@@ -4,10 +4,13 @@ import com.mojang.math.Axis;
 import dev.bastion.Bastion;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.WorkstationAction;
+import dev.bastion.research.Research;
+import dev.bastion.research.ResearchTree;
 import dev.bastion.workstation.WorkstationBlock;
 import dev.bastion.workstation.WorkstationBlockEntity;
 import dev.bastion.workstation.WorkstationMenu;
 import dev.bastion.workstation.WorkstationRecipe;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.LightTexture;
@@ -32,7 +35,9 @@ import java.util.List;
  */
 public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> {
     private static final ResourceLocation TEXTURE = Bastion.id("textures/gui/workstation.png");
-    private static final int TAB_X = 8, TAB_Y = 18, TAB_STEP = 20;
+    private static final int TAB_X = 8, TAB_Y = 18, TAB_STEP = 20, TAB_ARROW = 9;
+    /** Returned by {@link #tabAt} for the scroll arrows (more tabs than fit: the Part Workstation has one per turret). */
+    private static final int TAB_LEFT = -2, TAB_RIGHT = -3, TAB_NONE = -1;
     private static final int LIST_X = 8, LIST_Y = 40, LIST_W = 98, ROWS = 4, ROW_H = 20;
     private static final int PREVIEW_X = 110, PREVIEW_Y = 40, PREVIEW_W = 68, PREVIEW_H = 84;
     private static final int ING_X = 182, ING_Y = 40, ING_W = 66;
@@ -44,6 +49,8 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
     private List<WorkstationRecipe> recipes = List.of();
     private final List<ResourceLocation> categories = new ArrayList<>();
     private int category, scroll;
+    /** The first tab shown when they do not all fit. */
+    private int tabScroll;
     /** What the player just clicked, shown until the station's own state catches up. */
     @Nullable
     private ResourceLocation pending;
@@ -67,6 +74,7 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
         WorkstationRecipe selected = selected();
         category = selected == null ? 0 : Math.max(0, categories.indexOf(selected.category()));
         scroll = selected == null ? 0 : Math.max(0, visible().indexOf(selected) - ROWS + 1); // the selected recipe in view
+        tabScroll = Mth.clamp(category - tabsFit() / 2, 0, Math.max(0, categories.size() - tabsFit())); // and its tab
         craftButton = null;
         if (menu.type().instant) {
             craftButton = addRenderableWidget(new FlatButton(leftPos + SIDE_X, topPos + SIDE_Y, SIDE_W, 18,
@@ -146,9 +154,50 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
         }
     }
 
+    /** Whether the tabs need the scroll arrows: they would run past the GUI's right edge. */
+    private boolean tabsOverflow() {
+        return categories.size() * TAB_STEP - 2 > imageWidth - 2 * TAB_X;
+    }
+
+    /** How many tabs are shown at once (all of them, or as many as fit between the arrows). */
+    private int tabsFit() {
+        return tabsOverflow() ? (imageWidth - 2 * TAB_X - 2 * (TAB_ARROW + 2) + 2) / TAB_STEP : categories.size();
+    }
+
+    /** The first tab's x, right of the left arrow when there are arrows. */
+    private int tabsX() {
+        return TAB_X + (tabsOverflow() ? TAB_ARROW + 2 : 0);
+    }
+
+    /** The tab index under a GUI-relative point, TAB_LEFT / TAB_RIGHT on an arrow, TAB_NONE elsewhere. */
+    private int tabAt(int x, int y) {
+        if (y < TAB_Y || y >= TAB_Y + 18) return TAB_NONE;
+        if (tabsOverflow() && x >= TAB_X && x < TAB_X + TAB_ARROW) return TAB_LEFT;
+        if (tabsOverflow() && x >= imageWidth - TAB_X - TAB_ARROW && x < imageWidth - TAB_X) return TAB_RIGHT;
+        int dx = x - tabsX();
+        if (dx < 0 || dx % TAB_STEP >= 18 || dx / TAB_STEP >= tabsFit()) return TAB_NONE;
+        int i = tabScroll + dx / TAB_STEP;
+        return i < categories.size() ? i : TAB_NONE;
+    }
+
+    private void scrollTabs(int by) {
+        tabScroll = Mth.clamp(tabScroll + by, 0, Math.max(0, categories.size() - tabsFit()));
+    }
+
     private void renderTabs(GuiGraphics graphics, int mouseX, int mouseY) {
-        for (int i = 0; i < categories.size(); i++) {
-            int x = leftPos + TAB_X + i * TAB_STEP, y = topPos + TAB_Y;
+        if (tabsOverflow()) { // < and > at both ends, dim when that way is already at its end
+            int y = topPos + TAB_Y, left = leftPos + TAB_X, right = leftPos + imageWidth - TAB_X - TAB_ARROW;
+            boolean back = tabScroll > 0, more = tabScroll + tabsFit() < categories.size();
+            for (int ax : new int[]{left, right}) {
+                graphics.fill(ax, y, ax + TAB_ARROW, y + 18, FlatButton.EDGE);
+                graphics.fill(ax + 1, y + 1, ax + TAB_ARROW - 1, y + 17, FlatButton.BG);
+            }
+            graphics.drawString(font, "<", left + 2, y + 5, back ? TEXT : FlatButton.EDGE, false);
+            graphics.drawString(font, ">", right + 2, y + 5, more ? TEXT : FlatButton.EDGE, false);
+        }
+        for (int n = 0; n < tabsFit() && tabScroll + n < categories.size(); n++) {
+            int i = tabScroll + n;
+            int x = leftPos + tabsX() + n * TAB_STEP, y = topPos + TAB_Y;
             boolean active = i == category;
             graphics.fill(x, y, x + 18, y + 18, active ? 0xFF000000 | CYAN : FlatButton.EDGE);
             graphics.fill(x + 1, y + 1, x + 17, y + 17, active ? 0xFF243440 : FlatButton.BG);
@@ -167,8 +216,16 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
             if (recipe == selected) graphics.fill(x, y, x + LIST_W - 6, y + ROW_H, 0xFF243440);
             else if (hover) graphics.fill(x, y, x + LIST_W - 6, y + ROW_H, 0xFF20262E);
             if (recipe == selected) graphics.fill(x, y, x + 1, y + ROW_H, 0xFF000000 | CYAN);
+            boolean locked = locked(recipe);
             graphics.renderItem(recipe.result(), x + 2, y + 2);
-            fit(graphics, recipe.result().getHoverName(), x + 21, y + 6, LIST_W - 6 - 23, recipe == selected ? TEXT : MUTED);
+            fit(graphics, recipe.result().getHoverName(), x + 21, y + 6, LIST_W - 6 - 23 - (locked ? 9 : 0), recipe == selected ? TEXT : MUTED);
+            if (locked) { // research not done (PLAN 8 "Riset & Turret Codex"): dimmed over the icon too, with a padlock
+                graphics.pose().pushPose();
+                graphics.pose().translate(0, 0, 200);
+                graphics.fill(x, y, x + LIST_W - 6, y + ROW_H, 0x99101418);
+                padlock(graphics, x + LIST_W - 14, y + 6);
+                graphics.pose().popPose();
+            }
         }
         if (rows.size() > ROWS) { // scrollbar
             int track = ROWS * ROW_H, thumb = Math.max(8, track * ROWS / rows.size());
@@ -245,11 +302,8 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
 
     private void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         int x = mouseX - leftPos, y = mouseY - topPos;
-        if (y >= TAB_Y && y < TAB_Y + 18 && x >= TAB_X) {
-            int i = (x - TAB_X) / TAB_STEP;
-            if (i < categories.size() && (x - TAB_X) % TAB_STEP < 18) {
-                graphics.renderTooltip(font, BuiltInRegistries.ITEM.get(categories.get(i)).getDescription(), mouseX, mouseY);
-            }
+        if (tabAt(x, y) >= 0) {
+            graphics.renderTooltip(font, BuiltInRegistries.ITEM.get(categories.get(tabAt(x, y))).getDescription(), mouseX, mouseY);
         } else if (x >= ENERGY_X - 1 && x < ENERGY_X + ENERGY_W + 1 && y >= ENERGY_Y - 1 && y < ENERGY_Y + ENERGY_H + 1) {
             graphics.renderTooltip(font, Component.translatable("gui.bastion.workstation.energy",
                     String.format("%,d", menu.energy()), String.format("%,d", menu.capacity())), mouseX, mouseY);
@@ -263,8 +317,26 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
         } else if (x >= LIST_X && x < LIST_X + LIST_W - 6 && y >= LIST_Y + 1 && y < LIST_Y + 1 + ROWS * ROW_H) {
             int i = scroll + (y - LIST_Y - 1) / ROW_H;
             List<WorkstationRecipe> rows = visible();
-            if (i < rows.size()) graphics.renderTooltip(font, rows.get(i).result(), mouseX, mouseY);
+            if (i < rows.size() && locked(rows.get(i))) {
+                graphics.renderComponentTooltip(font, List.of(rows.get(i).result().getHoverName(), Component.translatable("gui.bastion.workstation.locked",
+                        ResearchTree.unlocking(rows.get(i).result().getItem()).get(0).name()).withStyle(ChatFormatting.RED)), mouseX, mouseY);
+            } else if (i < rows.size()) {
+                graphics.renderTooltip(font, rows.get(i).result(), mouseX, mouseY);
+            }
         }
+    }
+
+    private boolean locked(WorkstationRecipe recipe) {
+        return minecraft != null && minecraft.level != null && !Research.unlocked(minecraft.level, recipe.result().getItem());
+    }
+
+    /** A 5x5 red padlock: a shackle over a body (also on JEI's locked station recipes). */
+    public static void padlock(GuiGraphics graphics, int x, int y) {
+        int red = 0xFFFF5A4F;
+        graphics.fill(x + 1, y, x + 4, y + 1, red);
+        graphics.fill(x + 1, y + 1, x + 2, y + 2, red);
+        graphics.fill(x + 3, y + 1, x + 4, y + 2, red);
+        graphics.fill(x, y + 2, x + 5, y + 5, red);
     }
 
     private void frame(GuiGraphics graphics, int x, int y, int w, int h) {
@@ -301,17 +373,20 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int x = (int) mouseX - leftPos, y = (int) mouseY - topPos;
-        if (button == 0 && y >= TAB_Y && y < TAB_Y + 18 && x >= TAB_X) {
-            int i = (x - TAB_X) / TAB_STEP;
-            if (i < categories.size() && (x - TAB_X) % TAB_STEP < 18) {
-                category = i;
-                scroll = 0;
-                return true;
-            }
+        int tab = button == 0 ? tabAt(x, y) : TAB_NONE;
+        if (tab == TAB_LEFT || tab == TAB_RIGHT) {
+            scrollTabs(tab == TAB_LEFT ? -(tabsFit() - 1) : tabsFit() - 1); // a page, keeping one tab in view
+            return true;
+        }
+        if (tab >= 0) {
+            category = tab;
+            scroll = 0;
+            return true;
         }
         if (button == 0 && x >= LIST_X && x < LIST_X + LIST_W - 6 && y >= LIST_Y + 1 && y < LIST_Y + 1 + ROWS * ROW_H) {
             int i = scroll + (y - LIST_Y - 1) / ROW_H;
             List<WorkstationRecipe> rows = visible();
+            if (i < rows.size() && locked(rows.get(i))) return true; // the server refuses it anyway
             if (i < rows.size()) {
                 pending = rows.get(i).id();
                 BastionNetwork.CHANNEL.sendToServer(WorkstationAction.select(menu.pos(), pending));
@@ -324,6 +399,10 @@ public class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         int x = (int) mouseX - leftPos, y = (int) mouseY - topPos;
+        if (tabsOverflow() && y >= TAB_Y && y < TAB_Y + 18 && x >= TAB_X && x < imageWidth - TAB_X) { // the wheel over the tabs
+            scrollTabs(-(int) Math.signum(delta));
+            return true;
+        }
         if (x >= LIST_X && x < LIST_X + LIST_W && y >= LIST_Y && y < LIST_Y + ROWS * ROW_H + 2) {
             scroll = Mth.clamp(scroll - (int) Math.signum(delta), 0, Math.max(0, visible().size() - ROWS));
             return true;

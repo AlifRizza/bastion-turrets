@@ -6,6 +6,7 @@ import dev.bastion.registry.BastionBlockEntities;
 import dev.bastion.turret.TurretBaseItem;
 import dev.bastion.turret.TurretTier;
 import dev.bastion.registry.BastionRecipes;
+import dev.bastion.research.Research;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -110,11 +111,12 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
         return recipeId;
     }
 
-    /** The selected recipe, if it still exists and belongs to this station. */
+    /** The selected recipe, if it still exists, belongs to this station and its result is unlocked by research. */
     @Nullable
     public WorkstationRecipe recipe() {
         if (recipeId == null || level == null) return null;
-        return level.getRecipeManager().byKey(recipeId).filter(r -> r instanceof WorkstationRecipe w && w.station() == type())
+        return level.getRecipeManager().byKey(recipeId).filter(r -> r instanceof WorkstationRecipe w && w.station() == type()
+                        && Research.unlocked(level, w.result().getItem()))
                 .map(r -> (WorkstationRecipe) r).orElse(null);
     }
 
@@ -128,7 +130,8 @@ public class WorkstationBlockEntity extends BlockEntity implements GeoBlockEntit
 
     public void selectRecipe(ResourceLocation id) {
         if (id.equals(recipeId) || level == null) return;
-        if (!(level.getRecipeManager().byKey(id).orElse(null) instanceof WorkstationRecipe recipe) || recipe.station() != type()) return;
+        if (!(level.getRecipeManager().byKey(id).orElse(null) instanceof WorkstationRecipe recipe) || recipe.station() != type()
+                || !Research.unlocked(level, recipe.result().getItem())) return;
         recipeId = id;
         progress = 0;
         setChanged();

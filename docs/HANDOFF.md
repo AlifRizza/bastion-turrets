@@ -1,4 +1,4 @@
-# Bastion Turrets — Session Handoff (2026-10-10, 16:30 WIB)
+# Bastion Turrets — Session Handoff (2026-10-24, 15:30 WIB)
 
 Read this first in a new session, then `CLAUDE.md` and `docs/PLAN.md` (the spec). Manual test list: `docs/TESTING.md`.
 Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.html, UPLOAD.md, icon.png, screenshots).
@@ -6,6 +6,56 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 ---
 
 ## 0. Where we stopped
+
+**NOW (2026-10-24 16:12): 0.6.0 "Research & Turret Codex" is built and reviewed (Opus xhigh: with fixes; the Important and, at the user's word, all 9 minors fixed), NOT committed (the user commits). 414/414 GameTests (413 also with -PwithCompatMods before the last client-side change); build green. User 16:14: Part Workstation tab row overflowed → scrolls with < > now. User 16:24: what a card brings along (no parts) shows beside it in the tree as smaller cards.**
+- Spec PLAN §8 "Riset & Turret Codex" (approved 14:28), plan `docs/superpowers/plans/2026-10-24-research-codex.md` (5 tasks,
+  native), ledger with every Ruling `.superpowers/sdd/2026-10-24-research-codex/progress.md`. 414/414 GameTests, build green,
+  `-Pshowcase=codex` run and read (7 shots; its scratch world deleted). `mod_version=0.6.0`; changelog `UPLOAD.md` "0.6.0", store text
+  `DESCRIPTION_UPDATE_0.6.0.md` (applied to both DESCRIPTION files), gallery `23_turret_codex`, TESTING "Research & Turret
+  Codex (0.6.0)", SOUND_SHEET 90.
+- Tree (user's diagram + 5 approved changes): Cobblestone → Gun → Sniper → Laser → Railgun, Gun → Ion → Tesla; Snowball →
+  MG → Plasma Repeater → Plasma Cannon; Potato → Shotgun → Flamethrower / Repulsor → Dome; Arrow → Rocket → Missile →
+  Javelin, Arrow → Mortar → Brood → Hive. Tabs Turret / Workshop / Modul (Modul: two bands of five columns, Mk1 → Mk3).
+  Parents required; a turret also requires its base node; ammo, parts and the Charging Station open with their turret.
+- Code: `research/` (ResearchNode, ResearchTree = the table, ResearchData = SavedData `bastion_research`, Research = rules +
+  client copy, ResearchEvents, ResearchCommand, ResearchShapedRecipe, TurretCodexItem), `config/ResearchConfig`
+  (`bastion-research.toml`: enabled, giveCodexOnFirstJoin, [costs]), `network/ResearchSync` + `ResearchRequest` (PROTOCOL
+  14), `client/screen/Codex{Screen,Tree,Page}`, `client/ResearchTooltips`, JEI `ResearchCategory` + `JeiBridge`.
+- **Lesson: GameTests must never write a ForgeConfigSpec value** (Forge saves at once; its watcher loaded an in-between
+  value back after the restore and left `gun = []` in run/config/bastion-research.toml; put back by hand). Test pure
+  functions (`Research.State`, `ResearchConfig.costOf`, `Research.pay`) instead.
+- Next: the user tests in game (TESTING "Research & Turret Codex (0.6.0)") and says "commit". After that: 0.7.0
+  (Augment Core Mk2/Mk3 on the turret page's Upgrades section, Fusion Core hybrids hanging between both parents).
+
+**2026-10-24 13:55: 0.5.0 is finished and committed; the next session starts 0.6.0 (research + tech-tree wiki).**
+- 0.5.0 commits: `6e496f2` (Fortress Turret Base + Javelin Missile, Brood Cannon, Hive Carrier and the user's same-day
+  adjustments), `ab9fa7e` (deferred minors after the second final review, gallery 18-22), `ee7562a` (changelog lines).
+  **Not pushed, no tag** (the user pushes/tags only on request). 391/391 GameTests, build green.
+- Upload folder `build/upload/0.5.0/` (git-ignored): jar built from `ab9fa7e` in a worktree, `changelog.txt`, the store
+  text, `gallery/`, `gambar-deskripsi/`, `LANGKAH.md` (PC test + CurseForge steps, Indonesian). The user is testing the
+  jar on their PC; bugs they report from that come first (a 0.5.x fix). They upload 0.3.2 → 0.4.0 → 0.5.0 themselves.
+- Trailer `build/trailer/bastion-0.5.0-trailer.mp4` (720p, <10 MB for Discord, no sound) predates the hive's insides and
+  the 15 s waves; re-record on request: `-Pshowcase=trailer -PshowcaseWorld=showcase_fx -PnoDevMods`, then
+  `python3 tools/make_trailer.py`.
+- Every 0.5.0 decision and ruling: `.superpowers/sdd/2026-10-24-0.5.0-adjustments/progress.md` (plus the three turret
+  ledgers next to it). Dev scenes now refuse to build in `run/saves/showcase` (Showcase.server guard).
+
+**0.6.0 = research + tech-tree wiki: no spec yet.** Brainstorm 2026-10-23 (user-confirmed unless marked):
+- Everything needs research except the early (makeshift) line: workstations, all turrets, bases, modules, ammo, the
+  Control Hub and Feed Hub, the Overwatch Link. Early research is cheap.
+- Research = pay items from the inventory with a "Research" button; the items and amounts per node live in config.
+- It locks **recipes only**: items got another way still place and work.
+- Shared per world (for now). Old worlds count as fully researched; a config switch turns research off.
+- The wiki opens from an **item** (name "Turret Codex": my default, unconfirmed).
+- Layout **B**, two panels: the tech tree on the left growing bottom to top (Mindustry style), the selected page on the
+  right (3D model, stat bars, text, base size, upgrades, a JEI recipe button); red = not researched; 0.7.0 hybrids will
+  hang between both parents on dashed gold lines.
+- JEI: a Research page per item with its cost and its slice of the tree.
+- Unconfirmed guess: a node needs its parent(s) researched first.
+- Process: superpowers:brainstorming for the open points → the spec into `docs/PLAN.md` as a new §8 section (Indonesian,
+  like the others) → the user approves → superpowers:writing-plans → the execution method the user picks (0.5.0 ran
+  native, executing-plans) → final review by Opus 5.5 at xhigh (never Fable) → showcase in a scratch world.
+- After it, 0.7.0: Augment Core (Mk2/Mk3) and Fusion Core (hybrids); the 3x3 base hosts the Mk3 of 2x2 turrets.
 
 **2026-10-24 01:45: 0.5.0 built: Javelin Missile and Brood Cannon done (final reviews + fix passes, showcases checked);
 Hive Carrier done too (final review + fix pass, showcase checked 05:56; 366/366). Committed 2026-10-24 13:25 as 0.5.0

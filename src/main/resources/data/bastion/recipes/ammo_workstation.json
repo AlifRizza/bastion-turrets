@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "bastion:research_shaped",
   "category": "misc",
   "pattern": [
     "IPI",

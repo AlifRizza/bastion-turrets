@@ -2,6 +2,7 @@ package dev.bastion.client.compat.jei;
 
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.research.Research;
 import dev.bastion.weapon.WeaponModuleItem;
 import dev.bastion.workstation.WorkstationBlockEntity;
 import dev.bastion.workstation.WorkstationRecipe;
@@ -11,6 +12,7 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class BastionJeiPlugin implements IModPlugin {
     static final Map<WorkstationType, RecipeType<WorkstationRecipe>> STATIONS = new EnumMap<>(WorkstationType.class);
     static final RecipeType<WeaponModuleItem> WEAPONS = RecipeType.create(Bastion.MOD_ID, "turret_weapons", WeaponModuleItem.class);
+    static final RecipeType<ResearchPage> RESEARCH = RecipeType.create(Bastion.MOD_ID, "research", ResearchPage.class);
 
     static {
         for (WorkstationType type : WorkstationType.values()) STATIONS.put(type, RecipeType.create(Bastion.MOD_ID, type.id(), WorkstationRecipe.class));
@@ -51,6 +54,7 @@ public class BastionJeiPlugin implements IModPlugin {
         IGuiHelper gui = registration.getJeiHelpers().getGuiHelper();
         for (WorkstationType type : WorkstationType.values()) registration.addRecipeCategories(new StationCategory(gui, STATIONS.get(type), type));
         registration.addRecipeCategories(new WeaponCategory(gui));
+        registration.addRecipeCategories(new ResearchCategory(gui));
     }
 
     @Override
@@ -62,6 +66,9 @@ public class BastionJeiPlugin implements IModPlugin {
         // Every weapon, also before WeaponDataSync arrives (it may come after JEI loads): the page reads the data when drawn.
         registration.addRecipes(WEAPONS, BastionItems.REGISTER.getEntries().stream().map(RegistryObject::get)
                 .filter(WeaponModuleItem.class::isInstance).map(WeaponModuleItem.class::cast).toList());
+        JeiBridge.pages = ResearchPage.all(); // the costs synced so far (or the defaults); JeiBridge swaps them on a later sync
+        registration.addRecipes(RESEARCH, JeiBridge.pages);
+        info(registration, "turret_codex", BastionItems.TURRET_CODEX.get());
         info(registration, "turret_base", BastionItems.TURRET_BASE.get());
         info(registration, "large_turret_base", BastionItems.LARGE_TURRET_BASE.get());
         info(registration, "fortress_turret_base", BastionItems.FORTRESS_TURRET_BASE.get());
@@ -82,8 +89,22 @@ public class BastionJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void onRuntimeAvailable(IJeiRuntime runtime) {
+        JeiBridge.runtime = runtime;
+        Research.onClientSync(JeiBridge::refreshResearch);
+        JeiBridge.refreshResearch(); // a sync that came while JEI was still loading
+    }
+
+    @Override
+    public void onRuntimeUnavailable() {
+        JeiBridge.runtime = null;
+        Research.onClientSync(null);
+    }
+
+    @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         for (WorkstationType type : WorkstationType.values()) registration.addRecipeCatalyst(stationItem(type), STATIONS.get(type));
+        registration.addRecipeCatalyst(new ItemStack(BastionItems.TURRET_CODEX.get()), RESEARCH);
     }
 
     @Override

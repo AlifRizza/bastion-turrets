@@ -226,12 +226,16 @@ def main():
         write(out / "charging_station" / f"{cell}.json", recipe("charging_station", B + cell, B + cell, ingredients, time, energy, count))
     n += 2 + len(MODULE) + 1 + len(TOOLS) + len(AMMO) + len(CHARGE)
     for station, (pattern, key) in WORKSTATIONS.items():
-        write(DATA / f"{station}.json", {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": pattern,
+        write(DATA / f"{station}.json", {"type": "bastion:research_shaped", "category": "misc", "pattern": pattern,  # 0.6.0: needs Workstations researched
                                         "key": {k: {"item": item(v)} for k, v in key.items()}, "result": {"item": B + station, "count": 1}})
     for result, (pattern, key) in EARLY.items():
         write(DATA / f"{result}.json", {"type": "minecraft:crafting_shaped", "category": "misc", "pattern": pattern,
                                        "key": {k: ({"tag": v[1:]} if v.startswith("#") else {"item": item(v)}) for k, v in key.items()},
                                        "result": {"item": B + result, "count": 1}})
+    # The Turret Codex (0.6.0): always craftable, it explains why the rest needs research.
+    write(DATA / "turret_codex.json", {"type": "minecraft:crafting_shapeless", "category": "misc",
+                                       "ingredients": [{"item": item(v)} for v in ("book", "iron_ingot", "redstone")],
+                                       "result": {"item": B + "turret_codex", "count": 1}})
     removed = [name for name in OLD if (DATA / f"{name}.json").exists()]
     for name in removed:
         (DATA / f"{name}.json").unlink()

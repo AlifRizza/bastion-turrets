@@ -5,10 +5,8 @@ import dev.bastion.hub.HubConnectorItem;
 import dev.bastion.modifier.ModifierEffect;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.registry.BastionItems;
-import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.weapon.WeaponData;
 import dev.bastion.weapon.WeaponModuleItem;
-import dev.bastion.weapon.WeaponType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -106,20 +104,10 @@ public class TurretInventory extends ItemStackHandler {
         if (!isActive(slot)) return false;
         if (slot == CONNECTOR) return stack.getItem() instanceof HubConnectorItem;
         if (slot == WEAPON) return stack.getItem() instanceof WeaponModuleItem module && module.kind() == kind.get()
-                && (kind.get() != BaseKind.MAKESHIFT || upright.getAsBoolean() || !ballistic(module));
+                && (kind.get() != BaseKind.MAKESHIFT || upright.getAsBoolean() || !module.ballistic());
         if (slot < MODIFIER_START) return isAmmo(stack);
         return stack.getItem() instanceof ModifierItem modifier && !hasModifierElsewhere(stack.getItem(), slot)
                 && modifier.effect().fits(weaponId());
-    }
-
-    /**
-     * Lobs on an arc (Arrow Launcher, Mortar): its arrows would fly sideways off a wall base, so on a makeshift base it fits
-     * the floor only (user 2026-10-22). The large base, the Mortar's, is floor-only anyway.
-     */
-    private static boolean ballistic(WeaponModuleItem module) {
-        WeaponData data = module.data();
-        WeaponType type = data == null ? null : BastionWeaponTypes.REGISTRY.get().getValue(data.type());
-        return type != null && type.ballistic();
     }
 
     /** Id of the mounted weapon's data, or null without a weapon. */

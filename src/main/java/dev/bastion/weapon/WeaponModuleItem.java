@@ -1,6 +1,7 @@
 package dev.bastion.weapon;
 
 import dev.bastion.client.render.WeaponItemRenderer;
+import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.BaseKind;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,6 +51,21 @@ public class WeaponModuleItem extends Item implements GeoItem {
 
     public BaseKind kind() {
         return kind;
+    }
+
+    /**
+     * Lobs on an arc (Arrow Launcher, Mortar): its arrows would fly sideways off a wall base, so on a makeshift base it fits
+     * the floor only (user 2026-10-22). The large and fortress bases are floor-only anyway.
+     */
+    public boolean ballistic() {
+        WeaponData data = data();
+        WeaponType type = data == null ? null : BastionWeaponTypes.REGISTRY.get().getValue(data.type());
+        return type != null && type.ballistic();
+    }
+
+    /** Mounts on a floor base only (the 2x2 and 3x3 bases, and an arcing weapon on a makeshift one). */
+    public boolean floorOnly() {
+        return kind == BaseKind.LARGE || kind == BaseKind.FORTRESS || ballistic();
     }
 
     public ResourceLocation weaponId() {

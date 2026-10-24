@@ -7,6 +7,7 @@ import dev.bastion.hub.SatelliteUplinkItem;
 import dev.bastion.modifier.ModifierItem;
 import dev.bastion.turret.BaseKind;
 import dev.bastion.turret.TurretBaseItem;
+import dev.bastion.research.TurretCodexItem;
 import dev.bastion.turret.TurretConfiguratorItem;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretTier;
@@ -148,6 +149,9 @@ public final class BastionItems {
     public static final RegistryObject<Item> TIER_UPGRADE_KIT_T3 = REGISTER.register("tier_upgrade_kit_t3", () -> hinted(new Item.Properties().stacksTo(16), "tier_upgrade_kit", 2));
     public static final RegistryObject<TurretConfiguratorItem> TURRET_CONFIGURATOR = REGISTER.register("turret_configurator",
             () -> new TurretConfiguratorItem(new Item.Properties()));
+    /** The guide and research tree (PLAN 8 "Riset & Turret Codex"); its recipe never needs research. */
+    public static final RegistryObject<TurretCodexItem> TURRET_CODEX = REGISTER.register("turret_codex",
+            () -> new TurretCodexItem(new Item.Properties().stacksTo(1)));
     /** What a destroyed base leaves behind (its tier in BlockEntityTag Tier); restored at the Part Assembler with repair kits. */
     public static final RegistryObject<Item> DAMAGED_TURRET_BASE = REGISTER.register("damaged_turret_base", () -> damaged(new Item.Properties(), "damaged_turret_base"));
     public static final RegistryObject<Item> DAMAGED_LARGE_TURRET_BASE = REGISTER.register("damaged_large_turret_base",

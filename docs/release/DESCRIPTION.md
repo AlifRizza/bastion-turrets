@@ -102,12 +102,23 @@ Survival players make all turret gear except the early turrets and their base in
 - Module Workstation and Ammo Workstation (1x1x2) craft instantly from your inventory, or run by themselves when automation feeds them.
 - Charging Station (1x1x1) fills Empty Laser Cells and Empty Plasma Cells with FE.
 
-The crafting table makes only the stations and the early gear (the Makeshift Turret Base and its four turrets). A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.
+The crafting table makes only the stations (once researched, see below), the Turret Codex and the early gear (the Makeshift Turret Base and its four turrets). A station accepts nothing but the ingredients of the recipe you picked and hands out only the result, so hooking one up to automation is easy.
 
 > **You need an FE source.** Bastion doesn't add a generator. Pair it with any mod that makes Forge Energy, for example Create Crafts & Additions, Mekanism, Thermal Series, Powah or Immersive Engineering.
 
 <!-- screenshot: 09_workstations.png -->
 <!-- screenshot: 10_part_assembler_gui.png -->
+
+## Research and the Turret Codex
+
+Survival worlds open Bastion step by step. Every player gets a Turret Codex the first time they join (or crafts one from a book, an iron ingot and redstone). Its left half is the research tree in three tabs, Turrets, Workshop and Modules, growing from the four early turrets up to the 3x3 ones, with what each card brings along (ammo, stations, tools) beside it. Its right half is a page for the card you pick: the item in 3D, the base it needs and its ammo, bars for damage, fire rate and range, what it unlocks and what it still needs.
+
+- A card needs the cards below it, and a turret also needs the base of its size. Press Research to pay its cost from your inventory: iron and copper for the first steps, up to diamonds and netherite scrap for the 3x3 turrets.
+- Research unlocks recipes. A researched turret opens its parts and its ammo too. Gear you got another way (loot, creative, another mod) still works.
+- Research is shared by everyone in the world, and a chat line tells them. Worlds from before 0.6.0 start with everything researched.
+- Servers can change every cost in `config/bastion-research.toml` or switch research off; admins have `/bastion research grant|revoke|list`.
+
+<!-- screenshot: 23_turret_codex.png -->
 
 ## Effects
 
@@ -117,7 +128,7 @@ Muzzle flashes, tracers, ejected casings, short bursts of dynamic light, camera 
 
 Built for big bases. The load test runs 400 turrets firing at once. Bases are meshed into the world like blocks, and bullets aren't entities. Most of the server cost in that test is the mobs attacking, not the turrets. Adding Radium and AI Improvements cut the tick time by about a third.
 
-Every turret's stats and weapon-specific numbers are also in `config/bastion-turrets.toml`: each value starts at the mod's own number; type another and it applies as soon as you save. Weapon stats come from `data/bastion/turret_weapons` and modules from `data/bastion/turret_modifiers`, plain datapack JSON like the workstation recipes; a changed number in the config wins over a datapack. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
+Every turret's stats and weapon-specific numbers are also in `config/bastion-turrets.toml`: each value starts at the mod's own number; type another and it applies as soon as you save. Weapon stats come from `data/bastion/turret_weapons` and modules from `data/bastion/turret_modifiers`, plain datapack JSON like the workstation recipes; a changed number in the config wins over a datapack. What each research costs, and whether research is on at all, is in `config/bastion-research.toml`. The server config covers HP and regeneration per tier, owner protection, whether mobs attack turrets, whether Mortar shells set blocks on fire, how much energy the workstations, Feed Hubs and the Control Hub hold, take in and use, how often a mob hit by turrets may groan, and which mobs count as too heavy for the Repulsors (add big mobs from other mods there).
 
 ## Requirements
 
@@ -125,7 +136,7 @@ Every turret's stats and weapon-specific numbers are also in `config/bastion-tur
 - [GeckoLib](https://modrinth.com/mod/geckolib) 4.8 or newer (required)
 - Any mod that produces FE, for the workstations, the Tesla Coil, the Railgun, the Ion Rifle, the Repulsors and the Turret Control Hub
 - [Create](https://modrinth.com/mod/create) 6.0 or newer if you want Mechanical Arm support (optional)
-- Optional: [JEI](https://modrinth.com/mod/jei) 15.20+ (recipe pages for the workstations and weapons, the + button) and [Jade](https://modrinth.com/mod/jade) 11.13+ (turret, workstation and hub info when you look at them)
+- Optional: [JEI](https://modrinth.com/mod/jei) 15.20+ (recipe pages for the workstations and weapons, research pages, the + button) and [Jade](https://modrinth.com/mod/jade) 11.13+ (turret, workstation and hub info when you look at them)
 
 Install it on both client and server.
 
