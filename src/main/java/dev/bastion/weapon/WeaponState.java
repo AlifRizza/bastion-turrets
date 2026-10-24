@@ -46,6 +46,8 @@ public final class WeaponState {
     public boolean unitsFull;
     // Hive Carrier: drones docked in it (saved with the turret; flying ones are not).
     public int dockedDrones;
+    /** Whether it holds a Hive Drone (or Creative Ammo) to make a new drone from, as last sent to clients (they draw one being built). */
+    public boolean droneItems;
 
     // Mortar: whether the shell's arc to a target is clear of blocks, re-checked every few ticks (it is ~30 ray casts).
     public int arcTarget = -1;

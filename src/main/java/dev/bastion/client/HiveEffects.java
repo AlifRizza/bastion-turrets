@@ -39,7 +39,7 @@ public final class HiveEffects {
     private static final Vec3 UP = new Vec3(0, 1, 0);
     /** A welder's blue-white; and how far out a pad is along its doorway (HiveCarrierWeapon.BAYS 12 px, muzzle 34.4 px). */
     private static final int WELD = 0xFFBFE8FF;
-    private static final double PAD = 12 / 34.4;
+    static final double PAD = 12 / 34.4;
 
     private HiveEffects() {
     }

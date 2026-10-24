@@ -285,30 +285,34 @@ public class CompatTests {
 
     /** Control Hub: status, then satellite tier, reach and connected turrets, then FE; an unformed Interface only its status. */
     // Yard and a T2 satellite (3x3 chunks), as in ControlHubTests.hubListsOnlyConnectedTurrets: the turrets are surely in reach.
-    @GameTest(template = YARD, timeoutTicks = 80, batch = "controlHubInfoLines")
+    @GameTest(template = YARD, timeoutTicks = 200, batch = "controlHubInfoLines")
     public static void controlHubInfoLines(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         HubInterfaceBlockEntity hub = ControlHubTests.hub(helper, new BlockPos(15, 2, 14), 2);
         hub.setEnergy(100_000);
         TurretBaseBlockEntity first = ControlHubTests.base(level, hub.center().offset(-4, 0, 4), null);
         ControlHubTests.connect(first, hub);
-        helper.runAtTickTime(5, () -> {
-            List<String> online = lines(hub, false);
-            helper.assertTrue(online.equals(List.of("jade.bastion.control_hub.status[jade.bastion.control_hub.status.online]",
-                    "gui.bastion.control_hub.summary[2," + hub.side() + ",1]",
-                    "gui.bastion.control_hub.fe[" + hub.energy() + "," + hub.capacity() + "," + hub.upkeep() + "]")), "online " + online);
-            // A second connected turret shows up within a second, not on every Jade request.
-            TurretBaseBlockEntity second = ControlHubTests.base(level, hub.center().offset(4, 0, 4), null);
-            ControlHubTests.connect(second, hub);
-            helper.assertTrue(hub.connectedCount() == 1, "counted again within the same second");
-        });
-        helper.runAtTickTime(30, () -> {
-            helper.assertTrue(hub.connectedCount() == 2, "count not refreshed after a second: " + hub.connectedCount());
-            helper.setBlock(new BlockPos(0, 2, 0), BastionBlocks.HUB_INTERFACE.get());
-            helper.assertTrue(lines(helper.getBlockEntity(new BlockPos(0, 2, 0)), true)
-                    .equals(List.of("jade.bastion.control_hub.status[jade.bastion.control_hub.status.unformed]")), "unformed Interface");
-            helper.succeed();
-        });
+        // Waits for the hub to form (a fixed tick 5 flaked when the multiblock took longer on a slow tick).
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    List<String> online = lines(hub, false);
+                    helper.assertTrue(online.equals(List.of("jade.bastion.control_hub.status[jade.bastion.control_hub.status.online]",
+                            "gui.bastion.control_hub.summary[2," + hub.side() + ",1]",
+                            "gui.bastion.control_hub.fe[" + hub.energy() + "," + hub.capacity() + "," + hub.upkeep() + "]")), "online " + online);
+                })
+                .thenExecute(() -> {
+                    // A second connected turret shows up within a second, not on every Jade request.
+                    TurretBaseBlockEntity second = ControlHubTests.base(level, hub.center().offset(4, 0, 4), null);
+                    ControlHubTests.connect(second, hub);
+                    helper.assertTrue(hub.connectedCount() == 1, "counted again within the same second");
+                })
+                .thenExecuteAfter(25, () -> {
+                    helper.assertTrue(hub.connectedCount() == 2, "count not refreshed after a second: " + hub.connectedCount());
+                    helper.setBlock(new BlockPos(0, 2, 0), BastionBlocks.HUB_INTERFACE.get());
+                    helper.assertTrue(lines(helper.getBlockEntity(new BlockPos(0, 2, 0)), true)
+                            .equals(List.of("jade.bastion.control_hub.status[jade.bastion.control_hub.status.unformed]")), "unformed Interface");
+                })
+                .thenSucceed();
     }
 
     /** Jade shows a multiblock's core: every block of a Large Turret Base leads to it, a 1x1 base to itself, stone nowhere. */

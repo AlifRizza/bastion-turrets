@@ -141,14 +141,15 @@ public class BroodCapsuleEntity extends Projectile implements TurretUnit, GeoEnt
         }
         setDeltaMovement(getDeltaMovement().add(0, -gravity / 2, 0));
         Vec3 motion = getDeltaMovement(), to = position().add(motion);
-        if (hitDamage > 0 && !struck) { // on a head on the way down: that creature alone
-            EntityHitResult head = ProjectileUtil.getEntityHitResult(level(), this, position(), to, getBoundingBox().expandTowards(motion).inflate(0.3), this::hits);
+        BlockHitResult hit = level().clip(new ClipContext(position(), to, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
+        if (hitDamage > 0 && !struck && motion.y < 0) { // on a head on the way down, above what it stops on: that creature alone
+            Vec3 end = hit.getType() == HitResult.Type.MISS ? to : hit.getLocation();
+            EntityHitResult head = ProjectileUtil.getEntityHitResult(level(), this, position(), end, getBoundingBox().expandTowards(end.subtract(position())).inflate(0.3), this::hits);
             if (head != null) {
                 struck = true;
                 Hitscan.damage(head.getEntity(), BastionDamageTypes.turretShot(level()), hitDamage);
             }
         }
-        BlockHitResult hit = level().clip(new ClipContext(position(), to, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
         hasImpulse = true; // velocity to clients every tick, so they follow the arc
         if (hit.getType() != HitResult.Type.MISS) {
             if (hit.getDirection() == Direction.UP) { // a floor or a water surface: it rests there

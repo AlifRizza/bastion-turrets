@@ -58,6 +58,11 @@ public class HiveCarrierWeapon extends WeaponType {
     public void tick(TurretBaseBlockEntity turret, WeaponState state, StatSheet stats, boolean engaged) {
         // Full when nothing can leave: no room to fly at all (cap or the dimension's total), or none docked and no room for a new one.
         state.unitsFull = flyRoom(turret, stats.data()) <= 0 || state.dockedDrones <= 0 && room(turret, state, stats.data()) <= 0;
+        boolean items = turret.inventory().findAmmoSlot() >= 0;
+        if (items != state.droneItems) { // clients draw new drones being built only with something to build them from
+            state.droneItems = items;
+            turret.getLevel().sendBlockUpdated(turret.getBlockPos(), turret.getBlockState(), turret.getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override

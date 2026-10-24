@@ -9,7 +9,9 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 **2026-10-24 01:45: 0.5.0 built: Javelin Missile and Brood Cannon done (final reviews + fix passes, showcases checked);
 Hive Carrier done too (final review + fix pass, showcase checked 05:56; 366/366). Committed 2026-10-24 13:25 as 0.5.0
-after the user's adjustments below and a second final review (390/390); not pushed, no tag (user: push/tag only on request)**
+after the user's adjustments below and a second final review (390/390); the deferred minors fixed and committed after it
+(391/391), gallery 18-22 added; upload folder build/upload/0.5.0 (jar from that commit); not pushed, no tag (user:
+push/tag only on request)**
 
 **2026-10-24 06:33–07:20, user adjustments** (ledger `.superpowers/sdd/2026-10-24-0.5.0-adjustments/progress.md`, every
 Ruling there): (1) Javelin flight COLD (pushed out, still `hold_ticks` 10) → CLIMB (engine, height ∝ e^(4t)−1: crawls,

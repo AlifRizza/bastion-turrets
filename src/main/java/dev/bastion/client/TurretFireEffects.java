@@ -11,6 +11,7 @@ import dev.bastion.client.vfx.WeaponFx;
 import dev.bastion.network.TurretFireEvent;
 import dev.bastion.registry.BastionSounds;
 import dev.bastion.turret.TurretBaseBlockEntity;
+import dev.bastion.unit.HiveDroneEntity;
 import dev.bastion.weapon.WeaponData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -21,6 +22,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Plays one turret discharge on the client (PLAN 5.3, 7): muzzle flash at the muzzle bone, recoil, tracer
@@ -89,12 +93,19 @@ public final class TurretFireEffects {
             playShot(level, event, muzzle, fx, random);
             return;
         }
-        if (fx == WeaponFx.HIVE_CARRIER) { // a puff out of each doorway (muzzle_0..2); the drones fly as entities (HiveEffects)
+        if (fx == WeaponFx.HIVE_CARRIER) { // a puff out of each clear doorway (muzzle_0..2, as a wave takes them); drones: HiveEffects
+            Vec3 middle = turret.alongMount(TurretBaseBlockEntity.BASE_HEIGHT);
+            List<Vec3> doors = new ArrayList<>(), clear = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
                 Vec3 door = client.muzzles[i];
-                if (door != null && door.distanceToSqr(Vec3.atCenterOf(event.pos())) <= reach) {
-                    VfxManager.play(fx.muzzle(), door, new Vec3(0, 1, 0), VfxParams.of().color(color).seed(event.seed() + i));
-                }
+                if (door == null || door.distanceToSqr(Vec3.atCenterOf(event.pos())) > reach) continue;
+                doors.add(door);
+                Vec3 pad = new Vec3(middle.x + (door.x - middle.x) * HiveEffects.PAD, door.y - 0.25, middle.z + (door.z - middle.z) * HiveEffects.PAD);
+                if (HiveDroneEntity.doorwayClear(level, pad, event.pos())) clear.add(door);
+            }
+            List<Vec3> puffs = clear.isEmpty() ? doors : clear; // all walled off: the wave leaves by them all anyway
+            for (int i = 0; i < puffs.size(); i++) {
+                VfxManager.play(fx.muzzle(), puffs.get(i), new Vec3(0, 1, 0), VfxParams.of().color(color).seed(event.seed() + i));
             }
             playShot(level, event, muzzle, fx, random);
             return;

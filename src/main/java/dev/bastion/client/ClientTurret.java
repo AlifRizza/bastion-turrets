@@ -37,6 +37,8 @@ import java.util.Map;
  */
 public final class ClientTurret {
     /** Barrel cluster speed at full spin: 4 barrels x 3 turns/s = 12 shots/s, in radians per tick. */
+    /** Blocks within which a Hive Carrier's docked and half-built drones are drawn (they show through its doorways only). */
+    private static final double INSIDE_VIEW = 24;
     /** How far the Javelin blast doors swing per tick (fully in ~8 ticks). */
     private static final float DOOR_SPEED = 0.125f;
     private static final float MAX_SPIN_SPEED = (float) (Math.PI * 2 * 3 / 20);
@@ -289,12 +291,15 @@ public final class ClientTurret {
             weapon.prevDoors = weapon.doors;
             weapon.doors = Mth.approach(weapon.doors, open ? 1 : 0, DOOR_SPEED);
         } else if (data.type().equals(BastionWeaponTypes.HIVE_CARRIER.getId())) {
-            // Docked drones stand on the racks; over the wait between waves a new drone takes shape on each empty pad.
-            weapon.parked = turret.weaponState().dockedDrones;
+            // Docked drones stand on the racks; over the wait between waves a new drone takes shape on each empty pad and
+            // stands there ready until a wave takes it, while there is a Hive Drone to build it from (server-synced
+            // inventory). Only up close: the insides show through the doorways only (up to ~440 cubes otherwise).
+            boolean near = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceToSqr(Vec3.atCenterOf(pos)) < INSIDE_VIEW * INSIDE_VIEW;
+            weapon.parked = near ? turret.weaponState().dockedDrones : 0;
             float interval = Math.max(1, StatSheet.of(data, turret.tier(), turret.inventory().modifierEffect()).fireInterval());
             float progress = lastShotTick < 0 ? 1 : (level.getGameTime() - lastShotTick) / interval;
-            boolean working = state != TurretState.NO_AMMO && state != TurretState.DISABLED;
-            weapon.build = working && progress > 0 && progress < 1 ? progress : 0;
+            boolean working = near && state != TurretState.NO_AMMO && state != TurretState.DISABLED && turret.inventory().findAmmoSlot() >= 0;
+            weapon.build = working && progress > 0 ? Math.min(progress, 1) : 0;
             if (weapon.build > 0 && weapon.build < 0.85f && level.getGameTime() % 4 == 0) HiveEffects.weld(level, this, turret, weapon.parked);
         } else if (data.type().equals(BastionWeaponTypes.FLAMETHROWER.getId()) && !flaming(level)
                 && state != TurretState.DISABLED && state != TurretState.NO_AMMO) {

@@ -673,7 +673,9 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
    back: the next wave relaunches the docked drones for 1,000 FE each, no Hive Drone spent.
 7b. **Inside the hive**: look in through a doorway. Docked drones stand on the racks, as many as are docked (the three
    pads first, then the shelves over them, up to 9); they leave the racks as a wave takes them. In the 15 s after a wave
-   a new drone takes shape on each empty pad (lit plate, legs, body, rotors, then its lights) with welding sparks.
+   a new drone takes shape on each empty pad (lit plate, legs, body, rotors, then its lights) with welding sparks, then
+   stands there ready until a wave takes it; none is built without a Hive Drone in the slots. The insides are drawn
+   only within 24 blocks. A wave's puffs come out of the doorways it uses (not one walled off).
 8. **Cap**: keep it busy: never more than 9 drones flying plus docked; at the cap it waits with items and FE untouched.
 9. **Mobs go for them**: a skeleton shoots drones; a zombie targets a low one. Shot down, a drone drops and is gone
    (no blast). Hit one yourself: owner and trusted players only with `trustedCanDamage` on.

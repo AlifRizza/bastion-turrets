@@ -24,6 +24,7 @@ import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -71,6 +72,8 @@ public final class Showcase {
             && !System.getProperty("bastion.showcase").equals("hivedock")
             && !System.getProperty("bastion.showcase").equals("ion") && !System.getProperty("bastion.showcase").equals("plasma")
             && !System.getProperty("bastion.showcase").equals("hub") && !System.getProperty("bastion.showcase").startsWith("video");
+    /** The user's own showcase world (run/saves/showcase): scenes never build in it. */
+    private static final String RIG = "showcase";
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0);
     private static final BlockPos GUN = ORIGIN.offset(-5, 0, 0), MG = ORIGIN, SHOTGUN = ORIGIN.offset(5, 0, 0);
     private static final BlockPos WALL = ORIGIN.offset(-11, 2, 6), CEILING = ORIGIN.offset(11, 4, 6);
@@ -145,8 +148,19 @@ public final class Showcase {
         if (tick > 20 && tick % 40 == 0) server(server, Showcase::refill);
     }
 
+    /**
+     * Runs {@code task} on the server thread: every scene builds through here, so none ever rewrites run/saves/showcase,
+     * the user's hand-built rig (the world opened without -PshowcaseWorld): it refuses and closes the game instead.
+     */
     static void server(MinecraftServer server, Consumer<MinecraftServer> task) {
-        server.execute(() -> task.accept(server));
+        server.execute(() -> {
+            if (RIG.equals(String.valueOf(server.getWorldPath(LevelResource.ROOT).normalize().getFileName()))) {
+                LOG.error("[showcase] not building in run/saves/{}, the user's rig: pass -PshowcaseWorld=<a scratch copy of it>", RIG);
+                Minecraft.getInstance().execute(() -> Minecraft.getInstance().stop());
+                return;
+            }
+            task.accept(server);
+        });
     }
 
     private static void buildScene(MinecraftServer server) {

@@ -214,6 +214,32 @@ public class BroodTests {
         });
     }
 
+    /**
+     * Only on the way down, and only above what it lands on: a capsule rising out through a husk does not hurt it, nor
+     * does one stopping on a stone roof a fast fall would otherwise carry into the husk under it.
+     */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "capsuleHurtsOnlyOnTheWayDownAboveItsFloor")
+    public static void capsuleHurtsOnlyOnTheWayDownAboveItsFloor(GameTestHelper helper) {
+        LivingEntity risen = still(helper, EntityType.HUSK, new BlockPos(6, 2, 8)), roofed = still(helper, EntityType.HUSK, new BlockPos(14, 2, 20));
+        helper.setBlock(new BlockPos(14, 4, 20), Blocks.STONE);
+        BlockPos home = new BlockPos(2, 2, 2);
+        BroodCapsuleEntity up = new BroodCapsuleEntity(helper.getLevel(), helper.absolutePos(home), new TargetFilter(), null, STATS, 3, 12, 400, 0.05f).aim(null, 10);
+        up.setPos(risen.position().add(-1.2, 0.3, 0));
+        up.launch(new Vec3(0.5, 0.45, 0)); // up through its head from the side, down again on the empty floor beyond
+        BroodCapsuleEntity down = new BroodCapsuleEntity(helper.getLevel(), helper.absolutePos(home), new TargetFilter(), null, STATS, 3, 12, 400, 0.05f).aim(null, 10);
+        down.setPos(roofed.position().add(0, 3.4, 0)); // just over the roof (the yard is 6 high, underground)
+        down.launch(new Vec3(0, -1.5, 0)); // one tick from over the roof to inside the husk's head under it
+        helper.getLevel().addFreshEntity(up);
+        helper.getLevel().addFreshEntity(down);
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(lost(risen) == 0, "the husk it rose out of lost " + lost(risen));
+            helper.assertTrue(lost(roofed) == 0, "the husk under the roof lost " + lost(roofed) + " (capsule at " + down.position() + ")");
+            up.discard();
+            down.discard();
+            helper.succeed();
+        });
+    }
+
     /** Two husks in range: the second capsule goes for the other one, not the husk the first is coming down on. */
     @GameTest(template = ARENA, timeoutTicks = 400, batch = "broodSpreadsItsCapsules")
     public static void broodSpreadsItsCapsules(GameTestHelper helper) {

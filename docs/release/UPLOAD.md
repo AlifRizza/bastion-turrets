@@ -50,8 +50,9 @@ the user: 0.3.2 a few days after 2026-10-22, 0.4.0 about a week after that. Deve
 0.4.0 (user 2026-10-22 22:00): the early game turrets, a big update, so the middle number. Prepared on 2026-10-23
 (changelog below, store text in `DESCRIPTION_UPDATE_0.4.0.md`), committed 2026-10-23, not pushed or uploaded yet: the user uploads it
 about a week after 0.3.2.
-0.5.0 (user roadmap 2026-10-23): the Fortress Turret Base, with the first 3x3 turrets the user designs later. This build has
-the base only. Prepared on 2026-10-23 (changelog below, store text in `DESCRIPTION_UPDATE_0.5.0.md`), not committed yet.
+0.5.0 (user roadmap 2026-10-23): the Fortress Turret Base and the first three 3x3 turrets (Javelin Missile, Brood Cannon,
+Hive Carrier), with the user's adjustments of 2026-10-24. Changelog below, store text in `DESCRIPTION_UPDATE_0.5.0.md`;
+committed 2026-10-24, not pushed or uploaded yet. Upload folder: `build/upload/0.5.0/`.
 
 ## Changelog: 0.5.0
 
@@ -442,6 +443,11 @@ First public beta.
 | 15_spectral_volley    | Spectral volley  | One arrow at the feet, five around; spectral arrows make the target glow.    |
 | 16_makeshift_mounts   | Makeshift bases  | Makeshift Turret Bases on a floor, a wall and a ceiling.                     |
 | 17_fortress_base      | Fortress base    | The 3x3 Fortress Turret Base, built for the huge turrets to come.            |
+| 18_javelin_launch     | Javelin launch   | Pushed half out of its silo, the missile ignites and climbs out of sight.     |
+| 19_javelin_strike     | Javelin strike   | Straight down on the marked crowd: a huge blast that spares the cow.          |
+| 20_brood_spiders      | Brood spiders    | Robot spiders out of a Brood capsule go for the husks behind the wall.        |
+| 21_hive_carrier       | Hive Carrier     | A wave of combat drones flies out of the hive's side doorways.                |
+| 22_hive_inside        | Inside the hive  | A new drone, built between waves, ready on its pad inside the hive.           |
 
 
 Featured image: `01_laser_rifle_beam` (or the generated banner below).

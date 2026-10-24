@@ -84,8 +84,8 @@ Mortar and Brood Cannon shots show their arc and the Javelin marks the spot its 
 
 ## 5. Pictures
 
-Gallery (both sites, from `screenshots/`, caption in `UPLOAD.md` "Gallery captions"): `17_fortress_base`. Pictures of the three
-3x3 turrets come with the release screenshots.
+Gallery (both sites, from `screenshots/`, captions in `UPLOAD.md` "Gallery captions"): `17_fortress_base`, `18_javelin_launch`,
+`19_javelin_strike`, `20_brood_spiders`, `21_hive_carrier`, `22_hive_inside`.
 
 Optional: to show the Fortress in the text too, put `screenshots-840/17_fortress_base.jpg` after the
 `13_early_turrets` picture (end of the Turret bases section); the full description files do not have it.
