@@ -7,7 +7,7 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
-**NOW (2026-10-24 16:12): 0.6.0 "Research & Turret Codex" is built and reviewed (Opus xhigh: with fixes; the Important and, at the user's word, all 9 minors fixed), NOT committed (the user commits). 414/414 GameTests (413 also with -PwithCompatMods before the last client-side change); build green. User 16:14: Part Workstation tab row overflowed → scrolls with < > now. User 16:24: what a card brings along (no parts) shows beside it in the tree as smaller cards.**
+**NOW (2026-10-24 16:43): 0.6.0 "Research & Turret Codex" is committed as `38c1c15` (not pushed, no tag: push/tag only on request). Upload folder `build/upload/0.6.0/` (git-ignored): jar built from `38c1c15` in a worktree, `changelog.txt`, store text, `gallery/23_turret_codex.png`, `gambar-deskripsi/`, `LANGKAH.md` (PC test + CurseForge steps, Indonesian). The user is testing the jar on their PC: bugs they report come first (a 0.6.x fix). Review (Opus xhigh): with fixes; the Important and all 9 minors fixed; then the Part Workstation tab-row fix and the tree's companions (user 16:14, 16:24). 414/414 GameTests, build green.**
 - Spec PLAN §8 "Riset & Turret Codex" (approved 14:28), plan `docs/superpowers/plans/2026-10-24-research-codex.md` (5 tasks,
   native), ledger with every Ruling `.superpowers/sdd/2026-10-24-research-codex/progress.md`. 414/414 GameTests, build green,
   `-Pshowcase=codex` run and read (7 shots; its scratch world deleted). `mod_version=0.6.0`; changelog `UPLOAD.md` "0.6.0", store text
@@ -24,7 +24,7 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 - **Lesson: GameTests must never write a ForgeConfigSpec value** (Forge saves at once; its watcher loaded an in-between
   value back after the restore and left `gun = []` in run/config/bastion-research.toml; put back by hand). Test pure
   functions (`Research.State`, `ResearchConfig.costOf`, `Research.pay`) instead.
-- Next: the user tests in game (TESTING "Research & Turret Codex (0.6.0)") and says "commit". After that: 0.7.0
+- Next: the user's PC test of the jar (TESTING "Research & Turret Codex (0.6.0)"); then 0.7.0. After that: 0.7.0
   (Augment Core Mk2/Mk3 on the turret page's Upgrades section, Fusion Core hybrids hanging between both parents).
 
 **2026-10-24 13:55: 0.5.0 is finished and committed; the next session starts 0.6.0 (research + tech-tree wiki).**
