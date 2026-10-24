@@ -24,6 +24,14 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 - **Lesson: GameTests must never write a ForgeConfigSpec value** (Forge saves at once; its watcher loaded an in-between
   value back after the restore and left `gun = []` in run/config/bastion-research.toml; put back by hand). Test pure
   functions (`Research.State`, `ResearchConfig.costOf`, `Research.pay`) instead.
+- Committed after 74c2a92 as "0.6.0: Hive Carrier reach 64 and waves only for reachable targets" (jars in build/upload/0.6.0
+  rebuilt from it, LANGKAH.md names the hash): Hive Carrier reach 64 / patrol_radius 64 / shot_range 32 (was
+  32/32/16; test `hiveReachesSixtyFourBlocks`, HiveTests STATS/NEAR follow; run/config's three [hive_carrier] lines set to
+  the new defaults with the user's OK). Old bastion-turrets.toml files keep 32/32/16 as overrides (changelog note).
+  User 17:09: waves only for targets drones can reach: `HiveCarrierWeapon.sight` = open sky (JavelinWeapon.openSky) or line of
+  sight from 3.0 or 1.0 blocks over the base top (`LOOKOUTS`); tests `carrierSkipsTargetsDronesCannotReach`,
+  `carrierLaunchesForATargetItSees`, `dronesUnderALowRoofStillDock` reworked. `domePushesHeavyMobsLess` now checks the launch speed
+  (0.8 b/t), not the landing (a no-AI ravager on a chunk border slid 4 or 6 blocks run to run once the layout shifted). 417/417.
 - Next: the user's PC test of the jar (TESTING "Research & Turret Codex (0.6.0)"); then 0.7.0. After that: 0.7.0
   (Augment Core Mk2/Mk3 on the turret page's Upgrades section, Fusion Core hybrids hanging between both parents).
 

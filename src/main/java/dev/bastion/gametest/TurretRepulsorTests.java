@@ -286,16 +286,24 @@ public class TurretRepulsorTests {
         });
     }
 
-    /** The Dome throws a ravager (heavy) at 40 % of its push: ~4.95 from the orb its push is ~10, so ~4 blocks. */
+    /**
+     * The Dome throws a ravager (heavy) at 40 % of its push: ~4.95 from the orb its push is ~10 blocks, so its launch speed
+     * is 10 x Repulsion.SPEED_PER_BLOCK x 0.4 = 0.8 blocks/tick (a light mob: 2.0). Checked on the launch, not the landing:
+     * this no-AI ravager stands on a chunk border and, run to run, slides 4 or 6 blocks from the same launch (2026-10-24).
+     */
     @GameTest(template = YARD, timeoutTicks = 160, batch = "domePushesHeavyMobsLess")
     public static void domePushesHeavyMobsLess(GameTestHelper helper) {
         dome(helper, true);
         BlockPos at = new BlockPos(19, 2, 15);
         LivingEntity ravager = helper.spawnWithNoFreeWill(EntityType.RAVAGER, at);
         Vec3 start = spot(helper, at);
-        helper.runAtTickTime(70, () -> { // the first pulse landed; the ravager is still in reach, so a second pulse follows at ~95
-            double m = moved(ravager, start);
-            helper.assertTrue(m >= 3.2 && m <= 5.0, "the ravager moved " + m + " (want ~4)");
+        double[] launch = {0};
+        helper.onEachTick(() -> {
+            if (launch[0] == 0) launch[0] = ravager.getDeltaMovement().horizontalDistance();
+        });
+        helper.runAtTickTime(70, () -> { // the first pulse landed long ago; a second follows at ~95
+            helper.assertTrue(launch[0] >= 0.68 && launch[0] <= 0.92, "the ravager was launched at " + launch[0] + " blocks/tick (want ~0.8)");
+            helper.assertTrue(moved(ravager, start) >= 3, "the ravager moved only " + moved(ravager, start));
             helper.succeed();
         });
     }

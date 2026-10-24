@@ -82,6 +82,15 @@ New: Research and the Turret Codex
 - config/bastion-research.toml: every card's cost, research on or off, and the first-join Codex. Admins:
   /bastion research grant <card|all>, /bastion research revoke <card|all>, /bastion research list.
 
+Changes
+- Hive Carrier reach doubled: a wave goes out for enemies up to 64 blocks away (was 32), the drones patrol in a wider
+  circle (patrol_radius 64, was 32) and see and shoot from 32 blocks (was 16). A config/bastion-turrets.toml from an
+  older version still holds the old numbers and keeps them: set its [hive_carrier] range, patrol_radius and shot_range
+  to 64, 64 and 32 (or delete those three lines).
+- The Hive Carrier sends a wave only for enemies its drones can get at: under open sky, or in sight of the hive (over
+  its cap or from its doorways). Before, a mob in a cave or behind walls in range kept sending the drones out and back
+  every 15 seconds.
+
 Fixes
 - The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many
   as fit with arrows at both ends (click them, or scroll the mouse wheel over the tabs).

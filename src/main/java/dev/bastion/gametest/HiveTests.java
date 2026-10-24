@@ -61,13 +61,13 @@ import java.util.UUID;
 public class HiveTests {
     private static final String ARENA = "arena", YARD = "yard";
     private static final int Y_SKY = 230, SIZE = 34;
-    /** The spec's numbers (hive_carrier.json): HP 20, bullet 2, 120 bullets, 4 a second, reach 16, patrol 32, kamikaze below 25 %: 15 within 4.5. */
-    static final DroneStats STATS = new DroneStats(20, 2, 120, 5, 16, 32, 0.25f, 15, 4.5f, 0.45f, 100);
+    /** The shipped numbers (hive_carrier.json): HP 20, bullet 2, 120 bullets, 4 a second, reach 32, patrol 64 (user 2026-10-24), kamikaze below 25 %: 15 within 4.5. */
+    static final DroneStats STATS = new DroneStats(20, 2, 120, 5, 32, 64, 0.25f, 15, 4.5f, 0.45f, 100);
     /**
-     * STATS circling closer (patrol radius 8, not 32) round a home 6-8 blocks from the husks: with no carrier a drone
+     * STATS circling closer (patrol radius 8, not 64) round a home 6-8 blocks from the husks: with no carrier a drone
      * that has not seen its husk within idle_ticks hovers where it is, and on the wide circle that could be out of reach.
      */
-    static final DroneStats NEAR = new DroneStats(20, 2, 120, 5, 16, 8, 0.25f, 15, 4.5f, 0.45f, 100);
+    static final DroneStats NEAR = new DroneStats(20, 2, 120, 5, 32, 8, 0.25f, 15, 4.5f, 0.45f, 100);
 
     private static BlockPos sky(GameTestHelper helper, int x, int y, int z) {
         return new BlockPos(x, Y_SKY - helper.absolutePos(BlockPos.ZERO).getY() + y, z);
@@ -627,23 +627,22 @@ public class HiveTests {
     }
 
     /**
-     * A carrier under a low roof over the whole platform, its target walled in where no drone can see it: the drones get
-     * out through their holes, cannot climb, give the climb up, find nothing, come home and dock (three docked).
+     * A carrier under a low roof over the whole platform, a husk under the same roof that it sees from its doorways (a wave
+     * goes out; the roof hides the cap's lookout), then the husk gone: the drones got out through their holes, cannot
+     * climb, give the climb up, find nothing, come home and dock (three docked).
      */
     @GameTest(template = ARENA, timeoutTicks = 500, batch = "dronesUnderALowRoofStillDock")
     public static void dronesUnderALowRoofStillDock(GameTestHelper helper) {
         TurretBaseBlockEntity turret = carrier(helper, 3, true);
         for (int x = 0; x < SIZE; x++) for (int z = 0; z < SIZE; z++) helper.setBlock(sky(helper, x, 5, z), Blocks.STONE);
-        BlockPos walled = core(helper).offset(16, 0, 0);
-        for (BlockPos p : BlockPos.betweenClosed(walled.offset(-1, 0, -1), walled.offset(1, 2, 1))) helper.setBlock(p, Blocks.STONE);
-        helper.setBlock(walled, Blocks.AIR);
-        helper.setBlock(walled.above(), Blocks.AIR);
-        still(helper, EntityType.HUSK, walled);
-        helper.succeedWhen(() -> {
-            helper.assertTrue(turret.weaponState().dockedDrones == 3, turret.weaponState().dockedDrones + " docked, flying "
-                    + dronesOf(helper, turret).stream().map(d -> d.state().name() + " at " + d.position().subtract(Vec3.atBottomCenterOf(turret.getBlockPos()))).toList());
-            done(helper, turret);
-        });
+        LivingEntity husk = still(helper, EntityType.HUSK, core(helper).offset(16, 0, 0));
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(dronesOf(helper, turret).size() == 3, "no wave under the low roof: " + dronesOf(helper, turret).size()))
+                .thenExecute(husk::discard)
+                .thenWaitUntil(() -> helper.assertTrue(turret.weaponState().dockedDrones == 3, turret.weaponState().dockedDrones + " docked, flying "
+                        + dronesOf(helper, turret).stream().map(d -> d.state().name() + " at " + d.position().subtract(Vec3.atBottomCenterOf(turret.getBlockPos()))).toList()))
+                .thenExecute(() -> done(helper, turret))
+                .thenSucceed();
     }
 
     /** Its home now holds another module (a Brood Cannon): the drone does not fly in and vanish there; it stays out. */
@@ -679,6 +678,64 @@ public class HiveTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(drone.isRemoved() && turret.weaponState().dockedDrones == 1, "not docked yet (state " + drone.state() + ")");
             helper.assertTrue(last[0].distanceTo(bay) < 1.0, "it docked " + last[0].distanceTo(bay) + " blocks from its bay, at " + last[0].subtract(bay));
+            done(helper, turret);
+        });
+    }
+
+    /**
+     * User 2026-10-24 16:55: waves go out for enemies up to 64 blocks away and drones reach them: range 64, patrol_radius 64
+     * (circling at 32), shot_range 32 (they see and shoot 32 from themselves), in the mod's JSON and in what turrets use.
+     */
+    @GameTest(template = "arena", batch = "hiveReachesSixtyFourBlocks")
+    public static void hiveReachesSixtyFourBlocks(GameTestHelper helper) {
+        for (WeaponData data : new WeaponData[]{TurretStatsConfig.builtIn("hive_carrier"), WeaponDataLoader.get(Bastion.id("hive_carrier"))}) {
+            helper.assertTrue(data.range() == 64 && data.param("patrol_radius") == 64 && data.param("shot_range") == 32,
+                    "Hive reach: range " + data.range() + ", patrol_radius " + data.param("patrol_radius") + ", shot_range " + data.param("shot_range"));
+        }
+        helper.succeed();
+    }
+
+    /** Stone round {@code at} (walls and a roof two blocks up, the husk's column left open) or just a 3x3 roof three up. */
+    private static void shelter(GameTestHelper helper, BlockPos at, boolean walls, net.minecraft.world.level.block.Block block) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (walls) {
+                    for (int dy = 0; dy <= 2; dy++) if (dy == 2 || dx != 0 || dz != 0) helper.setBlock(at.offset(dx, dy, dz), block);
+                } else {
+                    helper.setBlock(at.offset(dx, 3, dz), block);
+                }
+            }
+        }
+    }
+
+    /**
+     * User 2026-10-24 17:09: a husk the drones cannot get at (boxed in: no open sky, not seen from over the hive) sends no
+     * wave; before, such a mob in a cave or behind walls in range kept sending drones out and back every 15 s.
+     */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "carrierSkipsTargetsDronesCannotReach")
+    public static void carrierSkipsTargetsDronesCannotReach(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = carrier(helper, 4, true);
+        BlockPos at = core(helper).offset(16, 0, 0);
+        shelter(helper, at, true, Blocks.STONE);
+        still(helper, EntityType.HUSK, at);
+        helper.runAtTickTime(120, () -> {
+            helper.assertTrue(dronesOf(helper, turret).isEmpty() && items(turret) == 4, "a wave went out for a boxed-in husk");
+            shelter(helper, at, true, Blocks.AIR);
+            done(helper, turret);
+            helper.succeed();
+        });
+    }
+
+    /** A husk under a roof (no open sky) that the hive still sees: drones can fly in under it, so a wave goes out. */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "carrierLaunchesForATargetItSees")
+    public static void carrierLaunchesForATargetItSees(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = carrier(helper, 4, true);
+        BlockPos at = core(helper).offset(16, 0, 0);
+        shelter(helper, at, false, Blocks.STONE);
+        still(helper, EntityType.HUSK, at);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!dronesOf(helper, turret).isEmpty(), "no wave for a husk the hive can see under a roof");
+            shelter(helper, at, false, Blocks.AIR);
             done(helper, turret);
         });
     }

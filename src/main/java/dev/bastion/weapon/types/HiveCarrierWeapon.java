@@ -3,6 +3,7 @@ package dev.bastion.weapon.types;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionWeaponTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
+import dev.bastion.turret.targeting.LineOfSight;
 import dev.bastion.unit.DroneStats;
 import dev.bastion.unit.HiveDroneEntity;
 import dev.bastion.unit.TurretUnits;
@@ -36,6 +37,12 @@ import java.util.List;
  */
 public class HiveCarrierWeapon extends WeaponType {
     /**
+     * Blocks over the base's top the carrier "looks" from for targets not under open sky: over the hive's cap, and at its
+     * doorways (the drones' way out; under a low roof the cap's point is inside the roof).
+     */
+    private static final double[] LOOKOUTS = {3.0, 1.0};
+
+    /**
      * Bay points in px over the turntable (design_weapons.py HC_BAYS): three landing pads on the hive's floor, 12 px from
      * the middle, each behind a hole in the wall facing away from the middle (north, south-east, south-west). The floor
      * stands 10 px up, clear over the armed base's solid top (8 px, FortressTurretBaseBlock.ARMED): drones fly level out.
@@ -47,11 +54,21 @@ public class HiveCarrierWeapon extends WeaponType {
         return FireProfile.PROJECTILE;
     }
 
-    /** Drones fly: no line of sight needed, flyers too. */
+    /**
+     * Drones fly, so the carrier needs no line of sight of its own: a target counts when drones can get at it, under open
+     * sky or seen from over the hive (user 2026-10-24 17:09: a mob in a cave or behind walls in range kept sending waves
+     * out and back every 15 s, as drones must see what they shoot). Flyers too.
+     */
     @Override
     @Nullable
     public Vec3 sight(TurretBaseBlockEntity turret, LivingEntity target, StatSheet stats) {
-        return target.getBoundingBox().getCenter();
+        Vec3 centre = target.getBoundingBox().getCenter();
+        if (JavelinWeapon.openSky(target)) return centre;
+        for (double height : LOOKOUTS) {
+            Vec3 lookout = turret.alongMount(TurretBaseBlockEntity.BASE_HEIGHT + height);
+            if (LineOfSight.clear(turret.getLevel(), lookout, target.getEyePosition()) || LineOfSight.clear(turret.getLevel(), lookout, centre)) return centre;
+        }
+        return null;
     }
 
     @Override

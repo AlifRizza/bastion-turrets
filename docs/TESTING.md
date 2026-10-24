@@ -659,10 +659,11 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
    plated layers with lips, swelling out above three doorways (north, south-east, south-west) with hoods and cyan
    frames; through each doorway a landing pad with cyan lights inside; a relay mast out of the cap whose antenna tip
    pulses. Mounting it: the mast rises out of the cap. A wave: the mast head spins and the antenna flashes.
-4. **Waves**: with a husk within 32 blocks, three drones fly level out of the three doorways, then climb (three Hive Drones and
+4. **Waves**: with a husk within 64 blocks (0.6.0; was 32) under open sky or in sight of the hive, three drones fly level out of
+   the three doorways, then climb (three Hive Drones and
    6,000 FE spent); the next wave 15 s later. No FE, or no Hive Drone and none docked: no wave.
 5. **Drones**: small quadcopters with ducted fans (spinning) and a cyan light; they climb, patrol round the carrier
-   about 8 blocks up, hover off a target and shoot it (amber tracers, a chin flash, sparks on hits, about 4 shots a
+   about 8 blocks up and about 32 blocks out, hover off a target and shoot it from up to 32 blocks (amber tracers, a chin flash, sparks on hits, about 4 shots a
    second each); a phantom is shot too. A cow or villager among the husks is never hit; drones never shoot each other,
    spiders or turrets, and no turret shoots them. Their light turns yellow below half HP and blinks red below a quarter.
 6. **Kamikaze**: a drone out of bullets, or below a quarter HP, with an enemy in reach noses down, rolls, trails red
@@ -676,6 +677,8 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
    a new drone takes shape on each empty pad (lit plate, legs, body, rotors, then its lights) with welding sparks, then
    stands there ready until a wave takes it; none is built without a Hive Drone in the slots. The insides are drawn
    only within 24 blocks. A wave's puffs come out of the doorways it uses (not one walled off).
+7c. **Unreachable mobs** (0.6.0): a zombie boxed in stone (or in a cave under the hive) within 64 blocks sends no wave;
+   one under a roof but in sight of the hive does. No more drones going out and back every 15 s with nothing to shoot.
 8. **Cap**: keep it busy: never more than 9 drones flying plus docked; at the cap it waits with items and FE untouched.
 9. **Mobs go for them**: a skeleton shoots drones; a zombie targets a low one. Shot down, a drone drops and is gone
    (no blast). Hit one yourself: owner and trusted players only with `trustedCanDamage` on.
