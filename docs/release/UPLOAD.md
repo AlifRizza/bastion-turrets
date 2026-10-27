@@ -55,7 +55,8 @@ Hive Carrier), with the user's adjustments of 2026-10-24. Changelog below, store
 committed 2026-10-24, not pushed or uploaded yet. Upload folder: `build/upload/0.5.0/`.
 0.6.0 (user roadmap 2026-10-23, spec approved 2026-10-24): research and the Turret Codex, a big update, so the middle
 number. Changelog below, store text in `DESCRIPTION_UPDATE_0.6.0.md` (new gallery image `23_turret_codex`); committed
-2026-10-24 (`38c1c15`), not pushed or uploaded yet. Upload folder: `build/upload/0.6.0/`.
+2026-10-24 (`38c1c15`), then `ac32476` and `649e2e5` (2026-10-27: Brood climb and leap, real sounds, Hive drone
+balance); not pushed or uploaded yet. Upload folder: `build/upload/0.6.0/` (jars from `649e2e5`).
 
 ## Changelog: 0.6.0
 
