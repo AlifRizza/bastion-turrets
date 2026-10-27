@@ -3,6 +3,7 @@ package dev.bastion.dev;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import dev.bastion.Bastion;
+import dev.bastion.client.ClientTurret;
 import dev.bastion.client.vfx.VfxManager;
 import dev.bastion.client.vfx.VfxParams;
 import dev.bastion.client.vfx.VfxPresets;
@@ -28,7 +29,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.MagmaCube;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -68,7 +71,11 @@ import java.util.concurrent.TimeUnit;
  * cave spiders, which the first burst throws to ~8 blocks, still in range, and the second out of it;
  * -Pshowcase=video_ion, an Ion Rifle firing five bolts, one on each 1200 FE handed over at ION_SHOTS, at three magma
  * cubes close together (the core zaps the other two); -Pshowcase=video_mortar, a Mortar lobbing two shells, one
- * handed over at each MORTAR_SHOTS, onto magma cubes ~15 blocks out (fire-proof, so the patch does not burn them). One
+ * handed over at each MORTAR_SHOTS, onto magma cubes ~15 blocks out (fire-proof, so the patch does not burn them).
+ * The early turrets (user 10-27), each on a makeshift base with its ammo handed over at EARLY_AMMO so the shots stand
+ * apart, at magma cubes: -Pshowcase=video_cobblestone, video_snowball (one snowball is a burst of four), video_potato,
+ * video_arrow (the volley climbs out of the frame, so its landing is not scored); -Pshowcase=video_makeshift, makeshift
+ * bases placed, armed and destroyed at MAKESHIFT_STEPS. One
  * fixed camera, recorded as 1280x720 frames at ~30 fps into build/video-frames/f_<ms>.png (the name is the frame's time,
  * so a slow frame doesn't stretch the clip); ffmpeg joins them afterwards. The log gives each launch, impact and reload
  * in seconds from the first frame ("[showcase] at"), for the prompt's timings.
@@ -80,13 +87,16 @@ public final class VideoShowcase {
     private static final boolean ON = SCENE.equals("video") || SCENE.equals("video_missile") || SCENE.equals("video_laser")
             || SCENE.equals("video_flame") || SCENE.equals("video_tesla") || SCENE.equals("video_sniper") || SCENE.equals("video_railgun") || SCENE.equals("video_railgun_impact")
             || SCENE.equals("video_plasma_cannon") || SCENE.equals("video_repulsor") || SCENE.equals("video_repulsor_dome")
-            || SCENE.equals("video_ion") || SCENE.equals("video_mortar");
+            || SCENE.equals("video_ion") || SCENE.equals("video_mortar") || SCENE.equals("video_cobblestone")
+            || SCENE.equals("video_snowball") || SCENE.equals("video_potato") || SCENE.equals("video_arrow") || SCENE.equals("video_makeshift");
     private static final boolean MISSILE = SCENE.equals("video_missile"), LASER = SCENE.equals("video_laser"),
             FLAME = SCENE.equals("video_flame"), TESLA = SCENE.equals("video_tesla"), SNIPER = SCENE.equals("video_sniper"),
             RAIL = SCENE.equals("video_railgun"), RAIL_HIT = SCENE.equals("video_railgun_impact"),
             PCANNON = SCENE.equals("video_plasma_cannon"), REPULSOR = SCENE.equals("video_repulsor"),
             DOME = SCENE.equals("video_repulsor_dome"), ION = SCENE.equals("video_ion"),
-            MORTAR = SCENE.equals("video_mortar");
+            MORTAR = SCENE.equals("video_mortar"), COBBLE = SCENE.equals("video_cobblestone"),
+            SNOW = SCENE.equals("video_snowball"), POTATO = SCENE.equals("video_potato"), ARROW = SCENE.equals("video_arrow"),
+            EARLY = COBBLE || SNOW || POTATO || ARROW, MAKESHIFT = SCENE.equals("video_makeshift");
     private static final BlockPos ORIGIN = new BlockPos(0, 150, 0), ROCKET = ORIGIN;
     /** Ticks after the first frame when the launcher gets one missile: it loads it and fires at once. 3.3 s apart, so
      *  each flight (~1.6 s) and blast fade out before the next launch. */
@@ -111,6 +121,17 @@ public final class VideoShowcase {
     private static final int[] ION_SHOTS = {10, 46, 82, 118, 154};
     /** Ticks after the first frame when the Mortar gets one shell; 4.5 s apart, past the flight, blast and fire patch. */
     private static final int[] MORTAR_SHOTS = {10, 100};
+    /** {tick after the first frame, items}: the early turret's ammo, each lot fired before the next. Cobblestone: one
+     *  shot 1.6 s apart (it can fire every 0.75 s); Snowball: one snowball is a burst of four shots, three bursts, a long
+     *  one of twelve and a last one; Potato: one shot 2 s apart; Arrow: one volley 2.8 s apart. */
+    private static final int[][] EARLY_AMMO = COBBLE ? new int[][]{{10, 1}, {42, 1}, {74, 1}, {106, 1}, {138, 1}, {170, 1}}
+            : SNOW ? new int[][]{{10, 1}, {44, 1}, {78, 1}, {112, 3}, {176, 1}}
+            : POTATO ? new int[][]{{10, 1}, {50, 1}, {90, 1}, {130, 1}, {170, 1}}
+            : new int[][]{{10, 1}, {66, 1}, {122, 1}, {178, 1}};
+    /** Ticks after the first frame: base 1 placed, armed with a Cobblestone Turret, base 2 placed, base 2 destroyed, base 1
+     *  destroyed (the destroyed sound is 1.6 s). */
+    private static final int[] MAKESHIFT_STEPS = {10, 42, 74, 106, 154};
+    private static final BlockPos[] MAKESHIFT_BASES = {ORIGIN, ORIGIN.offset(2, 0, 0)};
     private static final int RAIL_COLOR = 0xFFB57CFF; // with alpha, as TurretFireEffects passes it
     private static final Vec3[] RAIL_HIT_SPOTS = {new Vec3(0.5, 0, 6.5), new Vec3(1.5, 0, 8.5), new Vec3(-0.5, 0, 10)};
     private static final List<Mob> TARGETS = new ArrayList<>();
@@ -123,6 +144,7 @@ public final class VideoShowcase {
     private static int frames, lastTubes = -1, lastMissiles, lastEnergy;
     private static TurretState lastState;
     private static boolean wasFalling;
+    private static long lastShot = Long.MIN_VALUE;
     private static Path dir;
 
     private VideoShowcase() {
@@ -158,12 +180,20 @@ public final class VideoShowcase {
         // From the side and far enough back to hold the arc up to ~20 blocks (its top, ~22 up, leaves the frame for a
         // moment): the fall is in view for ~1.4 s.
         if (tick == 24 && MORTAR) Showcase.camera(server, large.add(-16, 6, 8), large.add(0, 8.9, 8));
+        // Behind and beside the turret, close: it fills the left third (from 5 blocks to the side it sat on the frame's
+        // edge and the rock was a speck), the cubes down range in the middle.
+        if (tick == 24 && (COBBLE || SNOW)) Showcase.camera(server, ROCKET.getCenter().add(-3.2, 1.3, -0.8), ROCKET.getCenter().add(0.2, 0.2, 3.5));
+        if (tick == 24 && POTATO) Showcase.camera(server, ROCKET.getCenter().add(-3, 1.3, -0.8), ROCKET.getCenter().add(0.2, 0.2, 3));
+        // Close, from the side and a little below, looking up the volley's way: the rack big in frame, the arrows climb out
+        // of the top (their landing ~17 blocks off is not shown; from 5 blocks off the rack was a small figure).
+        if (tick == 24 && ARROW) Showcase.camera(server, ROCKET.getCenter().add(-3, 0.9, 0.6), ROCKET.getCenter().add(0, 1.9, 2));
+        if (tick == 24 && MAKESHIFT) Showcase.camera(server, ROCKET.getCenter().add(1, 1.3, -3.4), ROCKET.getCenter().add(1, -0.2, 0));
         if (tick == 24 && PCANNON) Showcase.camera(server, large.add(-4, 3.5, -3.5), large.add(0.5, 0.8, 12));
         if (tick == 24 && RAIL) Showcase.camera(server, large.add(-6.5, 3, 4.5), large.add(0.5, 1.3, 4.5));
         if (tick == 24 && RAIL_HIT) Showcase.camera(server, ROCKET.getCenter().add(-6, 2.5, 7.5), ROCKET.getCenter().add(0.5, 0.3, 8));
         if (tick == 24 && TESLA) Showcase.camera(server, large.add(-7.5, 2.6, 5), large.add(0, 1.6, 5));
         if (tick == 24 && FLAME) Showcase.camera(server, ROCKET.getCenter().add(-5.5, 1.3, 1.5), ROCKET.getCenter().add(0, 0.4, 3.6));
-        if (tick == 24 && !MISSILE && !LASER && !FLAME && !TESLA && !SNIPER && !RAIL && !RAIL_HIT && !PCANNON && !REPULSOR && !DOME && !ION && !MORTAR) Showcase.camera(server, ROCKET.getCenter().add(-6.5, 1.1, 3), ROCKET.getCenter().add(0, 0.3, 5.2));
+        if (tick == 24 && !MISSILE && !LASER && !FLAME && !TESLA && !SNIPER && !RAIL && !RAIL_HIT && !PCANNON && !REPULSOR && !DOME && !ION && !MORTAR && !EARLY && !MAKESHIFT) Showcase.camera(server, ROCKET.getCenter().add(-6.5, 1.1, 3), ROCKET.getCenter().add(0, 0.3, 5.2));
         if (tick == 24 && MISSILE) Showcase.camera(server, large.add(-16, 3.2, 15.5), large.add(0, 2.4, 15.5));
         for (int shot : SHOTS) {
             if (MISSILE && tick == 70 + shot) Showcase.server(server, s -> ((TurretBaseBlockEntity) s.overworld().getBlockEntity(ORIGIN))
@@ -204,6 +234,20 @@ public final class VideoShowcase {
         for (int shot : PCANNON_SHOTS) {
             if (PCANNON && tick == 70 + shot) Showcase.server(server, s -> ((TurretBaseBlockEntity) s.overworld().getBlockEntity(ORIGIN))
                     .inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(BastionItems.PLASMA_CELL.get())));
+        }
+        for (int[] lot : EARLY_AMMO) {
+            Item ammo = COBBLE ? Items.COBBLESTONE : SNOW ? Items.SNOWBALL : POTATO ? Items.POTATO : Items.ARROW;
+            if (EARLY && tick == 70 + lot[0]) Showcase.server(server, s -> ((TurretBaseBlockEntity) s.overworld().getBlockEntity(ORIGIN))
+                    .inventory().setStackInSlot(TurretInventory.AMMO_START, new ItemStack(ammo, lot[1])));
+        }
+        for (int i = 0; i < MAKESHIFT_STEPS.length; i++) {
+            int step = i;
+            if (MAKESHIFT && tick == 70 + MAKESHIFT_STEPS[i]) Showcase.server(server, s -> makeshift(s.overworld(), step));
+        }
+        // The shot as the client sees it (the fire clip and its sound start then).
+        if (EARLY && recording && ClientTurret.of(ORIGIN).lastShotTick != lastShot) {
+            if (lastShot != Long.MIN_VALUE) LOG.info("[showcase] at {} fire", String.format("%.2f", (System.nanoTime() - start) / 1e9));
+            lastShot = ClientTurret.of(ORIGIN).lastShotTick;
         }
         for (int i = 0; i < RAIL_HITS.length; i++) {
             if (RAIL_HIT && tick == 70 + RAIL_HITS[i]) impact(i % 3);
@@ -311,6 +355,13 @@ public final class VideoShowcase {
             LargeTurretBaseBlock.placeAt(level, ORIGIN, BastionBlocks.LARGE_TURRET_BASE.get());
             ((TurretBaseBlockEntity) level.getBlockEntity(ORIGIN)).inventory().setStackInSlot(TurretInventory.WEAPON,
                     new ItemStack(BastionItems.PLASMA_CANNON_TURRET.get()));
+        } else if (EARLY) {
+            // No ammo until the first EARLY_AMMO: it turns onto the cubes and waits.
+            Item weapon = (COBBLE ? BastionItems.COBBLESTONE_TURRET : SNOW ? BastionItems.SNOWBALL_REPEATER : POTATO ? BastionItems.POTATO_SHOTGUN
+                    : BastionItems.ARROW_LAUNCHER).get();
+            Showcase.placeMakeshift(level, ROCKET, Direction.UP, weapon).inventory().setStackInSlot(TurretInventory.AMMO_START, ItemStack.EMPTY);
+        } else if (MAKESHIFT) {
+            // Nothing yet: the bases come at MAKESHIFT_STEPS.
         } else if (RAIL_HIT) {
             // Nothing: the impacts are staged on the floor (impact).
         } else if (TESLA) {
@@ -378,6 +429,19 @@ public final class VideoShowcase {
                 .ifPresent(energy -> energy.receiveEnergy(fe, false)));
     }
 
+    /** Step {@code step} of MAKESHIFT_STEPS: base 1 placed, armed (its deploy plays makeshift_base.place again), base 2
+     *  placed, base 2 destroyed, base 1 destroyed (planks and dust). */
+    private static void makeshift(ServerLevel level, int step) {
+        switch (step) {
+            case 0, 2 -> Showcase.placeMakeshift(level, MAKESHIFT_BASES[step / 2], Direction.UP, null);
+            case 1 -> Showcase.placeMakeshift(level, MAKESHIFT_BASES[0], Direction.UP, BastionItems.COBBLESTONE_TURRET.get());
+            default -> {
+                if (level.getBlockEntity(MAKESHIFT_BASES[step == 3 ? 1 : 0]) instanceof TurretBaseBlockEntity base) base.takeDamage(level.damageSources().generic(), base.maxHealth());
+            }
+        }
+        LOG.info("[showcase] at {} {}", String.format("%.2f", (System.nanoTime() - start) / 1e9), new String[]{"place", "arm", "place", "destroy", "destroy"}[step]);
+    }
+
     /** A Railgun slug landing on the floor at RAIL_HIT_SPOTS[which]: the game's block-hit effect (RailgunEffects.land:
      *  RAIL_IMPACT and RAIL_GROUND, smooth stone's map colour). No husks: Omni returned no audio at all for husks hit by
      *  an unseen gun (user 10-16), likely its safety filter. */
@@ -401,7 +465,10 @@ public final class VideoShowcase {
                 : LASER ? new Vec3[]{new Vec3(0.5, 0, 8.5), new Vec3(0.5, 0, 11), new Vec3(0.5, 0, 13.5)}
                 : FLAME ? new Vec3[]{new Vec3(0, 0, 4.5), new Vec3(-0.9, 0, 6), new Vec3(0.9, 0, 6)}
                 : RAIL ? new Vec3[]{new Vec3(1, 0, 7.5), new Vec3(2.5, 0, 9), new Vec3(-0.5, 0, 9.5)}
-                : RAIL_HIT ? new Vec3[0]
+                : RAIL_HIT || MAKESHIFT ? new Vec3[0]
+                : COBBLE || SNOW ? new Vec3[]{new Vec3(0.5, 0, 7), new Vec3(1.8, 0, 8), new Vec3(-0.8, 0, 8.5)}
+                : POTATO ? new Vec3[]{new Vec3(0.5, 0, 5.5), new Vec3(1.6, 0, 6.5), new Vec3(-0.6, 0, 6.5)}
+                : ARROW ? new Vec3[]{new Vec3(0.5, 0, 17), new Vec3(2, 0, 18), new Vec3(-1, 0, 18.5)}
                 : REPULSOR ? new Vec3[]{new Vec3(3, 0, -0.6), new Vec3(3, 0, 0.6), new Vec3(-3, 0, -0.6), new Vec3(-3, 0, 0.6),
                         new Vec3(-0.6, 0, 3), new Vec3(0.6, 0, 3)}
                 : DOME ? new Vec3[]{new Vec3(2.70, 0, 0.50), new Vec3(1.60, 0, 2.41), new Vec3(-0.60, 0, 2.41), new Vec3(-1.70, 0, 0.50), new Vec3(-0.60, 0, -1.41), new Vec3(1.60, 0, -1.41)}
@@ -416,7 +483,7 @@ public final class VideoShowcase {
             // 10-16): the Plasma Cannon and the Repulsors get other mobs instead (invisible husks still show to the spectator
             // camera).
             // Cave spiders for the Repulsors: magma cubes squash, stretch and drop flames when they land.
-            Mob mob = PCANNON || ION || MORTAR ? EntityType.MAGMA_CUBE.create(level) : REPULSOR || DOME ? EntityType.CAVE_SPIDER.create(level)
+            Mob mob = PCANNON || ION || MORTAR || EARLY ? EntityType.MAGMA_CUBE.create(level) : REPULSOR || DOME ? EntityType.CAVE_SPIDER.create(level)
                     : EntityType.HUSK.create(level);
             if (mob == null) return;
             if (mob instanceof MagmaCube cube) cube.setSize(2, true);

@@ -1,6 +1,6 @@
 # Sound Sheet: Bastion Turrets
 
-Semua SFX di mod (89 sound event, termasuk 8 milik Ion Rifle dan Plasma, 4 milik Turret Control Hub, 6 milik turret early game, 4 milik Javelin Missile, 5 milik Brood Cannon, 4 milik Hive Carrier dan 1 milik Turret Codex). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
+Semua SFX di mod (92 sound event, termasuk 8 milik Ion Rifle dan Plasma, 4 milik Turret Control Hub, 6 milik turret early game, 6 milik Javelin Missile, 7 milik Brood Cannon, 4 milik Hive Carrier dan 1 milik Turret Codex). Untuk tiap SFX: **kata kunci** untuk mencari di situs SFX gratis, dan **prompt** untuk AI generator suara. Semua yang ada sekarang masih placeholder hasil sintesis (`tools/gen_sounds.py`).
 
 ## Mulai dari sini
 
@@ -98,6 +98,13 @@ garis merah di detik yang diberikan) ke `build/sfx-sheets/` (ide dari opus-sound
 | `ion.fire` (2) | `ion_generated.wav` (Gemini Omni, 10-16, `-Pshowcase=video_ion`) | tembakan 2 (2,227 dtk) dan 5 (7,672 dtk), paling beda spektrumnya, ~0,9-1,1 dtk sampai habis; juga suara jauhnya |
 | `mortar.fire` (2) | `mortar_generated.wav` (Gemini Omni, 10-16, `-Pshowcase=video_mortar`) | peluncuran 1 (0,487-1,85 dtk) + varian pitch 0,94; peluncuran 2 tertumpuk crackle api ledakan 1 |
 | `mortar.fire_tail` (jauh) | idem | peluncuran 1, diredam di atas 900 Hz |
+| `cobblestone.fire` (2) | `cobblestone_fire.wav` (SFX generator, 10-27; take Omni `cobblestone_generated.wav` terdengar seperti gerbang didobrak) | 0,01-0,8 dtk: klak di 0,03 dtk, letupan lebih keras di 0,29 dtk; varian kedua pitch 1,06 (0,75 dtk), keduanya muat di jeda 0,75 dtk |
+| `snowball.fire` (3) | `snowball_generated.wav` (Gemini Omni, 10-27, `-Pshowcase=video_snowball`) | tiga tembakan tunggal (4,68 / 7,405 / 9,155 dtk), masing-masing 0,2 dtk: klik ratchet lalu "fwump" ~50 ms kemudian |
+| `potato.fire` (2) | `potato_generated.wav` (Gemini Omni, 10-27, `-Pshowcase=video_potato`) | tembakan 2 (2,313 dtk) dan 4 (6,353 dtk), 0,75 dtk dengan dengung pipa |
+| `arrow_launcher.fire` (2) | `arrow_generated.wav` (Gemini Omni, 10-27, `-Pshowcase=video_arrow`) | hanya volley 3 (5,808 dtk) dan 4 (8,583 dtk), ~1,05 dtk; volley 1 dan 2 terlalu mirip vanilla (user) |
+| `makeshift_base.place` | `makeshift_base_place.wav` (SFX generator, 10-27) | 0-0,6 dtk: dua ketukan dan derit; 0,3 dtk pertama sekeras `turret.deploy` |
+| Turret 3x3 (17 event, termasuk `javelin.doors_open`/`doors_close` dan `brood_spider.step` yang baru) | SFX generator (10-27), satu file per suara, `*_2` untuk varian kedua | dipotong dari awal; diratakan per take (0,3 dtk pertama untuk ledakan/tembakan/peluncuran, sisanya utuh); Javelin peluncuran dan ledakan terbesar di mod; `fly` dan `drone_hum` loop 3,65 dtk; `drone_shot` dua tembakan dari senapan mesin 11,7/dtk (drone sekarang 10/dtk) |
+| `makeshift_base.destroyed` | `makeshift_base_destroyed.wav` (SFX generator, 10-27) | 0-1,55 dtk: remuk, remuk kedua di 0,3 dtk, papan berjatuhan; 1 dB di bawah `turret.destroyed` |
 | `turret.servo` | `turret_servo.wav` | loop dibuat, tapi event ini belum diputar di game |
 
 **Dihapus (user 22:31, "nanti")**: suara proyektil kena, `impact.kinetic`, `plasma.hit_small`, `ion.hit` (event, file,
@@ -113,7 +120,7 @@ satu siklus spin-up, tembak 3 dtk, spin-down sesuai jadwal tembak game.
 dalam game/mod, tidak boleh dibagikan sebagai file lepas). File `.wav` lain dan `plasma_gun.mp3`: catat di sini tool dan
 lisensinya (generator AI: cek apakah paketnya mengizinkan komersial/kredit). Rocket Launcher (10-14): audio dari Google Gemini
 Omni (video bisu `-Pshowcase=video` + prompt), cek syarat penggunaan konten AI Google untuk rilis. Missile Launcher
-(10-14): idem, `-Pshowcase=video_missile`. Laser Rifle (10-15): idem, `-Pshowcase=video_laser`. Flamethrower (10-15): idem, `-Pshowcase=video_flame`. Tesla Coil (10-15): idem, `-Pshowcase=video_tesla`. Sniper (10-16): idem, `-Pshowcase=video_sniper` (dua take: tembakan dari belakang turret, charge dari samping). Railgun (10-16): idem, `-Pshowcase=video_railgun` dan `video_railgun_impact`. Plasma Cannon (10-16): idem, `-Pshowcase=video_plasma_cannon`. Repulsor (10-16): idem, `-Pshowcase=video_repulsor` dan `video_repulsor_dome`. Ion Rifle (10-16): idem, `-Pshowcase=video_ion`. Mortar (10-16): idem, `-Pshowcase=video_mortar`.
+(10-14): idem, `-Pshowcase=video_missile`. Laser Rifle (10-15): idem, `-Pshowcase=video_laser`. Flamethrower (10-15): idem, `-Pshowcase=video_flame`. Tesla Coil (10-15): idem, `-Pshowcase=video_tesla`. Sniper (10-16): idem, `-Pshowcase=video_sniper` (dua take: tembakan dari belakang turret, charge dari samping). Railgun (10-16): idem, `-Pshowcase=video_railgun` dan `video_railgun_impact`. Plasma Cannon (10-16): idem, `-Pshowcase=video_plasma_cannon`. Repulsor (10-16): idem, `-Pshowcase=video_repulsor` dan `video_repulsor_dome`. Ion Rifle (10-16): idem, `-Pshowcase=video_ion`. Mortar (10-16): idem, `-Pshowcase=video_mortar`. Turret early game (10-27): idem, `-Pshowcase=video_snowball`, `video_potato`, `video_arrow`; Cobblestone dan Makeshift Turret Base dari SFX generator (Omni memberi dobrakan gerbang dan suara kayu vanilla). Turret 3x3 (10-27): SFX generator.
 
 ## Prompt MiniMax H3 per turret (untuk SFX berikutnya)
 
@@ -445,6 +452,10 @@ P1 = terdengar terus, ganti duluan · P2 = biasa · P3 = jarang atau versi jauh 
 | 88 | [`hive_drone.shot`](#88) | Hive Carrier | P2 | 0,25 dtk | 2 |  |
 | 89 | [`hive_drone.kamikaze`](#89) | Hive Carrier | P2 | 1,6 dtk | 2 |  |
 | 90 | [`research.complete`](#90) | Turret Codex | P2 | 0,8 dtk | 1 |  |
+| 91 | [`brood_spider.leap`](#91) | Brood Cannon | P2 | 0,35 dtk | 1 |  |
+| 92 | [`javelin.doors_open`](#92) | Javelin Missile | P2 | 1,8 dtk | 1 |  |
+| 93 | [`javelin.doors_close`](#93) | Javelin Missile | P2 | 1,8 dtk | 1 |  |
+| 94 | [`brood_spider.step`](#94) | Brood Cannon | P2 | 0,18 dtk | 4 |  |
 | 7 | [`gun.fire_tail`](#7) | Gun Turret | P3 | 1,2 dtk | 2 |  |
 | 10 | [`machine_gun.fire_tail`](#10) | Machine Gun | P3 | 1,2 dtk | 2 |  |
 | 16 | [`shotgun.fire_tail`](#16) | Shotgun | P3 | 1,2 dtk | 2 |  |
@@ -1537,27 +1548,27 @@ A tiny clean sci-fi interface beep for selecting an item on a tactical map, very
 ## Turret early game
 
 Rustik: kayu, pegas, tali, udara; bukan senjata api atau energi. Tanpa hum idle dan tanpa suara proyektil kena (keputusan
-user). Tanpa versi jauh (`_tail`): pemain di atas 32 blok mendengar suara tembakan yang sama, lebih pelan.
+user), kecuali panah Arrow Launcher: bunyi kena/menancap/cebur vanilla (user 10-27). Tanpa versi jauh (`_tail`): pemain di atas 32 blok mendengar suara tembakan yang sama, lebih pelan.
 
 <a id="71"></a>
 ### 71. `cobblestone.fire`
 
 **P2** · 0,6 dtk · 2 varian · `cobblestone/fire_0..1.ogg` · terdengar sampai 16 blok  
-Cobblestone Turret melontar batu: meriam pegas pendek di pivot kayu, pegas tertekan lalu lepas (tiap 0,75 dtk).
+Cobblestone Turret melontar batu: meriam pegas pendek di pivot kayu, pegas tertekan lalu lepas (tiap 0,75 dtk). *Sudah diganti (10-27): `cobblestone_fire.wav` (SFX generator, prompt di bawah); take Omni sebelumnya terdengar seperti gerbang didobrak.*
 
 **Cari:** `catapult release wood` · `spring launch thunk` · `rock throw whoosh`
 
 **Prompt AI:**
 
 ```text
-A small wooden spring cannon flinging a rock: a hard wooden thunk as a coiled iron spring releases, a short springy metallic twang, and a heavy stone whooshing away. Rustic and mechanical, no gunpowder, no explosion. 0.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small spring catapult releasing: a sharp springy metallic twang and a light, quick wooden clack of the release arm, then a short airy whoosh of a fist-sized stone flying away. Light, snappy and tight, a small mechanism, not heavy: no boom, no thud, no impact, no gunpowder. Realistic Foley, close-mic, dry, isolated sound effect, mono, no music, no voices, no reverb.
 ```
 
 <a id="72"></a>
 ### 72. `snowball.fire`
 
 **P2** · 0,2 dtk · 3 varian · `snowball/fire_0..2.ogg` · terdengar sampai 16 blok  
-Snowball Repeater: drum 4 laras diputar engkol, satu bola salju tiap tembakan (5 per detik).
+Snowball Repeater: drum 4 laras diputar engkol, satu bola salju tiap tembakan (5 per detik). *Sudah diganti (10-27): `snowball_generated.wav` (Gemini Omni).*
 
 **Cari:** `snowball throw` · `soft thump pop` · `ratchet click`
 
@@ -1571,7 +1582,7 @@ One shot of a hand-cranked snowball repeater: a soft muffled 'fwump' of packed s
 ### 73. `potato.fire`
 
 **P2** · 0,8 dtk · 2 varian · `potato/fire_0..1.ogg` · terdengar sampai 16 blok  
-Potato Shotgun (spud gun): pipa besi gemuk melepas tekanan, 5 potongan kentang keluar sekaligus (tiap 1,5 dtk).
+Potato Shotgun (spud gun): pipa besi gemuk melepas tekanan, 5 potongan kentang keluar sekaligus (tiap 1,5 dtk). *Sudah diganti (10-27): `potato_generated.wav` (Gemini Omni).*
 
 **Cari:** `potato cannon` · `air cannon pop` · `pneumatic release`
 
@@ -1585,7 +1596,7 @@ A homemade potato cannon firing: a hollow, deep pneumatic 'foomp' out of a thick
 ### 74. `arrow_launcher.fire`
 
 **P2** · 0,9 dtk · 2 varian · `arrow_launcher/fire_0..1.ogg` · terdengar sampai 16 blok  
-Arrow Launcher: rak balista 6 panah, enam tali menyentak bersamaan dan melepas satu volley (tiap 2,5 dtk).
+Arrow Launcher: rak balista 6 panah, enam tali menyentak bersamaan dan melepas satu volley (tiap 2,5 dtk). *Sudah diganti (10-27): `arrow_generated.wav` (Gemini Omni, volley 3 dan 4).*
 
 **Cari:** `ballista release` · `crossbow shot` · `bow string twang`
 
@@ -1599,28 +1610,28 @@ A small wooden ballista rack loosing six arrows at once: several taut bowstrings
 ### 75. `makeshift_base.place`
 
 **P2** · 0,8 dtk · 1 varian · `makeshift_base/place.ogg` · terdengar sampai 16 blok  
-Makeshift Turret Base dipasang, atau modul senjata dipasang di atasnya: papan kayu berderit (pengganti `turret.deploy` di base ini).
+Makeshift Turret Base dipasang, atau modul senjata dipasang di atasnya: papan kayu berderit (pengganti `turret.deploy` di base ini). *Sudah diganti (10-27): `makeshift_base_place.wav` (SFX generator, prompt di bawah).*
 
 **Cari:** `wood creak` · `wooden crate set down` · `plank creak`
 
 **Prompt AI:**
 
 ```text
-A heavy wooden crate with iron straps set down on stone: a dull wooden knock followed by a slow creak of planks and joints settling under the weight. 0.8 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A heavy wooden crate reinforced with iron straps set down firmly on a stone floor: one dull, solid wooden knock with a faint rattle of the iron straps, then a short creak of planks and joints settling under the weight. Realistic Foley, close-mic, dry, isolated sound effect, mono, no music, no voices, no reverb.
 ```
 
 <a id="76"></a>
 ### 76. `makeshift_base.destroyed`
 
 **P3** · 1,6 dtk · 1 varian · `makeshift_base/destroyed.ogg` · terdengar sampai 16 blok  
-Makeshift Turret Base hancur (HP 0): kayu remuk dan pecah jadi rongsokan, tanpa ledakan energi.
+Makeshift Turret Base hancur (HP 0): kayu remuk dan pecah jadi rongsokan, tanpa ledakan energi. *Sudah diganti (10-27): `makeshift_base_destroyed.wav` (SFX generator, prompt di bawah).*
 
 **Cari:** `wood break crash` · `crate smash` · `wood splinter`
 
 **Prompt AI:**
 
 ```text
-A wooden turret platform smashed apart: planks crunching and splintering with a heavy thud, then loose boards and scrap iron clattering to the ground. No explosion. 1.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A wooden crate platform with iron straps smashed apart: a heavy crunching thud, planks cracking and splintering, then loose boards and bits of scrap iron clattering and settling on a stone floor. No explosion, no fire, no glass. Realistic Foley, close-mic, dry, isolated sound effect, mono, no music, no voices.
 ```
 
 ---
@@ -1635,56 +1646,84 @@ pandangan lalu menukik tegak lurus ke kerumunan musuh. Suara besar dan berat; ta
 ### 77. `javelin.launch`
 
 **P2** · 2,2 dtk · 2 varian · `javelin/launch_0..1.ogg` · terdengar sampai 64 blok  
-Peluncuran dingin dari silo vertikal: gas mendorong rudal keluar, lalu mesin menyala di atas silo.
+Peluncuran dingin dari silo vertikal: gas mendorong rudal keluar, lalu mesin menyala di atas silo. *Sudah diganti (10-27): SFX generator, `javeline_launch.wav` + `javelin_launch_2.wav`.*
 
 **Cari:** `missile launch` · `vertical launch system` · `rocket ignition roar`
 
 **Prompt AI:**
 
 ```text
-A large missile cold-launched from a vertical silo: a deep pneumatic thump as gas pushes it out, a long rushing hiss, then the rocket motor igniting into a ragged, crackling roar a moment later. Heavy and powerful. 2.2 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A large missile cold-launched from a vertical steel silo: a deep pneumatic boom of gas punching it out of the tube, a short rushing hiss, then the rocket motor igniting into a ragged, crackling roar that climbs away. Powerful, modern military sci-fi. Realistic, close and clear, isolated sound effect, no music, no voices.
 ```
 
 <a id="78"></a>
 ### 78. `javelin.fly`
 
 **P2** · 1 dtk · 1 varian · loop · `javelin/fly.ogg` · terdengar sampai 96 blok  
-Raungan mesin rudal yang naik tegak lurus; suaranya ikut rudal ke atas sampai hilang dari pandangan (~2 dtk).
+Raungan mesin rudal yang naik tegak lurus; suaranya ikut rudal ke atas sampai hilang dari pandangan (~2 dtk), lalu terus naik dan memudar 2 dtk (user 10-27: dulu terpotong). *Sudah diganti (10-27): SFX generator, `javelin_fly.wav`, loop 3,65 dtk.*
 
 **Cari:** `rocket engine loop` · `missile motor roar` · `jet thrust loop`
 
 **Prompt AI:**
 
 ```text
-A seamless loop of a big rocket motor's roar heard from below: a heavy low rumbling thrust with a slow flutter and a crackling edge, steady with no start or end. 1 second, loopable. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A steady roar of a big rocket motor in flight, heard from below: deep rumbling thrust with a crackling, fluttering edge. Constant from start to end: no ignition, no fade, no pass-by. Realistic, isolated sound effect, no music, no voices.
 ```
 
 <a id="79"></a>
 ### 79. `javelin.dive`
 
 **P2** · 1,1 dtk · 1 varian · `javelin/dive.ogg` · terdengar sampai 96 blok  
-Rudal menukik tegak lurus ke target (~1 dtk): siulan jatuh yang meninggi dan makin keras; game menaikkan pitch-nya juga.
+Rudal menukik tegak lurus ke target (~1 dtk): siulan jatuh yang meninggi dan makin keras; game menaikkan pitch-nya juga. *Sudah diganti (10-27): SFX generator, `javeline_dive.wav`.*
 
 **Cari:** `falling bomb whistle` · `incoming missile` · `shell whistle`
 
 **Prompt AI:**
 
 ```text
-An incoming missile diving straight down: a falling whistle that rises in pitch and swells louder with rushing air, ending abruptly just before impact. 1.1 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+An incoming missile diving straight down from high above: a falling shriek of rushing air that rises in pitch and swells louder, cut off abruptly at the end. No explosion. Realistic, isolated sound effect, no music, no voices.
 ```
 
 <a id="80"></a>
 ### 80. `javelin.explode`
 
 **P2** · 3,8 dtk · 2 varian · `javelin/explode_0..1.ogg` · terdengar sampai 96 blok  
-Tumbukan rudal Javelin: ledakan besar (radius 6 blok) dengan gemuruh panjang.
+Tumbukan rudal Javelin: ledakan besar (radius 6 blok) dengan gemuruh panjang. *Sudah diganti (10-27): SFX generator, `javelin_explode_1.wav` + `javeline_explode_2.wav`.*
 
 **Cari:** `big explosion` · `missile impact` · `artillery explosion rumble`
 
 **Prompt AI:**
 
 ```text
-A large missile impact explosion: a sharp crack and a huge deep boom, a blast of debris, then a long rolling rumble fading out. Bigger and deeper than a rocket explosion. 3.8 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A huge missile warhead exploding on the ground: a sharp crack and a massive deep boom, a blast of dirt and debris raining down, then a long rolling rumble fading out. Bigger and deeper than a rocket explosion. Realistic, cinematic, isolated sound effect, no music, no voices.
+```
+
+<a id="92"></a>
+### 92. `javelin.doors_open`
+
+**P2** · 1,8 dtk · 1 varian · `javelin/doors_open.ogg` · terdengar sampai 32 blok  
+Pintu silo (blast doors) mulai membuka saat turret mendapat target (ayunan 0,4 dtk); tetap terbuka di antara tembakan. *Sudah diganti (10-27): SFX generator, `javelin_door_open.wav`.*
+
+**Cari:** `blast door open` · `hydraulic hatch` · `silo door`
+
+**Prompt AI:**
+
+```text
+Heavy armoured blast doors on top of a missile silo swinging open: a sharp hydraulic hiss, a short mechanical servo whine and a deep metallic clunk as they lock fully open. Heavy military sci-fi. Realistic, isolated sound effect, no music, no voices.
+```
+
+<a id="93"></a>
+### 93. `javelin.doors_close`
+
+**P2** · 1,8 dtk · 1 varian · `javelin/doors_close.ogg` · terdengar sampai 32 blok  
+Pintu silo mulai menutup saat turret kembali idle. *Sudah diganti (10-27): SFX generator, `javeline_door_close.wav`.*
+
+**Cari:** `blast door close` · `heavy hatch slam` · `metal door slam`
+
+**Prompt AI:**
+
+```text
+Heavy armoured blast doors of a missile silo swinging shut: a short hydraulic hiss and servo whine, ending in a heavy, deep metallic slam as they seal. Realistic, isolated sound effect, no music, no voices.
 ```
 
 ---
@@ -1699,70 +1738,70 @@ membuka, dan tiga laba-laba robot keluar. Mekanis dan pneumatik, bukan api. Tanp
 ### 81. `brood.fire`
 
 **P2** · 1,2 dtk · 2 varian · `brood/fire_0..1.ogg` · terdengar sampai 48 blok  
-Meriam Induk menembakkan kapsul: hentakan pneumatik dalam dari laras gemuk, desis gas singkat.
+Meriam Induk menembakkan kapsul: hentakan pneumatik dalam dari laras gemuk, desis gas singkat. *Sudah diganti (10-27): SFX generator, `brood_fire_1.wav` + `brood_fire_2.wav`.*
 
 **Cari:** `pneumatic cannon` · `air cannon thump` · `compressed air launch`
 
 **Prompt AI:**
 
 ```text
-A short fat pneumatic cannon launching a heavy canister: a deep hollow thump of compressed gas, a brief metallic ring of the barrel and a short hiss. No gunpowder. 1.2 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A short, fat pneumatic cannon launching a heavy metal canister: a deep hollow 'thoomp' of compressed gas, a brief metallic ring of the thick barrel and a short hiss of venting air. No gunpowder, no explosion. Realistic sci-fi, isolated sound effect, no music, no voices.
 ```
 
 <a id="82"></a>
 ### 82. `brood.capsule_land`
 
 **P2** · 0,7 dtk · 1 varian · `brood/capsule_land.ogg` · terdengar sampai 32 blok  
-Kapsul lapis baja jatuh ke tanah: dentum tumpul lalu denting logam pendek.
+Kapsul lapis baja jatuh ke tanah: dentum tumpul lalu denting logam pendek. *Sudah diganti (10-27): SFX generator, `brood_capsule_land.wav`.*
 
 **Cari:** `metal canister drop` · `heavy object land` · `metal thud`
 
 **Prompt AI:**
 
 ```text
-A heavy armoured metal pod slamming into the ground: a dull heavy thud followed by a short metallic clank. 0.7 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A heavy armoured metal pod slamming into dirt: a dull solid impact, a short metallic clank of its shell and a little rattle. No explosion. Realistic, isolated sound effect, no music, no voices.
 ```
 
 <a id="83"></a>
 ### 83. `brood.capsule_open`
 
 **P2** · 0,9 dtk · 1 varian · `brood/capsule_open.ogg` · terdengar sampai 24 blok  
-Kelopak kapsul membuka: desis hidrolik, lalu tiga klik saat kelopak terkunci.
+Kelopak kapsul membuka: desis hidrolik, lalu tiga klik saat kelopak terkunci. *Sudah diganti (10-27): SFX generator, `brood_capsule_open.wav`.*
 
 **Cari:** `hydraulic hiss` · `pod opening` · `mechanical latch click`
 
 **Prompt AI:**
 
 ```text
-A small armoured pod opening like a flower: a hiss of hydraulic gas, then three quick metallic clicks as its petals lock open. 0.9 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small armoured metal pod opening like a flower: a sharp hiss of hydraulic gas, then three quick metallic clicks as its petals lock open. Clean sci-fi mechanism. Realistic, isolated sound effect, no music, no voices.
 ```
 
 <a id="84"></a>
 ### 84. `brood_spider.bite`
 
 **P2** · 0,3 dtk · 2 varian · `brood/spider_bite_0..1.ogg` · terdengar sampai 16 blok  
-Laba-laba robot menggigit: tusukan jarum, klik logam cepat dan bunyi tumpul.
+Laba-laba robot menggigit: tusukan jarum, klik logam cepat dan bunyi tumpul. *Sudah diganti (10-27): SFX generator, `brood_spider_bite_1.wav` + `_2`.*
 
 **Cari:** `robot bite` · `needle stab` · `mechanical snap`
 
 **Prompt AI:**
 
 ```text
-A small robot spider stabbing with needle fangs: a quick sharp metallic click and a short dull thunk. 0.3 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small robot spider stabbing with metal needle fangs: one quick sharp metallic snap and a short dull thunk, very short. Not organic: no growl, no hiss. Isolated sound effect, no music, no voices.
 ```
 
 <a id="85"></a>
 ### 85. `brood_spider.burst`
 
 **P2** · 1 dtk · 2 varian · `brood/spider_burst_0..1.ogg` · terdengar sampai 32 blok  
-Laba-laba robot mati dan meledak kecil: letupan tajam dan kepingan logam berdenting.
+Laba-laba robot mati dan meledak kecil: letupan tajam dan kepingan logam berdenting. *Sudah diganti (10-27): SFX generator, `brood_spider_burst.wav` + `_2`.*
 
 **Cari:** `small explosion` · `robot destroyed` · `metal debris`
 
 **Prompt AI:**
 
 ```text
-A small robot blowing up: a sharp small blast followed by a short rattle of metal parts scattering. 1 second. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small robot spider blowing apart: a sharp compact pop of a small charge, then a short rattle of tiny metal parts scattering on the ground. Small, not a big explosion. Realistic, isolated sound effect, no music, no voices.
 ```
 
 ---
@@ -1770,63 +1809,63 @@ A small robot blowing up: a sharp small blast followed by a short rattle of meta
 ## Hive Carrier
 
 Turret 3x3 di Fortress Turret Base (0.5.0): hanggar segi enam yang mengirim gelombang tiga drone tempur tiap 30 detik.
-Drone kecil bertenaga kipas: dengung ringan, tembakan kecil yang cepat (4 per detik, jadi harus pendek dan tidak
+Drone kecil bertenaga kipas: dengung ringan, tembakan kecil yang cepat (10 per detik, jadi harus pendek dan tidak
 melelahkan), dan ledakan saat menukik kamikaze.
 
 <a id="86"></a>
 ### 86. `hive.launch`
 
 **P2** · 1,6 dtk · 1 varian · `hive/launch.ogg` · terdengar sampai 32 blok  
-Pintu ruang luncur bergeser dan tiga drone lepas landas: gesekan hidrolik, lalu desing kipas yang naik.
+Pintu ruang luncur bergeser dan tiga drone lepas landas: gesekan hidrolik, lalu desing kipas yang naik. *Sudah diganti (10-27): SFX generator, `hive_launch.wav`.*
 
 **Cari:** `drone takeoff` · `hangar door slide` · `quadcopter spin up`
 
 **Prompt AI:**
 
 ```text
-Three small combat drones lifting off from a hangar: a short hydraulic hiss of sliding bay doors, then several small fans spinning up into a rising whir. 1.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+Three small combat drones lifting off from a hexagonal hangar: a short hydraulic hiss of sliding bay doors, then several small ducted fans spinning up into a rising whir. Realistic sci-fi, isolated sound effect, no music, no voices.
 ```
 
 <a id="87"></a>
 ### 87. `hive_drone.hum`
 
 **P2** · 1 dtk · 1 varian · loop · `hive/drone_hum.ogg` · terdengar sampai 16 blok  
-Dengung kipas satu drone yang melayang; game memutar paling banyak tiga sekaligus.
+Dengung kipas satu drone yang melayang; game memutar paling banyak tiga sekaligus. *Sudah diganti (10-27): SFX generator, `hive_drone_hum.wav`, loop 3,65 dtk.*
 
 **Cari:** `quadcopter loop` · `drone hover loop` · `small fan hum`
 
 **Prompt AI:**
 
 ```text
-A seamless loop of a small quadcopter drone hovering: a buzzing whir of four ducted fans with a gentle beat, steady with no start or end. 1 second, loopable. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small quadcopter combat drone hovering in place: a steady buzzing whir of four small ducted fans with a gentle beat. Constant from start to end: no spin-up, no fade, no pass-by. Isolated sound effect, no music, no voices.
 ```
 
 <a id="88"></a>
 ### 88. `hive_drone.shot`
 
-**P2** · 0,25 dtk · 2 varian · `hive/drone_shot_0..1.ogg` · terdengar sampai 24 blok  
-Satu tembakan senapan kecil di dagu drone (4 per detik).
+**P2** · 0,09 dtk · 2 varian · `hive/drone_shot_0..1.ogg` · terdengar sampai 24 blok  
+Satu tembakan senapan kecil di dagu drone (10 per detik sejak 10-27, dulu 4). *Sudah diganti (10-27): SFX generator, `hive_drone_shot.wav` (senapan mesin 11,7/dtk, dua tembakan).*
 
 **Cari:** `small gun shot` · `drone gun` · `light rifle shot`
 
 **Prompt AI:**
 
 ```text
-One shot of a small light gun mounted on a drone: a short sharp crack with a tiny thump, very quick so it repeats cleanly four times a second. 0.25 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+One single shot of a small light machine gun on a drone: a short sharp crack with a tiny punch, dry and very quick, no echo, no tail. Only one shot. Isolated sound effect, no music, no voices.
 ```
 
 <a id="89"></a>
 ### 89. `hive_drone.kamikaze`
 
 **P2** · 1,6 dtk · 2 varian · `hive/drone_kamikaze_0..1.ogg` · terdengar sampai 48 blok  
-Drone menukik ke musuh: desing yang meninggi, lalu ledakan tajam.
+Drone menukik ke musuh: desing yang meninggi, lalu ledakan tajam. *Sudah diganti (10-27): SFX generator, `hive_drone_kamikaze_1.wav` + `_2`.*
 
 **Cari:** `drone dive explosion` · `kamikaze drone` · `small explosion`
 
 **Prompt AI:**
 
 ```text
-A small drone diving into its target: a short rising whine of its fans, then a sharp compact explosion with a rattle of debris. 1.6 seconds. Close-mic, dry, isolated sound effect, mono, no music, no voices.
+A small drone diving into its target: a short rising whine of its fans, then a sharp compact explosion with a rattle of metal debris. Realistic, isolated sound effect, no music, no voices.
 ```
 
 <a id="90"></a>
@@ -1841,4 +1880,32 @@ Riset selesai di Turret Codex: denting naik dua nada yang lembut.
 
 ```text
 A soft futuristic interface chime for unlocking a new technology: two quick rising notes with a light digital shimmer, clean and satisfying, not loud. 0.8 seconds. Dry, isolated sound effect, mono, no music, no voices.
+```
+
+<a id="91"></a>
+### 91. `brood_spider.leap`
+
+**P2** · 0,35 dtk · 1 varian · `brood/spider_leap.ogg` · terdengar sampai 16 blok  
+Laba-laba robot melompat ke mangsanya (juga lompatan terakhir saat HP habis): tendangan hidrolik tajam lalu desing pendek. *Sudah diganti (10-27): SFX generator, `brood_spider_leap.wav`.*
+
+**Cari:** `robot jump` · `servo leap` · `mechanical spring jump`
+
+**Prompt AI:**
+
+```text
+A small robot spider leaping: a sharp hydraulic kick of its metal legs and a short rising whoosh through the air, quick and light. Isolated sound effect, no music, no voices.
+```
+
+<a id="94"></a>
+### 94. `brood_spider.step`
+
+**P2** · 0,18 dtk · 4 varian · `brood/spider_step_0..3.ogg` · terdengar sampai 12 blok  
+Kaki laba-laba robot berderap, satu per langkah saat berjalan atau memanjat; pelan (volume 0,35) karena belasan bisa jalan bersamaan. *Sudah diganti (10-27): SFX generator, `brood_spider_step.wav`, 4 potong.*
+
+**Cari:** `robot spider walk` · `metal legs skitter` · `mechanical footsteps`
+
+**Prompt AI:**
+
+```text
+A small robot spider scuttling across a stone floor: rapid light metallic taps of six thin steel legs in a quick skittering rhythm, with a faint servo whir under it. Light and quiet, a small machine, not organic: no hissing, no squeaks. Steady from start to end. Realistic, close-mic, isolated sound effect, no music, no voices.
 ```

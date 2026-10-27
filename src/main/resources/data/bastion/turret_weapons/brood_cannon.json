@@ -31,6 +31,9 @@
     "death_radius": 4,
     "open_ticks": 20,
     "self_destruct_ticks": 200,
+    "leap_range": 5,
+    "leap_ticks": 8,
+    "leap_cooldown": 60,
     "capsule_damage": 10
   }
 }

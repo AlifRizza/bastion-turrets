@@ -57,7 +57,7 @@ public class BroodCapsuleEntity extends Projectile implements TurretUnit, GeoEnt
     private TargetFilter filter = new TargetFilter();
     @Nullable
     private UUID owner;
-    private SpiderStats stats = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200);
+    private SpiderStats stats = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200, 5, 8, 60);
     private int units, cap, openTicks;
     private float gravity;
     /** Ticks since it came to rest; -1 while it flies. */

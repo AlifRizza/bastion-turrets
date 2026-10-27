@@ -113,6 +113,9 @@ public final class BastionSounds {
     /** The dive's falling whistle; the client raises its pitch as it comes down. */
     public static final RegistryObject<SoundEvent> JAVELIN_DIVE = register("javelin.dive");
     public static final RegistryObject<SoundEvent> JAVELIN_EXPLODE = register("javelin.explode");
+    /** The silo's blast doors swinging open (a target found) and shut (idle again), user 2026-10-27. */
+    public static final RegistryObject<SoundEvent> JAVELIN_DOORS_OPEN = register("javelin.doors_open");
+    public static final RegistryObject<SoundEvent> JAVELIN_DOORS_CLOSE = register("javelin.doors_close");
 
     // Brood Cannon (PLAN "Turret 3x3")
     public static final RegistryObject<SoundEvent> BROOD_FIRE = register("brood.fire");
@@ -120,6 +123,10 @@ public final class BastionSounds {
     public static final RegistryObject<SoundEvent> BROOD_CAPSULE_OPEN = register("brood.capsule_open");
     public static final RegistryObject<SoundEvent> SPIDER_BITE = register("brood_spider.bite");
     public static final RegistryObject<SoundEvent> SPIDER_BURST = register("brood_spider.burst");
+    /** A spider's leap at its prey (user 2026-10-26). */
+    public static final RegistryObject<SoundEvent> SPIDER_LEAP = register("brood_spider.leap");
+    /** A spider's legs skittering, one per step walked or climbed (user 2026-10-27). */
+    public static final RegistryObject<SoundEvent> SPIDER_STEP = register("brood_spider.step");
 
     // Hive Carrier (PLAN "Turret 3x3")
     public static final RegistryObject<SoundEvent> HIVE_LAUNCH = register("hive.launch");

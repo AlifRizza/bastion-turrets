@@ -32,17 +32,22 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Brood Cannon (PLAN "Turret 3x3"): its spiders bite only the turret's valid targets, leave units and turrets alone, are
@@ -53,8 +58,11 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public class BroodTests {
     private static final String YARD = "yard";
-    /** The spec's numbers (brood_cannon.json): HP 16, speed 0.27, bite 8 every 20 ticks, sight 16, death 15 within 4, bursts after 200 idle ticks. */
-    static final SpiderStats STATS = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200);
+    /**
+     * The spec's numbers (brood_cannon.json): HP 16, speed 0.27, bite 8 every 20 ticks, sight 16, death 15 within 4, bursts
+     * after 200 idle ticks, leaps up to 5 blocks in 8 ticks every 60 (user 2026-10-26).
+     */
+    static final SpiderStats STATS = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200, 5, 8, 60);
 
     static BroodSpiderEntity spider(GameTestHelper helper, BlockPos at, BlockPos home, TargetFilter filter) {
         return BroodSpiderEntity.spawn(helper.getLevel(), helper.absoluteVec(Vec3.atBottomCenterOf(at)), helper.absolutePos(home), filter, null, STATS);
@@ -722,6 +730,419 @@ public class BroodTests {
             helper.assertTrue(TurretUnits.count(helper.getLevel(), helper.absolutePos(home)) == 1, "not counted");
             TurretUnits.onServerStopping(new net.minecraftforge.event.server.ServerStoppingEvent(helper.getLevel().getServer()));
             helper.assertTrue(TurretUnits.tracked() == 0, "still tracking " + TurretUnits.tracked() + " units");
+            spider.discard();
+            helper.succeed();
+        });
+    }
+
+    private static double horizontalSpeed(BroodSpiderEntity spider) {
+        return spider.getDeltaMovement().horizontalDistance();
+    }
+
+    /** User 2026-10-26: spiders climb walls like vanilla spiders: a husk up on a 4-high pillar gets bitten. */
+    @GameTest(template = YARD, timeoutTicks = 400, batch = "spidersClimbToTargetsOnWalls")
+    public static void spidersClimbToTargetsOnWalls(GameTestHelper helper) {
+        BlockPos pillar = new BlockPos(14, 2, 14);
+        for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 4; y++) helper.setBlock(pillar.offset(x, y, z), Blocks.STONE);
+        LivingEntity husk = still(helper, EntityType.HUSK, pillar.above(4));
+        BroodSpiderEntity spider = spider(helper, new BlockPos(7, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        helper.succeedWhen(() -> {
+            helper.assertTrue(lost(husk) > 0, "the husk on the pillar was never bitten (spider at " + spider.blockPosition().subtract(helper.absolutePos(BlockPos.ZERO))
+                    + ", target " + spider.getTarget() + ")");
+            for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 4; y++) helper.setBlock(pillar.offset(x, y, z), Blocks.AIR);
+            spider.discard();
+        });
+    }
+
+    /**
+     * User 2026-10-26: a spider leaps at prey within leap_range (5 blocks) and bites on arrival; farther off it runs. A husk
+     * 9 blocks away: no leap while it is over 5.5 blocks off, then a leap (far faster than running) and a bite as it
+     * arrives (review M7: within its flight time).
+     */
+    @GameTest(template = YARD, timeoutTicks = 200, batch = "spidersLeapAtPreyInRange")
+    public static void spidersLeapAtPreyInRange(GameTestHelper helper) {
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(17, 2, 14));
+        BroodSpiderEntity spider = spider(helper, new BlockPos(8, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        long[] leapt = {-1}, bitten = {-1};
+        helper.onEachTick(() -> {
+            if (bitten[0] < 0 && lost(husk) > 0) bitten[0] = helper.getTick();
+            if (!spider.isAlive() || horizontalSpeed(spider) <= 0.45 || leapt[0] >= 0) return;
+            double off = Math.sqrt(spider.distanceToSqr(husk));
+            helper.assertTrue(off <= 5.5 + 0.9, "a leap from " + off + " blocks off (leap_range 5)");
+            leapt[0] = helper.getTick();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(leapt[0] >= 0, "the spider never leapt (it walked all the way)");
+            helper.assertTrue(bitten[0] >= 0, "the leap ended without a bite");
+            helper.assertTrue(bitten[0] - leapt[0] <= STATS.leapTicks() + 4, "bitten " + (bitten[0] - leapt[0]) + " ticks after the leap (want on arrival)");
+            spider.discard();
+        });
+    }
+
+    /**
+     * User 2026-10-26: at 0 HP the spider does not burst where it stands: it leaps at the nearest valid target within
+     * leap_range and bursts on it. A husk 4.8 blocks off (out of its 4-block burst from where it stood) takes the 15; a cow
+     * 2 blocks the other way nothing.
+     */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "dyingSpiderLeapsAndBurstsOnTheEnemy")
+    public static void dyingSpiderLeapsAndBurstsOnTheEnemy(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(10, 2, 14));
+        husk.moveTo(husk.getX() + 4.8, husk.getY(), husk.getZ());
+        LivingEntity cow = still(helper, EntityType.COW, new BlockPos(8, 2, 14));
+        helper.runAtTickTime(2, () -> spider.hurt(helper.getLevel().damageSources().generic(), 100));
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(spider.isRemoved(), "the dying spider is still there");
+            helper.assertTrue(lost(husk) > 14 && lost(husk) <= 15, "the husk 4.8 blocks off lost " + lost(husk) + " (want the 15 of a burst on it)");
+            helper.assertTrue(lost(cow) == 0, "the cow lost " + lost(cow));
+            helper.succeed();
+        });
+    }
+
+    /** Review I1: a spider set on a husk across a lava moat gives it up and never walks into the lava after it. */
+    @GameTest(template = YARD, timeoutTicks = 260, batch = "spidersNeverWalkIntoAMoat")
+    public static void spidersNeverWalkIntoAMoat(GameTestHelper helper) {
+        BlockPos island = new BlockPos(14, 2, 14);
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -3; z <= 3; z++) {
+                int ring = Math.max(Math.abs(x), Math.abs(z));
+                helper.setBlock(island.offset(x, 0, z), ring == 0 || ring == 3 ? Blocks.STONE : Blocks.LAVA);
+            }
+        }
+        LivingEntity moated = still(helper, EntityType.HUSK, island.above());
+        BroodSpiderEntity spider = spider(helper, new BlockPos(8, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        spider.setTarget(moated);
+        helper.onEachTick(() -> helper.assertFalse(spider.isInLava(), "the spider walked into the lava after the moated husk"));
+        helper.runAtTickTime(240, () -> {
+            for (int x = -3; x <= 3; x++) for (int z = -3; z <= 3; z++) helper.setBlock(island.offset(x, 0, z), Blocks.AIR);
+            spider.discard();
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Review I2 + M6: a husk on a 10-high tower (on a platform in the open: the yard is only 8 high), the spider 12 blocks
+     * off: it finds it (prey far above too), walks over, climbs all the way without dropping it mid-wall (no ground path
+     * while it climbs) and bites it on top.
+     */
+    @GameTest(template = YARD, timeoutTicks = 400, batch = "spidersClimbATallTowerWithoutGivingUp")
+    public static void spidersClimbATallTowerWithoutGivingUp(GameTestHelper helper) {
+        for (int x = 0; x < 30; x++) {
+            for (int z = 0; z < 30; z++) {
+                helper.setBlock(sky(helper, x, 0, z), Blocks.STONE);
+                for (int y = 1; y < 16; y++) helper.setBlock(sky(helper, x, y, z), Blocks.AIR);
+            }
+        }
+        BlockPos tower = sky(helper, 20, 1, 14);
+        for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 10; y++) helper.setBlock(tower.offset(x, y, z), Blocks.STONE);
+        LivingEntity husk = still(helper, EntityType.HUSK, tower.above(10));
+        BroodSpiderEntity spider = spider(helper, sky(helper, 8, 1, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        boolean[] hunted = {false};
+        helper.onEachTick(() -> {
+            if (spider.getTarget() == husk) hunted[0] = true;
+            else if (hunted[0] && lost(husk) == 0) helper.fail("the spider dropped the husk before biting it (at "
+                    + spider.blockPosition().subtract(helper.absolutePos(BlockPos.ZERO)) + ")");
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(lost(husk) > 0, "the husk on the tower was never bitten (target " + spider.getTarget() + ", hunted " + hunted[0] + ")");
+            for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 10; y++) helper.setBlock(tower.offset(x, y, z), Blocks.AIR);
+            spider.discard();
+            husk.discard();
+        });
+    }
+
+    /**
+     * Review I3: prey at the spider's own level across a 1-wide lava trench is not "a climb away": the spider (no leap)
+     * never walks into the trench after it.
+     */
+    @GameTest(template = YARD, timeoutTicks = 260, batch = "spidersSkipPreyAcrossATrench")
+    public static void spidersSkipPreyAcrossATrench(GameTestHelper helper) {
+        int x = 12, depth = 29; // wall to wall across the 30-wide yard (z 1..28), so there is no way round
+        BlockState[] floor = new BlockState[depth];
+        for (int z = 1; z < depth; z++) {
+            floor[z] = helper.getBlockState(new BlockPos(x, 1, z));
+            helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+            helper.setBlock(new BlockPos(x, 1, z), Blocks.LAVA);
+        }
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(x + 1, 2, 14));
+        SpiderStats noLeap = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200, 0, 8, 60);
+        BroodSpiderEntity spider = BroodSpiderEntity.spawn(helper.getLevel(), helper.absoluteVec(Vec3.atBottomCenterOf(new BlockPos(6, 2, 14))),
+                helper.absolutePos(new BlockPos(2, 2, 2)), new TargetFilter(), null, noLeap);
+        helper.onEachTick(() -> helper.assertFalse(spider.isInLava(), "the spider walked into the trench after the husk across it"));
+        helper.runAtTickTime(240, () -> {
+            for (int z = 1; z < depth; z++) helper.setBlock(new BlockPos(x, 1, z), floor[z]);
+            spider.discard();
+            husk.discard();
+            helper.succeed();
+        });
+    }
+
+    /** A husk 4.8 blocks off along x from a fresh spider at (10, 2, 14), out of the burst from where it stands. */
+    private static LivingEntity huskOffBy(GameTestHelper helper, double dx) {
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(10, 2, 14));
+        husk.moveTo(husk.getX() + dx, husk.getY(), husk.getZ());
+        return husk;
+    }
+
+    /**
+     * Review M1: a spider killed halfway up a wall (pressed against it, climbing) leaps its full length at a husk 4 blocks
+     * behind it and bursts there, not a hop off the wall.
+     */
+    @GameTest(template = YARD, timeoutTicks = 300, batch = "spidersLeapOffAWallAtFullLength")
+    public static void spidersLeapOffAWallAtFullLength(GameTestHelper helper) {
+        BlockPos pillar = new BlockPos(14, 2, 14);
+        for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 4; y++) helper.setBlock(pillar.offset(x, y, z), Blocks.STONE);
+        LivingEntity onTop = still(helper, EntityType.HUSK, pillar.above(4));
+        BroodSpiderEntity spider = spider(helper, new BlockPos(7, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        double floor = helper.absoluteVec(Vec3.ZERO).y + 2;
+        LivingEntity[] behind = {null};
+        Vec3[] last = {null};
+        helper.onEachTick(() -> {
+            if (behind[0] == null && spider.onClimbable() && spider.getY() >= floor + 1) {
+                onTop.discard();
+                behind[0] = still(helper, EntityType.HUSK, new BlockPos(7, 2, 14));
+                behind[0].moveTo(spider.getX() - 4, floor, spider.getZ());
+                spider.hurt(helper.getLevel().damageSources().generic(), 100);
+            }
+            if (!spider.isRemoved()) last[0] = spider.position();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(behind[0] != null && spider.isRemoved(), "the spider was never killed up the wall, or never burst");
+            double off = last[0].subtract(behind[0].position()).horizontalDistance();
+            helper.assertTrue(off <= 1.5, "it burst " + off + " blocks from the husk behind it (a hop off the wall)");
+            for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) for (int y = 0; y < 4; y++) helper.setBlock(pillar.offset(x, y, z), Blocks.AIR);
+        });
+    }
+
+    /** Review M3: knockback that lands after the killing blow (a sprint hit, Punch, a blast's push) does not bend the dying leap. */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "knockbackDoesNotBendTheDyingLeap")
+    public static void knockbackDoesNotBendTheDyingLeap(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 4.8);
+        spider.hurt(helper.getLevel().damageSources().generic(), 100);
+        spider.knockback(1.0, 1, 0); // after hurt() returns, as Player.attack does: away from the husk
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(spider.isRemoved(), "the dying spider is still there");
+            helper.assertTrue(lost(husk) > 14, "the husk 4.8 blocks off lost " + lost(husk) + " (the knockback bent the leap)");
+            helper.succeed();
+        });
+    }
+
+    /** Review M4: prey under 2 blocks off (the spec's leap is for 2 to 5) it walks up to and bites; no leap. */
+    @GameTest(template = YARD, timeoutTicks = 60, batch = "spidersWalkUpInsideTwoBlocks")
+    public static void spidersWalkUpInsideTwoBlocks(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 1.8);
+        spider.setTarget(husk);
+        helper.onEachTick(() -> helper.assertFalse(spider.leaping(), "a leap at prey " + spider.distanceTo(husk) + " blocks off (under 2)"));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(lost(husk) > 0, "the husk was never bitten");
+            spider.discard();
+        });
+    }
+
+    /**
+     * Review M4: a bite knocks the husk out of reach and the spider leaps after it: the leap brings no extra bite (still 8
+     * every bite_interval).
+     */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "aLeapAddsNoBite")
+    public static void aLeapAddsNoBite(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 1.2);
+        spider.setTarget(husk);
+        List<Long> bites = new ArrayList<>();
+        float[] seen = {0};
+        helper.onEachTick(() -> {
+            if (lost(husk) <= seen[0]) return;
+            seen[0] = lost(husk);
+            bites.add(helper.getTick());
+            if (bites.size() == 1) { // knocked 3 blocks further, ready to be hurt again at once
+                husk.moveTo(husk.getX() + 3, husk.getY(), husk.getZ());
+                husk.invulnerableTime = 0;
+            }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(bites.size() >= 2, "bites at " + bites);
+            long gap = bites.get(1) - bites.get(0);
+            helper.assertTrue(gap >= STATS.biteInterval() - 2, "the second bite came " + gap + " ticks after the first (one every " + STATS.biteInterval() + ")");
+            spider.discard();
+        });
+    }
+
+    /**
+     * Review M5: a leap off soul sand (it slows what stands on it) still lands where the husk stood at take-off, not far
+     * short (a bite on the way knocks the husk itself back).
+     */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "leapsOffSoulSandLandOnThePrey")
+    public static void leapsOffSoulSandLandOnThePrey(GameTestHelper helper) {
+        BlockState stone = helper.getBlockState(new BlockPos(8, 1, 14));
+        for (int x = 6; x <= 10; x++) for (int z = 12; z <= 16; z++) helper.setBlock(new BlockPos(x, 1, z), Blocks.SOUL_SAND);
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(12, 2, 14));
+        BroodSpiderEntity spider = spider(helper, new BlockPos(8, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        spider.setTarget(husk);
+        Vec3[] aim = {null};
+        helper.onEachTick(() -> {
+            if (aim[0] == null && spider.leaping()) aim[0] = husk.position();
+            if (aim[0] == null || spider.leaping()) return;
+            double off = spider.position().subtract(aim[0]).horizontalDistance();
+            helper.assertTrue(off <= 1.2, "the leap landed " + off + " blocks from where the husk stood (husk now "
+                    + husk.position().subtract(aim[0]).horizontalDistance() + " off it, lost " + lost(husk) + ")");
+            for (int x = 6; x <= 10; x++) for (int z = 12; z <= 16; z++) helper.setBlock(new BlockPos(x, 1, z), stone);
+            spider.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Review M5: a leap at a husk below a ledge leaves the ground at once (it used to push into the ledge and slide off it). */
+    @GameTest(template = YARD, timeoutTicks = 60, batch = "leapsDownALedgeLeaveTheGround")
+    public static void leapsDownALedgeLeaveTheGround(GameTestHelper helper) {
+        for (int x = 6; x <= 9; x++) for (int z = 12; z <= 16; z++) for (int y = 2; y < 5; y++) helper.setBlock(new BlockPos(x, y, z), Blocks.STONE);
+        LivingEntity husk = still(helper, EntityType.HUSK, new BlockPos(12, 2, 14));
+        BroodSpiderEntity spider = spider(helper, new BlockPos(9, 5, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        spider.moveTo(spider.getX() - 0.2, spider.getY(), spider.getZ()); // 0.7 from the edge: it sees the husk over it
+        spider.setTarget(husk);
+        helper.onEachTick(() -> {
+            if (!spider.leaping()) return;
+            helper.assertFalse(spider.onGround(), "the leap down pushed into the ledge (on the ground after take-off)");
+            for (int x = 6; x <= 9; x++) for (int z = 12; z <= 16; z++) for (int y = 2; y < 5; y++) helper.setBlock(new BlockPos(x, y, z), Blocks.AIR);
+            spider.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Review M7: leaps come every leap_cooldown ticks at most: a husk that keeps stepping 4 blocks away draws one, then one 3 s later. */
+    @GameTest(template = YARD, timeoutTicks = 200, batch = "spidersLeapOnlyEveryLeapCooldown")
+    public static void spidersLeapOnlyEveryLeapCooldown(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 4);
+        spider.setTarget(husk);
+        double middle = helper.absoluteVec(new Vec3(15, 0, 0)).x;
+        List<Long> leaps = new ArrayList<>();
+        boolean[] was = {false};
+        helper.onEachTick(() -> {
+            if (spider.leaping() && !was[0]) leaps.add(helper.getTick());
+            was[0] = spider.leaping();
+            if (spider.distanceTo(husk) < 3) husk.moveTo(spider.getX() + (spider.getX() > middle ? -4 : 4), husk.getY(), husk.getZ());
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(leaps.size() >= 2, "leaps at " + leaps);
+            helper.assertTrue(leaps.get(1) - leaps.get(0) >= STATS.leapCooldown() - 2, "leaps at " + leaps + " (one every " + STATS.leapCooldown() + ")");
+            spider.discard();
+        });
+    }
+
+    /** Review M7: a dying spider between two husks leaps at the nearer (3.5 blocks) and bursts there; the one 4.8 the other way is spared. */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "dyingSpiderPicksTheNearestPrey")
+    public static void dyingSpiderPicksTheNearestPrey(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity near = huskOffBy(helper, -3.5), far = huskOffBy(helper, 4.8);
+        spider.hurt(helper.getLevel().damageSources().generic(), 100);
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(spider.isRemoved(), "the dying spider is still there");
+            helper.assertTrue(lost(near) > 14 && lost(far) == 0, "near lost " + lost(near) + ", far " + lost(far));
+            helper.succeed();
+        });
+    }
+
+    /** Review M7: an idle self-destruct bursts where the spider stands, even with prey in leap range (a flyer it cannot hunt). */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "idleSelfDestructNeverLeaps")
+    public static void idleSelfDestructNeverLeaps(GameTestHelper helper) {
+        SpiderStats quick = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 20, 5, 8, 60);
+        BroodSpiderEntity spider = BroodSpiderEntity.spawn(helper.getLevel(), helper.absoluteVec(Vec3.atBottomCenterOf(new BlockPos(10, 2, 14))),
+                helper.absolutePos(new BlockPos(2, 2, 2)), new TargetFilter(), null, quick);
+        LivingEntity flyer = still(helper, EntityType.HUSK, new BlockPos(13, 4, 14));
+        flyer.setNoGravity(true);
+        Vec3[] died = {null};
+        double[] moved = {0};
+        helper.onEachTick(() -> {
+            if (died[0] == null && !spider.isAlive()) died[0] = spider.position();
+            if (died[0] != null) moved[0] = Math.max(moved[0], spider.position().distanceTo(died[0]));
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(spider.isRemoved(), "the idle spider never burst");
+            helper.assertTrue(moved[0] < 1, "it moved " + moved[0] + " blocks after it died (a leap at the flyer)");
+            flyer.discard();
+        });
+    }
+
+    /** Review M8: a death a mod cancels (and heals) is no death: no leap, no burst. */
+    @GameTest(template = YARD, timeoutTicks = 40, batch = "cancelledDeathNeverLeaps")
+    public static void cancelledDeathNeverLeaps(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        huskOffBy(helper, 4.8);
+        Consumer<LivingDeathEvent> save = event -> {
+            if (event.getEntity() != spider) return;
+            event.setCanceled(true);
+            spider.setHealth(spider.getMaxHealth());
+        };
+        MinecraftForge.EVENT_BUS.addListener(save);
+        try {
+            spider.hurt(helper.getLevel().damageSources().generic(), 100);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(save);
+        }
+        helper.assertTrue(spider.isAlive(), "the saved spider died");
+        helper.assertFalse(spider.leaping(), "a death a mod cancelled still started the dying leap");
+        helper.runAtTickTime(12, () -> {
+            helper.assertTrue(!spider.isRemoved() && spider.deathTime == 0, "the saved spider burst");
+            spider.discard();
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Review M9: a leap that ends in deep water ends there: the spider swims in its walk, not frozen in the leap pose. The
+     * husk's ground turns to a 3-deep pool as the spider takes off.
+     */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "aLeapIntoWaterEndsThere")
+    public static void aLeapIntoWaterEndsThere(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 4);
+        spider.setTarget(husk);
+        Map<BlockPos, BlockState> pool = new HashMap<>();
+        int[] swimming = {0};
+        helper.onEachTick(() -> {
+            if (pool.isEmpty() && spider.leaping()) {
+                for (int x = 12; x <= 17; x++) {
+                    for (int z = 12; z <= 16; z++) {
+                        for (int y = -1; y <= 1; y++) {
+                            BlockPos at = new BlockPos(x, y, z);
+                            pool.put(at, helper.getBlockState(at));
+                            helper.setBlock(at, Blocks.WATER);
+                        }
+                    }
+                }
+            }
+            swimming[0] = spider.isInWater() && spider.leaping() ? swimming[0] + 1 : 0;
+            helper.assertTrue(swimming[0] < 4, "still in the leap pose " + swimming[0] + " ticks in the water");
+        });
+        helper.runAtTickTime(60, () -> {
+            helper.assertFalse(pool.isEmpty(), "the spider never leapt");
+            pool.forEach(helper::setBlock);
+            spider.discard();
+            husk.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Review M9 (guard): a leap that hits a wall ends there: the spider climbs it in its walk, not frozen in the leap pose. */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "aLeapIntoAWallEndsThere")
+    public static void aLeapIntoAWallEndsThere(GameTestHelper helper) {
+        BroodSpiderEntity spider = spider(helper, new BlockPos(10, 2, 14), new BlockPos(2, 2, 2), new TargetFilter());
+        LivingEntity husk = huskOffBy(helper, 4);
+        spider.setTarget(husk);
+        int[] wall = {-1}, climbing = {0};
+        helper.onEachTick(() -> {
+            if (wall[0] < 0 && spider.leaping()) { // just took off: a wall right ahead, across the yard
+                wall[0] = (int) Math.floor(spider.getX() - helper.absoluteVec(Vec3.ZERO).x) + 2;
+                for (int z = 1; z < 29; z++) for (int y = 2; y < 6; y++) helper.setBlock(new BlockPos(wall[0], y, z), Blocks.STONE);
+            }
+            climbing[0] = spider.onClimbable() && spider.leaping() ? climbing[0] + 1 : 0;
+            helper.assertTrue(climbing[0] < 3, "still in the leap pose " + climbing[0] + " ticks up the wall");
+        });
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(wall[0] >= 0, "the spider never leapt");
+            for (int z = 1; z < 29; z++) for (int y = 2; y < 6; y++) helper.setBlock(new BlockPos(wall[0], y, z), Blocks.AIR);
             spider.discard();
             helper.succeed();
         });

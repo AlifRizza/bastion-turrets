@@ -90,7 +90,7 @@ public final class BroodShowcase {
         if (tick == 28) Showcase.server(server, s -> {
             TargetFilter none = new TargetFilter();
             for (TargetFilter.Category category : TargetFilter.Category.values()) none.setCategory(category, false);
-            BroodCapsuleEntity capsule = new BroodCapsuleEntity(s.overworld(), FORT, none, null, new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200), 3, 12, 20, 0.05f);
+            BroodCapsuleEntity capsule = new BroodCapsuleEntity(s.overworld(), FORT, none, null, new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200, 5, 8, 60), 3, 12, 20, 0.05f);
             capsule.setPos(pod.add(0, 6, 0));
             capsule.launch(new Vec3(0, -0.2, 0));
             s.overworld().addFreshEntity(capsule);

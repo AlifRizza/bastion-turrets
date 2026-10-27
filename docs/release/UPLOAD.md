@@ -87,9 +87,23 @@ Changes
   circle (patrol_radius 64, was 32) and see and shoot from 32 blocks (was 16). A config/bastion-turrets.toml from an
   older version still holds the old numbers and keeps them: set its [hive_carrier] range, patrol_radius and shot_range
   to 64, 64 and 32 (or delete those three lines).
+- Brood spiders climb walls like spiders, so enemies up on a wall or a tower are no longer out of their reach. They
+  leap at prey 2 to 5 blocks away (fast, every 3 seconds) and bite as they land, on any ground. At 0 HP a spider no longer bursts
+  where it stands: it leaps at the nearest enemy within 5 blocks and bursts on it (with none in reach it bursts where
+  it is; an idle spider's self-destruct too).
 - The Hive Carrier sends a wave only for enemies its drones can get at: under open sky, or in sight of the hive (over
   its cap or from its doorways). Before, a mob in a cave or behind walls in range kept sending the drones out and back
   every 15 seconds.
+- Hive drones fire faster and hit harder: 10 shots a second of 3.5 damage (35 damage a second each; was 4 of 2), and
+  carry 300 bullets (was 120), so they still fire for 30 seconds before they dive. A config/bastion-turrets.toml from
+  an older version keeps the old numbers: set its [hive_carrier] damage, shot_interval and drone_ammo to 3.5, 2 and
+  300 (or delete those three lines).
+
+Sounds
+- Real sounds for the four early turrets, the Makeshift Turret Base and the three 3x3 turrets (they were placeholders).
+- The Javelin's silo doors hiss open when it finds a target and slam shut when it goes idle.
+- Brood spiders skitter as they walk and climb.
+- Arrow Launcher arrows thunk like vanilla arrows when they hit or stick (they were silent).
 
 Fixes
 - The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many

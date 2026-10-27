@@ -181,6 +181,10 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Repulsor Dome (Omni, 10-16): a rising suck-in during the charge, then a huge gust of wind rushing out that fades over ~3 s (two variants), no crack or bang; from 40+ blocks a muffled rush.
 - [ ] Ion Rifle (Omni, 10-16): a sharp electric zap-crack with a sizzle, two variants alternating; steady fire every 0.8 s stays clear, no clicks.
 - [ ] Mortar (Omni, 10-16): a deep hollow thoomp with a short ring as the shell leaves (two variants, one a little lower); from 40+ blocks a muffled thump. The shell falls silently (no whistle since 10-17).
+- [ ] Early game (Omni, 10-27), each on a Makeshift Turret Base: Cobblestone (SFX generator), a light clack then a springy release as the rock leaves (two variants, one a little higher), nothing like a gate being rammed, gone before the next shot; Snowball Repeater, a ratchet click with a soft snowy fwump, a steady 5-per-second stream stays clean (no clicks, no pile-up); Potato Shotgun, a hollow deep pop with a short ringing pipe and a hiss; Arrow Launcher, a deep twang of several strings with a wooden knock (two variants, neither like the vanilla bow). Quieter than the Gun Turret, no clipping crackle. Listen without the game: `build/sfx-sheets/early_preview.wav`.
+- [ ] Makeshift Turret Base (SFX generator, 10-27): placing it, and mounting a weapon on it, gives a dull wooden knock and a short creak (not the vanilla plank sound); when its HP runs out, a heavy crunch, splintering and boards clattering down, no explosion. Breaking it by hand still plays vanilla wood. Preview: `build/sfx-sheets/makeshift_preview.wav`.
+- [ ] Arrow Launcher arrows (user 10-27): each arrow makes vanilla's thunk when it hits a mob or sticks in a block, and splashes in water; the other early projectiles stay silent on impact.
+- [ ] 3x3 turrets (SFX generator, 10-27; previews `build/sfx-sheets/javelin_preview.wav`, `brood_preview.wav`, `hive_preview.wav`): Javelin, the silo doors hiss open with a deep clunk when it finds a target and slam shut when it goes idle (not on every launch); a huge launch roar, the engine roar riding up and dying away in the sky over ~2 s once the missile is out of sight (not cut off), a rising shriek on the dive, the biggest blast in the mod. Brood Cannon, a hollow pneumatic thoomp, a pod clanking down and hissing open; the spiders skitter quietly as they walk and climb (a dozen at once is not a wall of noise), snap when they bite, kick and whoosh on a leap, pop when they burst. Hive Carrier, bay doors and fans spinning up on launch, a light fan hum per drone, a fast rattle of shots (10 a second) that does not pile into noise with 3 drones, a sharp blast on a kamikaze.
 - [ ] Plasma Repeater: three slightly different shots; Turret base: deploy, idle hum (loops without a click), repair, destroyed (a Large Turret Base sounds bigger).
 - [ ] Volume: the new sounds sit about as loud as the turrets still on placeholders (Rocket, Tesla, ...).
 - [ ] Zombies hit by turrets groan at most twice a second each and quieter than before (config `turretHurtSoundInterval` 10 ticks, `turretHurtSoundVolume` 0.5); their death sound is unchanged. No sound when a bullet, plasma ball or ion bolt lands (removed for now).
@@ -641,6 +645,23 @@ base. A stone wall 4 high between the turret and the targets helps. Still target
 15. **Save and reload** with spiders out, then a dedicated server (`runServer` + a client): no spiders come back, the
     turret fires again, no errors in either log.
 
+**0.6.0 (user 2026-10-26): climb, leap, dying leap.** Visual reference: `-Pshowcase=spiderleap`
+(`run/screenshots/showcase_sl_*`, checked 2026-10-26).
+
+- **Climb**: a husk on top of a 4-high pillar of blocks: a spider walks to the pillar, crawls up its side and bites it on
+  top. A husk on an island in lava is still passed over (the spider goes for one it can reach).
+- **Leap**: a husk 7-9 blocks off: the spider runs until it is about 5 blocks away, then leaps (legs tucked, a quick
+  whoosh), bites as it lands, and leaps again only 3 s later. Farther than 5 it never leaps; closer than 2 it walks up
+  and bites. Still one bite a second: a leap right after a bite waits for the next.
+- **Leap on odd ground** (review minors 2026-10-27): a husk 4 blocks off with the spider on soul sand, on ice, and up a
+  3-high ledge above it: each leap lands on the husk (not short, not past it). A leap into a wall stops at the wall and
+  the spider climbs it in its walk, not frozen with its legs tucked; one pressed against a wall leaps its full length.
+- **Dying leap**: kill a spider 4-5 blocks from a husk: its eyes blink red as it leaps at the husk and bursts on it (15,
+  the husk only, no blocks). With two husks, it goes for the nearer. Kill it with a sprint hit or a Knockback sword,
+  pushing it away from the husk: the leap still goes at the husk. Kill one with no enemy within 5 blocks: it bursts
+  where it is. An idle spider's 10 s self-destruct bursts where it is too.
+- Config `bastion-turrets.toml [brood_cannon]`: `leap_range` 5, `leap_ticks` 8, `leap_cooldown` 60.
+
 ## Hive Carrier (0.5.0)
 
 The third 3x3 turret, on a Fortress Turret Base only. Visual reference: `-Pshowcase=hive`
@@ -663,8 +684,8 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
    the three doorways, then climb (three Hive Drones and
    6,000 FE spent); the next wave 15 s later. No FE, or no Hive Drone and none docked: no wave.
 5. **Drones**: small quadcopters with ducted fans (spinning) and a cyan light; they climb, patrol round the carrier
-   about 8 blocks up and about 32 blocks out, hover off a target and shoot it from up to 32 blocks (amber tracers, a chin flash, sparks on hits, about 4 shots a
-   second each); a phantom is shot too. A cow or villager among the husks is never hit; drones never shoot each other,
+   about 8 blocks up and about 32 blocks out, hover off a target and shoot it from up to 32 blocks (amber tracers, a chin flash, sparks on hits, 10 shots a
+   second each, 35 damage a second); a phantom is shot too. A cow or villager among the husks is never hit; drones never shoot each other,
    spiders or turrets, and no turret shoots them. Their light turns yellow below half HP and blinks red below a quarter.
 6. **Kamikaze**: a drone out of bullets, or below a quarter HP, with an enemy in reach noses down, rolls, trails red
    smoke and bursts on it (a bigger blast than before): about 15 to valid targets within 4.5 blocks, nothing to the

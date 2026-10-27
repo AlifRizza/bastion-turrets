@@ -288,6 +288,12 @@ public final class ClientTurret {
             // Blast doors: they swing open once it has a target and stay open between shots; idle, they shut.
             boolean open = state == TurretState.ACQUIRING || state == TurretState.AIMING || state == TurretState.CHARGING
                     || state == TurretState.FIRING || state == TurretState.COOLDOWN;
+            // As they start to swing from fully shut or fully open: a hiss and a clunk, or a slam (user 2026-10-27).
+            if (open ? weapon.doors == 0 : weapon.doors == 1) {
+                Vec3 at = muzzles[0] != null ? muzzles[0] : Vec3.atCenterOf(pos);
+                var sound = open ? BastionSounds.JAVELIN_DOORS_OPEN : BastionSounds.JAVELIN_DOORS_CLOSE;
+                level.playLocalSound(at.x, at.y, at.z, sound.get(), SoundSource.BLOCKS, 1f, 1f, false);
+            }
             weapon.prevDoors = weapon.doors;
             weapon.doors = Mth.approach(weapon.doors, open ? 1 : 0, DOOR_SPEED);
         } else if (data.type().equals(BastionWeaponTypes.HIVE_CARRIER.getId())) {

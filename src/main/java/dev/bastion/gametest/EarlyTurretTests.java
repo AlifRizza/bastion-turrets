@@ -175,9 +175,12 @@ public class EarlyTurretTests {
         }
     }
 
-    /** The six early sound events exist, play files that are there, and have a subtitle in both lang files. */
+    /**
+     * The six early sound events, and the Javelin's doors and the spiders' steps (user 2026-10-27), exist, play files that are
+     * there, and have a subtitle in both lang files.
+     */
     @GameTest(template = ARENA)
-    public static void earlySoundsHaveFilesAndSubtitles(GameTestHelper helper) {
+    public static void newSoundsHaveFilesAndSubtitles(GameTestHelper helper) {
         JsonObject sounds;
         try (InputStream in = EarlyTurretTests.class.getResourceAsStream("/assets/bastion/sounds.json")) {
             sounds = JsonParser.parseString(new String(in.readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
@@ -185,7 +188,7 @@ public class EarlyTurretTests {
             throw new IllegalStateException(e);
         }
         for (String name : List.of("cobblestone.fire", "snowball.fire", "potato.fire", "arrow_launcher.fire", "makeshift_base.place",
-                "makeshift_base.destroyed")) {
+                "makeshift_base.destroyed", "javelin.doors_open", "javelin.doors_close", "brood_spider.step")) {
             helper.assertTrue(ForgeRegistries.SOUND_EVENTS.containsKey(Bastion.id(name)), name + " is not registered");
             JsonObject event = sounds.getAsJsonObject(name);
             helper.assertTrue(event != null, "sounds.json lacks " + name);
@@ -467,7 +470,7 @@ public class EarlyTurretTests {
         });
     }
 
-    /** Review focus 3: nobody picks the volley's arrows up (no free arrows from a turret). */
+    /** Review focus 3: nobody picks the volley's arrows up (no free arrows from a turret). They thunk as vanilla's do (user 10-27). */
     @GameTest(template = PIT, timeoutTicks = 300, batch = "arrowsCannotBePickedUp")
     public static void arrowsCannotBePickedUp(GameTestHelper helper) {
         TurretBaseBlockEntity turret = launcher(helper, new ItemStack(Items.ARROW));
@@ -476,6 +479,7 @@ public class EarlyTurretTests {
             List<TurretArrowEntity> arrows = arrows(helper);
             helper.assertTrue(!arrows.isEmpty(), "no volley yet, state " + turret.state());
             for (TurretArrowEntity arrow : arrows) helper.assertTrue(arrow.pickup == AbstractArrow.Pickup.DISALLOWED, "an arrow allows pickup: " + arrow.pickup);
+            for (TurretArrowEntity arrow : arrows) helper.assertTrue(!arrow.isSilent(), "an arrow is silent: no vanilla hit sound");
             disarm(turret);
         });
     }

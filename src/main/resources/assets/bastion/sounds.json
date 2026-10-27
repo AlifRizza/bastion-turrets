@@ -706,6 +706,24 @@
       }
     ]
   },
+  "javelin.doors_open": {
+    "subtitle": "subtitles.bastion.javelin.doors_open",
+    "sounds": [
+      {
+        "name": "bastion:javelin/doors_open",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "javelin.doors_close": {
+    "subtitle": "subtitles.bastion.javelin.doors_close",
+    "sounds": [
+      {
+        "name": "bastion:javelin/doors_close",
+        "attenuation_distance": 32
+      }
+    ]
+  },
   "brood.fire": {
     "subtitle": "subtitles.bastion.brood.fire",
     "sounds": [
@@ -811,6 +829,36 @@
     "subtitle": "subtitles.bastion.research.complete",
     "sounds": [
       "bastion:research/complete"
+    ]
+  },
+  "brood_spider.leap": {
+    "subtitle": "subtitles.bastion.brood_spider.leap",
+    "sounds": [
+      {
+        "name": "bastion:brood/spider_leap",
+        "attenuation_distance": 16
+      }
+    ]
+  },
+  "brood_spider.step": {
+    "subtitle": "subtitles.bastion.brood_spider.step",
+    "sounds": [
+      {
+        "name": "bastion:brood/spider_step_0",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "bastion:brood/spider_step_1",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "bastion:brood/spider_step_2",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "bastion:brood/spider_step_3",
+        "attenuation_distance": 12
+      }
     ]
   }
 }

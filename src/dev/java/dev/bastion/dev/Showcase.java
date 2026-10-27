@@ -71,6 +71,7 @@ public final class Showcase {
             && !System.getProperty("bastion.showcase").equals("trailer")
             && !System.getProperty("bastion.showcase").equals("hivedock")
             && !System.getProperty("bastion.showcase").equals("codex")
+            && !System.getProperty("bastion.showcase").equals("spiderleap")
             && !System.getProperty("bastion.showcase").equals("ion") && !System.getProperty("bastion.showcase").equals("plasma")
             && !System.getProperty("bastion.showcase").equals("hub") && !System.getProperty("bastion.showcase").startsWith("video");
     /** The user's own showcase world (run/saves/showcase): scenes never build in it. */

@@ -61,13 +61,16 @@ import java.util.UUID;
 public class HiveTests {
     private static final String ARENA = "arena", YARD = "yard";
     private static final int Y_SKY = 230, SIZE = 34;
-    /** The shipped numbers (hive_carrier.json): HP 20, bullet 2, 120 bullets, 4 a second, reach 32, patrol 64 (user 2026-10-24), kamikaze below 25 %: 15 within 4.5. */
-    static final DroneStats STATS = new DroneStats(20, 2, 120, 5, 32, 64, 0.25f, 15, 4.5f, 0.45f, 100);
+    /**
+     * The shipped numbers (hive_carrier.json): HP 20, bullet 3.5 at 10 a second (35 damage a second, user 2026-10-27: was 2
+     * at 4), 300 bullets (30 s of fire, was 120), reach 32, patrol 64 (user 2026-10-24), kamikaze below 25 %: 15 within 4.5.
+     */
+    static final DroneStats STATS = new DroneStats(20, 3.5f, 300, 2, 32, 64, 0.25f, 15, 4.5f, 0.45f, 100);
     /**
      * STATS circling closer (patrol radius 8, not 64) round a home 6-8 blocks from the husks: with no carrier a drone
      * that has not seen its husk within idle_ticks hovers where it is, and on the wide circle that could be out of reach.
      */
-    static final DroneStats NEAR = new DroneStats(20, 2, 120, 5, 32, 8, 0.25f, 15, 4.5f, 0.45f, 100);
+    static final DroneStats NEAR = new DroneStats(20, 3.5f, 300, 2, 32, 8, 0.25f, 15, 4.5f, 0.45f, 100);
 
     private static BlockPos sky(GameTestHelper helper, int x, int y, int z) {
         return new BlockPos(x, Y_SKY - helper.absolutePos(BlockPos.ZERO).getY() + y, z);

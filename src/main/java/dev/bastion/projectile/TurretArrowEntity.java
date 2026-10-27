@@ -28,9 +28,10 @@ import java.util.UUID;
  * exception to PLAN 1. It hits only what the firing turret may shoot (its filter, or the controller it was fired under, and
  * the weapon's own rule: on the ground, past min_range) and flies through everything else, deals the weapon's damage
  * whatever its speed, carries a tipped arrow's effects (a spectral one makes the target glow), and is never picked up or
- * saved. Stuck in a block it goes after the weapon's stuck_ticks (vanilla keeps an arrow 60 s). Silent: no hit sound (user
- * decision), and no vanilla sound. No vanilla particles either: the client mixins ArrowMixin and AbstractArrowMixin stop
- * them, and EarlyEffects draws our own (a wind streak, a tipped arrow's mist, dust where it sticks).
+ * saved. Stuck in a block it goes after the weapon's stuck_ticks (vanilla keeps an arrow 60 s). It thunks and splashes as
+ * vanilla's arrow does (user 10-27, a second exception; it was silent). No vanilla particles: the client mixins ArrowMixin
+ * and AbstractArrowMixin stop them, and EarlyEffects draws our own (a wind streak, a tipped arrow's mist, dust where it
+ * sticks).
  */
 public class TurretArrowEntity extends Arrow {
     /** What vanilla's AbstractArrow.tick applies every tick in the air (as floats, as it does). */
@@ -60,7 +61,6 @@ public class TurretArrowEntity extends Arrow {
         this.pickup = Pickup.DISALLOWED;
         setEffectsFromItem(ammo);
         entityData.set(SPECTRAL, ammo.is(Items.SPECTRAL_ARROW));
-        setSilent(true);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class TurretArrowEntity extends Arrow {
 
     /**
      * Entering water: no vanilla bubbles and splash on the client (PLAN 1, user rule; AbstractArrowMixin cannot reach this
-     * one, it is Entity's). The server still runs it for the SPLASH game event; the sound is silent anyway.
+     * one, it is Entity's). The server still runs it: the SPLASH game event and vanilla's splash sound.
      */
     @Override
     protected void doWaterSplashEffect() {

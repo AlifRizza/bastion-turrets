@@ -102,12 +102,26 @@ def level(x, rms_db, peak_cap=-0.5):
     return y if peak <= 10 ** (peak_cap / 20) else y * (10 ** (peak_cap / 20) / peak)
 
 
+def limit(x, ceiling_db=-0.5, knee_db=-6.0):
+    """x with only its peaks above knee_db bent (tanh) under ceiling_db: a few ms of a sharp transient (a bowstring's
+    snap) that would clip at the take's gain, while a whole-clip level() would turn the rest of it down 4 dB."""
+    c, k = 10 ** (ceiling_db / 20), 10 ** (knee_db / 20)
+    a = np.abs(x)
+    return np.where(a > k, np.sign(x) * (k + (c - k) * np.tanh((a - k) / (c - k))), x)
+
+
 def scaled(x, t0, t1, rms_db):
     """x turned up or down so its stretch t0-t1 s is at rms_db: clips cut from one take afterwards keep their loudness
     relative to each other (a spin-down that starts as loud as the loop it follows; levelled on its own, its quiet tail
     would have pulled its start 10 dB above the loop)."""
     ref = x[int(t0 * RATE):int(t1 * RATE)]
     return x * (10 ** (rms_db / 20) / np.sqrt(np.mean(ref ** 2)))
+
+
+def take(name, t0, t1, rms_db, fade_out=0.3):
+    """A one-shot take (an SFX generator's) cut t0-t1, its first 0.3 s at rms_db (where a blast or a shot hits), peaks
+    limited: takes of one sound made apart start equally loud, whatever their tails."""
+    return limit(cut(scaled(load(name), t0, t0 + 0.3, rms_db), t0, t1, fade_in=0.002, fade_out=fade_out))
 
 
 def write(rel, x):
@@ -362,3 +376,71 @@ if __name__ == "__main__":
     plasma = load("plasma_gun.mp3")
     for i, (t0, t1) in enumerate(((3.082, 3.322), (3.322, 3.572), (3.572, 3.822))):
         write(f"plasma/repeater_fire_{i}.ogg", level(cut(plasma, t0, t1, fade_out=0.06), -14.5))
+
+    # Early game (user 10-27): Omni's soundtracks for VideoShowcase video_snowball / video_potato / video_arrow, all
+    # from silence. Quieter than the guns: rustic wood, springs, air. Cobblestone: an SFX generator take (Omni's, from
+    # video_cobblestone, sounded like a gate being rammed): a clack at 0.03 s, a louder burst at 0.29 s, gone by ~0.8 s;
+    # 0.79 s and the same a little higher (0.74 s), both inside the 0.75 s between shots. Snowball: a ratchet click then the 'fwump' ~50 ms later, gone in ~0.15 s; three
+    # lone shots (4.68 / 7.405 / 9.155 s), 0.2 s each like the game's fire_interval 4. Potato: five near-identical pops
+    # with a ringing pipe (0.41 / 2.315 / 4.305 / 6.355 / 8.265 s); 2 and 4. Arrow: four volleys, a twang and a knock
+    # ~0.2 s apart; only 3 (5.81 s) and 4 (8.585 s): the user heard 1 and 2 as too close to vanilla. One gain per take;
+    # the Cobblestone's, Snowball's and Arrow's first few ms would clip at it, so limit() bends just those peaks.
+    cobble = cut(load("cobblestone_fire.wav"), 0.01, 0.8, fade_in=0.002, fade_out=0.25)
+    for i, f in enumerate((1, 1.06)):
+        write(f"cobblestone/fire_{i}.ogg", limit(level(pitch(cobble, f), -19.0, peak_cap=3.0)))
+    snow = scaled(load("snowball_generated.wav"), 4.68, 4.88, -18.0)
+    for i, t0 in enumerate((4.68, 7.405, 9.155)):
+        write(f"snowball/fire_{i}.ogg", limit(cut(snow, t0, t0 + 0.2, fade_in=0.002, fade_out=0.05)))
+    potato = scaled(load("potato_generated.wav"), 2.315, 2.615, -15.5)
+    for i, t0 in enumerate((2.313, 6.353)):
+        write(f"potato/fire_{i}.ogg", cut(potato, t0, t0 + 0.75, fade_in=0.002, fade_out=0.2))
+    arrow = scaled(load("arrow_generated.wav"), 5.81, 6.11, -16.0)
+    for i, (t0, t1) in enumerate(((5.808, 6.85), (8.583, 9.65))):
+        write(f"arrow_launcher/fire_{i}.ogg", limit(cut(arrow, t0, t1, fade_in=0.002, fade_out=0.3)))
+
+    # Makeshift Turret Base (user 10-27): from an SFX generator (Omni kept scoring vanilla wood), both from their first
+    # sample. Place (also a weapon mounted on it): two knocks 0.13 s apart and a creak, gone by ~0.45 s; first 0.3 s as
+    # loud as turret.deploy. Destroyed: a crunch, a second one at 0.3 s, clatter to ~1.3 s; 1 dB under turret.destroyed
+    # (wood, not a hull blowing up), its first few ms limited.
+    write("makeshift_base/place.ogg", cut(scaled(load("makeshift_base_place.wav"), 0, 0.3, -21.5), 0, 0.6, fade_out=0.15))
+    wreck = scaled(load("makeshift_base_destroyed.wav"), 0, 0.3, -15.0)
+    write("makeshift_base/destroyed.ogg", limit(cut(wreck, 0, 1.55, fade_out=0.3)))
+
+    # The 3x3 turrets (user 10-27): SFX generator takes, one per sound (two for most two-variant events, *_2). Each take is
+    # levelled on its own: by its first 0.3 s (take()) for blasts, shots and launches, whole for the rest. Javelin: the
+    # biggest launch and blast in the mod (over the Rocket and Missile); the roar a 3.65 s loop (it rides a ~2 s climb);
+    # the dive's rise and plateau (0.05-1.25 s); the doors, 1.8 s each from the start (their loud part over the 0.4 s swing).
+    for i, name in enumerate(("javeline_launch.wav", "javelin_launch_2.wav")):
+        write(f"javelin/launch_{i}.ogg", take(name, 0, 2.2, -13.5, fade_out=0.4))
+    write("javelin/fly.ogg", level(loop(cut(load("javelin_fly.wav"), 0.05, 4.0), 0.3), -15.0))
+    write("javelin/dive.ogg", level(cut(load("javeline_dive.wav"), 0.05, 1.25, fade_out=0.1), -16.0))
+    for i, (name, t1) in enumerate((("javelin_explode_1.wav", 3.4), ("javeline_explode_2.wav", 3.2))):
+        write(f"javelin/explode_{i}.ogg", take(name, 0, t1, -12.5, fade_out=0.6))
+    write("javelin/doors_open.ogg", limit(level(cut(load("javelin_door_open.wav"), 0.03, 1.8, fade_out=0.5), -19.0, peak_cap=3.0)))
+    write("javelin/doors_close.ogg", limit(level(cut(load("javeline_door_close.wav"), 0, 1.8, fade_out=0.5), -18.0, peak_cap=3.0)))
+
+    # Brood Cannon: the fire a little under the Mortar's; the spiders' sounds small. Steps: four 0.18 s pieces of the 3 s
+    # skitter (17 ticks a second), each from a louder tick (0.255 / 0.855 / 1.209 / 1.786 s); played quietly, one per step.
+    for i, (name, t1) in enumerate((("brood_fire_1.wav", 1.25), ("brood_fire_2.wav", 1.3))):
+        write(f"brood/fire_{i}.ogg", take(name, 0.015, t1, -14.5))
+    write("brood/capsule_land.ogg", take("brood_capsule_land.wav", 0.025, 0.85, -16.0, fade_out=0.2))
+    write("brood/capsule_open.ogg", level(cut(load("brood_capsule_open.wav"), 0.035, 1.0, fade_out=0.3), -21.0))
+    for i, name in enumerate(("brood_spider_bite_1.wav", "brood_spider_bite_2.wav")):
+        write(f"brood/spider_bite_{i}.ogg", limit(level(cut(load(name), 0, 0.3, fade_out=0.05), -19.0, peak_cap=3.0)))
+    for i, name in enumerate(("brood_spider_burst.wav", "brood_spider_burst_2.wav")):
+        write(f"brood/spider_burst_{i}.ogg", take(name, 0, 1.08, -15.0))
+    write("brood/spider_leap.ogg", level(cut(load("brood_spider_leap.wav"), 0, 0.5, fade_out=0.15), -21.0))
+    step = load("brood_spider_step.wav")
+    for i, t0 in enumerate((0.245, 0.845, 1.199, 1.776)):
+        write(f"brood/spider_step_{i}.ogg", level(cut(step, t0, t0 + 0.18, fade_out=0.04), -24.0))
+
+    # Hive Carrier. Shots: the take is a machine gun at 11.7 a second (shots 85 ms apart), the drones fire 10 (shot_interval
+    # 2, user 10-27); two shots from mid-stream (0.205 / 0.465 s), each up to the next one's onset. Hum: a 3.65 s loop,
+    # about as loud as the Machine Gun's spin under its shots.
+    write("hive/launch.ogg", level(cut(load("hive_launch.wav"), 0.11, 1.92, fade_out=0.4), -19.0))
+    write("hive/drone_hum.ogg", level(loop(cut(load("hive_drone_hum.wav"), 0.05, 4.0), 0.3), -25.0))
+    shots = scaled(load("hive_drone_shot.wav"), 0.205, 0.29, -17.0)
+    for i, t0 in enumerate((0.202, 0.462)):
+        write(f"hive/drone_shot_{i}.ogg", limit(cut(shots, t0, t0 + 0.085, fade_in=0.002, fade_out=0.015)))
+    for i, (name, t0) in enumerate((("hive_drone_kamikaze_1.wav", 0.01), ("hive_drone_kamikaze_2.wav", 0.03))):
+        write(f"hive/drone_kamikaze_{i}.ogg", take(name, t0, 1.85, -14.5, fade_out=0.5))

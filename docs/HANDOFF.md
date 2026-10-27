@@ -32,6 +32,18 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
   sight from 3.0 or 1.0 blocks over the base top (`LOOKOUTS`); tests `carrierSkipsTargetsDronesCannotReach`,
   `carrierLaunchesForATargetItSees`, `dronesUnderALowRoofStillDock` reworked. `domePushesHeavyMobsLess` now checks the launch speed
   (0.8 b/t), not the landing (a no-AI ravager on a chunk border slid 4 or 6 blocks run to run once the layout shifted). 417/417.
+- 2026-10-26 (user, into 0.6.0, NOT committed yet): Brood spiders climb (WallClimberNavigation + synced CLIMBING; a path
+  ending within 2 blocks under the prey counts as reachable), leap at prey within `leap_range` 5 in `leap_ticks` 8 every
+  `leap_cooldown` 60 (bite on arrival), and at 0 HP leap at the nearest valid target within 5 and burst on touch or landing
+  (idle self-destruct and no prey: in place). Clip `animation.brood_spider.leap`, sound `brood_spider.leap` (91). Tests
+  spidersClimbToTargetsOnWalls, spidersLeapAtPreyInRange, dyingSpiderLeapsAndBurstsOnTheEnemy; scene `-Pshowcase=spiderleap`.
+  Final review (Opus xhigh) fixed: navigation steers only while hunting, null paths mid-climb are not misses, prey must be
+  a block above the path end to count as a climb, target search a full 16-block cube with 200 unseen ticks (towers). 423/423
+  (also -PwithCompatMods). User 2026-10-27: minors fixed except M2 (the dying leap may still pick a flyer): no leap under
+  LEAP_MIN 2, no bite-cooldown reset at take-off, in-air steering to the aim point (`aiStep`) + LIFT 0.1, the dying leap
+  starts on the first `tickDeath` tick (no more `die` override), a leap ends against a wall or in water/lava, CLIMBING
+  cleared at take-off, subtitle/tooltip text. 12 tests added (BroodTests, review M1–M9); rulings in that ledger.
+  Ledger `.superpowers/sdd/2026-10-26-brood-leap/progress.md`.
 - Next: the user's PC test of the jar (TESTING "Research & Turret Codex (0.6.0)"); then 0.7.0. After that: 0.7.0
   (Augment Core Mk2/Mk3 on the turret page's Upgrades section, Fusion Core hybrids hanging between both parents).
 
@@ -550,6 +562,35 @@ below are the history that led here.
   subtitles, gen_sounds.py's mortar_whistle, and sounds/mortar/whistle.ogg (git-tracked: stage the deletion at commit,
   as flamethrower/ignite.ogg); RocketEffects no longer starts a Roar for shells (rockets and missiles keep theirs).
   68 events, no missing files, no orphans. 157/157.
+  Early game (user 2026-10-27, "stop development, sfx via Omni, start with the early turrets"): VideoShowcase scenes
+  `video_cobblestone`, `video_snowball`, `video_potato`, `video_arrow` (makeshift base, NoAI magma cubes, ammo handed
+  over at EARLY_AMMO so shots stand apart; the shot is logged from ClientTurret.lastShotTick, ~0.05 s after the
+  projectile shows) and `video_makeshift` (MAKESHIFT_STEPS: place, arm, place, destroy, destroy). Clips in build/omni
+  (10.0 s @24 fps, trim 0.1), times from frames: Cobblestone shots 0.45 / 1.85 / 3.55 / 5.15 / 6.70 / 8.25; Snowball
+  bursts of 4 at 0.35 / 1.95 / 3.60 / 8.55, a 12-shot burst 5.35-7.50; Potato 0.30 / 2.30 / 4.25 / 6.25 / 8.15; Arrow
+  volleys 0.40 / 3.15 / 5.95 / 8.75 (they climb out of the top of the frame); Makeshift place 0.30 / 3.45, arm 1.90,
+  destroy 5.08 / 7.50. Takes cut (10-27, tools/cut_sfx.py, sources sfx/<name>_generated.wav): cobblestone 2
+  (then replaced: the user heard a gate being rammed; now sfx/cobblestone_fire.wav from an SFX generator + pitch 1.06),
+  snowball 3, potato 2, arrow 2 (volleys 3 and 4 only: the user heard 1 and 2 as vanilla); new limit() bends the
+  Snowball's and Arrow's few ms of clipping peaks. Preview build/sfx-sheets/early_preview.wav. Makeshift: Omni kept
+  giving vanilla wood, so the user made place/destroyed in an SFX generator (prompts in SOUND_SHEET 75/76): cut from
+  sfx/makeshift_base_{place,destroyed}.wav, preview build/sfx-sheets/makeshift_preview.wav. All 6 early events real now.
+  Arrow Launcher arrows no longer silent (user 10-27, "untuk arrow vanilla saja"): setSilent(true) removed from
+  TurretArrowEntity, so vanilla's hit/stick thunk and splash play; arrowsCannotBePickedUp asserts !isSilent(). 435/435.
+  3x3 sounds (user 10-27, SFX generator while Omni was rate-limited): 17 events cut from sfx/javelin*/javeline*
+  (sic, the user's names), brood_*, hive_* (tools/cut_sfx.py, take() = level by the first 0.3 s); previews
+  build/sfx-sheets/{javelin,brood,hive}_preview.wav. New events: javelin.doors_open/doors_close (ClientTurret, as the
+  doors start to swing from fully shut/open) and brood_spider.step (4 variants, playStepSound at 0.35); 92 events,
+  newSoundsHaveFilesAndSubtitles checks them. Hive drones: shot_interval 5 -> 2 and damage 2 -> 3.5 (35 DPS each, user:
+  "30-35"; the drone_shot take is a machine gun at 11.7/s, 20/2 = 10 is the nearest tick rate); HiveTests.STATS too.
+  run/config/bastion-turrets.toml held damage 2 / shot_interval 5 / drone_ammo 120: set to 3.5 / 2 / 300 with the
+  user's leave (10-27, "edit run/config"). drone_ammo 120 -> 300 (user 10-27: still 30 s of fire), in the run/config
+  file too (120 there).
+  Flaky: releasedControlLetsGo (OverwatchTests, asserts at tick 3) failed two runs in a row, passed the third; its
+  code untouched. After the run/config edit: 435/435.
+  Javelin roar (user 10-27, "saat menghilang di langit suaranya kaya cut"): JavelinEffects.Follow cut the climb's loop
+  the tick the missile went HIDDEN; now it keeps rising at its last speed and fades (quadratic) over CLIMB_FADE 40 ticks,
+  inside the 60-tick hang. Client only; preview build/sfx-sheets/javelin_preview.wav redone on the game's timings.
   Reloads (user 10-14, plain SFX generator prompts): both takes came out looped (sound wraps round the file end).
   missile.reload = slide + clunk 0.50-0.72 s minus the hiss after it (user: "delete the artifact"); new event
   `rocket.reload` (BastionSounds, sounds.json, en/id subtitles): `WeaponAnimatable.tickTubes` now returns true when a

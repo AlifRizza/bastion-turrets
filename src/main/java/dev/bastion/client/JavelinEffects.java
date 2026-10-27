@@ -176,11 +176,15 @@ public final class JavelinEffects {
 
     /**
      * A sound riding along with the missile for the phase it started in: the climb's roar (a loop), or the dive's whistle,
-     * whose pitch rises as the missile comes down.
+     * whose pitch rises as the missile comes down. The roar outlives the climb: it rises on out of sight and dies away over
+     * CLIMB_FADE ticks (user 2026-10-27: cut dead, it sounded wrong), inside the hang before the dive.
      */
     private static final class Follow extends AbstractTickableSoundInstance {
+        private static final int CLIMB_FADE = 40;
         private final JavelinMissileEntity missile;
         private final int phase, start;
+        private final float loud;
+        private double rise;
         private int fading;
 
         Follow(JavelinMissileEntity missile, SoundEvent sound, float volume) {
@@ -190,7 +194,7 @@ public final class JavelinEffects {
             this.start = Math.max(1, missile.ticksToImpact());
             this.looping = phase == JavelinMissileEntity.CLIMB;
             this.delay = 0;
-            this.volume = volume;
+            this.volume = this.loud = volume;
             this.pitch = phase == JavelinMissileEntity.CLIMB ? 0.95f + random.nextFloat() * 0.1f : 0.7f;
             this.x = missile.getX();
             this.y = missile.getY();
@@ -200,11 +204,19 @@ public final class JavelinEffects {
         @Override
         public void tick() {
             if (missile.isRemoved() || missile.phase() != phase) {
-                // Fade a couple of ticks first: stopping a sound the engine has not started yet makes OpenAL complain.
+                int fade = phase == JavelinMissileEntity.CLIMB ? CLIMB_FADE : 0;
+                if (++fading <= fade) {
+                    y += rise; // still climbing at its last speed, where nobody sees it
+                    float left = 1 - fading / (float) fade;
+                    volume = loud * left * left;
+                    return;
+                }
+                // Silent a couple of ticks first: stopping a sound the engine has not started yet makes OpenAL complain.
                 volume = 0;
-                if (++fading > 2) stop();
+                if (fading > fade + 2) stop();
                 return;
             }
+            rise = missile.getY() - y;
             x = missile.getX();
             y = missile.getY();
             z = missile.getZ();

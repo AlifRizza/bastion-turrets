@@ -4,8 +4,8 @@ import dev.bastion.config.BastionConfig;
 import dev.bastion.damage.BastionExplosion;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.TurretImpactEvent;
-import dev.bastion.registry.BastionSounds;
 import dev.bastion.registry.BastionEntities;
+import dev.bastion.registry.BastionSounds;
 import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.turret.targeting.TargetFilter;
 import dev.bastion.weapon.Hitscan;
@@ -13,6 +13,9 @@ import dev.bastion.weapon.Splash;
 import dev.bastion.weapon.types.MortarWeapon;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -28,10 +31,13 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.Node;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -52,19 +58,37 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A Brood Cannon spider (PLAN "Turret 3x3"): a small robot hexapod on vanilla ground navigation. It hunts what its turret's
+ * A Brood Cannon spider (PLAN "Turret 3x3"): a small robot hexapod that climbs walls like a vanilla spider. It hunts what its turret's
  * filter (copied when its capsule left) allows, on the ground and within reach, never a unit or a turret, the one fewest
  * other spiders are on first (they spread over a crowd); bites every biteInterval ticks with a short pounce; with nothing
  * to hunt for selfDestructTicks it bursts by itself, freeing its place (user 2026-10-24: idle spiders used to walk home
  * and fill the cap there, out of sight of what the turret shot at), the wait starting over whenever it has a target.
- * Its owner and trusted players hurt it only with trustedCanDamage, like a turret. When it dies its eyes blink red for
- * half a second, then it bursts: deathDamage to valid targets within deathRadius, no block damage.
+ * Prey 2 to leapRange blocks off it leaps at (steered onto it in the air, on any ground) and bites on arrival, every
+ * leapCooldown ticks (user 2026-10-26).
+ * Its owner and trusted players hurt it only with trustedCanDamage, like a turret. At 0 HP its eyes blink red and it
+ * leaps at the nearest valid target within leapRange to burst on it (user 2026-10-26), else bursts where it is after half
+ * a second: deathDamage to valid targets within deathRadius, no block damage. An idle self-destruct bursts where it is.
  * Never saved, never despawned (TurretUnits: gone with its chunk).
  */
 public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoEntity {
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.brood_spider.walk"),
             IDLE = RawAnimation.begin().thenLoop("animation.brood_spider.idle"), BITE = RawAnimation.begin().thenPlay("animation.brood_spider.bite"),
-            EMERGE = RawAnimation.begin().thenPlay("animation.brood_spider.emerge");
+            EMERGE = RawAnimation.begin().thenPlay("animation.brood_spider.emerge"),
+            LEAP = RawAnimation.begin().thenPlay("animation.brood_spider.leap");
+    /** Against a wall (vanilla spider climbing), and in a leap (the leap clip): set by the server, read by both sides. */
+    private static final EntityDataAccessor<Boolean> CLIMBING = SynchedEntityData.defineId(BroodSpiderEntity.class, EntityDataSerializers.BOOLEAN),
+            LEAPING = SynchedEntityData.defineId(BroodSpiderEntity.class, EntityDataSerializers.BOOLEAN);
+    /**
+     * Blocks sideways from its prey a path may stop and still count: the rest is a climb up what the prey stands on (a
+     * pillar, a wall); a moat or a gap it cannot climb leaves the path end farther off.
+     */
+    private static final double CLIMB_REACH = 2.0;
+    /** Nearest prey it leaps at (spec: 2 to 5 blocks): nearer it walks up and bites (review M4). */
+    private static final double LEAP_MIN = 2.0;
+    /** Least upward speed of a leap off the ground: a leap down would otherwise push into the ground and slide (review M5). */
+    private static final double LIFT = 0.1;
+    /** Ticks it keeps a target out of sight: climbing a wall hides what stands on top (vanilla: 60). */
+    private static final int UNSEEN_TICKS = 200;
     /** Ticks a fresh spider spends unfolding its legs (the emerge clip). */
     private static final int EMERGE_TICKS = 10;
     /** Ticks from death to the burst (the eyes blink red meanwhile). */
@@ -79,9 +103,17 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
     private TargetFilter filter = new TargetFilter();
     @Nullable
     private UUID owner;
-    private SpiderStats stats = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200);
+    private SpiderStats stats = new SpiderStats(16, 0.27f, 8, 20, 16, 15, 4, 200, 5, 8, 60);
     /** Ticks in a row with nothing to hunt. */
-    private int biteCooldown, idle;
+    private int biteCooldown, idle, leapCooldown;
+    /** Ticks since a leap left the ground (counts while LEAPING); a dying leap bursts on landing. */
+    private int leapTicks;
+    /** Where the current leap lands. */
+    private Vec3 leapTo = Vec3.ZERO;
+    /** Killed by its own idle timer: it bursts where it is, no leap. */
+    private boolean selfDestruct;
+    /** At 0 HP: it leapt at an enemy and bursts on it (touching one or landing). */
+    private boolean dyingLeap;
     /** Ticks a target its chase gave up on (out of reach) is passed over in searches. */
     private static final int UNREACHABLE_TICKS = 100;
     /** Entity id → game time a target its chase gave up on may be tried again. */
@@ -126,11 +158,48 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
     }
 
     @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(CLIMBING, false);
+        entityData.define(LEAPING, false);
+    }
+
+    /**
+     * Paths along the ground, then straight at its prey and up any wall in the way (vanilla spider navigation), but only
+     * while it hunts: vanilla keeps steering at the last thing it made a path to, a candidate its search turned down or a
+     * target it gave up on (a husk across a moat) included (final review 2026-10-26); never in a leap (aiStep steers it).
+     */
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        return new WallClimberNavigation(this, level) {
+            @Override
+            public void tick() {
+                if (!leaping() && (!isDone() || BroodSpiderEntity.this.getTarget() != null)) super.tick();
+            }
+        };
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return entityData.get(CLIMBING);
+    }
+
+    public boolean leaping() {
+        return entityData.get(LEAPING);
+    }
+
+    @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new Chase());
         goalSelector.addGoal(2, new RandomStrollGoal(this, 0.7));
-        targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, this::canAttack) {
+        targetSelector.addGoal(1, new NearestAttackableTargetGoal<LivingEntity>(this, LivingEntity.class, 10, true, false, this::canAttack) {
+            /** Prey high up a wall or tower too (vanilla looks only 4 blocks up or down): it climbs any height. */
+            @Override
+            protected AABB getTargetSearchArea(double distance) {
+                return mob.getBoundingBox().inflate(distance);
+            }
+
             /**
              * The candidate fewest other spiders are on, the nearest of those, that a path reaches, at most REACH_CHECKS
              * path searches a search (the next search tries the next ones): 1.20.1's findTarget ignores mustReach, so a
@@ -156,7 +225,7 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
                 }
                 probe = from + REACH_CHECKS;
             }
-        });
+        }.setUnseenMemoryTicks(UNSEEN_TICKS));
     }
 
     /** How many spiders in {@code area} (but {@code except}) are on each creature: the Brood spreads over a crowd. */
@@ -185,15 +254,78 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
         unreachable.put(entity.getId(), level().getGameTime() + UNREACHABLE_TICKS);
     }
 
-    /** A path gets all the way to it. */
+    /**
+     * A path gets all the way to it, or to the foot of what it stands on (the prey at least a block higher), and the
+     * spider climbs the rest; prey at its own level past a gap or a lava trench does not count.
+     */
     private boolean reachable(LivingEntity entity) {
-        Path path = getNavigation().createPath(entity, 0);
-        return path != null && path.canReach();
+        return reaches(getNavigation().createPath(entity, 0), entity);
+    }
+
+    private static boolean reaches(@Nullable Path path, LivingEntity entity) {
+        if (path == null) return false;
+        if (path.canReach()) return true;
+        Node end = path.getEndNode();
+        return end != null && entity.getY() >= end.y + 1 && Math.abs(end.x + 0.5 - entity.getX()) <= CLIMB_REACH
+                && Math.abs(end.z + 0.5 - entity.getZ()) <= CLIMB_REACH;
+    }
+
+    /**
+     * Launch velocity that carries it from {@code from} to {@code to} in {@code ticks} ticks of vanilla flight: each tick it
+     * moves, then gravity 0.08 and drag 0.98 up and down, 0.91 sideways (the ground's 0.546 after a take-off from the ground).
+     * Off the ground it rises at least LIFT.
+     */
+    static Vec3 leapVelocity(Vec3 from, Vec3 to, int ticks, boolean grounded) {
+        double side = 0, keep = 1, up0 = 0, up1 = 0, v0 = 0, v1 = 1;
+        for (int i = 0; i < ticks; i++) {
+            side += keep;
+            keep *= i == 0 && grounded ? 0.546 : 0.91;
+            up0 += v0;
+            up1 += v1;
+            v0 = (v0 - 0.08) * 0.98;
+            v1 = (v1 - 0.08) * 0.98;
+        }
+        Vec3 d = to.subtract(from);
+        double vy = (d.y - up0) / (up1 - up0);
+        return new Vec3(d.x / side, grounded ? Math.max(vy, LIFT) : vy, d.z / side);
+    }
+
+    /** Off the ground at {@code to} in leapTicks: the leap clip plays until it lands. */
+    private void leapAt(Vec3 to) {
+        leapTo = to;
+        setDeltaMovement(leapVelocity(position(), to, stats.leapTicks(), onGround()));
+        hasImpulse = true;
+        leapTicks = 0;
+        entityData.set(LEAPING, true);
+        entityData.set(CLIMBING, false); // climbing, its first tick would clamp it to a hop off the wall (review M1)
+        getNavigation().stop();
+        playSound(BastionSounds.SPIDER_LEAP.get(), 0.8f, 0.9f + random.nextFloat() * 0.2f);
+    }
+
+    /** The nearest valid target it can see within leapRange, for a dying leap. */
+    @Nullable
+    private LivingEntity nearestPrey() {
+        return level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(stats.leapRange()), e -> affects(e) && hasLineOfSight(e)
+                        && e.distanceTo(this) <= stats.leapRange()).stream()
+                .min(Comparator.comparingDouble(e -> e.distanceToSqr(this))).orElse(null);
     }
 
     @Override
     public BlockPos home() {
         return home;
+    }
+
+    /**
+     * In the air on a leap it is steered at where the leap lands, on time (past it: straight down onto it): ice, slime,
+     * soul sand, a leap down or a bite on the way throw the take-off's sum off (review M5).
+     */
+    @Override
+    public void aiStep() {
+        if (!level().isClientSide && leaping() && leapTicks > 0 && !onGround()) {
+            Vec3 v = leapVelocity(position(), leapTo, Math.max(1, stats.leapTicks() - leapTicks), false);
+            setDeltaMovement(v.x, getDeltaMovement().y, v.z);
+        }
+        super.aiStep();
     }
 
     @Override
@@ -204,10 +336,18 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
         }
         super.tick();
         if (biteCooldown > 0) biteCooldown--;
-        if (level().isClientSide || !isAlive()) return;
+        if (leapCooldown > 0) leapCooldown--;
+        if (level().isClientSide) return;
+        entityData.set(CLIMBING, horizontalCollision);
+        // Landed, or against a wall (it climbs) or in water: the leap is over (review M9).
+        if (leaping() && ++leapTicks > 2 && (onGround() || horizontalCollision || isInWater() || isInLava())) entityData.set(LEAPING, false);
+        if (!isAlive()) return;
         LivingEntity target = getTarget();
         idle = target != null && target.isAlive() ? 0 : idle + 1;
-        if (idle >= stats.selfDestructTicks()) kill(); // nothing to hunt for a while: it bursts (tickDeath), freeing its place
+        if (idle >= stats.selfDestructTicks()) { // nothing to hunt for a while: it bursts where it is (tickDeath), freeing its place
+            selfDestruct = true;
+            kill();
+        }
     }
 
     @Override
@@ -225,10 +365,26 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
         return super.hurt(source, amount);
     }
 
-    /** No tip-over and no vanilla poof: the eyes blink (client) for BURST_DELAY ticks, then the burst. */
+    /**
+     * No tip-over and no vanilla poof: the eyes blink (client) while it leaps or for BURST_DELAY ticks, then the burst. On
+     * its first death tick it leaps at the nearest valid target in reach (none, or its idle timer: it stays); here, not in
+     * die(): knockback lands after the killing blow, and a death a mod cancels never ticks (review M3, M8). A dying leap
+     * bursts the moment it touches a valid target or lands, at the latest a few ticks after its flight time.
+     */
     @Override
     protected void tickDeath() {
-        if (++deathTime >= BURST_DELAY && !level().isClientSide && !isRemoved()) {
+        ++deathTime;
+        if (level().isClientSide || isRemoved()) return;
+        LivingEntity prey = deathTime == 1 && !selfDestruct ? nearestPrey() : null;
+        if (prey != null) {
+            dyingLeap = true;
+            leapAt(prey.position());
+        }
+        boolean burst = dyingLeap
+                ? !level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.3), this::affects).isEmpty()
+                        || deathTime > 2 && onGround() || deathTime >= stats.leapTicks() + 6
+                : deathTime >= BURST_DELAY;
+        if (burst) {
             burst((ServerLevel) level());
             remove(RemovalReason.KILLED);
         }
@@ -275,14 +431,17 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
         return null;
     }
 
+    /** Its legs skitter, walking or climbing (user 2026-10-27): quiet, since a dozen may run at once. */
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
+        playSound(BastionSounds.SPIDER_STEP.get(), 0.35f, 0.9f + random.nextFloat() * 0.2f);
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "move", 3, state -> {
             if (tickCount < EMERGE_TICKS) return state.setAndContinue(EMERGE);
+            if (leaping()) return state.setAndContinue(LEAP);
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
         controllers.add(new AnimationController<>(this, "bite", 0, state -> {
@@ -303,6 +462,8 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
      */
     private final class Chase extends Goal {
         private int repath, misses;
+        /** Its height at the last repath: risen since, off the ground, it is climbing (no ground path then). */
+        private double lastY;
 
         Chase() {
             setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
@@ -318,6 +479,7 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
         public void start() {
             repath = 0;
             misses = 0;
+            lastY = getY();
         }
 
         @Override
@@ -338,15 +500,28 @@ public class BroodSpiderEntity extends PathfinderMob implements TurretUnit, GeoE
             if (--repath <= 0) {
                 repath = REPATH;
                 Path path = getNavigation().createPath(target, 0);
-                misses = path != null && path.canReach() ? 0 : misses + 1;
-                if (misses >= GIVE_UP) {
-                    passOver(target);
-                    setTarget(null);
-                    return;
+                // Vanilla makes no path off the ground: halfway up a wall that is a climb, not a miss (it keeps going up
+                // after the target, createPath having updated where to). Stuck under an overhang it does not rise, so it
+                // still gives up.
+                boolean climbing = path == null && !onGround() && getY() > lastY + 0.5;
+                lastY = getY();
+                if (!climbing) {
+                    misses = reaches(path, target) ? 0 : misses + 1;
+                    if (misses >= GIVE_UP) {
+                        passOver(target);
+                        setTarget(null);
+                        return;
+                    }
+                    getNavigation().moveTo(path, 1.2);
                 }
-                getNavigation().moveTo(path, 1.2);
             }
             double reach = getBbWidth() * 2 * getBbWidth() * 2 + target.getBbWidth();
+            double off = distanceTo(target);
+            if (leapCooldown <= 0 && onGround() && !leaping() && off >= LEAP_MIN && off <= stats.leapRange() && hasLineOfSight(target)) {
+                leapCooldown = stats.leapCooldown(); // it bites on arrival, the bite cooldown permitting (review M4: no extra bite)
+                leapAt(target.position());
+                repath = REPATH; // no new path mid-air
+            }
             if (biteCooldown <= 0 && distanceToSqr(target) <= reach) {
                 biteCooldown = stats.biteInterval();
                 Vec3 lunge = target.position().subtract(position()).multiply(1, 0, 1);

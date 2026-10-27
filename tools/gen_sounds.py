@@ -558,6 +558,14 @@ def javelin_explode(v):
     crack = hp(noise(L, 1732 + v), 2800) * env(L, 0.0005, 0.05)
     rumble = onepole_lp(noise(L, 1733 + v), 150) * env(L, 0.1, 1.6) * 1.1
     return fade_out(norm(1.4 * boom + blast + crack + rumble), 0.4)
+def javelin_doors(opening):
+    """The silo's blast doors: a hydraulic hiss and a deep clunk (at the end as they lock open, harder as they slam shut)."""
+    L = 0.9
+    hiss = bp(noise(L, 1740 + opening), 900, 6000) * env(L, 0.01, 0.25) * 0.5
+    clunk = np.zeros(n(L))
+    k = n(0.45 if opening else 0.5)
+    clunk[k:] = (sweep(L, 90, 45) * env(L, 0.002, 0.12))[:len(clunk) - k]
+    return fade_out(norm(hiss + (1.0 if opening else 1.5) * clunk, 0.7), 0.05)
 
 # --- Brood Cannon (PLAN "Turret 3x3"): a capsule every 6 seconds, spiders that bite and burst ----------
 def brood_fire(v):
@@ -586,6 +594,20 @@ def spider_bite(v):
     click = hp(noise(L, 1831 + v), 3000) * env(L, 0.0005, 0.015)
     thunk = sweep(L, 260 * j, 120) * env(L, 0.002, 0.05) * 0.6
     return fade_out(norm(click + thunk, 0.7))
+def spider_leap():
+    """A robot spider's leap (0.6.0): a sharp hydraulic kick and a short rising whoosh."""
+    L = 0.35
+    kick = sweep(L, 220, 90) * env(L, 0.001, 0.04)
+    whoosh = bp(noise(L, 1960), 600, 4000) * env(L, 0.03, 0.15) * 0.6
+    return fade_out(norm(kick + whoosh, 0.6), 0.05)
+def spider_step(v):
+    """One skittering step of a robot spider: two or three light metal ticks."""
+    L = 0.2
+    ticks = np.zeros(n(L))
+    for i, at in enumerate((0.0, 0.045, 0.09)[:2 + v % 2]):
+        k = n(at)
+        ticks[k:] += (hp(noise(L, 1750 + 3 * v + i), 3000) * env(L, 0.0005, 0.012))[:len(ticks) - k]
+    return fade_out(norm(ticks, 0.4), 0.03)
 def spider_burst(v):
     """A small sharp blast with a rattle of parts."""
     j = jitter(1840 + v); L = 1.0
@@ -682,7 +704,9 @@ SOUNDS = {
     **{f"brood/spider_burst_{v}.ogg": (lambda v=v: spider_burst(v)) for v in range(2)},
     "hive/launch.ogg": hive_launch, "hive/drone_hum.ogg": drone_hum, **{f"hive/drone_shot_{v}.ogg": (lambda v=v: drone_shot(v)) for v in range(2)},
     **{f"hive/drone_kamikaze_{v}.ogg": (lambda v=v: drone_kamikaze(v)) for v in range(2)},
-    "research/complete.ogg": research_complete,
+    "research/complete.ogg": research_complete, "brood/spider_leap.ogg": spider_leap,
+    "javelin/doors_open.ogg": lambda: javelin_doors(1), "javelin/doors_close.ogg": lambda: javelin_doors(0),
+    **{f"brood/spider_step_{v}.ogg": (lambda v=v: spider_step(v)) for v in range(4)},
 }
 
 if __name__ == "__main__":

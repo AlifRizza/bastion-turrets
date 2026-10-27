@@ -1042,7 +1042,8 @@ energi; tekstur original)
 - Moncong: semburan udara/debu (Snowball: uap beku, Arrow: garis sentakan tali), tanpa api.
 
 **Suara** (event baru; placeholder `gen_sounds.py`, yang asli nanti dari Omni/SFX generator): tembakan tiap turret, base
-deploy (derit kayu) dan hancur (kayu remuk). Tanpa hum idle. Tanpa suara proyektil kena (keputusan user sebelumnya).
+deploy (derit kayu) dan hancur (kayu remuk). Tanpa hum idle. Tanpa suara proyektil kena (keputusan user sebelumnya), kecuali panah Arrow Launcher: bunyi vanilla
+(user 10-27).
 
 **Test** (GameTest dulu, gagal dulu)
 - Penguncian: modul early hanya di base makeshift; modul modern ditolak di sana; modul early ditolak di base standar dan
@@ -1510,14 +1511,28 @@ Angka *(controller)* = usulan saya, semuanya di JSON/config. Ketiganya modul **h
   dengan **tiga kelopak** yang membuka seperti bunga saat mendarat. Laba-laba: robot heksapod kecil (~0,6 blok), badan
   bersegmen, kluster mata glow, sepasang taring jarum. Animasi: keluar dari kapsul (kaki membuka), jalan (kaki bergantian),
   **menerkam + menusuk**, mati: mata merah berkedip ~0,5 dtk lalu meledak.
+- **Penyesuaian user 2026-10-26 (masuk 0.6.0, disetujui di chat 20:50–20:56):**
+  - **Memanjat** dinding seperti laba-laba vanilla, setinggi apa pun, saat mengejar; musuh di atas tembok/menara jadi bisa
+    dicapai (yang di seberang lava tetap tidak).
+  - **Lompatan serang**: target 2–5 blok (`leap_range` 5), terlihat, laba-laba menapak → lompat cepat (`leap_ticks` 8 di
+    udara) ke target dan menggigit saat sampai; jeda `leap_cooldown` 60 tick *(usulan)*; ikut naik kalau target lebih tinggi.
+  - **HP 0**: tidak langsung meledak di tempat; tubuhnya melompat ke musuh sah terdekat dalam `leap_range` lalu meledak saat
+    menyentuh musuh atau mendarat (15 damage radius 4, target sah saja); tanpa musuh dalam jangkauan: meledak di tempat
+    *(usulan)*. Hancur-sendiri karena menganggur tetap meledak di tempat.
+  - Animasi lompat + suara lompat placeholder *(usulan)*.
+  - Minor review (user 2026-10-27: semua kecuali M2): di bawah 2 blok tidak melompat (jalan lalu gigit); lompatan tidak
+    menambah gigitan (tetap 1 per `bite_interval`); di udara diarahkan ke titik bidik supaya tepat mendarat di es, slime,
+    soul sand, honey dan saat melompat turun (selalu naik sedikit dulu); lompatan selesai saat menabrak tembok (lalu
+    memanjat) atau masuk air/lava; lompatan HP 0 dimulai di tick kematian pertama (knockback tidak membelokkan, kematian
+    yang dibatalkan mod lain tidak melompat). M2 dibiarkan: lompatan HP 0 boleh mengincar mob terbang.
 
 **Hive Carrier**
 - Tiap **15 dtk** keluar **3 drone** (menumpuk sampai batas config); tiap drone 1 Hive Drone + FE. (User 2026-10-24: awalnya 30 dtk
   dan 60 peluru; drone habis/mati sebelum gelombang berikutnya, batas 9 tak pernah tercapai.)
-- Drone: **120 peluru**, menembak target sah dari jauh, berpatroli di sekitar carrier; peluru habis **atau** HP rendah →
+- Drone: **300 peluru** (30 dtk tembakan; user 2026-10-27, awalnya 120), menembak target sah dari jauh, berpatroli di sekitar carrier; peluru habis **atau** HP rendah →
   **menukik kamikaze** ke musuh. Tanpa musuh: **pulang, mendarat, isi ulang** peluru (FE) lalu menunggu di dalam carrier.
-- Angka *(controller)*: drone 2.000 FE, batas 9 per carrier, HP 20, peluru 2 damage, 4 tembakan/dtk, jarak tembak 16,
-  jarak patroli 32 dari carrier, kamikaze saat HP < 25 %: 15 damage radius 4,5 (user 2026-10-24; awalnya 10 radius 3), isi ulang 120 peluru = 1.000 FE.
+- Angka *(controller)*: drone 2.000 FE, batas 9 per carrier, HP 20, peluru 3,5 damage, 10 tembakan/dtk (35 damage/dtk per drone; user 2026-10-27, awalnya 2 × 4), jarak tembak 16,
+  jarak patroli 32 dari carrier, kamikaze saat HP < 25 %: 15 damage radius 4,5 (user 2026-10-24; awalnya 10 radius 3), isi ulang 300 peluru = 1.000 FE.
 - Overwatch: hanya melihat.
 - **Tampilan** (user 2026-10-24: lebih besar, berongga seperti sarang, lubang untuk keluar-masuk drone di samping): sarang
   besar berongga hampir selebar 3x3 di atas pedestal, berlapis-lapis pelat sarang lebah dengan bibir di tiap lapis,

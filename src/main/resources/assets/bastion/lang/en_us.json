@@ -543,6 +543,8 @@
   "subtitles.bastion.javelin.launch": "Javelin missile launches",
   "subtitles.bastion.javelin.fly": "Javelin missile roars",
   "subtitles.bastion.javelin.dive": "Javelin missile whistles down",
+  "subtitles.bastion.javelin.doors_open": "Javelin silo doors open",
+  "subtitles.bastion.javelin.doors_close": "Javelin silo doors shut",
   "subtitles.bastion.javelin.explode": "Javelin missile explodes",
   "subtitles.bastion.brood.fire": "Brood Cannon fires",
   "subtitles.bastion.brood.capsule_land": "Brood capsule lands",
@@ -560,7 +562,7 @@
   "item.bastion.brood_capsule": "Brood Capsule",
   "item.bastion.hive_drone": "Hive Drone",
   "tooltip.bastion.weapon.javelin_turret.ability": "Fires one big missile straight up and drops it straight down on the densest crowd under open sky: a huge blast that only hurts valid targets. A Javelin Missile and FE per shot; ground targets only, never under a roof.",
-  "tooltip.bastion.weapon.brood_cannon_turret.ability": "Lobs a capsule over walls onto enemies on the ground; it opens and three robot spiders climb out to hunt and bite only valid targets, spreading over a crowd, and burst when they die or after 10 seconds with nothing to hunt. Up to 12 spiders per turret; it waits while that many are out. A Brood Capsule and FE per shot.",
+  "tooltip.bastion.weapon.brood_cannon_turret.ability": "Lobs a capsule over walls onto enemies on the ground; it opens and three robot spiders climb out to hunt and bite only valid targets, spreading over a crowd; they climb walls and leap at prey up to 5 blocks off. A dying spider leaps at the nearest enemy and bursts on it; one with nothing to hunt for 10 seconds bursts where it is. Up to 12 spiders per turret; it waits while that many are out. A Brood Capsule and FE per shot.",
   "tooltip.bastion.weapon.hive_carrier_turret.ability": "While valid targets are in reach it sends out three combat drones every 15 seconds; they shoot valid targets (flyers too), patrol round the carrier, dive kamikaze when out of bullets or badly hurt, and fly home to dock and reload. Up to 9 drones per carrier. A Hive Drone and FE per new drone; a docked drone relaunches for FE.",
   "item.bastion.turret_codex": "Turret Codex",
   "tooltip.bastion.turret_codex": "Right-click: every turret, base, station and module, and the research tree",
@@ -603,5 +605,7 @@
   "gui.bastion.codex.base": "%s · %s · %s",
   "gui.bastion.codex.surface.any": "floor, wall or ceiling",
   "gui.bastion.codex.surface.floor": "floor only",
-  "gui.bastion.codex.comes_with": "Comes with %s"
+  "gui.bastion.codex.comes_with": "Comes with %s",
+  "subtitles.bastion.brood_spider.leap": "Brood spider leaps",
+  "subtitles.bastion.brood_spider.step": "Brood spider skitters"
 }
