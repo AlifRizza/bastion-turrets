@@ -591,6 +591,43 @@ below are the history that led here.
   Javelin roar (user 10-27, "saat menghilang di langit suaranya kaya cut"): JavelinEffects.Follow cut the climb's loop
   the tick the missile went HIDDEN; now it keeps rising at its last speed and fades (quadratic) over CLIMB_FADE 40 ticks,
   inside the 60-tick hang. Client only; preview build/sfx-sheets/javelin_preview.wav redone on the game's timings.
+  `/bastiondev turrets [tier] [unlimitedHealth]` (user 20:21): true puts "Invulnerable" in the item's BlockEntityTag;
+  TurretBaseBlockEntity saves/loads it and takeDamage refuses all damage (main code, so a /give with that NBT works in the
+  release jar too; no UI); the four base loot tables copy it, so a base broken with a pickaxe stays unlimited. Tests
+  invulnerableTurretTakesNoDamage, brokenInvulnerableBaseStaysInvulnerable; 437/437. Not in the build/upload/0.6.0 jars
+  (649e2e5) yet.
+  User 20:45, three things: (1) `/bastiondev spawn <mob> [health] [count]`: ResourceArgument over ENTITY_TYPE with
+  SUMMONABLE_ENTITIES suggestions; non-mobs refused; finalizeSpawn (weapons, a mod's own start) then armour, baby,
+  riders, effects, reinforcements and MAX_HEALTH modifiers stripped; the named shortcuts unchanged (no finalizeSpawn).
+  (2) Hive drone shot down: tickDeath picks the nearest valid target in sight within shot_range and dives into it as
+  KAMIKAZE (burst on a hit, a collision, the target gone or 60 ticks), else drops as before; HiveEffects draws the red
+  trail for a dying diver. Test shotDownDroneDivesIntoItsTarget. (3) Spore Howitzer (2.2.0j, All Rights Reserved: read
+  with javap, nothing copied): its FleshBomb calls Utilities.explodeCircle, which removeBlock()s everything under a
+  hardness in a sphere (turrets 3.5/5 hardness, no HP check, contents gone); grief(AABB) destroyBlock()s what it walks
+  through; damageStomp throws up blocks with air under them (FallingBlockEntity.fall + removeBlock); its nuke only
+  evaporates water and sets fire/acid on top. @Pseudo mixins mixin/compat/SporeUtilitiesMixin and SporeHowitzerMixin
+  (remap false, @At remap true: refmap has m_7471_, m_46953_, m_201971_) skip TurretBaseBlock.spared(pos): a turret
+  block or the block a base part stands on (its FACING points away). Tests turretsAndWhatTheyStandOnAreSpared
+  (TurretBaseTests) and sporeSparesTurrets (dev CompatModTests, reflection; real only with -PwithCompatMods). Final:
+  440/440 compat and 440/440 normal. Flakes on the way, one old test a run, code untouched:
+  spidersAreNotStarvedByUnreachableTargets, largeBaseIsOneBlock, knockbackDoesNotBendTheDyingLeap (compat),
+  overrideReachesFurther (normal; passed on the rerun).
+  Orphan hitboxes (user 22:33, screenshots: invisible "Turret Base 500/500" and "1250/1250" boxes on empty ground and
+  in the air, mobs chasing them, /kill useless): not the unlimited HP. TurretHitboxEntity was placed once by bind() and
+  never put back; vanilla explosions (Spore's Griefer, Volatile, bombs) push every entity not ignoreExplosion() and the
+  box has no gravity and no physics, so it drifted off for good, and a rider/kidnapper could carry it; it only discards
+  when its turret is gone, and its turret still stood. Now tick() stops riding, zeroes its motion and sets it back on
+  its bind() spot (ignoreExplosion() would also cancel the blast's damage, so not that). Test hitboxStaysOnItsBase
+  (pushed and made to ride a cow). /kill still cannot remove a hitbox (hurt ignores sourceless damage): unchanged.
+  Condensed bastion-turrets.toml (user 2026-10-28 00:54, "go" 01:00; run/config rewrite OK'd): TurretStatsConfig.keys()
+  lists only the common stats a weapon reads (reads(): damage/spread/ammo_per_shot/sweep_tolerance only > 0 in its JSON,
+  the 4 heat keys only with heat_per_shot > 0, aim keys only with turn_speed > 0, pitch also not for a fixed barrel),
+  one comment line "<what it does> Default X, allowed min ~ max", turret-name prefixes ("Hive Carrier: ") dropped from
+  PARAMS, WORDING map for stats that mean something else on one turret (Hive damage = per drone bullet, fire_interval =
+  waves, range, unit_cap = drones; Brood damage = bite, fire_interval; Javelin damage = centre blast). NO_AMMO_ITEMS gone
+  (no ammo_per_shot key at 0). 2,117 → 804 lines, 512 → 364 keys; Forge rewrote run/config on the first GameTest run with
+  every value kept (compared before/after: 0 changed). The user's Hive "damage is useless" guess was wrong: it is the drones'
+  bullet damage. Tests configListsOnlyTheStatsATurretReads, configCommentsSpeakOfTheirOwnTurret (+4 updated); 443 GameTests.
   Reloads (user 10-14, plain SFX generator prompts): both takes came out looped (sound wraps round the file end).
   missile.reload = slide + clunk 0.50-0.72 s minus the hiss after it (user: "delete the artifact"); new event
   `rocket.reload` (BastionSounds, sounds.json, en/id subtitles): `WeaponAnimatable.tickTubes` now returns true when a

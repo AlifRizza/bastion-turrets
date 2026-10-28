@@ -20,6 +20,7 @@ import dev.bastion.projectile.TurretRocketEntity;
 import dev.bastion.turret.targeting.TargetFilter.Rule;
 import dev.bastion.weapon.StatSheet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -489,6 +490,33 @@ public class TurretSystemsTests {
     }
 
     /**
+     * Pushed off (a blast's knockback) or carried off (a mob it rides), the hitbox is back on its base: it used to drift away
+     * for good, an invisible "turret" far from any turret that mobs kept chasing (user 2026-10-27).
+     */
+    @GameTest(template = ARENA, timeoutTicks = 100, batch = "hitboxStaysOnItsBase")
+    public static void hitboxStaysOnItsBase(GameTestHelper helper) {
+        helper.setBlock(BASE, BastionBlocks.TURRET_BASE.get());
+        TurretHitboxEntity[] hitbox = {null};
+        Vec3[] home = {null};
+        long[] pushed = {-1};
+        helper.onEachTick(() -> {
+            if (hitbox[0] != null) return;
+            List<TurretHitboxEntity> found = helper.getLevel().getEntitiesOfClass(TurretHitboxEntity.class, new AABB(helper.absolutePos(BASE)).inflate(1));
+            if (found.size() != 1) return;
+            hitbox[0] = found.get(0);
+            home[0] = hitbox[0].position();
+            hitbox[0].setDeltaMovement(0.8, 1.5, 0.8);
+            hitbox[0].startRiding(helper.spawnWithNoFreeWill(EntityType.COW, MID), true);
+            pushed[0] = helper.getTick();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(pushed[0] >= 0 && helper.getTick() >= pushed[0] + 10, "not pushed yet");
+            helper.assertTrue(hitbox[0].isAlive() && !hitbox[0].isPassenger(), "it rides " + hitbox[0].getVehicle());
+            helper.assertTrue(hitbox[0].position().distanceTo(home[0]) < 0.01, "it drifted to " + hitbox[0].position() + " from " + home[0]);
+        });
+    }
+
+    /**
      * Hostile mobs seek out turrets (TurretAggro). Armed, so the base is solid up to the weapon, but without ammo,
      * so the turret cannot kill the zombie first.
      */
@@ -509,6 +537,21 @@ public class TurretSystemsTests {
         helper.assertTrue(!turret.upgradeTo(TurretTier.T3), "a T1 base must not jump to T3");
         helper.assertTrue(turret.upgradeTo(TurretTier.T2), "T1 -> T2 upgrade refused");
         helper.assertTrue(turret.tier() == TurretTier.T2 && turret.health() == turret.maxHealth(), "upgrade must give full T2 HP");
+        helper.succeed();
+    }
+
+    /** A base saved with Invulnerable (/bastiondev turrets ... true, user 2026-10-27) takes no damage and keeps the flag. */
+    @GameTest(template = ARENA, batch = "invulnerableTurretTakesNoDamage")
+    public static void invulnerableTurretTakesNoDamage(GameTestHelper helper) {
+        helper.setBlock(BASE, BastionBlocks.TURRET_BASE.get());
+        TurretBaseBlockEntity turret = (TurretBaseBlockEntity) helper.getBlockEntity(BASE);
+        CompoundTag tag = turret.saveWithoutMetadata();
+        tag.putBoolean("Invulnerable", true);
+        turret.load(tag);
+        helper.assertTrue(!turret.takeDamage(helper.getLevel().damageSources().generic(), 10_000), "an invulnerable turret took damage");
+        helper.assertTrue(turret.health() == turret.maxHealth(), "HP " + turret.health() + " of " + turret.maxHealth());
+        helper.assertBlockPresent(BastionBlocks.TURRET_BASE.get(), BASE);
+        helper.assertTrue(turret.saveWithoutMetadata().getBoolean("Invulnerable"), "the flag was not saved");
         helper.succeed();
     }
 

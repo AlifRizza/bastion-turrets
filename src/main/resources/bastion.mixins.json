@@ -4,6 +4,10 @@
   "package": "dev.bastion.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "bastion.refmap.json",
+  "mixins": [
+    "compat.SporeHowitzerMixin",
+    "compat.SporeUtilitiesMixin"
+  ],
   "client": [
     "LevelRendererMixin",
     "CameraMixin",

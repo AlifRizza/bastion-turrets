@@ -99,6 +99,12 @@ Changes
   carry 300 bullets (was 120), so they still fire for 30 seconds before they dive. A config/bastion-turrets.toml from
   an older version keeps the old numbers: set its [hive_carrier] damage, shot_interval and drone_ammo to 3.5, 2 and
   300 (or delete those three lines).
+- A Hive drone shot down with an enemy in reach no longer just drops: it makes its dive anyway and bursts on it (a big
+  hit used to drop most of them short).
+- config/bastion-turrets.toml is less than half as long (about 800 lines, was 2,100): each turret lists only the stats
+  it uses (no aiming on the Tesla Coil, heat only on the Machine Gun and Plasma Repeater, and so on), with one comment
+  line per stat, and the Hive Carrier's say what they do there (damage is per drone bullet). Numbers you changed stay;
+  the unused lines go away on the first start.
 
 Sounds
 - Real sounds for the four early turrets, the Makeshift Turret Base and the three 3x3 turrets (they were placeholders).
@@ -107,6 +113,11 @@ Sounds
 - Arrow Launcher arrows thunk like vanilla arrows when they hit or stick (they were silent).
 
 Fixes
+- A turret's invisible hit box could be blown away by an explosion's knockback (or carried off by a mob) and stay
+  there for good, far from its turret: mobs crowded round empty air attacking it. It now stays on its turret.
+- Fungal Infection: Spore: the Howitzer's bombs, its landing stomp and its walking through walls deleted turrets (and
+  the block under them) outright, whatever their HP. They now leave the turret and the block it stands on; the blast
+  still damages the turret by its HP.
 - The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many
   as fit with arrows at both ends (click them, or scroll the mouse wheel over the tabs).
 

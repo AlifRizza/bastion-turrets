@@ -16,6 +16,11 @@
                   "source": "Inventory",
                   "target": "BlockEntityTag.Inventory",
                   "op": "replace"
+                },
+                {
+                  "source": "Invulnerable",
+                  "target": "BlockEntityTag.Invulnerable",
+                  "op": "replace"
                 }
               ]
             }

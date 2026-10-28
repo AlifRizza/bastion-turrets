@@ -5,6 +5,7 @@ import dev.bastion.menu.TurretMenu;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.turret.LargeTurretBaseBlock;
+import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretInventory;
 import dev.bastion.turret.TurretTier;
@@ -105,6 +106,40 @@ public class TurretBaseTests {
         TurretBaseBlockEntity restored = new TurretBaseBlockEntity(helper.absolutePos(BASE), BastionBlocks.TURRET_BASE.get().defaultBlockState());
         restored.load(data);
         helper.assertTrue(restored.inventory().getStackInSlot(TurretInventory.AMMO_START).getCount() == 5, "contents not restored on load");
+        helper.succeed();
+    }
+
+    /**
+     * What Spore's Howitzer leaves standing (TurretBaseBlock.spared, user 2026-10-27; its mixins in mixin/compat): a base and
+     * the block it stands on, on a floor or under a ceiling; not a block beside the base, nor one beside its platform.
+     */
+    @GameTest(template = EMPTY)
+    public static void turretsAndWhatTheyStandOnAreSpared(GameTestHelper helper) {
+        BlockPos floor = new BlockPos(1, 0, 1), onFloor = floor.above(), ceiling = new BlockPos(0, 2, 0), underCeiling = ceiling.below();
+        for (BlockPos p : List.of(floor, floor.west(), onFloor.east(), ceiling, ceiling.east())) helper.setBlock(p, Blocks.STONE);
+        helper.setBlock(onFloor, BastionBlocks.TURRET_BASE.get().defaultBlockState().setValue(TurretBaseBlock.FACING, Direction.UP));
+        helper.setBlock(underCeiling, BastionBlocks.TURRET_BASE.get().defaultBlockState().setValue(TurretBaseBlock.FACING, Direction.DOWN));
+        ServerLevel level = helper.getLevel();
+        for (BlockPos p : List.of(onFloor, floor, underCeiling, ceiling)) {
+            helper.assertTrue(TurretBaseBlock.spared(level, helper.absolutePos(p)), "not spared: " + p);
+        }
+        for (BlockPos p : List.of(floor.west(), onFloor.east(), ceiling.east())) {
+            helper.assertTrue(!TurretBaseBlock.spared(level, helper.absolutePos(p)), "spared, but it is only beside a turret: " + p);
+        }
+        helper.succeed();
+    }
+
+    /** A /bastiondev unlimited-HP base broken with a tool keeps its Invulnerable flag in the drop (user 2026-10-27). */
+    @GameTest(template = EMPTY)
+    public static void brokenInvulnerableBaseStaysInvulnerable(GameTestHelper helper) {
+        TurretBaseBlockEntity base = placeBase(helper);
+        CompoundTag tag = base.saveWithoutMetadata();
+        tag.putBoolean("Invulnerable", true);
+        base.load(tag);
+        breakWithDrops(helper);
+        List<ItemEntity> drops = helper.getEntities(EntityType.ITEM, BASE, 2);
+        CompoundTag data = drops.size() == 1 ? BlockItem.getBlockEntityData(drops.get(0).getItem()) : null;
+        helper.assertTrue(data != null && data.getBoolean("Invulnerable"), "the drop lost Invulnerable: " + data);
         helper.succeed();
     }
 

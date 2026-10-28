@@ -3,30 +3,40 @@ package dev.bastion.dev;
 import dev.bastion.Bastion;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
+import dev.bastion.turret.TurretBaseBlock;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.TurretHitboxEntity;
 import dev.bastion.turret.TurretInventory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Dev-only: turrets against other content mods (-PwithCompatMods). Each test passes at once when its mod is not in
- * the run. Fungal Infection: Spore mobs are shot and attack turrets; TaCZ bullets can hit a turret's hitbox.
+ * the run. Fungal Infection: Spore mobs are shot and attack turrets, and its Howitzer leaves turrets standing; TaCZ
+ * bullets can hit a turret's hitbox.
  */
 @GameTestHolder(Bastion.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -48,6 +58,46 @@ public class CompatModTests {
     @SuppressWarnings("unchecked")
     private static EntityType<Mob> mob(EntityType<?> type) {
         return (EntityType<Mob>) type;
+    }
+
+    /**
+     * The Howitzer's bombs (Utilities.explodeCircle), its bulldozing (grief) and its stomp take the stone round a turret,
+     * never the turret or the stone it stands on (mixin/compat, user 2026-10-27).
+     */
+    @GameTest(template = ARENA, timeoutTicks = 60, batch = "sporeSparesTurrets")
+    public static void sporeSparesTurrets(GameTestHelper helper) throws ReflectiveOperationException {
+        if (!ModList.get().isLoaded("spore")) {
+            helper.succeed();
+            return;
+        }
+        BlockPos platform = new BlockPos(6, 3, 3), turret = platform.above();
+        List<BlockPos> round = List.of(platform.east(), platform.west(), turret.north());
+        ServerLevel level = helper.getLevel();
+        Method blast = Class.forName("com.Harbinger.Spore.ExtremelySusThings.Utilities").getMethod("explodeCircle", ServerLevel.class,
+                Entity.class, BlockPos.class, double.class, float.class, double.class, Predicate.class);
+        Entity howitzer = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation("spore", "howitzer")).create(level);
+        howitzer.moveTo(Vec3.atCenterOf(helper.absolutePos(turret)));
+        Method grief = howitzer.getClass().getDeclaredMethod("grief", AABB.class);
+        Method stomp = howitzer.getClass().getDeclaredMethod("damageStomp", Level.class, BlockPos.class, double.class, double.class);
+        grief.setAccessible(true);
+        stomp.setAccessible(true);
+        for (String what : List.of("blast", "grief", "stomp")) {
+            for (BlockPos p : round) helper.setBlock(p, Blocks.STONE);
+            helper.setBlock(platform, Blocks.STONE);
+            helper.setBlock(turret, BastionBlocks.TURRET_BASE.get().defaultBlockState().setValue(TurretBaseBlock.FACING, Direction.UP));
+            switch (what) {
+                case "blast" -> blast.invoke(null, level, null, helper.absolutePos(turret), 2.5, 0f, 10.0, (Predicate<Entity>) e -> false);
+                case "grief" -> grief.invoke(howitzer, new AABB(helper.absolutePos(platform)).inflate(1.5));
+                // 30 % a block, only blocks with air under them (the platform, the stone beside it): 40 stomps take any of them.
+                default -> {
+                    for (int i = 0; i < 40; i++) stomp.invoke(howitzer, level, helper.absolutePos(platform), 3.0, 0.0);
+                }
+            }
+            helper.assertBlockPresent(BastionBlocks.TURRET_BASE.get(), turret);
+            helper.assertTrue(helper.getBlockState(platform).is(Blocks.STONE), "the " + what + " took the turret's platform");
+            helper.assertTrue(round.stream().anyMatch(p -> !helper.getBlockState(p).is(Blocks.STONE)), "the " + what + " took nothing at all");
+        }
+        helper.succeed();
     }
 
     /** A Spore Infected Human in range is a hostile target: the turret shoots it. */

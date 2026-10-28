@@ -30,7 +30,9 @@ import org.jetbrains.annotations.Nullable;
  * Invisible stand-in that takes hits for a turret base (PLAN 4.1): blocks have no HP, so mobs, projectiles and
  * explosions strike this entity, which forwards the damage to the base's block entity. It is a LivingEntity so
  * hostile mobs can target it (see TurretAggro), and it mirrors the turret's HP so health displays show it.
- * Never saved: the base spawns it on load and it removes itself as soon as its base is gone.
+ * Never saved: the base spawns it on load and it removes itself as soon as its base is gone. It never leaves its base:
+ * a blast's knockback or a mob carrying it off left it far from its turret for good, an invisible target mobs chased
+ * (user 2026-10-27), so each tick it is set back where bind() put it.
  * The crosshair passes through it, so players click and mine the block itself.
  */
 public class TurretHitboxEntity extends LivingEntity implements IEntityAdditionalSpawnData {
@@ -43,6 +45,9 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
     private BlockPos base;
     private Direction facing = Direction.UP;
     private BaseKind kind = BaseKind.STANDARD;
+    /** Where bind() put it: it goes back there every tick. */
+    @Nullable
+    private Vec3 home;
 
     public TurretHitboxEntity(EntityType<? extends TurretHitboxEntity> type, Level level) {
         super(type, level);
@@ -74,6 +79,7 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
         };
         Vec3 eye = center.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(reach - 0.5));
         setPos(eye.x, eye.y - getEyeHeight(), eye.z);
+        home = position();
     }
 
     @Override
@@ -104,6 +110,9 @@ public class TurretHitboxEntity extends LivingEntity implements IEntityAdditiona
             discard();
             return;
         }
+        if (isPassenger()) stopRiding();
+        setDeltaMovement(Vec3.ZERO);
+        if (home != null && !position().equals(home)) setPos(home.x, home.y, home.z);
         // Mirror the turret's HP (synced to clients like any mob's) so damage numbers and health bars show it.
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(turret.maxHealth());
         setHealth(Math.max(0.01f, turret.health()));

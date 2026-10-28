@@ -130,7 +130,7 @@ public class TurretStatsConfigTests {
         helper.succeed();
     }
 
-    /** One section per built-in weapon file, holding exactly the 15 common stats and that weapon's JSON params. */
+    /** One section per built-in weapon file, holding exactly the common stats it reads and that weapon's JSON params. */
     @GameTest(template = ARENA, batch = "configListsEveryBuiltInWeaponAndKey")
     public static void configListsEveryBuiltInWeaponAndKey(GameTestHelper helper) {
         Set<String> files = new TreeSet<>();
@@ -142,8 +142,9 @@ public class TurretStatsConfigTests {
         Set<String> allParams = new HashSet<>();
         for (String weapon : TurretStatsConfig.WEAPONS) {
             WeaponData data = TurretStatsConfig.builtIn(weapon);
-            Set<String> expected = new HashSet<>(TurretStatsConfig.COMMON.keySet());
-            expected.addAll(data.params().keySet());
+            Set<String> expected = new HashSet<>(TurretStatsConfig.keys(data));
+            helper.assertTrue(expected.containsAll(data.params().keySet()) && expected.containsAll(List.of("range", "fire_interval")),
+                    weapon + " lost a param, range or fire_interval: " + expected);
             allParams.addAll(data.params().keySet());
             UnmodifiableConfig section = TurretStatsConfig.SPEC.getValues().get(weapon);
             helper.assertTrue(section != null && section.valueMap().keySet().equals(expected),
@@ -151,6 +152,33 @@ public class TurretStatsConfigTests {
         }
         helper.assertTrue(TurretStatsConfig.PARAMS.keySet().equals(allParams), "param table has stale or missing keys: "
                 + TurretStatsConfig.PARAMS.keySet() + " vs " + allParams);
+        helper.succeed();
+    }
+
+    /**
+     * Only the stats a turret reads are in its section (user 2026-10-28: the file had grown too long to find a number): one that
+     * never turns has no aim keys, a fixed barrel no pitch, no heat without heat_per_shot, and no damage, spread or
+     * ammo_per_shot where its JSON has 0. Hive damage stays: it is the drones' bullet damage.
+     */
+    @GameTest(template = ARENA, batch = "configListsOnlyTheStatsATurretReads")
+    public static void configListsOnlyTheStatsATurretReads(GameTestHelper helper) {
+        Map<String, List<String>> absent = Map.of(
+                "tesla", List.of("turn_speed", "aim_tolerance", "aim_lock_ticks", "min_pitch", "max_pitch", "spread", "ammo_per_shot", "max_heat"),
+                "hive_carrier", List.of("turn_speed", "aim_tolerance", "min_pitch", "spread", "ammo_per_shot", "heat_per_shot"),
+                "repulsor_dome", List.of("damage", "turn_speed", "sweep_tolerance"),
+                "missile_launcher", List.of("min_pitch", "max_pitch", "ammo_per_shot"),
+                "javelin", List.of("min_pitch", "max_pitch", "spread"),
+                "sniper", List.of("spread", "sweep_tolerance", "heat_per_shot", "heat_dissipation_per_second", "max_heat", "overheat_ticks"),
+                "repulsor", List.of("damage", "spread"));
+        Map<String, List<String>> present = Map.of(
+                "hive_carrier", List.of("damage", "fire_interval", "range"),
+                "machine_gun", List.of("spread", "sweep_tolerance", "heat_per_shot", "heat_dissipation_per_second", "max_heat", "overheat_ticks"),
+                "plasma_repeater", List.of("heat_per_shot", "max_heat", "spread"),
+                "flamethrower", List.of("sweep_tolerance", "turn_speed"),
+                "sniper", List.of("damage", "ammo_per_shot", "turn_speed", "min_pitch", "max_pitch"),
+                "javelin", List.of("turn_speed", "aim_lock_ticks", "ammo_per_shot"));
+        absent.forEach((weapon, keys) -> keys.forEach(key -> helper.assertTrue(spec(weapon, key) == null, weapon + " still lists " + key)));
+        present.forEach((weapon, keys) -> keys.forEach(key -> helper.assertTrue(spec(weapon, key) != null, weapon + " lost " + key)));
         helper.succeed();
     }
 
@@ -176,12 +204,12 @@ public class TurretStatsConfigTests {
     @GameTest(template = ARENA, batch = "configRejectsValuesTheTurretCannotUse")
     public static void configRejectsValuesTheTurretCannotUse(GameTestHelper helper) {
         helper.assertTrue(spec("sniper", "ammo_per_shot").test(1) && !spec("sniper", "ammo_per_shot").test(1.5), "sniper ammo_per_shot is not 0 ~ 1");
-        for (String weapon : List.of("ion_rifle", "tesla", "repulsor", "repulsor_dome", "missile_launcher")) {
-            helper.assertTrue(spec(weapon, "ammo_per_shot").test(0) && !spec(weapon, "ammo_per_shot").test(0.5), weapon + " takes ammo items");
+        for (String weapon : List.of("ion_rifle", "tesla", "repulsor", "repulsor_dome", "missile_launcher", "hive_carrier")) {
+            helper.assertTrue(spec(weapon, "ammo_per_shot") == null, weapon + " lists ammo_per_shot, but it takes no ammo items");
         }
         helper.assertTrue(spec("ion_rifle", "energy_capacity").test(3000000) && !spec("ion_rifle", "energy_capacity").test(3000001),
                 "energy_capacity is not capped at 3,000,000");
-        helper.assertTrue(spec("sniper", "max_heat").test(3000) && !spec("sniper", "max_heat").test(3001), "max_heat is not capped at 3000");
+        helper.assertTrue(spec("machine_gun", "max_heat").test(3000) && !spec("machine_gun", "max_heat").test(3001), "max_heat is not capped at 3000");
         helper.succeed();
     }
 
@@ -216,15 +244,41 @@ public class TurretStatsConfigTests {
         helper.succeed();
     }
 
-    /** Every key says what it does, the built-in value and its range. */
+    /** Every key says what it does, the built-in value and its range, on one line. */
     @GameTest(template = ARENA, batch = "configCommentsShowTheModDefault")
     public static void configCommentsShowTheModDefault(GameTestHelper helper) {
         String damage = spec("sniper", "damage").getComment();
-        helper.assertTrue(damage.contains("Mod default: 24") && damage.contains("Range: 0 ~ 10000"), "sniper damage comment: " + damage);
+        helper.assertTrue(damage.equals("Damage per hit. Default 24, allowed 0 ~ 10000"), "sniper damage comment: " + damage);
         String interval = spec("machine_gun", "fire_interval").getComment();
-        helper.assertTrue(interval.contains("Mod default: 1.6667"), "machine gun fire_interval comment: " + interval);
+        helper.assertTrue(interval.contains("Default 1.6667,"), "machine gun fire_interval comment: " + interval);
         String charge = spec("railgun", "charge_ticks").getComment();
-        helper.assertTrue(charge.contains("Mod default: 60") && charge.toLowerCase().contains("tick"), "railgun charge_ticks comment: " + charge);
+        helper.assertTrue(charge.contains("Default 60,") && charge.toLowerCase().contains("tick"), "railgun charge_ticks comment: " + charge);
+        for (String weapon : TurretStatsConfig.WEAPONS) {
+            for (String key : TurretStatsConfig.keys(TurretStatsConfig.builtIn(weapon))) {
+                String comment = spec(weapon, key).getComment();
+                helper.assertTrue(!comment.contains("\n"), weapon + "." + key + " comment is more than one line: " + comment);
+            }
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Inside a turret's own section a comment never names a turret ("Hive Carrier: ...") and speaks of what that turret does:
+     * Hive damage and fire_interval are its drones' bullets and waves, its unit_cap counts drones, not spiders.
+     */
+    @GameTest(template = ARENA, batch = "configCommentsSpeakOfTheirOwnTurret")
+    public static void configCommentsSpeakOfTheirOwnTurret(GameTestHelper helper) {
+        for (String weapon : TurretStatsConfig.WEAPONS) {
+            for (String key : TurretStatsConfig.keys(TurretStatsConfig.builtIn(weapon))) {
+                String comment = spec(weapon, key).getComment();
+                helper.assertTrue(!comment.matches("^(Hive Carrier|Brood Cannon|Javelin|Missile): .*"), weapon + "." + key + ": " + comment);
+            }
+        }
+        helper.assertTrue(spec("hive_carrier", "damage").getComment().contains("drone bullet"), spec("hive_carrier", "damage").getComment());
+        helper.assertTrue(spec("hive_carrier", "fire_interval").getComment().contains("wave"), spec("hive_carrier", "fire_interval").getComment());
+        String cap = spec("hive_carrier", "unit_cap").getComment();
+        helper.assertTrue(cap.contains("drone") && !cap.contains("spider"), "hive unit_cap: " + cap);
+        helper.assertTrue(spec("brood_cannon", "damage").getComment().contains("bite"), spec("brood_cannon", "damage").getComment());
         helper.succeed();
     }
 
@@ -261,11 +315,11 @@ public class TurretStatsConfigTests {
     /** run/config is shared with runClient: a value set there to try something in game must survive the GameTests. */
     @GameTest(template = ARENA, batch = "testsPutBackTheValueTheFileHad")
     public static void testsPutBackTheValueTheFileHad(GameTestHelper helper) {
-        ForgeConfigSpec.ConfigValue<Object> value = value("sniper", "spread");
+        ForgeConfigSpec.ConfigValue<Object> value = value("sniper", "damage");
         try {
-            value.set(2.5);
-            withValue("sniper", "spread", 7, () -> {});
-            helper.assertTrue(Double.valueOf(2.5).equals(value.get()), "the file's 2.5 became " + value.get());
+            value.set(30.5);
+            withValue("sniper", "damage", 7, () -> {});
+            helper.assertTrue(Double.valueOf(30.5).equals(value.get()), "the file's 30.5 became " + value.get());
         } finally {
             value.set(value.getDefault());
             WeaponDataLoader.rebuild();

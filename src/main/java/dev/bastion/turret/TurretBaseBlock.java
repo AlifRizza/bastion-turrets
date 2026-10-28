@@ -88,6 +88,20 @@ public class TurretBaseBlock extends BaseEntityBlock {
         return List.of(pos);
     }
 
+    /**
+     * A block of a turret base (any size, any part), or the block one stands on (that base's FACING points away from it):
+     * what Spore's Howitzer leaves standing when it blasts, bulldozes or stomps the blocks round it (mixin/compat, user
+     * 2026-10-27). Its blast still hurts the turret through the hitbox, by its HP.
+     */
+    public static boolean spared(BlockGetter level, BlockPos pos) {
+        if (level.getBlockState(pos).getBlock() instanceof TurretBaseBlock) return true;
+        for (Direction side : Direction.values()) {
+            BlockState next = level.getBlockState(pos.relative(side));
+            if (next.getBlock() instanceof TurretBaseBlock && next.getValue(FACING) == side) return true;
+        }
+        return false;
+    }
+
     /** The turret behind any block of a base, small or large, or null. */
     @Nullable
     public static TurretBaseBlockEntity core(BlockGetter level, BlockPos pos) {

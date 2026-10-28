@@ -38,8 +38,10 @@ so a 7-damage shot lands as ~6.9.
 - [ ] Choke Mk3 (Shotgun) tightens the spread a lot but still spreads a little; Autoloader Mk3 refills rockets/missiles clearly faster.
 
 ## Mod compatibility (0.2.0): `-PwithCompatMods` (Fungal Infection: Spore 2.2.0j, TaCZ 1.1.8-hotfix2)
-Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `CompatModTests` with the mods (without them those 3 tests pass at once).
+Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `CompatModTests` with the mods (without them those 4 tests pass at once).
 - [ ] Spore: `/summon spore:inf_human` (or any infected) near a turret: the turret shoots it; an unarmed turret gets walked up to and hit (lights go yellow/red).
+- [ ] Spore's Howitzer (user 2026-10-27): put an armed turret on a stone floor with stone round it, `/bastiondev spawn spore:howitzer 2000` some 15 blocks off. Its bombs, its landing stomp and its walking through blocks clear the stone round the turret, but the turret and the block under it stay; the turret loses HP from the blasts (it can still be destroyed that way). A wall or ceiling turret keeps the block it hangs on too.
+- [ ] Hit boxes stay put (user 2026-10-27): F3+B, a ring of turrets, then a Spore swarm with Griefers or Volatiles (`/bastiondev spawn spore:vigil 500`): every white hit box stays on its turret through the blasts; no box floats in the air or stands on empty ground, and no mob crowds round empty air. Killing the swarm with `/kill @e[type=#spore:fungus_entities]` leaves only the boxes on turrets.
 - [ ] TaCZ: shoot a turret that is not yours (or run `/bastiondev owndamage true` first to test on your own): it takes damage and breaks at 0 HP (weapon + ammo lost, Damaged Base drops). Afterwards `/bastiondev owndamage false`.
 - [ ] TaCZ with owndamage false: shooting your own turret does nothing to it (the bullet stops at it, like an arrow).
 - [ ] Crosshair still goes through the turret to its base block: right-click opens the GUI, mining works, you still cannot punch it.
@@ -188,7 +190,8 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] Plasma Repeater: three slightly different shots; Turret base: deploy, idle hum (loops without a click), repair, destroyed (a Large Turret Base sounds bigger).
 - [ ] Volume: the new sounds sit about as loud as the turrets still on placeholders (Rocket, Tesla, ...).
 - [ ] Zombies hit by turrets groan at most twice a second each and quieter than before (config `turretHurtSoundInterval` 10 ticks, `turretHurtSoundVolume` 0.5); their death sound is unchanged. No sound when a bullet, plasma ball or ion bolt lands (removed for now).
-- [ ] `/bastiondev turrets [t1|t2|t3]` (dev runs and the `-dev` jar): one armed base per weapon (Large Turret Base for the big ones) with Creative Ammo; place one and it fires.
+- [ ] `/bastiondev turrets [t1|t2|t3] [true|false]` (dev runs and the `-dev` jar): one armed base per weapon (Large Turret Base for the big ones) with Creative Ammo; place one and it fires. With `true` (user 2026-10-27) the names end in "(unlimited HP)" and the placed turrets take no damage: a ravager, a creeper or an owner with `/bastiondev owndamage true` never lowers their HP; broken with a pickaxe and placed again, still unlimited. Without it (or `false`) they take damage as before.
+- [ ] `/bastiondev spawn <mob> [health] [count]` (user 2026-10-27): tab lists every mob, vanilla and modded (as `/summon`). `/bastiondev spawn minecraft:pillager 300 5`: five pillagers with crossbows, 300 HP each, no armour, adults; `/bastiondev spawn minecraft:zombie 300 10`: no baby zombies, no extra zombies when hit, all exactly 300 HP; `/bastiondev spawn minecraft:oak_boat` refuses (not a mob). `ai` and `knockbackimmune` apply to them too.
 
 ## Repulsor & Repulsor Dome
 - [ ] Repulsor on a standard base (floor, wall, ceiling) with FE (Creative Power Source, cable, or a Feed Hub): turns to a mob even right at its feet, the three rings in its horn light up one by one while it charges, then a wave (rings + a sweeping air cone) throws every mob in front of it, up to 5 blocks out, ~4 blocks back in one push; dust at their feet. No damage.
@@ -272,11 +275,12 @@ Automated: `./gradlew runGameTestServer --offline -PwithCompatMods` runs `Compat
 - [ ] `runServer` + separate client: everything above works on a dedicated server, no errors in either log.
 
 ## Turret stats config (bastion-turrets.toml)
-Put every value back to its "Mod default" number when done (or delete the file): the GameTests use the same `run/config` file (`runConfigLeavesEveryValueAtDefault` names any number left there).
-- [ ] Start the game once: `config/bastion-turrets.toml` appears next to `bastion-common.toml`, with the explanation at the top, one section per turret (`[gun]` first, `[plasma_cannon]` last) and every value written as the mod's own number (`damage = 24` under `[sniper]`, no `.0`), with "Mod default" and "Range" in its comment.
+Put every value back to its "Default" number when done (or delete the file): the GameTests use the same `run/config` file (`runConfigLeavesEveryValueAtDefault` names any number left there).
+- [ ] Start the game once: `config/bastion-turrets.toml` appears next to `bastion-common.toml`, with the explanation at the top, one section per turret (`[gun]` first, `[hive_carrier]` last) and every value written as the mod's own number (`damage = 24` under `[sniper]`, no `.0`), with one comment line above it: what it does, then "Default 24, allowed 0 ~ 10000".
+- [ ] Condensed file (2026-10-28): about 800 lines, not 2,100. `[tesla]` has 9 keys (no `turn_speed`, `spread`, pitch, heat or `ammo_per_shot`); only `[machine_gun]` and `[plasma_repeater]` have the 4 heat keys; `[missile_launcher]` and `[javelin]` have no `min_pitch`/`max_pitch`; `[hive_carrier] damage` says "Damage per drone bullet" and `unit_cap` speaks of drones. No comment starts with a turret's name. An old file keeps every number you changed; its unused lines are gone after the first start.
 - [ ] With a world open, set `[sniper] damage = 100` and save the file: within a few seconds (up to about 10 on macOS), a Sniper's Info tab shows 100 and it kills a Witch (26 HP) in one shot, not two. Type 24 back and save: 24 again. No restart.
 - [ ] Set `[railgun] charge_ticks = 10` and save: the Railgun charges for half a second.
-- [ ] Set `[gun] damage = -5` (or `"abc"`) and `[ion_rifle] ammo_per_shot = 1`, then restart: the log warns for both, the file shows the mod's numbers again (7 and 0) and both turrets still fire.
+- [ ] Set `[gun] damage = -5` (or `"abc"`) and add a line `ammo_per_shot = 1` under `[ion_rifle]`, then restart: the log warns, `[gun] damage` is 7 again, the `ammo_per_shot` line under `[ion_rifle]` is gone, and both turrets still fire.
 - [ ] Set `[ion_rifle] energy_capacity = 5000` on a full Ion Rifle: its energy bar shows 5,000 at most and it still fires (4 shots of 1,200 FE per full bar).
 - [ ] Set `[plasma_cannon] damage = 0`: mobs still take the blast damage (only the direct hit's own damage is gone) and still die normally.
 - [ ] LAN / dedicated server: change the server's file; a second player sees the new numbers in the Info tab. Changing the client's own file changes nothing on that server.
@@ -687,6 +691,9 @@ base. Still targets: `/summon husk ~ ~ ~ {NoAI:1b}`; a flyer: `/summon phantom ~
    about 8 blocks up and about 32 blocks out, hover off a target and shoot it from up to 32 blocks (amber tracers, a chin flash, sparks on hits, 10 shots a
    second each, 35 damage a second); a phantom is shot too. A cow or villager among the husks is never hit; drones never shoot each other,
    spiders or turrets, and no turret shoots them. Their light turns yellow below half HP and blinks red below a quarter.
+   Shot down while shooting a mob (user 2026-10-27; `/bastiondev owndamage true` and a sword or arrow, or a Spore mob):
+   a drone no longer just drops: it noses down trailing red smoke into the nearest enemy in sight and bursts on it. One
+   killed with no enemy in sight still drops without a blast.
 6. **Kamikaze**: a drone out of bullets, or below a quarter HP, with an enemy in reach noses down, rolls, trails red
    smoke and bursts on it (a bigger blast than before): about 15 to valid targets within 4.5 blocks, nothing to the
    cow, no blocks broken.

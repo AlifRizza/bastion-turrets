@@ -173,6 +173,27 @@ public class HiveTests {
         });
     }
 
+    /** Shot down with a target in reach it does not just drop: it dives into it and bursts (user 2026-10-27). */
+    @GameTest(template = ARENA, timeoutTicks = 300, batch = "shotDownDroneDivesIntoItsTarget")
+    public static void shotDownDroneDivesIntoItsTarget(GameTestHelper helper) {
+        platform(helper);
+        HiveDroneEntity drone = drone(helper, sky(helper, 8, 4, 17), sky(helper, 12, 1, 17), new TargetFilter(), 60);
+        LivingEntity husk = still(helper, EntityType.HUSK, sky(helper, 20, 1, 17));
+        boolean[] shot = {false};
+        helper.onEachTick(() -> { // killed the moment it engages: a bullet or two at most before, the burst is 15
+            if (!shot[0] && drone.state() == HiveDroneEntity.State.ENGAGE) {
+                shot[0] = true;
+                drone.hurt(helper.getLevel().damageSources().generic(), 1000);
+            }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(shot[0], "the drone never engaged");
+            helper.assertTrue(drone.isRemoved(), "the drone is still there (state " + drone.state() + ")");
+            helper.assertTrue(lost(husk) >= 14, "the husk lost only " + lost(husk) + ": the drone fell instead of diving");
+            clear(helper);
+        });
+    }
+
     /** A cow 1.5 blocks from the husk the drone dives into loses nothing. */
     @GameTest(template = ARENA, timeoutTicks = 300, batch = "kamikazeSparesNonTargets")
     public static void kamikazeSparesNonTargets(GameTestHelper helper) {

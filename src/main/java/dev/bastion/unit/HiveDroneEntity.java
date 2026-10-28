@@ -45,6 +45,7 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,7 +59,9 @@ import java.util.UUID;
  * (clear of the wall), then level in through the hole to its bay, where it docks (HiveCarrierWeapon counts it) — after idleTicks with nothing to shoot, or empty;
  * KAMIKAZE: out of bullets or below kamikazeHealth with a target left, it dives into it and bursts (kamikazeDamage within
  * kamikazeRadius, valid targets only). Its carrier gone, it keeps fighting and dives when empty. Never saved
- * (TurretUnits: gone with its chunk); shot down, it falls and is gone without a blast.
+ * (TurretUnits: gone with its chunk). Shot down with a valid target in sight within reach, it makes that dive anyway
+ * and bursts on it (user 2026-10-27: a big hit used to drop most of them short); with none, it falls and is gone without
+ * a blast.
  */
 public class HiveDroneEntity extends PathfinderMob implements TurretUnit, GeoEntity {
     public enum State {LAUNCH, PATROL, ENGAGE, RETURN, KAMIKAZE}
@@ -87,6 +90,8 @@ public class HiveDroneEntity extends PathfinderMob implements TurretUnit, GeoEnt
     private static final int STUCK_TICKS = 40;
     /** How close to its bay counts as docked, and to its target as a hit for the dive. */
     private static final double DOCK = 0.6, DIVE_HIT = 1.2;
+    /** Ticks a shot-down drone's last dive may take before it bursts wherever it is. */
+    private static final int DYING_DIVE_TICKS = 60;
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private BlockPos home = BlockPos.ZERO;
     /** Its bay, its hole's mouth (LAUNCH), the point out in front of the hole it comes home by, and where it comes down this tick (RETURN, homeBy). */
@@ -96,6 +101,9 @@ public class HiveDroneEntity extends PathfinderMob implements TurretUnit, GeoEnt
     private UUID owner;
     private DroneStats stats = new DroneStats(20, 2, 120, 5, 16, 32, 0.25f, 15, 4.5f, 0.45f, 100);
     private int ammo, idle, shotCooldown, stuck;
+    /** Shot down: the target of its last dive, or null (it drops). */
+    @Nullable
+    private LivingEntity dyingDive;
     private double lastReturnDistance = Double.MAX_VALUE;
     /** In LAUNCH: it is out through its hole and climbs. In RETURN: it came down in front of its hole and flies in to the bay. */
     private boolean cleared, entering;
@@ -350,11 +358,36 @@ public class HiveDroneEntity extends PathfinderMob implements TurretUnit, GeoEnt
         return super.hurt(source, amount);
     }
 
-    /** Shot down: it drops (gravity back on) and is gone after a second, no vanilla poof and no blast. */
+    /**
+     * Shot down: on its first death tick it picks the nearest valid target it sees within shot range and dives into it as
+     * KAMIKAZE (bursting on a hit, on running into something, or, the target gone or DYING_DIVE_TICKS up, where it is);
+     * with none it drops (gravity back on) and is gone after a second, no vanilla poof and no blast. Here, not in die(),
+     * as the Brood spider's dying leap.
+     */
     @Override
     protected void tickDeath() {
+        ++deathTime;
+        if (level().isClientSide || isRemoved()) return;
+        if (deathTime == 1) dyingDive = nearestPrey();
+        if (dyingDive != null) {
+            Vec3 at = dyingDive.getBoundingBox().getCenter();
+            setState(State.KAMIKAZE);
+            steer(at, State.KAMIKAZE);
+            if (!dyingDive.isAlive() || deathTime > DYING_DIVE_TICKS || distanceToSqr(at) < DIVE_HIT * DIVE_HIT
+                    || deathTime > 2 && (horizontalCollision || verticalCollision)) {
+                burst((ServerLevel) level());
+            }
+            return;
+        }
         setNoGravity(false);
-        if (++deathTime >= 20 && !level().isClientSide && !isRemoved()) remove(RemovalReason.KILLED);
+        if (deathTime >= 20) remove(RemovalReason.KILLED);
+    }
+
+    @Nullable
+    private LivingEntity nearestPrey() {
+        return level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(stats.shotRange()), e -> canShoot(e) && hasLineOfSight(e)
+                        && e.distanceTo(this) <= stats.shotRange()).stream()
+                .min(Comparator.comparingDouble(e -> e.distanceToSqr(this))).orElse(null);
     }
 
     @Override

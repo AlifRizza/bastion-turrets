@@ -127,6 +127,8 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
     private boolean salvo;
     // Health (PLAN 4.1); negative = full, so a fresh base needs no config lookup at construction.
     private float health = -1;
+    /** Takes no damage (NBT "Invulnerable", from /bastiondev turrets ... true; user 2026-10-27, for testing). */
+    private boolean invulnerable;
     @Nullable
     private TurretHitboxEntity hitbox;
     private int syncTimer;
@@ -427,7 +429,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
 
     /** Forwarded by TurretHitboxEntity. Destroys the turret at 0 HP. */
     public boolean takeDamage(DamageSource source, float amount) {
-        if (!(level instanceof ServerLevel server) || amount <= 0) return false;
+        if (!(level instanceof ServerLevel server) || amount <= 0 || invulnerable) return false;
         if (source.getEntity() instanceof Player player && !canBeDamagedBy(player)) return false;
         health = health() - amount;
         setChanged();
@@ -1106,6 +1108,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         if (!enabled) tag.putBoolean("Disabled", true);
         if (redstoneInverted) tag.putBoolean("RedstoneInverted", true);
         if (health >= 0) tag.putFloat("Health", health);
+        if (invulnerable) tag.putBoolean("Invulnerable", true);
         if (salvo) tag.putBoolean("Salvo", true);
         if (weaponState.tubes != 0) tag.putInt("Tubes", weaponState.tubes);
         if (weaponState.dockedDrones > 0) tag.putInt("DockedDrones", weaponState.dockedDrones);
@@ -1136,6 +1139,7 @@ public class TurretBaseBlockEntity extends BlockEntity implements GeoBlockEntity
         enabled = !tag.getBoolean("Disabled");
         redstoneInverted = tag.getBoolean("RedstoneInverted");
         health = tag.contains("Health") ? tag.getFloat("Health") : -1;
+        invulnerable = tag.getBoolean("Invulnerable");
         salvo = tag.getBoolean("Salvo");
         energy = tag.getInt("Energy");
         weaponState.tubes = weaponState.syncedTubes = clientTubes = tag.getInt("Tubes");

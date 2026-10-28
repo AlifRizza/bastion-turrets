@@ -497,11 +497,27 @@ Semua model mengikuti satu bahasa visual supaya terasa satu keluarga:
 
 Disimpan untuk setelah MVP rilis, memakai framework yang sama: **Laser** (beam kontinu dengan ramp-up), **Plasma Charge** (proyektil charged + ledakan; sekarang di-spec sebagai Plasma Repeater + Plasma Cannon, bagian 8 "Ion Rifle, Plasma Repeater & Plasma Cannon"), **Missile** (homing salvo), **Flak** (proximity fuse anti-udara), **Rail** (hitscan charged menembus), **EMP** (pulsa stun area), **Hive** (spawner drone). Komponen framework yang khusus untuk mereka (beam renderer, `energy_mote`, `plasma_arc`, `flak_burst`, ledakan custom, entity proyektil sungguhan) baru dibangun saat senjata itu dikerjakan.
 
-**Dukungan addon "turret pack" (dicatat 2026-10-07 23:09, permintaan user, dikerjakan setelah rilis, sekitar 1.0.0; belum didesain):** pembuat addon cukup membuat desain (model Bedrock/GeckoLib + tekstur), animasi, suara, dan JSON berisi daftar variabel; tanpa Java. Contoh acuan: gun pack TaCZ (zip atau folder di `.minecraft/tacz`; per senjata file index, data, display, model, animasi, tekstur, suara OGG). Yang perlu dibangun: (1) satu item module generik yang dibuat dari isi pack, menggantikan pendaftaran Java per senjata; (2) path model/animasi/tekstur memakai namespace addon, bukan `bastion`; (3) file *display* JSON untuk efek (muzzle flash, tracer, warna, suara, model proyektil) yang sekarang ada di Java (VfxPresets); (4) folder pack `.minecraft/bastion/` + template + satu contoh addon + dokumen daftar variabel; (5) proyektil: addon memilih jenis yang sudah ada (peluru, roket, misil homing, peluru mortar) dan mengatur angka serta modelnya; perilaku baru tetap lewat addon Java. Format pack diberi nomor versi dan dijaga kompatibel. Sebelum mulai: ringkasan desain dalam bahasa Indonesia untuk disetujui user.
+**Dukungan addon "turret pack" (dicatat 2026-10-07 23:09, permintaan user; dikerjakan di 1.0.0 beserta wikinya, roadmap user 2026-10-27; belum didesain):** pembuat addon cukup membuat desain (model Bedrock/GeckoLib + tekstur), animasi, suara, dan JSON berisi daftar variabel; tanpa Java. Contoh acuan: gun pack TaCZ (zip atau folder di `.minecraft/tacz`; per senjata file index, data, display, model, animasi, tekstur, suara OGG). Yang perlu dibangun: (1) satu item module generik yang dibuat dari isi pack, menggantikan pendaftaran Java per senjata; (2) path model/animasi/tekstur memakai namespace addon, bukan `bastion`; (3) file *display* JSON untuk efek (muzzle flash, tracer, warna, suara, model proyektil) yang sekarang ada di Java (VfxPresets); (4) folder pack `.minecraft/bastion/` + template + satu contoh addon + dokumen daftar variabel; (5) proyektil: addon memilih jenis yang sudah ada (peluru, roket, misil homing, peluru mortar) dan mengatur angka serta modelnya; perilaku baru tetap lewat addon Java. Format pack diberi nomor versi dan dijaga kompatibel. Sebelum mulai: ringkasan desain dalam bahasa Indonesia untuk disetujui user.
 
 ---
 
 ## 8. Roadmap Fase & Acceptance Criteria
+
+**Roadmap versi (user 2026-10-27, menggantikan rencana lama "0.7.0 = upgrade + hybrid")**: spec tiap versi ditulis saat
+disetujui; ini urutannya saja.
+
+| Versi | Isi |
+|---|---|
+| 0.7.0 | Upgrade turret saja (Mk2/Mk3, Augment Core) |
+| 0.8.0 | Turret hybrid (Fusion Core) |
+| 0.9.0 | Turret utility / buff dan debuff: misalnya memperlambat musuh, menyembuhkan turret kita, menghancurkan proyektil musuh |
+| 0.9.1-0.9.9 | Bug fix, improvement, balancing, turret dan module tambahan |
+| 1.0.0 | Full release, beserta dukungan add-on (turret pack, lihat bagian 7 "Dukungan addon") dan wikinya (user 2026-10-27: dipindah dari 0.9.9) |
+| Setelah 1.0.0 | Porting versi Minecraft lain dan/atau versi NeoForge |
+
+Turret baru bisa muncul di versi mana pun antara 0.7.0 dan 1.0.0, tidak hanya di 0.9.x (user 2026-10-27).
+
+Rilis ke CurseForge (user 2026-10-27): 0.3.2, 0.4.0, 0.5.0, 0.6.0 diunggah satu per satu dengan jeda 3-5 hari.
 
 Kerjakan berurutan. Jangan lanjut sebelum acceptance criteria fase saat ini terpenuhi dan dites di game.
 
@@ -1081,24 +1097,31 @@ file config gameplay: `bastion-common.toml` (yang sudah ada: tier base, proteksi
   `spread` di Tesla Coil) tidak berpengaruh.
 - Satu section per senjata, nama = id file JSON-nya (`[gun]`, `[machine_gun]`, ..., `[plasma_cannon]`), urutan seperti
   tabel senjata di deskripsi.
-- Tiap section berisi **15 stat umum** (`range`, `fire_interval`, `damage`, `spread`, `ammo_per_shot`, `turn_speed`,
+- Tiap section berisi **stat umum yang dibaca turret itu** dari 15 (`range`, `fire_interval`, `damage`, `spread`, `ammo_per_shot`, `turn_speed`,
   `aim_tolerance`, `aim_lock_ticks`, `min_pitch`, `max_pitch`, `sweep_tolerance`, `heat_per_shot`,
   `heat_dissipation_per_second`, `max_heat`, `overheat_ticks`) **plus semua `params` di JSON senjata itu** (mis.
   `charge_ticks`, `energy_per_shot`, `blast_radius`), langsung di section (tanpa sub-tabel `params`; tidak ada nama
-  yang bentrok).
+  yang bentrok). User 2026-10-28 ("config terlalu panjang, susah dicari"): stat yang tidak dibaca tidak ditulis, ditentukan
+  dari JSON bawaan turret itu: `damage`, `spread`, `ammo_per_shot`, `sweep_tolerance` hanya kalau nilainya > 0; 4 stat heat hanya
+  kalau `heat_per_shot` > 0 (Machine Gun, Plasma Repeater); `turn_speed`, `aim_tolerance`, `aim_lock_ticks` hanya kalau
+  `turn_speed` > 0 (bukan Tesla, Hive, Repulsor Dome); `min_pitch`/`max_pitch` juga tidak untuk laras tetap (min = max:
+  Missile Launcher, Javelin). File 2.117 → ~800 baris. `damage` Hive tetap ada: itu damage peluru drone.
 - Tidak masuk config: `type`, `ammo`, `energy_color`, `bullet_color`, `pivot_height`, `muzzle_length` (identitas, warna, geometri
   model).
-- Nilai tiap key: angka dalam batasnya, awalnya angka mod (bulat ditulis tanpa `.0`). Komentar per key: penjelasan satu baris (Inggris) +
-  satuan + `Mod default: <nilai JSON bawaan>` + `Range: <min> ~ <max>`.
+- Nilai tiap key: angka dalam batasnya, awalnya angka mod (bulat ditulis tanpa `.0`). Komentar per key **satu baris**
+  (user 2026-10-28): penjelasan (Inggris) + satuan + `Default <nilai JSON bawaan>, allowed <min> ~ <max>`. Penjelasan tidak
+  diawali nama turret (section-nya sudah menyebut); stat yang artinya lain di satu turret punya kalimat sendiri (Hive:
+  `damage` = per peluru drone, `fire_interval` = jeda antar gelombang, `range`, `unit_cap` = drone; Brood: `damage` = gigitan,
+  `fire_interval` = jeda kapsul; Javelin: `damage` = ledakan di pusat).
 - Batas per key: tabel di kode, aturan umum per jenis (tick 0–12000, damage 0–10000, jarak/radius 0–256, sudut 0–180,
   pitch −90–90, rasio/akurasi 0–1, FE 0–10.000.000, jumlah ≥ 1) dengan pengecualian eksplisit (mis. `fire_interval`
-  minimal 0,5 tick; `ammo_per_shot` 0–1, 0–0 untuk senjata tanpa item; FE kapasitas ≤ 3.000.000 dan `max_heat` ≤ 3000
+  minimal 0,5 tick; `ammo_per_shot` 0–1, tidak ditulis untuk senjata tanpa item; FE kapasitas ≤ 3.000.000 dan `max_heat` ≤ 3000
   karena bar GUI 16-bit). Field int (`aim_lock_ticks`, `overheat_ticks`) dibulatkan.
 - Nilai salah (teks, di luar batas): validator Forge mengembalikannya ke angka mod dan menulis
   peringatan di log (perilaku bawaan ForgeConfigSpec).
 
 **Isi spec saat start**: dibangun di konstruksi mod dari JSON bawaan **di dalam jar** (`/data/bastion/turret_weapons/
-<id>.json` lewat classloader): itu sumber daftar key, nilai `Mod default` dan nilai stat umum yang tidak tertulis di JSON
+<id>.json` lewat classloader): itu sumber daftar key, nilai `Default` dan nilai stat umum yang tidak tertulis di JSON
 (default codec, mis. `heat_per_shot` 0). Daftar 16 id senjata tetap di kode; GameTest memastikan daftar itu sama dengan
 file di folder `turret_weapons` bawaan.
 
@@ -1531,6 +1554,8 @@ Angka *(controller)* = usulan saya, semuanya di JSON/config. Ketiganya modul **h
   dan 60 peluru; drone habis/mati sebelum gelombang berikutnya, batas 9 tak pernah tercapai.)
 - Drone: **300 peluru** (30 dtk tembakan; user 2026-10-27, awalnya 120), menembak target sah dari jauh, berpatroli di sekitar carrier; peluru habis **atau** HP rendah →
   **menukik kamikaze** ke musuh. Tanpa musuh: **pulang, mendarat, isi ulang** peluru (FE) lalu menunggu di dalam carrier.
+  HP habis (user 2026-10-27): kalau ada target sah terlihat dalam jarak tembak, drone tetap menukik dan meledak di sana
+  (seperti lompatan terakhir laba-laba Brood); tanpa target, jatuh tanpa ledakan.
 - Angka *(controller)*: drone 2.000 FE, batas 9 per carrier, HP 20, peluru 3,5 damage, 10 tembakan/dtk (35 damage/dtk per drone; user 2026-10-27, awalnya 2 × 4), jarak tembak 16,
   jarak patroli 32 dari carrier, kamikaze saat HP < 25 %: 15 damage radius 4,5 (user 2026-10-24; awalnya 10 radius 3), isi ulang 300 peluru = 1.000 FE.
 - Overwatch: hanya melihat.

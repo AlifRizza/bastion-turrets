@@ -50,12 +50,13 @@ public final class HiveEffects {
         if (event.phase != TickEvent.Phase.END || level == null || Minecraft.getInstance().isPaused()) return;
         Set<Integer> alive = new HashSet<>();
         for (Entity entity : level.entitiesForRendering()) {
-            if (!(entity instanceof HiveDroneEntity drone) || drone.isDeadOrDying()) continue;
-            alive.add(drone.getId());
-            if (drone.state() == HiveDroneEntity.State.KAMIKAZE) {
+            if (!(entity instanceof HiveDroneEntity drone)) continue;
+            if (drone.state() == HiveDroneEntity.State.KAMIKAZE) { // a shot-down one's last dive too
                 VfxManager.play(VfxPresets.DRONE_TRAIL, drone.getBoundingBox().getCenter(), drone.getDeltaMovement().normalize().reverse(),
                         VfxParams.of().color(RED).seed(level.getGameTime() * 31 + drone.getId()));
             }
+            if (drone.isDeadOrDying()) continue;
+            alive.add(drone.getId());
             if (HUMMING.size() < MAX_HUMS && HUMMING.add(drone.getId())) Minecraft.getInstance().getSoundManager().play(new Hum(drone));
         }
         HUMMING.retainAll(alive);

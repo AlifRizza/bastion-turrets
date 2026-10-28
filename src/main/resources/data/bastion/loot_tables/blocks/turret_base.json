@@ -13,6 +13,7 @@
               "source": "block_entity",
               "ops": [
                 { "source": "Inventory", "target": "BlockEntityTag.Inventory", "op": "replace" },
+                { "source": "Invulnerable", "target": "BlockEntityTag.Invulnerable", "op": "replace" },
                 { "source": "Tier", "target": "BlockEntityTag.Tier", "op": "replace" }
               ]
             }
