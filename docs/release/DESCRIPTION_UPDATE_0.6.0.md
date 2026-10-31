@@ -58,3 +58,8 @@ CurseForge: the same, with `<code>config/bastion-research.toml</code>`.
 Old: (recipe pages for the workstations and weapons, the + button)
 
 New: (recipe pages for the workstations and weapons, research pages, the + button)
+
+## 5. Known limits: the placeholder sounds line goes
+
+The sounds are real now: in "Known limits of this beta", delete the paragraph that begins "The four early turrets, the
+Makeshift Turret Base and the Javelin Missile" (the one after the Embeddium / Oculus paragraph), on both sites.

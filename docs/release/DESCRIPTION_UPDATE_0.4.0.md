@@ -1,6 +1,6 @@
 # Store description: what changed since the 0.3.2 text
 
-Only these 6 parts changed; everything else (and every old image) stays as it is. Each part has the Modrinth text
+Only these 7 parts changed; everything else (and every old image) stays as it is. Each part has the Modrinth text
 (Markdown) and the CurseForge text (HTML, editor in Source code view). Full files: `DESCRIPTION.md` (Modrinth),
 `DESCRIPTION.curseforge.html` (CurseForge). Two new pictures in the text and four new gallery images (part 6). The
 0.4.0 changelog is in `UPLOAD.md`.
@@ -119,3 +119,19 @@ upload to the gallery, then link it):
 
 Gallery (both sites, from `screenshots/`, captions in `UPLOAD.md` "Gallery captions"): `13_early_turrets`,
 `14_arrow_launcher`, `15_spectral_volley`, `16_makeshift_mounts`.
+
+## 7. Known limits: placeholder sounds (added on the page 2026-10-28)
+
+In "Known limits of this beta", add this paragraph after the Embeddium / Oculus one.
+
+Modrinth:
+
+```markdown
+The four early turrets and the Makeshift Turret Base still have placeholder sounds; their real sounds come in a later update.
+```
+
+CurseForge:
+
+```html
+<p>The four early turrets and the Makeshift Turret Base still have placeholder sounds; their real sounds come in a later update.</p>
+```

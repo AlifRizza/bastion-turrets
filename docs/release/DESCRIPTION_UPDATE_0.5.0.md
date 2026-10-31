@@ -89,3 +89,19 @@ Gallery (both sites, from `screenshots/`, captions in `UPLOAD.md` "Gallery capti
 
 Optional: to show the Fortress in the text too, put `screenshots-840/17_fortress_base.jpg` after the
 `13_early_turrets` picture (end of the Turret bases section); the full description files do not have it.
+
+## 6. Known limits: the placeholder sounds line
+
+In "Known limits of this beta", replace the 0.4.0 line ("The four early turrets and the Makeshift Turret Base still have placeholder sounds; their real sounds come in a later update.") with this one.
+
+Modrinth:
+
+```markdown
+The four early turrets, the Makeshift Turret Base and the Javelin Missile, Brood Cannon and Hive Carrier Turrets still have placeholder sounds; their real sounds come in a later update.
+```
+
+CurseForge:
+
+```html
+<p>The four early turrets, the Makeshift Turret Base and the Javelin Missile, Brood Cannon and Hive Carrier Turrets still have placeholder sounds; their real sounds come in a later update.</p>
+```
