@@ -105,7 +105,7 @@ Survival worlds open Bastion step by step. Every player gets a Turret Codex the 
 
 - A card needs the cards below it, and a turret also needs the base of its size. Press Research to pay its cost from your inventory: iron and copper for the first steps, up to diamonds and netherite scrap for the 3x3 turrets.
 - Research unlocks recipes. A researched turret opens its parts and its ammo too. Gear you got another way (loot, creative, another mod) still works.
-- Research is shared by everyone in the world, and a chat line tells them. Worlds from before 0.6.0 start with everything researched.
+- Research is shared by everyone in the world, and a chat line tells them. Worlds from before 0.5.0 start with everything researched.
 - Servers can change every cost in `config/bastion-research.toml` or switch research off; admins have `/bastion research grant|revoke|list`.
 
 <!-- screenshot: 23_turret_codex.png -->
@@ -119,7 +119,7 @@ CurseForge:
 <ul>
 <li>A card needs the cards below it, and a turret also needs the base of its size. Press Research to pay its cost from your inventory: iron and copper for the first steps, up to diamonds and netherite scrap for the 3x3 turrets.</li>
 <li>Research unlocks recipes. A researched turret opens its parts and its ammo too. Gear you got another way (loot, creative, another mod) still works.</li>
-<li>Research is shared by everyone in the world, and a chat line tells them. Worlds from before 0.6.0 start with everything researched.</li>
+<li>Research is shared by everyone in the world, and a chat line tells them. Worlds from before 0.5.0 start with everything researched.</li>
 <li>Servers can change every cost in <code>config/bastion-research.toml</code> or switch research off; admins have <code>/bastion research grant|revoke|list</code>.</li>
 </ul>
 <p>[IMAGE: screenshots-840/23_turret_codex.jpg]</p>
