@@ -29,9 +29,9 @@ there is rebuilt from commit 2cacf9d: the one first left in `build/libs` was bui
 
 | Field                  | Value                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| File                   | `build/libs/bastion-1.20.1-0.6.0.jar` (`./gradlew build`) |
-| Version number         | 0.6.0                                                     |
-| Version name           | Bastion Turrets 0.6.0                                     |
+| File                   | `build/libs/bastion-1.20.1-0.5.0.jar` (`./gradlew build`) |
+| Version number         | 0.5.0                                                     |
+| Version name           | Bastion Turrets 0.5.0                                     |
 | Release channel / type | Beta                                                      |
 | Loader                 | Forge                                                     |
 | Game version           | 1.20.1                                                    |
@@ -57,76 +57,15 @@ committed 2026-10-24, not pushed or uploaded yet. Upload folder: `build/upload/0
 number. Changelog below, store text in `DESCRIPTION_UPDATE_0.6.0.md` (new gallery image `23_turret_codex`); committed
 2026-10-24 (`38c1c15`), then `ac32476` and `649e2e5` (2026-10-27: Brood climb and leap, real sounds, Hive drone
 balance); not pushed or uploaded yet. Upload folder: `build/upload/0.6.0/` (jars from `649e2e5`).
-
-## Changelog: 0.6.0
-
-```
-New: Research and the Turret Codex
-- The Turret Codex: every player gets one the first time they join a world (it is also crafted from a book, an iron
-  ingot and redstone). Right-click it: on the left the research tree in three tabs (Turrets, Workshop, Modules),
-  growing from the early turrets up to the 3x3 ones, with what each card brings along (ammo, stations, tools) beside it;
-  on the right a page for the card you pick: the item in 3D, its base
-  and ammo, bars for damage, fire rate and range, its description, what it unlocks and what it still needs.
-- Most recipes now need research first: the workstations, every turret but the four early ones, the bases, the tier
-  kits, the modules (Mk1, Mk2 and Mk3 each), the Feed Hub, the Control Hub and the Overwatch Link. A turret opens its
-  parts and its ammo with it. A card needs the cards below it, and a turret also the base of its size.
-- Press Research on a card to pay its cost from your inventory: iron, copper and redstone for the first steps, gold
-  for the later 1x1 turrets, diamonds for the 2x2 ones, diamonds and netherite scrap for the 3x3 ones. Creative players
-  research for free.
-- Research is shared by everyone in the world; a chat line tells everyone what was researched. Gear you got another
-  way (loot, creative, another mod) still places and works.
-- Worlds that ran before 0.6.0 start with everything researched; new worlds start from the early turrets.
-- A locked recipe shows a padlock in its workstation (and in JEI, where its + button says why) and says what to
-  research; a locked item's tooltip says so too.
-- JEI: a Research page for every card with its cost, what it unlocks, what it needs and what it leads to (R on an iron
-  ingot, U on a turret). The Codex's Recipe button opens JEI on the item.
-- config/bastion-research.toml: every card's cost, research on or off, and the first-join Codex. Admins:
-  /bastion research grant <card|all>, /bastion research revoke <card|all>, /bastion research list.
-
-Changes
-- Hive Carrier reach doubled: a wave goes out for enemies up to 64 blocks away (was 32), the drones patrol in a wider
-  circle (patrol_radius 64, was 32) and see and shoot from 32 blocks (was 16). A config/bastion-turrets.toml from an
-  older version still holds the old numbers and keeps them: set its [hive_carrier] range, patrol_radius and shot_range
-  to 64, 64 and 32 (or delete those three lines).
-- Brood spiders climb walls like spiders, so enemies up on a wall or a tower are no longer out of their reach. They
-  leap at prey 2 to 5 blocks away (fast, every 3 seconds) and bite as they land, on any ground. At 0 HP a spider no longer bursts
-  where it stands: it leaps at the nearest enemy within 5 blocks and bursts on it (with none in reach it bursts where
-  it is; an idle spider's self-destruct too).
-- The Hive Carrier sends a wave only for enemies its drones can get at: under open sky, or in sight of the hive (over
-  its cap or from its doorways). Before, a mob in a cave or behind walls in range kept sending the drones out and back
-  every 15 seconds.
-- Hive drones fire faster and hit harder: 10 shots a second of 3.5 damage (35 damage a second each; was 4 of 2), and
-  carry 300 bullets (was 120), so they still fire for 30 seconds before they dive. A config/bastion-turrets.toml from
-  an older version keeps the old numbers: set its [hive_carrier] damage, shot_interval and drone_ammo to 3.5, 2 and
-  300 (or delete those three lines).
-- A Hive drone shot down with an enemy in reach no longer just drops: it makes its dive anyway and bursts on it (a big
-  hit used to drop most of them short).
-- config/bastion-turrets.toml is less than half as long (about 800 lines, was 2,100): each turret lists only the stats
-  it uses (no aiming on the Tesla Coil, heat only on the Machine Gun and Plasma Repeater, and so on), with one comment
-  line per stat, and the Hive Carrier's say what they do there (damage is per drone bullet). Numbers you changed stay;
-  the unused lines go away on the first start.
-
-Sounds
-- Real sounds for the four early turrets, the Makeshift Turret Base and the three 3x3 turrets (they were placeholders).
-- The Javelin's silo doors hiss open when it finds a target and slam shut when it goes idle.
-- Brood spiders skitter as they walk and climb.
-- Arrow Launcher arrows thunk like vanilla arrows when they hit or stick (they were silent).
-
-Fixes
-- A turret's invisible hit box could be blown away by an explosion's knockback (or carried off by a mob) and stay
-  there for good, far from its turret: mobs crowded round empty air attacking it. It now stays on its turret.
-- Fungal Infection: Spore: the Howitzer's bombs, its landing stomp and its walking through walls deleted turrets (and
-  the block under them) outright, whatever their HP. They now leave the turret and the block it stands on; the blast
-  still damages the turret by its HP.
-- The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many
-  as fit with arrows at both ends (click them, or scroll the mouse wheel over the tabs).
-
-Note
-- The research sound is a placeholder for now.
-- Clients need this version to join a 0.6.0 server.
-```
+Renumbered 2026-10-31 (user): 0.3.2 was skipped (its changelog went into 0.4.0, uploaded 2026-10-28), and the 0.6.0
+work ships as **0.5.0** together with the Fortress and 3x3 turrets, so the 0.5.0 upload has the real sounds. There is
+no separate 0.6.0 any more: next is 0.6.0 upgrades, 0.7.0 hybrids, 0.8.0 utility turrets, 0.9.x fixes and balance,
+then 1.0.0. Store text: `DESCRIPTION_UPDATE_0.5.0.md` (0.5.0 and 0.6.0 parts in one).
 
 ## Changelog: 0.5.0
+
+Also holds what was first planned as 0.6.0 (user 2026-10-31: the 0.5.0 upload should already have the real sounds, so
+the 0.6.0 work ships as 0.5.0 and the roadmap moves down one number).
 
 ```
 New: Fortress Turret Base
@@ -162,10 +101,13 @@ New: Brood Cannon Turret
   show folded spiders. Every 6 seconds it lobs an armoured capsule on a high arc (over walls, like the Mortar) onto
   enemies on the ground 6 to 32 blocks away. The capsule lands, opens like a flower, and three robot spiders climb out;
   one that comes down on an enemy's head deals it 10 damage. Against a crowd the capsules spread over it.
-- The spiders (16 HP) hunt only what the turret may shoot, on the ground and within reach, spreading over a crowd: a
-  bite of 8 every second. With nothing left to hunt for 10 seconds they self-destruct, so none pile up after a fight. Hostile mobs go after them, so they also
-  draw attackers off your base. When one dies its eyes blink red and it bursts: 15 damage within 4 blocks, again only
-  to valid targets. They keep fighting if their turret is destroyed; they are not saved when the area unloads.
+- The spiders (16 HP) hunt only what the turret may shoot, spreading over a crowd: a bite of 8 every second. They climb
+  walls like spiders, so enemies up on a wall or a tower are in reach too, and leap at prey 2 to 5 blocks away (every
+  3 seconds), biting as they land. With nothing left to hunt for 10 seconds they self-destruct, so none pile up after
+  a fight. Hostile mobs go after them, so they also draw attackers off your base.
+- At 0 HP a spider's eyes blink red and it leaps at the nearest enemy within 5 blocks and bursts on it (with none in
+  reach it bursts where it is): 15 damage within 4 blocks, again only to valid targets. They keep fighting if their
+  turret is destroyed; they are not saved when the area unloads.
 - Up to 12 spiders per turret (capsules in the air count): at the cap it waits and spends nothing. The server config
   maxTurretUnits (96) caps all turret units in a dimension.
 - Each shot takes a Brood Capsule (Ammo Workstation: 3 iron ingots, a copper ingot, 2 redstone and a spider eye) and
@@ -174,13 +116,15 @@ New: Brood Cannon Turret
 
 New: Hive Carrier Turret
 - The third huge weapon, for the Fortress Turret Base: a big hollow hive of honeycomb plating with a relay mast on
-  top. While enemies are within 32 blocks it sends out a wave of three combat drones every 15 seconds; they fly out
+  top. While enemies are within 64 blocks it sends out a wave of three combat drones every 15 seconds; they fly out
   of the doorways in its side and climb away, and come home through the same doorways. Look in through a doorway:
   docked drones stand on racks inside, and between waves a new drone is welded together on each empty pad.
-- Drones (20 HP, 120 bullets) shoot whatever the turret may shoot within 16 blocks, flyers too: 2 damage, 4 shots a
-  second. They patrol round the carrier. Out of bullets or below a quarter HP with an enemy in reach they dive
-  kamikaze: 15 damage within 4.5 blocks, again only to valid targets. With nothing left to shoot they fly home, dock
-  and wait; the next wave launches them again with fresh bullets for 1,000 FE each. Hostile mobs go after them
+- A wave goes out only for enemies the drones can get at: under open sky, or in sight of the hive (over its cap or
+  from its doorways). A mob in a cave or behind walls does not send them out.
+- Drones (20 HP, 300 bullets) shoot whatever the turret may shoot within 32 blocks, flyers too: 3.5 damage, 10 shots
+  a second. They patrol round the carrier. Out of bullets, below a quarter HP or shot down with an enemy in reach they
+  dive kamikaze: 15 damage within 4.5 blocks, again only to valid targets. With nothing left to shoot they fly home,
+  dock and wait; the next wave launches them again with fresh bullets for 1,000 FE each. Hostile mobs go after them
   (skeletons shoot them down). They keep fighting if the carrier is destroyed. Docked drones are saved with the
   carrier (mining the base keeps them, taking the module off gives them back as Hive Drone items); drones in flight are
   gone when the area unloads, and the next wave replaces them with new Hive Drones.
@@ -189,9 +133,41 @@ New: Hive Carrier Turret
   Part Assembler from three new parts: Hive Hangar, Hive Relay Mast and Hive Launch Bays.
 - Overwatch: the carrier can be watched, not steered.
 
+New: Research and the Turret Codex
+- The Turret Codex: every player gets one the first time they join a world (it is also crafted from a book, an iron
+  ingot and redstone). Right-click it: on the left the research tree in three tabs (Turrets, Workshop, Modules),
+  growing from the early turrets up to the 3x3 ones, with what each card brings along (ammo, stations, tools) beside it;
+  on the right a page for the card you pick: the item in 3D, its base
+  and ammo, bars for damage, fire rate and range, its description, what it unlocks and what it still needs.
+- Most recipes now need research first: the workstations, every turret but the four early ones, the bases, the tier
+  kits, the modules (Mk1, Mk2 and Mk3 each), the Feed Hub, the Control Hub and the Overwatch Link. A turret opens its
+  parts and its ammo with it. A card needs the cards below it, and a turret also the base of its size.
+- Press Research on a card to pay its cost from your inventory: iron, copper and redstone for the first steps, gold
+  for the later 1x1 turrets, diamonds for the 2x2 ones, diamonds and netherite scrap for the 3x3 ones. Creative players
+  research for free.
+- Research is shared by everyone in the world; a chat line tells everyone what was researched. Gear you got another
+  way (loot, creative, another mod) still places and works.
+- Worlds that ran before 0.5.0 start with everything researched; new worlds start from the early turrets.
+- A locked recipe shows a padlock in its workstation (and in JEI, where its + button says why) and says what to
+  research; a locked item's tooltip says so too.
+- JEI: a Research page for every card with its cost, what it unlocks, what it needs and what it leads to (R on an iron
+  ingot, U on a turret). The Codex's Recipe button opens JEI on the item.
+- config/bastion-research.toml: every card's cost, research on or off, and the first-join Codex. Admins:
+  /bastion research grant <card|all>, /bastion research revoke <card|all>, /bastion research list.
+
 Changes
 - The server config has fortressBaseHealthMultiplier (5.0: a Fortress has five times a standard base's HP) and
   maxTurretUnits (96: turret units, spiders and drones, alive at once in one dimension).
+- config/bastion-turrets.toml is less than half as long (about 800 lines, was 2,100): each turret lists only the stats
+  it uses (no aiming on the Tesla Coil, heat only on the Machine Gun and Plasma Repeater, and so on), with one comment
+  line per stat. Numbers you changed stay; the unused lines go away on the first start.
+
+Sounds
+- Real sounds for the four early turrets and the Makeshift Turret Base (they were placeholders in 0.4.0); the Javelin
+  Missile, Brood Cannon and Hive Carrier have their own from the start.
+- The Javelin's silo doors hiss open when it finds a target and slam shut when it goes idle.
+- Brood spiders skitter as they walk and climb.
+- Arrow Launcher arrows thunk like vanilla arrows when they hit or stick (they were silent).
 
 Fixes
 - The Turret Configurator now copies and pastes settings on any block of a Large (or Fortress) Turret Base; before,
@@ -200,9 +176,16 @@ Fixes
 - A comparator beside any block of a Large (or Fortress) Turret Base now updates when its ammo changes; before, only
   one beside the right block did.
 - Damage sparks on a Large Turret Base come off all four sides, not only two.
+- A turret's invisible hit box could be blown away by an explosion's knockback (or carried off by a mob) and stay
+  there for good, far from its turret: mobs crowded round empty air attacking it. It now stays on its turret.
+- Fungal Infection: Spore: the Howitzer's bombs, its landing stomp and its walking through walls deleted turrets (and
+  the block under them) outright, whatever their HP. They now leave the turret and the block it stands on; the blast
+  still damages the turret by its HP.
+- The Part Workstation's row of tabs (one per turret) ran past the right edge of its screen; it now shows as many
+  as fit with arrows at both ends (click them, or scroll the mouse wheel over the tabs).
 
 Note
-- The Javelin Missile, Brood Cannon and Hive Carrier Turrets' sounds are placeholders for now.
+- The research sound is a placeholder for now.
 - Clients need this version to join a 0.5.0 server (new blocks and items).
 ```
 

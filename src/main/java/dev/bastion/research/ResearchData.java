@@ -34,7 +34,7 @@ public final class ResearchData extends SavedData {
     }
 
     /**
-     * What a world starts with the first time it meets research: a world that ran before (0.5.x or older, game time past 0)
+     * What a world starts with the first time it meets research: a world that ran before (0.4.x or older, game time past 0)
      * gets every node there is now; a new world nothing. The GameTest world gets everything, so the older tests run as before.
      */
     public static Set<String> initial(long overworldGameTime, boolean gameTestServer) {

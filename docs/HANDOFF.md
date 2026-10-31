@@ -7,6 +7,15 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**NOW (2026-10-31): renumbered (user 17:09).** The "0.6.0" work below (research + Codex, real sounds, Brood climb/leap,
+short config, hit-box and Spore fixes) ships as **0.5.0** with the Fortress and 3x3 turrets, so the 0.5.0 upload has the
+real sounds; `mod_version=0.5.0`. 0.3.2 was skipped: 0.4.0 went up 2026-10-28 with the 0.3.2 changelog, and the
+CurseForge description was brought to the 0.4.0 text in Chrome (it had missed the 0.3.0 and 0.3.2 parts) plus a
+placeholder-sound line. Changelog `UPLOAD.md` "0.5.0" (0.5.0 + 0.6.0 in one), store text `DESCRIPTION_UPDATE_0.5.0.md`
+(parts 1-10; part 10 drops the placeholder-sound line); `DESCRIPTION_UPDATE_0.6.0.md` is gone. Roadmap (PLAN §8): 0.6.0
+upgrades, 0.7.0 hybrids, 0.8.0 utility turrets, 0.9.x fixes and balance, 1.0.0. Older notes below keep the old numbers
+(their "0.6.0" = this 0.5.0, their "0.7.0" upgrades/hybrids = 0.6.0/0.7.0). Upload folder `build/upload/0.5.0/`.
+
 **NOW (2026-10-27 17:17): 0.6.0 is committed up to `649e2e5` ("Brood spiders climb and leap, real sounds for the early and 3x3 turrets"; not pushed, no tag: push/tag only on request). Upload folder `build/upload/0.6.0/` (git-ignored): release and -dev jars rebuilt from `649e2e5` in a worktree, changelog.txt and LANGKAH.md refreshed (PC config note: six [hive_carrier] lines). Before that: 0.6.0 "Research & Turret Codex" committed as `38c1c15`, jar built from `38c1c15` in a worktree, `changelog.txt`, store text, `gallery/23_turret_codex.png`, `gambar-deskripsi/`, `LANGKAH.md` (PC test + CurseForge steps, Indonesian). The user is testing the jar on their PC: bugs they report come first (a 0.6.x fix). Review (Opus xhigh): with fixes; the Important and all 9 minors fixed; then the Part Workstation tab-row fix and the tree's companions (user 16:14, 16:24). 414/414 GameTests, build green.**
 - Spec PLAN §8 "Riset & Turret Codex" (approved 14:28), plan `docs/superpowers/plans/2026-10-24-research-codex.md` (5 tasks,
   native), ledger with every Ruling `.superpowers/sdd/2026-10-24-research-codex/progress.md`. 414/414 GameTests, build green,

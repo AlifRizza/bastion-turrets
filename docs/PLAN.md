@@ -503,21 +503,26 @@ Disimpan untuk setelah MVP rilis, memakai framework yang sama: **Laser** (beam k
 
 ## 8. Roadmap Fase & Acceptance Criteria
 
-**Roadmap versi (user 2026-10-27, menggantikan rencana lama "0.7.0 = upgrade + hybrid")**: spec tiap versi ditulis saat
+**Roadmap versi (user 2026-10-31, menggeser roadmap 2026-10-27 satu nomor turun)**: pekerjaan yang dulu "0.6.0" (riset +
+Turret Codex, sound asli, Brood memanjat/melompat, config ringkas) dirilis sebagai **0.5.0** bersama Fortress dan tiga
+turret 3x3, supaya upload 0.5.0 sudah punya sound asli. Tidak ada 0.6.0 lama lagi. Spec tiap versi ditulis saat
 disetujui; ini urutannya saja.
 
 | Versi | Isi |
 |---|---|
-| 0.7.0 | Upgrade turret saja (Mk2/Mk3, Augment Core) |
-| 0.8.0 | Turret hybrid (Fusion Core) |
-| 0.9.0 | Turret utility / buff dan debuff: misalnya memperlambat musuh, menyembuhkan turret kita, menghancurkan proyektil musuh |
-| 0.9.1-0.9.9 | Bug fix, improvement, balancing, turret dan module tambahan |
-| 1.0.0 | Full release, beserta dukungan add-on (turret pack, lihat bagian 7 "Dukungan addon") dan wikinya (user 2026-10-27: dipindah dari 0.9.9) |
+| 0.5.0 | Fortress Turret Base, Javelin Missile, Brood Cannon, Hive Carrier, riset + Turret Codex, sound asli (sudah dibangun) |
+| 0.6.0 | Upgrade turret saja (Mk2/Mk3, Augment Core) |
+| 0.7.0 | Turret hybrid (Fusion Core) |
+| 0.8.0 | Turret utility / buff dan debuff: misalnya memperlambat musuh, menyembuhkan turret kita, menghancurkan proyektil musuh |
+| 0.9.x | Bug fix, improvement, balancing, turret dan module tambahan |
+| 1.0.0 | Full release, beserta dukungan add-on (turret pack, lihat bagian 7 "Dukungan addon") dan wikinya |
 | Setelah 1.0.0 | Porting versi Minecraft lain dan/atau versi NeoForge |
 
-Turret baru bisa muncul di versi mana pun antara 0.7.0 dan 1.0.0, tidak hanya di 0.9.x (user 2026-10-27).
+Turret baru bisa muncul di versi mana pun antara 0.6.0 dan 1.0.0, tidak hanya di 0.9.x (user 2026-10-27).
 
-Rilis ke CurseForge (user 2026-10-27): 0.3.2, 0.4.0, 0.5.0, 0.6.0 diunggah satu per satu dengan jeda 3-5 hari.
+Rilis ke CurseForge: 0.3.2 dilewati (changelognya masuk 0.4.0, diunggah 2026-10-28); 0.5.0 berikutnya. Bagian lama di
+bawah yang menyebut "0.6.0" (riset) dan "0.7.0" (upgrade/hybrid) memakai nomor lama: riset = 0.5.0, upgrade = 0.6.0,
+hybrid = 0.7.0.
 
 Kerjakan berurutan. Jangan lanjut sebelum acceptance criteria fase saat ini terpenuhi dan dites di game.
 
@@ -1592,7 +1597,7 @@ ulang, Overwatch (Javelin, Brood). Visual: scene showcase per turret (siang/mala
 
 **Di luar cakupan**: Mk2/Mk3 dan hybrid (0.7.0), riset (0.6.0), kendali Overwatch untuk Hive Carrier.
 
-### Riset & Turret Codex (brainstorm user 2026-10-23 14:00–14:34 dan 2026-10-24 14:05–14:21) — **rilis 0.6.0**
+### Riset & Turret Codex (brainstorm user 2026-10-23 14:00–14:34 dan 2026-10-24 14:05–14:21) — **rilis 0.5.0** (semula 0.6.0)
 
 **Status**: spec ditulis dan disetujui user 2026-10-24 14:28 ("setuju"). Dibangun 2026-10-24 (plan `docs/superpowers/plans/2026-10-24-research-codex.md`, ledger `.superpowers/sdd/2026-10-24-research-codex/progress.md`), 414 GameTest lolos (413 juga dengan `-PwithCompatMods`), showcase `-Pshowcase=codex` dicek, review akhir (Opus xhigh) + fix pass, 9 minor juga diperbaiki (user 15:55); di-commit 2026-10-24 sebagai `38c1c15` (belum di-push), jar di `build/upload/0.6.0/` untuk tes user di PC. Perubahan saat dibangun (keputusan saya, ada di ledger): tab Modul jadi **dua pita lima kolom** (baris 0–2 dan 4–6) supaya muat di GUI scale 3; jarak sel tree 28x27 px. Eksekusi **native** (superpowers:executing-plans; user
 2026-10-24 14:23). User 14:21: "gas dulu aja, kalau ada perubahan nanti setelah jadi": poin yang belum dibahas (biaya,

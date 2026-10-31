@@ -188,7 +188,7 @@ public class TurretWorkstationTests {
                 && station.items().getStackInSlot(WorkstationBlockEntity.OUTPUT).is(BastionItems.PLASMA_CELL.get()), "cells not charged yet"));
     }
 
-    /** Survival: the crafting table makes the workstations, the early turrets (0.4.0) and the Turret Codex (0.6.0), nothing else. */
+    /** Survival: the crafting table makes the workstations, the early turrets (0.4.0) and the Turret Codex (0.5.0), nothing else. */
     @GameTest(template = ARENA, batch = "craftingTableMakesStationsAndEarlyTurrets")
     public static void craftingTableMakesStationsAndEarlyTurrets(GameTestHelper helper) {
         var recipes = helper.getLevel().getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING);

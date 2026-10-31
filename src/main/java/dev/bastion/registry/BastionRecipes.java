@@ -9,7 +9,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/** Recipe type and serializer for the workstations (PLAN Fase 9), and the research-locked crafting recipe (0.6.0). */
+/** Recipe type and serializer for the workstations (PLAN Fase 9), and the research-locked crafting recipe (0.5.0). */
 public final class BastionRecipes {
     public static final DeferredRegister<RecipeType<?>> TYPES = DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, Bastion.MOD_ID);
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Bastion.MOD_ID);
