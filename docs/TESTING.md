@@ -782,3 +782,14 @@ netherite scrap when a step needs them.
 14. **Dedicated server**: `runServer` + a client: the Codex opens, research syncs, costs from the server's config.
 15. **Bahasa Indonesia**: Kodeks Turret, tabs Turret / Workshop / Modul, "Siap diriset", "Belum diriset: …", the chat
     line "<pemain> meriset …", the JEI page "Riset".
+
+## Camera mods: no startup crash (0.5.1, GitHub issue #1)
+
+Every `./gradlew runClient` now loads a dev-only mixin (`src/dev/.../CameraModTurnMixin`) that redirects
+`player.turn` in `MouseHandler.turnPlayer` the way camera mods do, applied before Bastion's mixins.
+
+1. **Start**: `./gradlew runClient` reaches the main menu (before the fix: crash "Specified index 0 for @ModifyArg is
+   invalid for args (Lnet/minecraft/client/player/LocalPlayer;DD)").
+2. **Mouse**: in a world, looking around works as usual, same speed as before.
+3. **Overwatch zoom**: enter Overwatch on a turret, zoom in (scroll): the mouse turns the view slower the further in;
+   zoom back out: normal speed again.
