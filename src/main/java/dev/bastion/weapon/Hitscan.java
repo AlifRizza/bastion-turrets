@@ -1,8 +1,10 @@
 package dev.bastion.weapon;
 
+import dev.bastion.api.TurretHitEvent;
 import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.damage.TurretHurtSounds;
 import dev.bastion.turret.TurretHitboxEntity;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,6 +16,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -85,6 +89,18 @@ public final class Hitscan {
         if (!(amount > 0)) return false;
         target.invulnerableTime = 0;
         return TurretHurtSounds.hurt(target, source, amount);
+    }
+
+    /** A hit with a real impact point: {@link TurretHitEvent} first (body-part mods), then the damage. */
+    public static boolean damage(Entity target, DamageSource source, float amount, Vec3 hitPos, Vec3 direction, @Nullable ResourceLocation weapon) {
+        if (!(amount > 0)) return false;
+        MinecraftForge.EVENT_BUS.post(new TurretHitEvent(target, hitPos, direction, weapon, source));
+        return damage(target, source, amount);
+    }
+
+    /** A bullet's hit: where it met the target, the way it flew, the weapon that fired it. */
+    public static boolean damage(Bullets.Bullet bullet, EntityHitResult hit, DamageSource source, float amount) {
+        return damage(hit.getEntity(), source, amount, hit.getLocation(), bullet.direction, bullet.weapon);
     }
 
     /** Turret hitboxes are skipped: turrets never shoot each other, a turret in the line of fire is not a shield. */

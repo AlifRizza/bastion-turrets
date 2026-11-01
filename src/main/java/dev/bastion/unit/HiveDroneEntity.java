@@ -324,7 +324,8 @@ public class HiveDroneEntity extends PathfinderMob implements TurretUnit, GeoEnt
         shotCooldown = stats.shotInterval();
         ammo--;
         HitResult hit = Hitscan.trace(level(), from, aim.subtract(from).normalize(), stats.shotRange(), e -> Hitscan.canHit(e) && affects(e));
-        boolean struck = hit instanceof EntityHitResult entityHit && Hitscan.damage(entityHit.getEntity(), BastionDamageTypes.turretShot(level()), stats.bullet());
+        boolean struck = hit instanceof EntityHitResult entityHit && Hitscan.damage(entityHit.getEntity(), BastionDamageTypes.turretShot(level()), stats.bullet(),
+                entityHit.getLocation(), aim.subtract(from), EntityType.getKey(getType()));
         Vec3 normal = hit instanceof BlockHitResult block && hit.getType() != HitResult.Type.MISS ? Vec3.atLowerCornerOf(block.getDirection().getNormal()) : Vec3.ZERO;
         BastionNetwork.sendNear((ServerLevel) level(), blockPosition(), new TurretImpactEvent(hit.getLocation(), TurretImpactEvent.DRONE_SHOT, struck ? 1 : 0, normal, getId()));
     }

@@ -1,5 +1,6 @@
 package dev.bastion.weapon.types;
 
+import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.weapon.Bullets;
 import dev.bastion.weapon.FireContext;
@@ -72,7 +73,7 @@ public class ShotgunWeapon extends WeaponType {
         public void hit(Bullets.Bullet bullet, EntityHitResult hit) {
             double distance = hit.getLocation().distanceTo(bullet.origin);
             float falloff = (float) Mth.clampedLerp(1, min, (distance - start) / (end - start));
-            Hitscan.damage(hit.getEntity(), level, damage * falloff);
+            Hitscan.damage(bullet, hit, BastionDamageTypes.turretShot(level), damage * falloff);
             pelletsPerTarget.merge(hit.getEntity(), 1, Integer::sum);
         }
 

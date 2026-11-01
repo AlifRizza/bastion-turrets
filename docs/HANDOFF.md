@@ -7,6 +7,25 @@ Store/upload material: `docs/release/` (DESCRIPTION.md, DESCRIPTION.curseforge.h
 
 ## 0. Where we stopped
 
+**NOW (2026-11-01): 0.5.1 = 0.5.0 + the camera-mod startup crash fix only (GitHub issue #1, commit 27bb322), for
+CurseForge. The store changelog never mentions Anatomy or Xersian (unreleased, user 2026-11-01).**
+
+**NOW (2026-10-31 evening): 0.5.2, turret hits → body parts (user, for ../Anatomy and ../Xersian).** Plan
+`docs/superpowers/plans/2026-10-31-turret-hit-anatomy.md`. `dev.bastion.api.TurretHitEvent` (Forge bus, server) is posted
+by `Hitscan.damage(target, source, amount, hitPos, direction, weapon)` / `Hitscan.damage(bullet, hit, source, amount)`
+right before the hurt, with the very DamageSource the hurt gets (Anatomy matches its pending hit by that instance: turret
+shots have no direct entity). Bastion knows nothing of Anatomy. Posts / does not post:
+
+| Posts (has a real hit point) | Posts nothing (why) |
+|---|---|
+| Gun, Machine Gun, Shotgun (each pellet), Sniper, Sling, Railgun (the slug), Laser Rifle (each target the beam crosses), Ion Rifle (the bolt), Plasma Repeater (the ball), Plasma Cannon (the orb), Rocket and Missile (direct hit), Brood Capsule (landing on a head), Hive drone bullets | Tesla (a chain, no point), Flamethrower and burning (fire), every splash and blast (Anatomy spreads those itself from the source position), Ion field, Javelin and Mortar (blast only), Brood spider bite (vanilla melee: Anatomy traces it), its death burst and the Hive kamikaze (splash), Arrow Launcher (`TurretArrowEntity` is an `Arrow`: Anatomy traces projectiles), a destroyed turret's blast |
+
+`weapon` = the weapon type (`bastion:gun`...) or, for projectiles and units, the entity type (`bastion:turret_rocket`,
+`bastion:turret_missile`, `bastion:turret_brood_capsule`, `bastion:hive_drone`); null only for GameTest-made bullets.
+**Aim (user 2026-10-31):** turrets aim at the body centre first, then the eyes (`TargetSelector.aimPoint`); the Gun alone
+keeps eyes first (`GunWeapon.sight`, Precision Lock headshots). Checklist: `docs/TESTING.md` "Turret hits → body parts
+(0.5.2)". Xersian's `bastion_jar_version` is 0.5.2 (the `0.6.0` jar in build/libs is the pre-renumber build).
+
 **NOW (2026-10-31): renumbered (user 17:09).** The "0.6.0" work below (research + Codex, real sounds, Brood climb/leap,
 short config, hit-box and Spore fixes) ships as **0.5.0** with the Fortress and 3x3 turrets, so the 0.5.0 upload has the
 real sounds; `mod_version=0.5.0`. 0.3.2 was skipped: 0.4.0 went up 2026-10-28 with the 0.3.2 changelog, and the

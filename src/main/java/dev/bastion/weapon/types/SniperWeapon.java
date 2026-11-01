@@ -1,5 +1,6 @@
 package dev.bastion.weapon.types;
 
+import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.weapon.Bullets;
 import dev.bastion.weapon.FireContext;
@@ -40,6 +41,6 @@ public class SniperWeapon extends WeaponType {
         int pierce = stats.pierce() + Math.round(stats.data().param("base_pierce"));
         float damage = stats.damage();
         Bullets.fire(context, this, 0, List.of(context.direction()), stats.data().param("bullet_speed"), pierce,
-                Bullets.validTargets(context, this), (bullet, hit) -> Hitscan.damage(hit.getEntity(), context.level(), damage));
+                Bullets.validTargets(context, this), (bullet, hit) -> Hitscan.damage(bullet, hit, BastionDamageTypes.turretShot(context.level()), damage));
     }
 }

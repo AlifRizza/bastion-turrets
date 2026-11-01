@@ -69,7 +69,7 @@ public class IonRifleWeapon extends WeaponType {
         return new Bullets.Hit() {
             @Override
             public void hit(Bullets.Bullet bullet, EntityHitResult hit) {
-                Hitscan.damage(hit.getEntity(), source, damage);
+                Hitscan.damage(bullet, hit, source, damage);
                 zap(level, bullet.id, hit.getLocation(), field, canHit, hit.getEntity(), source);
             }
 

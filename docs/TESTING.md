@@ -793,3 +793,16 @@ Every `./gradlew runClient` now loads a dev-only mixin (`src/dev/.../CameraModTu
 2. **Mouse**: in a world, looking around works as usual, same speed as before.
 3. **Overwatch zoom**: enter Overwatch on a turret, zoom in (scroll): the mouse turns the view slower the further in;
    zoom back out: normal speed again.
+
+## Turret hits → body parts (0.5.2)
+
+Bastion's part (plain Bastion, no other mods): the aim moved to the body centre. Mod-side checks are in
+`../Xersian/docs/TESTING.md` "Turret Bastion → body part".
+
+1. **Aim**: a Machine Gun, Sniper or Laser turret and a zombie walking towards it: the barrel points at its chest, not
+   its eyes; tracers end on the chest. Same for a spider (wide and low): the shots land on its body.
+2. **Gun keeps the head**: a Gun Turret aims at the zombie's eyes; the locked first shot still does its headshot damage.
+3. **Nothing else changed**: kills take about as many shots as before; a mob behind a half wall whose chest is hidden
+   but whose head shows is still shot (in the head).
+4. GameTests: `gunShotPostsTurretHitEvent`, `splashPostsNoTurretHitEvent`, `laserPostsTurretHitEventPerTarget`,
+   `rocketDirectHitPostsTurretHitEvent`, `turretsAimAtTheBodyCentre`, `gunStillAimsAtTheHead`.

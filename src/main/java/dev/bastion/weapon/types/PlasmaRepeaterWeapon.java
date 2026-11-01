@@ -54,7 +54,7 @@ public class PlasmaRepeaterWeapon extends WeaponType {
         return new Bullets.Hit() {
             @Override
             public void hit(Bullets.Bullet bullet, EntityHitResult hit) {
-                Hitscan.damage(hit.getEntity(), source, damage);
+                Hitscan.damage(bullet, hit, source, damage);
                 for (LivingEntity e : Splash.around(level, hit.getLocation(), radius, canHit, hit.getEntity())) Hitscan.damage(e, source, splash);
             }
 

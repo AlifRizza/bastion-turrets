@@ -1,6 +1,8 @@
 package dev.bastion.weapon.types;
 
+import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
+import dev.bastion.turret.targeting.TargetSelector;
 import dev.bastion.weapon.Bullets;
 import dev.bastion.weapon.FireContext;
 import dev.bastion.weapon.FireProfile;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -26,6 +29,13 @@ public class GunWeapon extends WeaponType {
     @Override
     public FireProfile fireProfile() {
         return FireProfile.PROJECTILE;
+    }
+
+    /** The head first, unlike the other turrets: Precision Lock pays for headshots. */
+    @Nullable
+    @Override
+    public Vec3 sight(TurretBaseBlockEntity turret, LivingEntity target, StatSheet stats) {
+        return TargetSelector.firstVisible(turret, stats, target.getEyePosition(), target.getBoundingBox().getCenter());
     }
 
     @Override
@@ -46,7 +56,7 @@ public class GunWeapon extends WeaponType {
                         amount *= data.param("precision_lock_multiplier");
                         if (isHeadshot(hit)) amount *= data.param("headshot_multiplier");
                     }
-                    Hitscan.damage(hit.getEntity(), context.level(), amount);
+                    Hitscan.damage(bullet, hit, BastionDamageTypes.turretShot(context.level()), amount);
                 });
     }
 

@@ -8,6 +8,7 @@ import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.turret.targeting.TargetSelector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,6 +20,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,6 +76,9 @@ public final class Bullets {
         private final ServerLevel level;
         /** Unit vector of flight (Plasma Cannon: its ring is laid out around it). */
         public final Vec3 direction;
+        /** Weapon type that fired it, for TurretHitEvent; null for bullets made outside a turret shot (GameTests). */
+        @Nullable
+        public ResourceLocation weapon;
         private final double speed;
         private final Predicate<Entity> canHit;
         private final Hit onHit;
@@ -104,6 +109,7 @@ public final class Bullets {
                 pierce, canHit, onHit);
         List<TurretFireEvent.Shot> shots = new ArrayList<>(fired.size());
         // The path's far end; clients stop the tracer early when the impact for this id arrives.
+        for (Bullet b : fired) b.weapon = context.stats().data().type(); // at firing: the module may be swapped while it flies
         for (Bullet b : fired) shots.add(new TurretFireEvent.Shot(b.origin.add(b.direction.scale(range)), b.direction.reverse(), TurretFireEvent.MISS, b.id));
         ShotReport.send(context, type, muzzle, (float) speed, shots);
         launch(fired);

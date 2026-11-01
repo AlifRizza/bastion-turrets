@@ -62,6 +62,22 @@ work ships as **0.5.0** together with the Fortress and 3x3 turrets, so the 0.5.0
 no separate 0.6.0 any more: next is 0.6.0 upgrades, 0.7.0 hybrids, 0.8.0 utility turrets, 0.9.x fixes and balance,
 then 1.0.0. Store text: `DESCRIPTION_UPDATE_0.5.0.md` (0.5.0 and 0.6.0 parts in one).
 
+## Changelog: 0.5.2
+
+Not uploaded yet. Built for ../Anatomy and ../Xersian (unreleased): the store changelog must not mention them.
+
+```
+Changes
+- Turrets now aim at the middle of a mob's body, then its head when the body is hidden. The Gun Turret still aims at
+  the head first, for its Precision Lock headshots.
+
+For mod makers
+- New server event dev.bastion.api.TurretHitEvent on the Forge event bus: posted right before a turret hit that has a
+  real impact point (bullets, pellets, beams, bolts, slugs, a rocket's or capsule's direct hit, drone bullets), with the
+  target, the hit point, the shot's direction, the weapon and the DamageSource the hit uses. Splash, fire and Tesla
+  chains do not post it.
+```
+
 ## Changelog: 0.5.1
 
 Not uploaded yet (2026-11-01). Jar = 0.5.0 + the camera-mod crash fix only.

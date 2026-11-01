@@ -1,5 +1,6 @@
 package dev.bastion.weapon.types;
 
+import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.network.BastionNetwork;
 import dev.bastion.network.SpinSync;
 import dev.bastion.turret.TurretBaseBlockEntity;
@@ -79,7 +80,7 @@ public class MachineGunWeapon extends WeaponType {
         context.state().muzzle = (context.state().muzzle + 1) % 4;
         Bullets.fire(context, this, context.state().muzzle, List.of(direction), data.param("bullet_speed"), context.stats().pierce(),
                 Bullets.validTargets(context, this), (bullet, hit) -> {
-                    Hitscan.damage(hit.getEntity(), context.level(), damage);
+                    Hitscan.damage(bullet, hit, BastionDamageTypes.turretShot(context.level()), damage);
                     if (hit.getEntity() instanceof LivingEntity living) {
                         living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, (int) data.param("slowness_ticks"),
                                 (int) data.param("slowness_amplifier"), false, false));

@@ -1,6 +1,7 @@
 package dev.bastion.gametest;
 
 import dev.bastion.Bastion;
+import dev.bastion.api.TurretHitEvent;
 import dev.bastion.config.BastionConfig;
 import dev.bastion.config.TurretStatsConfig;
 import dev.bastion.projectile.BroodCapsuleEntity;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -218,6 +220,30 @@ public class BroodTests {
             helper.assertTrue(lost(under) > 9 && lost(under) <= 10, "the husk under it lost " + lost(under));
             helper.assertTrue(lost(beside) == 0, "the husk beside it lost " + lost(beside));
             capsule.discard();
+            helper.succeed();
+        });
+    }
+
+    /** The capsule's TurretHitEvent is where it came down on the husk (its head), not the husk's feet (review 2026-10-31). */
+    @GameTest(template = YARD, timeoutTicks = 100, batch = "capsuleHitPointIsOnTopOfTheHusk")
+    public static void capsuleHitPointIsOnTopOfTheHusk(GameTestHelper helper) {
+        LivingEntity under = still(helper, EntityType.HUSK, new BlockPos(8, 2, 14));
+        List<TurretHitEvent> hits = new ArrayList<>();
+        Consumer<TurretHitEvent> onHit = event -> {
+            if (event.getTarget() == under) hits.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TurretHitEvent.class, onHit);
+        BroodCapsuleEntity capsule = new BroodCapsuleEntity(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2)), new TargetFilter(), null, STATS, 3, 12, 400, 0.05f)
+                .aim(under, 10);
+        capsule.setPos(under.position().add(0, 5, 0));
+        capsule.launch(new Vec3(0, -0.3, 0));
+        helper.getLevel().addFreshEntity(capsule);
+        helper.runAtTickTime(40, () -> {
+            MinecraftForge.EVENT_BUS.unregister(onHit);
+            capsule.discard();
+            helper.assertTrue(hits.size() == 1, "expected one TurretHitEvent, got " + hits.size());
+            double y = hits.get(0).getHitPos().y - under.getY();
+            helper.assertTrue(y > under.getBbHeight() * 0.75, "hit point " + y + " blocks up the husk, expected its top");
             helper.succeed();
         });
     }

@@ -1,6 +1,7 @@
 package dev.bastion.gametest;
 
 import dev.bastion.Bastion;
+import dev.bastion.api.TurretHitEvent;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.turret.TurretBaseBlockEntity;
@@ -13,10 +14,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Laser Rifle: charge first, then one beam through every valid target on its line, stopped by blocks. */
 @GameTestHolder(Bastion.MOD_ID)
@@ -96,6 +101,30 @@ public class TurretLaserTests {
             helper.assertTrue(hit(front), "the husk in front was not hit, state " + turret.state());
             helper.assertTrue(!hit(behind), "the beam went through the wall");
             turret.inventory().setStackInSlot(TurretInventory.WEAPON, ItemStack.EMPTY);
+        });
+    }
+
+    /** One beam through two husks: each gets its own TurretHitEvent, at the point the beam met its box. */
+    @GameTest(template = ARENA, timeoutTicks = 200, batch = "laserPostsTurretHitEventPerTarget")
+    public static void laserPostsTurretHitEventPerTarget(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = laser(helper, 3);
+        List<LivingEntity> husks = List.of(helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(5, 2, 3)),
+                helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(8, 2, 3)));
+        List<TurretHitEvent> hits = new ArrayList<>();
+        Consumer<TurretHitEvent> onHit = event -> {
+            if (husks.contains(event.getTarget())) hits.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TurretHitEvent.class, onHit);
+        helper.runAtTickTime(150, () -> {
+            MinecraftForge.EVENT_BUS.unregister(onHit);
+            turret.inventory().setStackInSlot(TurretInventory.WEAPON, ItemStack.EMPTY);
+            for (LivingEntity husk : husks) {
+                TurretHitEvent hit = hits.stream().filter(e -> e.getTarget() == husk).findFirst().orElse(null);
+                helper.assertTrue(hit != null, "no TurretHitEvent for a husk on the beam, state " + turret.state());
+                helper.assertTrue(husk.getBoundingBox().inflate(0.5).contains(hit.getHitPos()), "hit point " + hit.getHitPos() + " is off its husk");
+                helper.assertTrue(Bastion.id("laser_rifle").equals(hit.getWeapon()), "weapon " + hit.getWeapon());
+            }
+            helper.succeed();
         });
     }
 }

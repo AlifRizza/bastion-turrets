@@ -75,7 +75,7 @@ public class RailgunWeapon extends WeaponType {
             @Override
             public void hit(Bullets.Bullet bullet, EntityHitResult hit) {
                 Entity target = hit.getEntity();
-                Hitscan.damage(target, rail, stats.damage() * (target.getType().is(Tags.EntityTypes.BOSSES) ? bossMultiplier : 1));
+                Hitscan.damage(bullet, hit, rail, stats.damage() * (target.getType().is(Tags.EntityTypes.BOSSES) ? bossMultiplier : 1));
                 BastionExplosion.detonate(context.level(), hit.getLocation(), radius, 0, knockback, valid, null);
             }
 

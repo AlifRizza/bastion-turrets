@@ -56,7 +56,7 @@ public class LaserRifleWeapon extends WeaponType {
         List<TurretFireEvent.Shot> shots = new ArrayList<>();
         shots.add(ShotReport.of(context.level(), trace.end(), context.direction()));
         for (EntityHitResult hit : trace.entities()) {
-            Hitscan.damage(hit.getEntity(), laser, stats.damage());
+            Hitscan.damage(hit.getEntity(), laser, stats.damage(), hit.getLocation(), context.direction(), stats.data().type());
             shots.add(ShotReport.of(context.level(), hit, context.direction()));
         }
         ShotReport.send(context, this, 0, shots);

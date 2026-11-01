@@ -1,6 +1,9 @@
 package dev.bastion.gametest;
 
 import dev.bastion.Bastion;
+import dev.bastion.api.TurretHitEvent;
+import dev.bastion.damage.BastionExplosion;
+import dev.bastion.projectile.TurretRocketEntity;
 import dev.bastion.registry.BastionBlocks;
 import dev.bastion.registry.BastionItems;
 import dev.bastion.registry.BastionWeaponTypes;
@@ -20,12 +23,14 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.PlayLevelSoundEvent;
@@ -229,5 +234,104 @@ public class TurretCombatTests {
             helper.assertTrue(heard.contains(SoundEvents.ZOMBIE_DEATH), "the death sound went missing");
             helper.succeed();
         });
+    }
+
+    // --- TurretHitEvent (Anatomy compat, 2026-10-31) ---------------------------------------------
+
+    /** A gun bullet tells listeners where it hit and which way it flew, with the very DamageSource hurt() then gets. */
+    @GameTest(template = ARENA, timeoutTicks = 100, batch = "gunShotPostsTurretHitEvent")
+    public static void gunShotPostsTurretHitEvent(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 10);
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        List<TurretHitEvent> hits = new ArrayList<>();
+        List<DamageSource> hurts = new ArrayList<>();
+        Consumer<TurretHitEvent> onHit = event -> {
+            if (event.getTarget() == husk) hits.add(event);
+        };
+        Consumer<LivingHurtEvent> onHurt = event -> {
+            if (event.getEntity() == husk) hurts.add(event.getSource());
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TurretHitEvent.class, onHit);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, LivingHurtEvent.class, onHurt);
+        helper.runAtTickTime(60, () -> {
+            MinecraftForge.EVENT_BUS.unregister(onHit);
+            MinecraftForge.EVENT_BUS.unregister(onHurt);
+            disarm(turret);
+            helper.assertTrue(!hits.isEmpty(), "no TurretHitEvent for the husk, turret state " + turret.state());
+            TurretHitEvent hit = hits.get(0);
+            helper.assertTrue(husk.getBoundingBox().inflate(0.5).contains(hit.getHitPos()), "hit point " + hit.getHitPos() + " is off the husk");
+            Vec3 toHusk = husk.getBoundingBox().getCenter().subtract(Vec3.atCenterOf(helper.absolutePos(BASE))).normalize();
+            helper.assertTrue(hit.getDirection().dot(toHusk) > 0.9, "shot direction " + hit.getDirection() + " does not point at the husk");
+            helper.assertTrue(Bastion.id("gun").equals(hit.getWeapon()), "weapon " + hit.getWeapon());
+            helper.assertTrue(hurts.stream().anyMatch(source -> source == hit.getSource()), "hurt() got another DamageSource than the event");
+            helper.succeed();
+        });
+    }
+
+    /** A blast has no point it hit: listeners hear nothing, the husk is still hurt. */
+    @GameTest(template = ARENA, timeoutTicks = 20, batch = "splashPostsNoTurretHitEvent")
+    public static void splashPostsNoTurretHitEvent(GameTestHelper helper) {
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        List<TurretHitEvent> hits = new ArrayList<>();
+        Consumer<TurretHitEvent> onHit = hits::add;
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TurretHitEvent.class, onHit);
+        try {
+            BastionExplosion.detonate(helper.getLevel(), husk.position().add(1, 0.5, 0), 3, 5, 0);
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(onHit);
+        }
+        helper.assertTrue(husk.getHealth() < husk.getMaxHealth(), "the blast missed the husk");
+        helper.assertTrue(hits.isEmpty(), "a blast posted a TurretHitEvent");
+        helper.succeed();
+    }
+
+    /** A rocket's direct hit posts one TurretHitEvent; its splash on the same husk posts none. */
+    @GameTest(template = ARENA, timeoutTicks = 100, batch = "rocketDirectHitPostsTurretHitEvent")
+    public static void rocketDirectHitPostsTurretHitEvent(GameTestHelper helper) {
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        List<TurretHitEvent> hits = new ArrayList<>();
+        Consumer<TurretHitEvent> onHit = event -> {
+            if (event.getTarget() == husk) hits.add(event);
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TurretHitEvent.class, onHit);
+        TurretRocketEntity rocket = new TurretRocketEntity(helper.getLevel(), helper.absolutePos(BASE), 4, 2, 2, 0, 60); // no turret there: hits hostiles
+        rocket.setPos(husk.getBoundingBox().getCenter().add(-3, 0, 0));
+        rocket.launch(new Vec3(0.4, 0, 0));
+        helper.getLevel().addFreshEntity(rocket);
+        helper.runAtTickTime(40, () -> {
+            MinecraftForge.EVENT_BUS.unregister(onHit);
+            helper.assertTrue(hits.size() == 1, "expected one TurretHitEvent for the husk, got " + hits.size());
+            helper.assertTrue(Bastion.id("turret_rocket").equals(hits.get(0).getWeapon()), "weapon " + hits.get(0).getWeapon());
+            helper.assertTrue(hits.get(0).getDirection().x > 0.9, "direction " + hits.get(0).getDirection());
+            helper.succeed();
+        });
+    }
+
+    // --- aim point (user 2026-10-31: the body centre, so body-part mods see limbs hit from the side) ------------
+
+    @GameTest(template = ARENA, timeoutTicks = 20, batch = "turretsAimAtTheBodyCentre")
+    public static void turretsAimAtTheBodyCentre(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 0);
+        turret.inventory().setStackInSlot(TurretInventory.WEAPON, new ItemStack(BastionItems.MACHINE_GUN_TURRET.get()));
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        Vec3 sight = BastionWeaponTypes.MACHINE_GUN.get().sight(turret, husk, stats(turret));
+        disarm(turret);
+        helper.assertTrue(husk.getBoundingBox().getCenter().equals(sight), "aimed at " + sight + ", body centre " + husk.getBoundingBox().getCenter());
+        helper.succeed();
+    }
+
+    /** The Gun alone keeps the head first: its Precision Lock pays for headshots. */
+    @GameTest(template = ARENA, timeoutTicks = 20, batch = "gunStillAimsAtTheHead")
+    public static void gunStillAimsAtTheHead(GameTestHelper helper) {
+        TurretBaseBlockEntity turret = gunTurret(helper, 0);
+        LivingEntity husk = helper.spawnWithNoFreeWill(EntityType.HUSK, FAR);
+        Vec3 sight = BastionWeaponTypes.GUN.get().sight(turret, husk, stats(turret));
+        disarm(turret);
+        helper.assertTrue(husk.getEyePosition().equals(sight), "aimed at " + sight + ", eyes " + husk.getEyePosition());
+        helper.succeed();
+    }
+
+    private static StatSheet stats(TurretBaseBlockEntity turret) {
+        return StatSheet.of(turret.inventory().weaponData(), turret.tier(), turret.inventory().modifierEffect());
     }
 }

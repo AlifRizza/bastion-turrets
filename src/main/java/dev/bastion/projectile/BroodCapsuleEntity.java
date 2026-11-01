@@ -147,7 +147,8 @@ public class BroodCapsuleEntity extends Projectile implements TurretUnit, GeoEnt
             EntityHitResult head = ProjectileUtil.getEntityHitResult(level(), this, position(), end, getBoundingBox().expandTowards(end.subtract(position())).inflate(0.3), this::hits);
             if (head != null) {
                 struck = true;
-                Hitscan.damage(head.getEntity(), BastionDamageTypes.turretShot(level()), hitDamage);
+                Hitscan.damage(head.getEntity(), BastionDamageTypes.turretShot(level()), hitDamage,
+                        TurretRocketEntity.impactPoint(head.getEntity(), position(), end.subtract(position())), motion, EntityType.getKey(getType()));
             }
         }
         hasImpulse = true; // velocity to clients every tick, so they follow the arc

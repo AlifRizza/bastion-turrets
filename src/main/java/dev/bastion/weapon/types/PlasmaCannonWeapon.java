@@ -69,7 +69,7 @@ public class PlasmaCannonWeapon extends WeaponType {
         return new Bullets.Hit() {
             @Override
             public void hit(Bullets.Bullet bullet, EntityHitResult hit) {
-                Hitscan.damage(hit.getEntity(), source, damage);
+                Hitscan.damage(bullet, hit, source, damage);
                 explode(level, hit.getLocation(), blast, canHit, source);
             }
 

@@ -1,5 +1,6 @@
 package dev.bastion.weapon.types;
 
+import dev.bastion.damage.BastionDamageTypes;
 import dev.bastion.turret.TurretBaseBlockEntity;
 import dev.bastion.weapon.Bullets;
 import dev.bastion.weapon.FireContext;
@@ -34,7 +35,7 @@ public class SlingWeapon extends WeaponType {
     public void onFire(FireContext context) {
         float damage = context.stats().damage();
         Bullets.fire(context, this, 0, directions(context), context.stats().data().param("bullet_speed"), context.stats().pierce(),
-                Bullets.validTargets(context, this), (bullet, hit) -> Hitscan.damage(hit.getEntity(), context.level(), damage));
+                Bullets.validTargets(context, this), (bullet, hit) -> Hitscan.damage(bullet, hit, BastionDamageTypes.turretShot(context.level()), damage));
     }
 
     /** One direction per pellet, all from the shot's seed. */

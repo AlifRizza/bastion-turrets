@@ -146,7 +146,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
             if (hit.getType() != HitResult.Type.MISS) {
                 Vec3 normal = hit instanceof BlockHitResult block ? Vec3.atLowerCornerOf(block.getDirection().getNormal()) : Vec3.ZERO;
                 if (hit instanceof EntityHitResult entityHit) {
-                    explode(impactPoint(entityHit.getEntity(), motion), entityHit.getEntity(), normal);
+                    explode(impactPoint(entityHit.getEntity(), position(), motion), entityHit.getEntity(), normal);
                 } else {
                     explode(hit.getLocation(), null, normal);
                 }
@@ -165,12 +165,12 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     }
 
     /**
-     * Where this tick's flight meets {@code target}: an EntityHitResult only carries the target's feet, which made the
-     * blast (and the smoke trail running into it) dip to the ground. Falls back to the point of the flight path
-     * nearest the target's middle when the rocket only grazed the box.
+     * Where a flight from {@code from} along {@code motion} meets {@code target}: an EntityHitResult only carries the
+     * target's feet, which made the blast (and the smoke trail running into it) dip to the ground. Falls back to the
+     * point of the flight path nearest the target's middle when it only grazed the box. Brood Capsules use it too.
      */
-    private Vec3 impactPoint(Entity target, Vec3 motion) {
-        Vec3 from = position(), to = from.add(motion);
+    static Vec3 impactPoint(Entity target, Vec3 from, Vec3 motion) {
+        Vec3 to = from.add(motion);
         return target.getBoundingBox().inflate(0.3).clip(from, to).orElseGet(() -> {
             double length = motion.length();
             if (length < 1e-6) return from;
@@ -249,7 +249,7 @@ public class TurretRocketEntity extends Projectile implements GeoEntity {
     private void explode(Vec3 at, @Nullable Entity direct, Vec3 normal) {
         if (!(level() instanceof ServerLevel server)) return;
         if (direct != null && damage > 0) {
-            Hitscan.damage(direct, BastionDamageTypes.turretShot(server), damage);
+            Hitscan.damage(direct, BastionDamageTypes.turretShot(server), damage, at, getDeltaMovement(), EntityType.getKey(getType()));
         }
         BastionExplosion.detonate(server, at, splashRadius, splashDamage, knockback, this::affects, this);
         BastionNetwork.sendNear(server, BlockPos.containing(at), new TurretImpactEvent(at, blastKind, splashRadius / 3.5f, normal, getId()));

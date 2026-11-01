@@ -93,10 +93,13 @@ public final class TargetSelector {
         return damage + (hunted.getUUID().equals(turret.owner()) ? 1000 : 100);
     }
 
-    /** Where to shoot: the head when visible, else the body centre; null if neither is visible within pitch limits. */
+    /**
+     * Where to shoot: the body centre when visible, else the head; null if neither is visible within pitch limits. The
+     * centre, not the head (user 2026-10-31): body-part mods then see a shot from the side take a limb, from the front the head.
+     */
     @Nullable
     public static Vec3 aimPoint(TurretBaseBlockEntity turret, LivingEntity entity, StatSheet stats) {
-        return firstVisible(turret, stats, entity.getEyePosition(), entity.getBoundingBox().getCenter());
+        return firstVisible(turret, stats, entity.getBoundingBox().getCenter(), entity.getEyePosition());
     }
 
     /** The first of {@code points} within the pitch limits and in line of sight from the muzzle, or null. */
